@@ -137,7 +137,7 @@
         <!-- Preset selector -->
         <div class="mb-6">
           <label class="label mb-3">Start from a preset</label>
-          <div class="grid sm:grid-cols-3 gap-3" id="preset-cards">
+          <div class="grid sm:grid-cols-4 gap-3" id="preset-cards">
             <button onclick="B.loadPreset('nz')" id="preset-nz"
               class="preset-card text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all">
               <div class="font-bold text-slate-800 text-sm mb-1">🇳🇿 NZ University</div>
@@ -152,6 +152,11 @@
               class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all">
               <div class="font-bold text-slate-800 text-sm mb-1">🇺🇸 US Simple</div>
               <div class="text-xs text-slate-500">A→F  ·  5 grades  ·  Standard A–F scale</div>
+            </button>
+            <button onclick="B.loadPreset('custom')" id="preset-custom"
+              class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all">
+              <div class="font-bold text-slate-800 text-sm mb-1">✏️ Custom</div>
+              <div class="text-xs text-slate-500">Start from scratch · define your own grades & bands</div>
             </button>
           </div>
         </div>
@@ -501,6 +506,9 @@
         { grade: 'C',  midpoint: 75, bandLow: 70, bandHigh: 79,  tier: 'developing' },
         { grade: 'D',  midpoint: 60, bandLow: 60, bandHigh: 69,  tier: 'developing' },
         { grade: 'F',  midpoint: 30, bandLow: 0,  bandHigh: 59,  tier: 'unsatisfactory' }
+      ],
+      custom: [
+        { grade: '', midpoint: 0, bandLow: 0, bandHigh: 0, tier: 'excellent' }
       ]
     };
 
@@ -524,7 +532,7 @@
     }
 
     function highlightActivePreset(key) {
-      ['nz','uk','us'].forEach(k => {
+      ['nz','uk','us','custom'].forEach(k => {
         const btn = document.getElementById('preset-' + k);
         if (!btn) return;
         btn.className = k === key
@@ -552,15 +560,15 @@
                    value="${escHtml(g.grade)}" placeholder="e.g. B+" maxlength="4">
           </td>
           <td class="p-2 text-center">
-            <input type="number" class="gs-midpoint input-field text-center w-16"
+            <input type="number" class="gs-midpoint input-field text-center w-20"
                    value="${g.midpoint}" min="0" max="100" step="1">
           </td>
           <td class="p-2">
             <div class="flex items-center gap-1 justify-center">
-              <input type="number" class="gs-low input-field text-center w-14"
+              <input type="number" class="gs-low input-field text-center w-20"
                      value="${g.bandLow}" min="0" max="100" step="1" placeholder="Lo">
               <span class="text-slate-400 text-xs">–</span>
-              <input type="number" class="gs-high input-field text-center w-14"
+              <input type="number" class="gs-high input-field text-center w-20"
                      value="${g.bandHigh}" min="0" max="100" step="1" placeholder="Hi">
             </div>
           </td>
