@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,21 +58,26 @@
         <div class="step-line" id="line-1-2"></div>
         <div class="flex flex-col items-center" data-step-indicator="2">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-2">2</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Criteria</span>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Scale</span>
         </div>
         <div class="step-line" id="line-2-3"></div>
         <div class="flex flex-col items-center" data-step-indicator="3">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-3">3</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Rubric</span>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Criteria</span>
         </div>
         <div class="step-line" id="line-3-4"></div>
         <div class="flex flex-col items-center" data-step-indicator="4">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-4">4</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Feedback</span>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Rubric</span>
         </div>
         <div class="step-line" id="line-4-5"></div>
         <div class="flex flex-col items-center" data-step-indicator="5">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-5">5</div>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Feedback</span>
+        </div>
+        <div class="step-line" id="line-5-6"></div>
+        <div class="flex flex-col items-center" data-step-indicator="6">
+          <div class="step-dot bg-slate-200 text-slate-500" id="dot-6">6</div>
           <span class="text-xs mt-1 text-slate-400 hidden sm:block">Settings</span>
         </div>
       </div>
@@ -122,8 +128,64 @@
       </div>
     </div>
 
-    <!-- ─ Step 2: Criteria & Weights ──────────────────────── -->
+    <!-- ─ Step 2: Grade Scale ──────────────────────────────── -->
     <div id="step-2" class="step-panel hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Scale</h2>
+        <p class="text-slate-500 mb-6 text-sm">Define the grades used in your institution, their midpoint scores, band ranges, and which performance tier each belongs to. This drives the scoring engine and feedback tiers throughout the tool.</p>
+
+        <!-- Preset selector -->
+        <div class="mb-6">
+          <label class="label mb-3">Start from a preset</label>
+          <div class="grid sm:grid-cols-3 gap-3" id="preset-cards">
+            <button onclick="B.loadPreset('nz')" id="preset-nz"
+              class="preset-card text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all">
+              <div class="font-bold text-slate-800 text-sm mb-1">🇳🇿 NZ University</div>
+              <div class="text-xs text-slate-500">A+→D  ·  10 grades  ·  Waikato / standard NZ scale</div>
+            </button>
+            <button onclick="B.loadPreset('uk')" id="preset-uk"
+              class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all">
+              <div class="font-bold text-slate-800 text-sm mb-1">🇦🇺 UK / Australian</div>
+              <div class="text-xs text-slate-500">HD→F  ·  5 grades  ·  High Distinction scale</div>
+            </button>
+            <button onclick="B.loadPreset('us')" id="preset-us"
+              class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all">
+              <div class="font-bold text-slate-800 text-sm mb-1">🇺🇸 US Simple</div>
+              <div class="text-xs text-slate-500">A→F  ·  5 grades  ·  Standard A–F scale</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Grade table -->
+        <div class="mb-2 flex items-center justify-between">
+          <label class="label mb-0">Grade definitions <span class="text-slate-400 font-normal">(edit any row or add your own)</span></label>
+        </div>
+
+        <div class="overflow-x-auto mb-3">
+          <table class="w-full text-sm border-collapse" id="grade-scale-table">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                <th class="text-left p-2 rounded-tl-lg font-semibold">Grade</th>
+                <th class="text-center p-2 font-semibold">Midpoint<br><span class="font-normal normal-case tracking-normal">/100</span></th>
+                <th class="text-center p-2 font-semibold">Band<br><span class="font-normal normal-case tracking-normal">Low – High</span></th>
+                <th class="text-center p-2 font-semibold">Tier</th>
+                <th class="p-2 rounded-tr-lg"></th>
+              </tr>
+            </thead>
+            <tbody id="grade-scale-body"></tbody>
+          </table>
+        </div>
+
+        <button class="btn-secondary text-sm w-full" onclick="B.addGradeRow()">+ Add Grade Row</button>
+
+        <div class="mt-5 p-3 bg-amber-50 rounded-xl text-sm text-amber-800">
+          ⚠️ <strong>Changing the scale after setting up feedback templates (Step 5) will reset those templates.</strong> Set your scale here first, then customise feedback text later.
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ Step 3: Criteria & Weights ──────────────────────── -->
+    <div id="step-3" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Criteria &amp; Weights</h2>
         <p class="text-slate-500 mb-2 text-sm">Add each marking criterion and assign a percentage weight. Weights must total exactly 100%.</p>
@@ -143,8 +205,8 @@
       </div>
     </div>
 
-    <!-- ─ Step 3: Rubric Descriptors ──────────────────────── -->
-    <div id="step-3" class="step-panel hidden">
+    <!-- ─ Step 4: Rubric Descriptors ──────────────────────── -->
+    <div id="step-4" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Rubric Descriptors</h2>
         <p class="text-slate-500 mb-2 text-sm">For each criterion, write a short descriptor for each performance tier. These appear in the generated student feedback.</p>
@@ -157,8 +219,8 @@
       </div>
     </div>
 
-    <!-- ─ Step 4: Grade Feedback ───────────────────────────── -->
-    <div id="step-4" class="step-panel hidden">
+    <!-- ─ Step 5: Grade Feedback ───────────────────────────── -->
+    <div id="step-5" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Feedback Templates</h2>
         <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Defaults are provided — edit any you'd like to personalise.</p>
@@ -175,8 +237,8 @@
       </div>
     </div>
 
-    <!-- ─ Step 5: Settings & Save ──────────────────────────── -->
-    <div id="step-5" class="step-panel hidden">
+    <!-- ─ Step 6: Settings & Save ──────────────────────────── -->
+    <div id="step-6" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Settings &amp; Save</h2>
         <p class="text-slate-500 mb-6 text-sm">Configure late penalties and then save your scorer to start grading.</p>
@@ -244,7 +306,7 @@
 
     let config   = SA.newConfig();
     let step     = 1;
-    const STEPS  = 5;
+    const STEPS  = 6;
 
     /* ── Init ────────────────────────────────────────────── */
     function init() {
@@ -259,6 +321,7 @@
       populateStep3();
       populateStep4();
       populateStep5();
+      populateStep6();
       showStep(1);
     }
 
@@ -273,7 +336,7 @@
       document.getElementById('btn-next').style.display = n === STEPS ? 'none' : '';
 
       // Update dots & lines
-      SA.GRADES.slice(0, STEPS).forEach((_, i) => {
+      Array.from({length: STEPS}, (_, i) => i).forEach((_, i) => {
         const s = i + 1;
         const dot  = document.getElementById('dot-' + s);
         const line = document.getElementById('line-' + s + '-' + (s + 1));
@@ -293,7 +356,7 @@
       });
 
       updateSaveStatus('Draft — not saved');
-      if (n === 5) populateReviewSummary();
+      if (n === 6) populateReviewSummary();
     }
 
     function nextStep() {
@@ -312,6 +375,7 @@
       if (n === 3) { populateStep3(); }
       if (n === 4) { populateStep4(); }
       if (n === 5) { populateStep5(); }
+      if (n === 6) { populateStep6(); }
     }
 
     /* ── Validation ──────────────────────────────────────── */
@@ -325,6 +389,15 @@
         return ok;
       }
       if (n === 2) {
+        syncGradeScale();
+        if (!config.gradeScale || config.gradeScale.length < 1) {
+          alert('Please add at least one grade to your scale.'); return false;
+        }
+        const hasEmpty = config.gradeScale.some(g => !g.grade.trim());
+        if (hasEmpty) { alert('All grade rows must have a grade label.'); return false; }
+        return true;
+      }
+      if (n === 3) {
         syncCriteria();
         const total = config.criteria.reduce((s, c) => s + Number(c.weight), 0);
         if (Math.round(total) !== 100) {
@@ -339,16 +412,17 @@
         show('err-criteria', false);
         return true;
       }
-      return true; // steps 3–5 have no hard blocking validation
+      return true; // steps 4–6 have no hard blocking validation
     }
 
     /* ── Form sync helpers ───────────────────────────────── */
     function syncFromForms() {
       if (step === 1) syncStep1();
-      if (step === 2) syncCriteria();
-      if (step === 3) syncRubric();
-      if (step === 4) syncGradeFeedback();
-      if (step === 5) syncPenalties();
+      if (step === 2) syncGradeScale();
+      if (step === 3) syncCriteria();
+      if (step === 4) syncRubric();
+      if (step === 5) syncGradeFeedback();
+      if (step === 6) syncPenalties();
     }
 
     function syncStep1() {
@@ -397,6 +471,182 @@
       });
     }
 
+    /* ══════════════════════════════════════════════════════
+       GRADE SCALE — Step 2 logic
+       ══════════════════════════════════════════════════════ */
+
+    const GRADE_PRESETS = {
+      nz: [
+        { grade: 'A+', midpoint: 95, bandLow: 90, bandHigh: 100, tier: 'excellent' },
+        { grade: 'A',  midpoint: 87, bandLow: 85, bandHigh: 89,  tier: 'excellent' },
+        { grade: 'A-', midpoint: 82, bandLow: 80, bandHigh: 84,  tier: 'excellent' },
+        { grade: 'B+', midpoint: 77, bandLow: 75, bandHigh: 79,  tier: 'proficient' },
+        { grade: 'B',  midpoint: 72, bandLow: 70, bandHigh: 74,  tier: 'proficient' },
+        { grade: 'B-', midpoint: 67, bandLow: 65, bandHigh: 69,  tier: 'proficient' },
+        { grade: 'C+', midpoint: 62, bandLow: 60, bandHigh: 64,  tier: 'developing' },
+        { grade: 'C',  midpoint: 57, bandLow: 55, bandHigh: 59,  tier: 'developing' },
+        { grade: 'C-', midpoint: 52, bandLow: 50, bandHigh: 54,  tier: 'developing' },
+        { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' }
+      ],
+      uk: [
+        { grade: 'HD', midpoint: 90, bandLow: 85, bandHigh: 100, tier: 'excellent' },
+        { grade: 'D',  midpoint: 77, bandLow: 75, bandHigh: 84,  tier: 'proficient' },
+        { grade: 'C',  midpoint: 67, bandLow: 65, bandHigh: 74,  tier: 'developing' },
+        { grade: 'P',  midpoint: 55, bandLow: 50, bandHigh: 64,  tier: 'developing' },
+        { grade: 'F',  midpoint: 30, bandLow: 0,  bandHigh: 49,  tier: 'unsatisfactory' }
+      ],
+      us: [
+        { grade: 'A',  midpoint: 95, bandLow: 90, bandHigh: 100, tier: 'excellent' },
+        { grade: 'B',  midpoint: 85, bandLow: 80, bandHigh: 89,  tier: 'proficient' },
+        { grade: 'C',  midpoint: 75, bandLow: 70, bandHigh: 79,  tier: 'developing' },
+        { grade: 'D',  midpoint: 60, bandLow: 60, bandHigh: 69,  tier: 'developing' },
+        { grade: 'F',  midpoint: 30, bandLow: 0,  bandHigh: 59,  tier: 'unsatisfactory' }
+      ]
+    };
+
+    let _activePreset = 'nz';
+
+    function populateStep2() {
+      if (!config.gradeScale) config.gradeScale = GRADE_PRESETS.nz.map(g => ({...g}));
+      renderGradeScale();
+      highlightActivePreset(_activePreset);
+    }
+
+    function loadPreset(key) {
+      if (config.gradeScale && config.gradeScale.length > 0) {
+        if (!confirm('Load the ' + key.toUpperCase() + ' preset? This will replace your current grade rows.')) return;
+      }
+      _activePreset = key;
+      config.gradeScale = GRADE_PRESETS[key].map(g => ({...g}));
+      config.gradeFeedback = []; // reset feedback to match new scale
+      renderGradeScale();
+      highlightActivePreset(key);
+    }
+
+    function highlightActivePreset(key) {
+      ['nz','uk','us'].forEach(k => {
+        const btn = document.getElementById('preset-' + k);
+        if (!btn) return;
+        btn.className = k === key
+          ? 'preset-card text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all'
+          : 'preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all';
+      });
+    }
+
+    function renderGradeScale() {
+      const tbody = document.getElementById('grade-scale-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const tierOptions = [
+        { key: 'excellent',      label: 'Excellent',      style: 'background:#dcfce7;color:#166534' },
+        { key: 'proficient',     label: 'Proficient',     style: 'background:#dbeafe;color:#1e40af' },
+        { key: 'developing',     label: 'Developing',     style: 'background:#fef9c3;color:#854d0e' },
+        { key: 'unsatisfactory', label: 'Unsatisfactory', style: 'background:#fee2e2;color:#991b1b' }
+      ];
+      (config.gradeScale || []).forEach((g, i) => {
+        const tr = document.createElement('tr');
+        tr.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+        tr.innerHTML = `
+          <td class="p-2">
+            <input type="text" class="gs-grade input-field input-yellow text-center font-bold w-16"
+                   value="${escHtml(g.grade)}" placeholder="e.g. B+" maxlength="4">
+          </td>
+          <td class="p-2 text-center">
+            <input type="number" class="gs-midpoint input-field text-center w-16"
+                   value="${g.midpoint}" min="0" max="100" step="1">
+          </td>
+          <td class="p-2">
+            <div class="flex items-center gap-1 justify-center">
+              <input type="number" class="gs-low input-field text-center w-14"
+                     value="${g.bandLow}" min="0" max="100" step="1" placeholder="Lo">
+              <span class="text-slate-400 text-xs">–</span>
+              <input type="number" class="gs-high input-field text-center w-14"
+                     value="${g.bandHigh}" min="0" max="100" step="1" placeholder="Hi">
+            </div>
+          </td>
+          <td class="p-2 text-center">
+            <select class="gs-tier input-field text-xs px-2 py-1.5 w-36"
+                    style="${tierOptions.find(t=>t.key===g.tier)?.style || ''}">
+              ${tierOptions.map(t =>
+                `<option value="${t.key}" ${g.tier===t.key?'selected':''} style="${t.style}">${t.label}</option>`
+              ).join('')}
+            </select>
+          </td>
+          <td class="p-2 text-center">
+            <button onclick="B.removeGradeRow(this)" class="btn-danger px-2 py-1 text-xs">✕</button>
+          </td>
+        `;
+        // Update select styling on change
+        tr.querySelector('.gs-tier').addEventListener('change', function() {
+          const opt = tierOptions.find(t => t.key === this.value);
+          if (opt) this.style.cssText = opt.style;
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addGradeRow() {
+      syncGradeScale();
+      config.gradeScale.push({ grade: '', midpoint: 50, bandLow: 45, bandHigh: 54, tier: 'developing' });
+      renderGradeScale();
+      // scroll to bottom of table
+      const tbody = document.getElementById('grade-scale-body');
+      if (tbody) tbody.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function removeGradeRow(btn) {
+      if (config.gradeScale && config.gradeScale.length <= 1) {
+        alert('You must keep at least one grade row.'); return;
+      }
+      const row = btn.closest('tr');
+      const tbody = document.getElementById('grade-scale-body');
+      const idx = Array.from(tbody.children).indexOf(row);
+      syncGradeScale();
+      config.gradeScale.splice(idx, 1);
+      renderGradeScale();
+    }
+
+    function syncGradeScale() {
+      const tbody = document.getElementById('grade-scale-body');
+      if (!tbody) return;
+      const rows = tbody.querySelectorAll('tr');
+      config.gradeScale = Array.from(rows).map(tr => ({
+        grade:    tr.querySelector('.gs-grade')?.value.trim()   || '',
+        midpoint: parseFloat(tr.querySelector('.gs-midpoint')?.value) || 0,
+        bandLow:  parseFloat(tr.querySelector('.gs-low')?.value)      || 0,
+        bandHigh: parseFloat(tr.querySelector('.gs-high')?.value)     || 0,
+        tier:     tr.querySelector('.gs-tier')?.value                 || 'developing'
+      }));
+    }
+
+    // Build a grade→tier map from config.gradeScale
+    function buildTierMap() {
+      const map = {};
+      (config.gradeScale || GRADE_PRESETS.nz).forEach(g => { map[g.grade] = g.tier; });
+      return map;
+    }
+
+    // Return slash-separated grade labels for a given tier
+    function getScaleRange(tierKey) {
+      const grades = (config.gradeScale || GRADE_PRESETS.nz)
+        .filter(g => g.tier === tierKey)
+        .map(g => g.grade);
+      return grades.length ? grades.join(' / ') : tierKey;
+    }
+
+    // Ensure config.gradeFeedback has an entry for every grade in gradeScale,
+    // preserving any existing text for grades that still exist
+    function ensureGradeFeedbackMatchesScale() {
+      const scale = config.gradeScale || GRADE_PRESETS.nz;
+      const existing = {};
+      (config.gradeFeedback || []).forEach(gf => { existing[gf.grade] = gf; });
+      config.gradeFeedback = scale.map(g => existing[g.grade] || {
+        grade: g.grade,
+        intro: '',
+        outro: ''
+      });
+    }
+
     /* ── Step 1 populate ─────────────────────────────────── */
     function populateStep1() {
       setV('s1-name',            config.name);
@@ -407,8 +657,8 @@
       setV('s1-assignmentInfo',  config.assignmentInfo);
     }
 
-    /* ── Step 2 populate ─────────────────────────────────── */
-    function populateStep2() {
+    /* ── Step 3 populate ─────────────────────────────────── */
+    function populateStep3() {
       renderCriteriaList();
     }
 
@@ -479,16 +729,16 @@
       }
     }
 
-    /* ── Step 3 populate ─────────────────────────────────── */
-    function populateStep3() {
+    /* ── Step 4 populate ─────────────────────────────────── */
+    function populateStep4() {
       syncCriteria();
       const list = document.getElementById('rubric-list');
       list.innerHTML = '';
       const tiers = [
-        { key: 'excellent',      label: 'Excellent',      range: 'A+ / A / A-', bg: 'bg-green-100',  text: 'text-green-800'  },
-        { key: 'proficient',     label: 'Proficient',     range: 'B+ / B / B-', bg: 'bg-blue-100',   text: 'text-blue-800'   },
-        { key: 'developing',     label: 'Developing',     range: 'C+ / C / C-', bg: 'bg-yellow-100', text: 'text-yellow-800' },
-        { key: 'unsatisfactory', label: 'Unsatisfactory', range: 'D',           bg: 'bg-red-100',    text: 'text-red-800'    }
+        { key: 'excellent',      label: 'Excellent',      range: getScaleRange('excellent'),  bg: 'bg-green-100',  text: 'text-green-800'  },
+        { key: 'proficient',     label: 'Proficient',     range: getScaleRange('proficient'), bg: 'bg-blue-100',   text: 'text-blue-800'   },
+        { key: 'developing',     label: 'Developing',     range: getScaleRange('developing'), bg: 'bg-yellow-100', text: 'text-yellow-800' },
+        { key: 'unsatisfactory', label: 'Unsatisfactory', range: getScaleRange('unsatisfactory'), bg: 'bg-red-100', text: 'text-red-800' }
       ];
 
       config.criteria.forEach((c, idx) => {
@@ -526,20 +776,18 @@
       });
     }
 
-    /* ── Step 4 populate ─────────────────────────────────── */
-    function populateStep4() {
+    /* ── Step 5 populate ─────────────────────────────────── */
+    function populateStep5() {
       const list = document.getElementById('grade-feedback-list');
       list.innerHTML = '';
-      const tierMap = {
-        'A+': 'excellent', 'A': 'excellent', 'A-': 'excellent',
-        'B+': 'proficient', 'B': 'proficient', 'B-': 'proficient',
-        'C+': 'developing',  'C': 'developing',  'C-': 'developing',
-        'D':  'unsatisfactory'
-      };
+      // Build tierMap from config.gradeScale if available, otherwise fall back to NZ default
+      const tierMap = buildTierMap();
       const colours = {
         excellent: 'bg-green-100 text-green-800', proficient: 'bg-blue-100 text-blue-800',
         developing: 'bg-yellow-100 text-yellow-800', unsatisfactory: 'bg-red-100 text-red-800'
       };
+      // Ensure gradeFeedback matches current grade scale
+      ensureGradeFeedbackMatchesScale();
 
       config.gradeFeedback.forEach(gf => {
         const tier = tierMap[gf.grade] || 'developing';
@@ -584,8 +832,8 @@
       });
     }
 
-    /* ── Step 5 populate ─────────────────────────────────── */
-    function populateStep5() {
+    /* ── Step 6 populate ─────────────────────────────────── */
+    function populateStep6() {
       syncRubric();
       syncGradeFeedback();
       document.getElementById('enable-late-penalties').checked = config.enableLatePenalties !== false;
@@ -630,17 +878,21 @@
     }
 
     function populateReviewSummary() {
-      syncStep1(); syncCriteria(); syncRubric(); syncGradeFeedback(); syncPenalties();
+      syncStep1(); syncGradeScale(); syncCriteria(); syncRubric(); syncGradeFeedback(); syncPenalties();
       const el = document.getElementById('review-summary');
       const totalWeight = config.criteria.reduce((s, c) => s + c.weight, 0);
       const filledRubric = config.criteria.filter(c =>
         c.rubric.excellent || c.rubric.proficient || c.rubric.developing || c.rubric.unsatisfactory
       ).length;
+      const scaleLabel = config.gradeScale
+        ? config.gradeScale.length + ' grades (' + config.gradeScale.map(g => g.grade).join(', ') + ')'
+        : 'Default NZ University scale';
 
       el.innerHTML = `
         <div class="flex justify-between"><span class="text-slate-400">Scorer name</span><span class="font-medium">${escHtml(config.name || '—')}</span></div>
         <div class="flex justify-between"><span class="text-slate-400">Assessment</span><span class="font-medium">${escHtml(config.assessmentTitle || '—')}</span></div>
         <div class="flex justify-between"><span class="text-slate-400">Course</span><span class="font-medium">${escHtml(config.courseName || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Grade scale</span><span class="font-medium text-right max-w-xs">${escHtml(scaleLabel)}</span></div>
         <div class="flex justify-between"><span class="text-slate-400">Criteria</span><span class="font-medium">${config.criteria.length} (total weight: ${totalWeight}%)</span></div>
         <div class="flex justify-between"><span class="text-slate-400">Rubric descriptors</span><span class="font-medium">${filledRubric} / ${config.criteria.length} criteria have at least one descriptor</span></div>
         <div class="flex justify-between"><span class="text-slate-400">Late penalties</span><span class="font-medium">${config.enableLatePenalties ? config.latePenalties.length + ' bands configured' : 'Disabled'}</span></div>
@@ -658,7 +910,7 @@
       }
       const total = config.criteria.reduce((s, c) => s + c.weight, 0);
       if (Math.round(total) !== 100) {
-        showEl('err-save', 'Criteria weights must total 100% (Step 2).'); return;
+        showEl('err-save', 'Criteria weights must total 100% (Step 3).'); return;
       }
       show('err-save', false);
       SA.saveConfig(config);
@@ -692,7 +944,7 @@
           }
           imported.id = imported.id || SA.uid(); // keep or assign id
           config = imported;
-          populateStep1(); populateStep2(); populateStep3(); populateStep4(); populateStep5();
+          populateStep1(); populateStep2(); populateStep3(); populateStep4(); populateStep5(); populateStep6();
           alert('Config imported successfully!');
         } catch(err) { alert('Could not parse JSON file: ' + err.message); }
       };
@@ -734,6 +986,7 @@
       addCriterion, removeCriterion, syncAndUpdateWeight,
       toggleAccordion, filterFeedbackTier,
       addPenalty, removePenalty, toggleLatePenalties,
+      loadPreset, addGradeRow, removeGradeRow,
       saveAndLaunch, exportJSON, importJSON
     };
   })();
