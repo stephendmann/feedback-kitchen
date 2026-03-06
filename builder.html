@@ -526,7 +526,6 @@
       }
       _activePreset = key;
       config.gradeScale = GRADE_PRESETS[key].map(g => ({...g}));
-      config.gradeFeedback = []; // reset feedback to match new scale
       renderGradeScale();
       highlightActivePreset(key);
     }
@@ -648,10 +647,15 @@
       const scale = config.gradeScale || GRADE_PRESETS.nz;
       const existing = {};
       (config.gradeFeedback || []).forEach(gf => { existing[gf.grade] = gf; });
-      config.gradeFeedback = scale.map(g => existing[g.grade] || {
-        grade: g.grade,
-        intro: '',
-        outro: ''
+      // Secondary fallback: SA defaults (covers NZ grades when switching back from another preset)
+      const defaults = {};
+      (SA.DEFAULT_GRADE_FEEDBACK || []).forEach(gf => { defaults[gf.grade] = gf; });
+
+      config.gradeFeedback = scale.map(g => {
+        const ex = existing[g.grade];
+        if (ex && (ex.intro || ex.outro)) return ex;       // has content — preserve it
+        if (defaults[g.grade]) return { ...defaults[g.grade] }; // restore from SA defaults
+        return { grade: g.grade, intro: '', outro: '' };    // truly new grade — blank
       });
     }
 
