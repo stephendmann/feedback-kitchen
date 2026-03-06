@@ -9,7 +9,7 @@
   const CONFIGS_KEY = 'SA_CONFIGS';
   const ACTIVE_KEY  = 'SA_ACTIVE';
 
-  /* ── Grade constants ─────────────────────────────────────── */
+  /* ── Grade constants (NZ default — used as fallback) ─────── */
   const GRADES = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D'];
 
   const GRADE_MIDPOINTS = {
@@ -41,7 +41,7 @@
     unsatisfactory: '#fee2e2'    // red-100
   };
 
-  // Sorted descending — first match wins
+  // Sorted descending — first match wins (NZ default fallback)
   const GRADE_THRESHOLDS = [
     [90, 'A+'], [85, 'A'], [80, 'A-'],
     [75, 'B+'], [70, 'B'], [65, 'B-'],
@@ -116,11 +116,23 @@
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
   }
 
+  // Default scoreToGrade using hardcoded NZ thresholds (fallback only)
   function scoreToGrade(score) {
     for (const [floor, grade] of GRADE_THRESHOLDS) {
       if (score >= floor) return grade;
     }
     return 'D';
+  }
+
+  // scoreToGrade using a custom gradeScale array
+  // Sorts by bandLow descending so highest band matches first
+  function scoreToGradeFromScale(score, gradeScale) {
+    const sorted = gradeScale.slice().sort((a, b) => b.bandLow - a.bandLow);
+    for (const entry of sorted) {
+      if (score >= entry.bandLow) return entry.grade;
+    }
+    // If below all bands, return the lowest grade in the scale
+    return sorted[sorted.length - 1].grade;
   }
 
   function formatDate(date) {
@@ -138,6 +150,7 @@
       universityName: '',
       assignmentInfo: '',
       version:        '1.0',
+      gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
       criteria: [
         {
           id: uid(), name: '', weight: 100,
@@ -186,7 +199,19 @@
   /* ── Scoring engine ──────────────────────────────────────── */
   function computeScores(config, studentGrades, latePenaltyIndex) {
     let weightedTotal = 0;
-    const rows = [];
+    const rows        = [];
+
+    // Build lookup maps from custom gradeScale if present
+    const useCustomScale  = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
+    const scaleMidpoints  = {};  // grade → midpoint
+    const scaleTiers      = {};  // grade → tier key
+
+    if (useCustomScale) {
+      config.gradeScale.forEach(g => {
+        scaleMidpoints[g.grade] = g.midpoint;
+        scaleTiers[g.grade]     = g.tier;
+      });
+    }
 
     for (let i = 0; i < config.criteria.length; i++) {
       const criterion = config.criteria[i];
@@ -198,13 +223,21 @@
         continue;
       }
 
-      const midpoint   = GRADE_MIDPOINTS[sg.grade];
+      // Use custom scale values when available, fall back to hardcoded NZ defaults
+      const midpoint   = useCustomScale
+        ? (scaleMidpoints[sg.grade] !== undefined ? scaleMidpoints[sg.grade] : 50)
+        : (GRADE_MIDPOINTS[sg.grade] !== undefined ? GRADE_MIDPOINTS[sg.grade] : 50);
+
       const override   = (sg.override !== undefined && sg.override !== null && sg.override !== '')
                            ? parseFloat(sg.override) : null;
       const finalScore = override !== null ? override : midpoint;
       const weightedScore = finalScore * criterion.weight / 100;
-      const tier          = GRADE_TIERS[sg.grade];
-      const descriptor    = criterion.rubric[tier] || '';
+
+      const tier       = useCustomScale
+        ? (scaleTiers[sg.grade] || 'developing')
+        : (GRADE_TIERS[sg.grade] || 'developing');
+
+      const descriptor = criterion.rubric[tier] || '';
 
       weightedTotal += weightedScore;
       rows.push({ criterion, grade: sg.grade, midpoint, override, finalScore, weightedScore, tier, descriptor });
@@ -214,20 +247,31 @@
                  ? config.latePenalties[latePenaltyIndex]
                  : config.latePenalties[0];
 
-    const isFail       = lp && lp.fail;
-    const deduction    = lp ? lp.deduction : 0;
-    // Penalty is deducted as absolute points from 100 (e.g. 20% off = subtract 20 points),
-    // matching the UWSMM late penalty policy: "20% (out of 100%) deducted"
+    const isFail         = lp && lp.fail;
+    const deduction      = lp ? lp.deduction : 0;
     const penalisedScore = isFail ? 0 : Math.max(0, weightedTotal - deduction);
-    const suggestedGrade = isFail ? 'D' : scoreToGrade(penalisedScore);
+
+    // Use custom scale thresholds for grade suggestion if available
+    const suggestedGrade = isFail ? (useCustomScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'D')
+      : useCustomScale
+        ? scoreToGradeFromScale(penalisedScore, config.gradeScale)
+        : scoreToGrade(penalisedScore);
 
     return { rows, weightedTotal, deduction, isFail, penalisedScore, suggestedGrade, latePenalty: lp };
   }
 
   function generateFeedbackText(config, scoreResult) {
     const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty, deduction, isFail } = scoreResult;
-    const entry = config.gradeFeedback.find(gf => gf.grade === suggestedGrade);
-    const parts  = [];
+
+    // Intro/outro always reflects the quality of the actual work (pre-penalty grade),
+    // so a late deduction doesn't unfairly colour the academic feedback tone.
+    const useCustomScale   = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
+    const prepenaltyGrade  = useCustomScale
+      ? scoreToGradeFromScale(weightedTotal, config.gradeScale)
+      : scoreToGrade(weightedTotal);
+    const entry = config.gradeFeedback.find(gf => gf.grade === prepenaltyGrade);
+
+    const parts = [];
 
     if (entry?.intro) { parts.push(entry.intro); parts.push(''); }
 
@@ -241,19 +285,23 @@
 
     parts.push(`TOTAL SCORE: ${weightedTotal.toFixed(1)} / 100`);
 
+    // Outro sits here — after the score summary, before any late penalty notice
+    if (entry?.outro) { parts.push(''); parts.push(entry.outro); }
+
     if (latePenalty && (deduction > 0 || isFail)) {
       parts.push('');
       const item = config.assessmentTitle || 'submission';
       if (isFail) {
-        parts.push(`LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of D as per university policy.`);
+        const failGrade = config.gradeScale
+          ? config.gradeScale[config.gradeScale.length - 1].grade
+          : 'D';
+        parts.push(`LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.`);
         parts.push(`FINAL SCORE (after late penalty): 0 / 100`);
       } else {
         parts.push(`LATE SUBMISSION NOTICE: As your ${item} was submitted ${latePenalty.label.toLowerCase()}, a further ${deduction}% (out of 100%) has been deducted from the total above.`);
         parts.push(`FINAL SCORE (after late penalty): ${penalisedScore.toFixed(1)} / 100`);
       }
     }
-
-    if (entry?.outro) { parts.push(''); parts.push(entry.outro); }
 
     return parts.join('\n');
   }
@@ -262,7 +310,7 @@
   window.SA = {
     GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_BADGE_COLOURS,
     GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
-    uid, scoreToGrade, formatDate, newConfig,
+    uid, scoreToGrade, scoreToGradeFromScale, formatDate, newConfig,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText
