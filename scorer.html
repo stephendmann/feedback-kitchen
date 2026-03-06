@@ -354,7 +354,7 @@
       latePenaltyIdx = parseInt(document.getElementById('late-penalty-select').value || '0', 10);
       scoreResult    = SA.computeScores(config, studentGrades, latePenaltyIdx);
 
-      const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty } = scoreResult;
+      const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty, isFail } = scoreResult;
 
       // Update row cells
       let weightSum = 0;
@@ -405,9 +405,9 @@
       el('weighted-total-cell').textContent = weightedTotal > 0 ? weightedTotal.toFixed(1) + ' / 100' : '';
 
       // Grade display
-      el('penalised-score-display').textContent = penalisedScore > 0 ? penalisedScore.toFixed(1) : '–';
+      el('penalised-score-display').textContent = isFail ? '0' : (penalisedScore > 0 ? penalisedScore.toFixed(1) : '–');
       const gradeBadge = el('grade-display');
-      gradeBadge.textContent = weightedTotal > 0 ? suggestedGrade : '–';
+      gradeBadge.textContent = (weightedTotal > 0 || isFail) ? suggestedGrade : '–';
 
       const tierColourMap = {
         excellent: 'bg-green-100 text-green-800',
@@ -430,10 +430,10 @@
       gradeBadge.className = 'grade-badge text-2xl px-4 py-1 ' + (gradeColours[suggestedGrade] || 'bg-slate-100 text-slate-600');
 
       // Print cells
-      el('print-penalty-label').textContent  = latePenalty ? latePenalty.label : 'None';
-      el('print-weighted-score').textContent = weightedTotal > 0 ? weightedTotal.toFixed(1) : '–';
-      el('print-penalised-score').textContent= penalisedScore > 0 ? penalisedScore.toFixed(1) : '–';
-      el('print-grade').textContent          = weightedTotal > 0 ? suggestedGrade : '–';
+      el('print-penalty-label').textContent   = latePenalty ? latePenalty.label : 'None';
+      el('print-weighted-score').textContent  = weightedTotal > 0 ? weightedTotal.toFixed(1) : '–';
+      el('print-penalised-score').textContent = isFail ? '0' : (penalisedScore > 0 ? penalisedScore.toFixed(1) : '–');
+      el('print-grade').textContent           = (weightedTotal > 0 || isFail) ? suggestedGrade : '–';
 
       updateFeedback();
     }
