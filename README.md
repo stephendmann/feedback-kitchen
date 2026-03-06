@@ -156,7 +156,7 @@ To edit an existing scorer, open it from the home page and click **Edit Scorer**
 
 ## Acknowledgements
 
-Adapted from the *Feedback Kitchen* tool originally developed and generously shared by **Dr Michael Harker, University of Strathclyde**. Redesigned as a browser-based application for use at the **University of Waikato**, reflecting local grading policy and the 5Cs analysis framework.
+Adapted from the *Feedback Kitchen* tool originally developed and generously shared by **Dr Michael Harker, University of Strathclyde**. Redesigned as a browser-based application for use at the **University of Waikato**, reflecting UW grading policy and grading policy but also for other more bespoke learning contexts.
 
 Developed with AI assistance (Claude, Anthropic & MS Copilot).
 
