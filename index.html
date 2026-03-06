@@ -1,254 +1,165 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Score Automator — Build Custom Assessment Feedback Tools</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .gradient-hero { background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%); }
-    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
-    .step-number { width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;
-                   border-radius: 50%; font-weight: 700; font-size: 1.1rem; }
-    .feature-icon { width: 3rem; height: 3rem; border-radius: 0.75rem; display: flex;
-                    align-items: center; justify-content: center; font-size: 1.5rem; }
-  </style>
-</head>
-<body class="bg-slate-50">
+# 🍳 Score Automator — Feedback Kitchen (Web Edition)
 
-  <!-- ── Nav ──────────────────────────────────────────────── -->
-  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-      <a href="index.html" class="flex items-center gap-2 font-bold text-xl text-blue-700">
-        <span class="text-2xl">📊</span> Score Automator
-      </a>
-      <div class="flex items-center gap-3" id="nav-actions">
-        <!-- Populated by JS if scorers exist -->
-        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors">
-          <span class="text-base">⬆</span> Upload
-        </a>
-        <a href="builder.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
-          + Create Scorer
-        </a>
-      </div>
-    </div>
-  </nav>
+A browser-based marking tool for university tutors. Build a custom scorer once, then grade students quickly and consistently — with auto-generated, tier-appropriate feedback ready to copy straight into your grading system.
 
-  <!-- ── Hero ─────────────────────────────────────────────── -->
-  <section class="gradient-hero text-white py-20 px-4">
-    <div class="max-w-4xl mx-auto text-center">
-      <div class="inline-flex items-center gap-2 bg-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-        <span>✨</span> No coding. No spreadsheet setup. Just great feedback.
-      </div>
-      <h1 class="text-4xl sm:text-5xl font-extrabold mb-6 leading-tight">
-        Build Custom Assessment<br>Feedback Tools — Instantly
-      </h1>
-      <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-        Define your rubric, set your criteria, and score students with auto-generated,
-        personalised feedback. Your own Feedback Kitchen, for any course.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="builder.html" class="bg-amber-400 text-slate-900 font-bold px-8 py-4 rounded-xl text-lg hover:bg-amber-300 transition-colors shadow-lg">
-          🛠 Build a New Scorer
-        </a>
-        <a href="#how-it-works" class="bg-white/20 text-white font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/30 transition-colors">
-          See How It Works ↓
-        </a>
-      </div>
-    </div>
-  </section>
+**No login. No installation. No data leaves your device.**
 
-  <!-- ── Features ─────────────────────────────────────────── -->
-  <section class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-    <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">Everything You Need</h2>
-    <p class="text-center text-slate-500 mb-12 text-lg">Built for educators who want speed, consistency, and quality feedback.</p>
+---
 
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
-        <div class="feature-icon bg-blue-100 mb-4">📋</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">Custom Rubrics</h3>
-        <p class="text-slate-500 text-sm">Define your own criteria and weight them however you like. Add rubric descriptors for all four tiers — Excellent, Proficient, Developing, and Unsatisfactory.</p>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
-        <div class="feature-icon bg-amber-100 mb-4">⚖️</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">Weighted Scoring</h3>
-        <p class="text-slate-500 text-sm">Set percentage weights per criterion. The tool automatically calculates weighted scores, applies late penalties, and suggests an overall grade.</p>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
-        <div class="feature-icon bg-green-100 mb-4">💬</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">Auto-Generated Feedback</h3>
-        <p class="text-slate-500 text-sm">Each student gets a fully assembled feedback block — intro, per-criterion commentary, score, late penalty notice, and a grade-tailored closing paragraph.</p>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
-        <div class="feature-icon bg-purple-100 mb-4">📤</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">One-Click Export</h3>
-        <p class="text-slate-500 text-sm">Copy feedback to your clipboard, download a formatted Excel workbook with results, rubric, and feedback templates, or print directly to PDF.</p>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
-        <div class="feature-icon bg-rose-100 mb-4">✏️</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">Fully Customisable</h3>
-        <p class="text-slate-500 text-sm">Edit every intro and outro paragraph per grade level. Override any score manually. Add personalised comments alongside the auto-generated text.</p>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
-        <div class="feature-icon bg-teal-100 mb-4">💾</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">Multiple Scorers</h3>
-        <p class="text-slate-500 text-sm">Build a separate scorer for each course or assessment. Save and switch between them. Export your config as JSON to share with colleagues.</p>
-      </div>
-    </div>
-  </section>
+## Table of Contents
 
-  <!-- ── How it works ─────────────────────────────────────── -->
-  <section id="how-it-works" class="bg-white border-y border-slate-100 py-16 px-4">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">How It Works</h2>
-      <p class="text-center text-slate-500 mb-12 text-lg">From rubric to ready-to-paste feedback in three steps.</p>
+- [Overview](#overview)
+- [Getting Started](#getting-started)
+- [Using the Scorer](#using-the-scorer)
+- [Late Penalties](#late-penalties)
+- [Cooked Feedback](#cooked-feedback)
+- [Building or Editing a Scorer](#building-or-editing-a-scorer)
+- [Privacy & Data Storage](#privacy--data-storage)
+- [Acknowledgements](#acknowledgements)
 
-      <div class="space-y-8">
-        <div class="flex gap-6 items-start">
-          <div class="step-number bg-blue-600 text-white flex-shrink-0">1</div>
-          <div>
-            <h3 class="font-bold text-lg text-slate-800 mb-1">Build Your Scorer</h3>
-            <p class="text-slate-500">Use the guided wizard to set up your assessment details, define your criteria and weightings, write rubric descriptors for each tier, and customise the grade feedback text. Takes about 10–20 minutes for a new assessment.</p>
-          </div>
-        </div>
-        <div class="flex gap-6 items-start">
-          <div class="step-number bg-blue-600 text-white flex-shrink-0">2</div>
-          <div>
-            <h3 class="font-bold text-lg text-slate-800 mb-1">Grade a Student</h3>
-            <p class="text-slate-500">Enter the student's details, select a grade for each criterion from the dropdown, optionally override any score, choose a late penalty if applicable, and watch the overall score and feedback assemble in real time.</p>
-          </div>
-        </div>
-        <div class="flex gap-6 items-start">
-          <div class="step-number bg-blue-600 text-white flex-shrink-0">3</div>
-          <div>
-            <h3 class="font-bold text-lg text-slate-800 mb-1">Export & Move On</h3>
-            <p class="text-slate-500">Copy the feedback to your clipboard and paste it into Moodle (or wherever you record grades), download an Excel record of the grading, or print to PDF. Hit "New Student" and repeat.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+---
 
-  <!-- ── CTA footer ────────────────────────────────────────── -->
-  <section class="py-16 px-4 text-center">
-    <div class="max-w-2xl mx-auto">
-      <h2 class="text-3xl font-bold text-slate-800 mb-4">Ready to build your scorer?</h2>
-      <p class="text-slate-500 mb-8 text-lg">Free. No sign-up. Works entirely in your browser.</p>
-      <a href="builder.html" class="inline-block bg-blue-600 text-white font-bold px-10 py-4 rounded-xl text-lg hover:bg-blue-700 transition-colors shadow-md">
-        🛠 Build a Scorer →
-      </a>
-    </div>
-  </section>
+## Overview
 
-  <!-- ── Example Kitchens (shown if any exist) ───────────── -->
-  <section class="bg-white border-t border-slate-100 py-16 px-4" id="saved-scorers-section" style="display:none">
-    <div class="max-w-6xl mx-auto">
-      <h2 class="text-3xl font-bold text-center text-slate-800 mb-3">Example Kitchens</h2>
-      <p class="text-center text-slate-500 mb-6 text-lg">Your saved scorers, ready to use.</p>
-      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 max-w-2xl mx-auto mb-10 text-left">
-        <span class="text-amber-500 text-xl mt-0.5">🔒</span>
-        <p class="text-sm text-amber-800"><strong>Your Kitchens are private to this device.</strong> They're saved in your browser's local storage — no one else can see them, and they won't appear on another device or browser. To back them up or share with a colleague, use the <strong>Export JSON</strong> option inside the builder.</p>
-      </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="saved-scorers-grid"></div>
-    </div>
-  </section>
+Score Automator is the web successor to the original Excel-based Feedback Kitchen. It works the same way — enter grades per criterion, get a weighted total, copy polished feedback — but runs entirely in your browser with no spreadsheet required.
 
-  <!-- ── Footer ───────────────────────────────────────────── -->
-  <footer class="bg-slate-800 text-slate-400 text-center text-sm py-8 px-4">
-    <p class="font-semibold text-slate-200 mb-1">📊 Score Automator</p>
-    <p>Built for educators. Free to use. Works entirely in your browser — your data never leaves your device.</p>
-  </footer>
+Each **Scorer** you build is specific to one assessment. You can have as many as you like saved on your device, each with its own criteria, weightings, rubric descriptors, grade scale, and feedback templates.
 
-  <script src="js/shared.js"></script>
-  <script>
-    // Show saved scorers if any exist
-    document.addEventListener('DOMContentLoaded', () => {
-      const configs = SA.loadAllConfigs();
-      if (!configs.length) return;
+---
 
-      document.getElementById('saved-scorers-section').style.display = 'block';
+## Getting Started
 
-      // Add "Use a Scorer" link in nav
-      const navActions = document.getElementById('nav-actions');
-      navActions.innerHTML = `
-        <a href="scorer.html" class="text-slate-600 font-medium text-sm hover:text-blue-600 transition-colors">Use a Scorer</a>
-        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors"><span style="font-size:1.1rem">⬆</span> Upload</a>
-        <a href="builder.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">+ Create Scorer</a>
-      `;
+1. Open the app and click **Build a New Scorer**
+2. Work through the 6-step wizard (details below)
+3. Click **Save & Launch** — your scorer opens immediately and is saved for future use
+4. To return to a saved scorer later, find it in the **Your Kitchens** section on the home page
 
-      const grid = document.getElementById('saved-scorers-grid');
-      configs.forEach(cfg => {
-        const isActive = SA.getActiveId() === cfg.id;
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl p-5 shadow-sm border border-slate-100 card-hover';
-        card.innerHTML = `
-          <div class="flex items-start justify-between mb-3">
-            <div>
-              <h3 class="font-bold text-slate-800">${escHtml(cfg.name || 'Unnamed Scorer')}</h3>
-              <p class="text-sm text-slate-400">${escHtml(cfg.courseName || '')}${cfg.universityName ? ' · ' + escHtml(cfg.universityName) : ''}</p>
-            </div>
-            ${isActive ? '<span class="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Active</span>' : ''}
-          </div>
-          <p class="text-sm text-slate-500 mb-4">${cfg.criteria.length} criterion${cfg.criteria.length !== 1 ? 'a' : ''} · ${escHtml(cfg.assessmentTitle || 'No title')}</p>
-          <div class="flex gap-2">
-            <a href="scorer.html?id=${cfg.id}" class="flex-1 bg-blue-600 text-white text-center text-sm font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              Use Scorer
-            </a>
-            <a href="builder.html?id=${cfg.id}" class="flex-1 bg-slate-100 text-slate-700 text-center text-sm font-semibold py-2 rounded-lg hover:bg-slate-200 transition-colors">
-              Edit
-            </a>
-            <button onclick="deleteScorer('${cfg.id}')" title="Delete this Kitchen" class="bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors px-3 py-2 rounded-lg text-base font-semibold">
-              🗑
-            </button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    });
+---
 
-    function escHtml(str) {
-      return String(str || '')
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+## Using the Scorer
 
-    function deleteScorer(id) {
-      if (!confirm('Delete this Kitchen? This can\'t be undone.')) return;
-      SA.deleteConfig(id);
-      // Re-render: hide section if none left, otherwise rebuild grid
-      const remaining = SA.loadAllConfigs();
-      if (!remaining.length) {
-        document.getElementById('saved-scorers-section').style.display = 'none';
-      } else {
-        const grid = document.getElementById('saved-scorers-grid');
-        grid.innerHTML = '';
-        remaining.forEach(cfg => {
-          const isActive = SA.getActiveId() === cfg.id;
-          const card = document.createElement('div');
-          card.className = 'bg-white rounded-2xl p-5 shadow-sm border border-slate-100 card-hover';
-          card.innerHTML = `
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <h3 class="font-bold text-slate-800">${escHtml(cfg.name || 'Unnamed Scorer')}</h3>
-                <p class="text-sm text-slate-400">${escHtml(cfg.courseName || '')}${cfg.universityName ? ' · ' + escHtml(cfg.universityName) : ''}</p>
-              </div>
-              ${isActive ? '<span class="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Active</span>' : ''}
-            </div>
-            <p class="text-sm text-slate-500 mb-4">${cfg.criteria.length} criterion${cfg.criteria.length !== 1 ? 'a' : ''} · ${escHtml(cfg.assessmentTitle || 'No title')}</p>
-            <div class="flex gap-2">
-              <a href="scorer.html?id=${cfg.id}" class="flex-1 bg-blue-600 text-white text-center text-sm font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors">Use Scorer</a>
-              <a href="builder.html?id=${cfg.id}" class="flex-1 bg-slate-100 text-slate-700 text-center text-sm font-semibold py-2 rounded-lg hover:bg-slate-200 transition-colors">Edit</a>
-              <button onclick="deleteScorer('${cfg.id}')" title="Delete this Kitchen" class="bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors px-3 py-2 rounded-lg text-base">🗑</button>
-            </div>
-          `;
-          grid.appendChild(card);
-        });
-      }
-    }
-  </script>
-</body>
-</html>
+Once a scorer is open:
+
+### 1. Enter Student Details
+Fill in the fields at the top of the page:
+- **Student Name**
+- **Student ID**
+- **Tutor name**
+- **Date** (auto-populated)
+
+These are recommended for record-keeping and to assist with any student query.
+
+### 2. Grade Each Criterion
+For each criterion listed:
+1. Select the **Grade** from the dropdown (e.g. A, B+, C-)
+2. The **Midpoint Score** auto-populates based on the selected grade
+3. If you want to fine-tune, enter a number manually in **Override Score**
+
+> ⚠️ **Advisory highlight:** if an override falls outside the selected grade's score band, the field turns amber. This is advisory only — the override is still accepted — but review it before finalising.
+
+### 3. Check the Weighting
+Criterion weights must total 100%. The tool displays a ✓ when correct and flags an error if they don't balance. Do not proceed if the weighting is incorrect — weighted scores will not calculate.
+
+> In most cases the weighting is already configured correctly and does not need adjusting.
+
+### 4. Review the Suggested Grade
+The tool maps your final weighted score to a grade using the scale defined when the scorer was built (default: NZ University scale). Review the suggested grade and use Override Score on individual criteria if you want to fine-tune the result.
+
+---
+
+## Late Penalties
+
+If a submission is late (check the **Status** field in Moodle — it will say *"Submitted late"*):
+
+1. Use the **Late Submission** dropdown to select the lateness band
+2. The appropriate deduction is automatically applied
+3. The **Final Score** updates to reflect the penalty
+
+| Band | Deduction |
+|---|---|
+| On time | 0% |
+| Up to 1 day late | –10% |
+| Up to 2 days late | –20% |
+| Up to 3 days late | –30% |
+| More than 3 days late | Grade set to lowest (fail) |
+
+> **Note:** Intro and outro feedback text always reflects the student's *actual work quality* (pre-penalty grade), not the penalised score. The late notice and final penalised score appear at the end of the feedback block.
+
+---
+
+## Cooked Feedback
+
+The **Cooked Feedback** panel automatically assembles:
+
+1. An **intro paragraph** matched to the student's overall tier (based on pre-penalty grade)
+2. A **criterion-by-criterion breakdown** with the relevant rubric descriptor for each grade selected
+3. The **Total Score**
+4. A **closing paragraph** (outro) matched to the student's tier
+5. A **Late Submission notice** and final penalised score (if applicable)
+
+To use it:
+- Click **Copy Feedback** to copy the full text to your clipboard
+- Paste directly into Moodle (or your grading system of choice)
+
+No macros, no exports, no formatting required.
+
+---
+
+## Building or Editing a Scorer
+
+Click **Build a New Scorer** from the home page to open the 6-step wizard:
+
+| Step | What you configure |
+|---|---|
+| **1 — Details** | Assessment name, course code, tutor name |
+| **2 — Grade Scale** | Choose a preset (NZ University, UK/Australian, US, or Custom) and edit bands if needed |
+| **3 — Criteria** | Define each criterion and its percentage weighting (must total 100%) |
+| **4 — Rubric** | Write the descriptor shown in feedback for each grade × criterion combination |
+| **5 — Feedback** | Write the intro and outro paragraphs for each grade tier |
+| **6 — Settings** | Review a summary and save |
+
+To edit an existing scorer, open it from the home page and click **Edit Scorer** (if enabled), or rebuild using the wizard.
+
+### Grade Scale Presets
+
+| Preset | Grades | Typical use |
+|---|---|---|
+| 🇳🇿 NZ University | A+, A, A–, B+, B, B–, C+, C, C–, D | University of Waikato / standard NZ |
+| 🇦🇺 UK / Australian | HD, D, C, P, F | High Distinction scale |
+| 🇺🇸 US Simple | A, B, C, D, F | Standard A–F |
+| ✏️ Custom | Your own | Define labels, bands, and tiers from scratch |
+
+---
+
+## Privacy & Data Storage
+
+- **Everything stays on your device.** No data is sent to any server.
+- Scorers and all configuration are saved in your **browser's localStorage**.
+- Clearing your browser data or using a different browser/device will not show your saved scorers.
+- Student scores and feedback are **never saved** — the scorer resets for each new student session.
+
+---
+
+## File Structure
+
+```
+/
+├── index.html        # Home page — saved scorers, navigation
+├── builder.html      # 6-step scorer wizard
+├── scorer.html       # Live grading interface
+├── js/
+│   └── shared.js     # Shared scoring engine, grade logic, storage helpers
+└── README.md
+```
+
+---
+
+## Acknowledgements
+
+Adapted from the *Feedback Kitchen* tool originally developed and generously shared by **Dr Michael Harker, University of Strathclyde**. Redesigned as a browser-based application for use at the **University of Waikato**, reflecting local grading policy and the 5Cs analysis framework.
+
+Developed with AI assistance (Claude, Anthropic & MS Copilot).
+
+---
+
+*Score Automator is a static web application. It requires no server, no login, and no installation — just a modern browser.*
