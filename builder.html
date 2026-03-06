@@ -228,7 +228,7 @@
     <div id="step-5" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Feedback Templates</h2>
-        <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Defaults are provided — edit any you'd like to personalise.</p>
+        <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Where defaults are provided you can edit them, or write your own from scratch.</p>
 
         <div class="flex gap-2 flex-wrap mb-6" id="grade-tier-filters">
           <button class="tier-tab bg-slate-800 text-white" data-filter="all" onclick="B.filterFeedbackTier('all', this)">All Grades</button>
@@ -814,11 +814,11 @@
           <div id="gf-acc-${gf.grade}" class="hidden p-4 space-y-4 bg-white">
             <div>
               <label class="label">Intro Paragraph <span class="text-slate-400 font-normal">(shown at the top of the student's feedback)</span></label>
-              <textarea id="gf-intro-${gf.grade}" class="input-field" rows="4">${escHtml(gf.intro)}</textarea>
+              <textarea id="gf-intro-${gf.grade}" class="input-field" rows="4" placeholder="Write an opening paragraph for ${gf.grade} grade feedback…">${escHtml(gf.intro)}</textarea>
             </div>
             <div>
               <label class="label">Outro Paragraph <span class="text-slate-400 font-normal">(shown at the bottom, after the criterion breakdown)</span></label>
-              <textarea id="gf-outro-${gf.grade}" class="input-field" rows="4">${escHtml(gf.outro)}</textarea>
+              <textarea id="gf-outro-${gf.grade}" class="input-field" rows="4" placeholder="Write a closing paragraph for ${gf.grade} grade feedback…">${escHtml(gf.outro)}</textarea>
             </div>
           </div>
         `;
