@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Score Automator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .input-field { border: 1.5px solid #e2e8f0; border-radius: 0.4rem; padding: 0.45rem 0.7rem;
+                   font-size: 0.9rem; outline: none; transition: border-color 0.15s; background: white; width: 100%; }
+    .input-field:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .cell-yellow { background: #fefce8 !important; }
+    .cell-calc   { background: #eff6ff !important; color: #1e40af; font-weight: 600; }
+    .grade-select { appearance: none; background: #fefce8; border: 1.5px solid #fde68a;
+                    border-radius: 0.4rem; padding: 0.35rem 0.6rem; font-weight: 700;
+                    font-size: 0.9rem; cursor: pointer; text-align: center; outline: none;
+                    width: 6rem; }
+    .grade-select:focus { border-color: #2563eb; }
+    .override-input { width: 5rem; text-align: center; background: #fefce8;
+                      border: 1.5px solid #fde68a; border-radius: 0.4rem; padding: 0.35rem;
+                      font-size: 0.9rem; outline: none; }
+    .override-input:focus  { border-color: #2563eb; }
+    .override-input.out-of-band { background: #fee2e2 !important; border-color: #fca5a5 !important; }
+    .tier-pill { font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; white-space: nowrap; }
+    .feedback-box { font-family: monospace; font-size: 0.82rem; line-height: 1.65;
+                    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 0.75rem;
+                    padding: 1rem; width: 100%; min-height: 200px; resize: vertical;
+                    white-space: pre-wrap; outline: none; }
+    .feedback-box:focus { border-color: #2563eb; }
+    .btn { font-weight: 600; padding: 0.55rem 1.2rem; border-radius: 0.5rem;
+           border: none; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; display: inline-flex;
+           align-items: center; gap: 0.4rem; }
+    .btn-blue   { background: #2563eb; color: white; }
+    .btn-blue:hover { background: #1d4ed8; }
+    .btn-green  { background: #059669; color: white; }
+    .btn-green:hover { background: #047857; }
+    .btn-amber  { background: #d97706; color: white; }
+    .btn-amber:hover { background: #b45309; }
+    .btn-ghost  { background: #f1f5f9; color: #334155; }
+    .btn-ghost:hover { background: #e2e8f0; }
+    .btn-red    { background: #fee2e2; color: #b91c1c; }
+    .btn-red:hover { background: #fecaca; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafc; font-size: 0.75rem; font-weight: 700; color: #64748b;
+         text-transform: uppercase; letter-spacing: 0.05em; padding: 0.65rem 0.75rem;
+         border-bottom: 2px solid #e2e8f0; text-align: left; }
+    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    tr:hover td { background: #fafbfc; }
+    .score-badge { font-size: 1.8rem; font-weight: 800; }
+    .grade-badge { display: inline-flex; align-items: center; justify-content: center;
+                   border-radius: 0.75rem; font-weight: 800; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+      .print-full { max-width: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- ── No Config Warning ─────────────────────────────────── -->
+  <div id="no-config" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="text-center max-w-md">
+      <div class="text-6xl mb-6">🛠</div>
+      <h2 class="text-2xl font-bold text-slate-800 mb-3">No Scorer Found</h2>
+      <p class="text-slate-500 mb-8">You haven't built a scorer yet, or the requested scorer doesn't exist. Head to the builder to create one.</p>
+      <a href="builder.html" class="btn btn-blue text-base">Build a Scorer →</a>
+    </div>
+  </div>
+
+  <!-- ── Main App ──────────────────────────────────────────── -->
+  <div id="app" class="hidden">
+
+    <!-- Nav -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print">
+      <div class="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
+        <div>
+          <a href="index.html" class="font-bold text-blue-700 text-sm">📊 Score Automator</a>
+          <span class="text-slate-300 mx-2">›</span>
+          <span class="font-semibold text-slate-700 text-sm" id="nav-scorer-name"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-ghost text-sm" onclick="S.newStudent()">↺ New Student</button>
+          <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link">⚙ Manage</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="bg-blue-700 text-white px-4 py-6 no-print">
+      <div class="max-w-5xl mx-auto">
+        <h1 class="font-bold text-xl" id="hdr-title"></h1>
+        <p class="text-blue-200 text-sm mt-0.5" id="hdr-subtitle"></p>
+      </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 print-full">
+
+      <!-- ─ Student Details ──────────────────────────────── -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide mb-4">Student Details</h2>
+        <div class="grid sm:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Student Name</label>
+            <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Student ID</label>
+            <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Tutor</label>
+            <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Date</label>
+            <input type="text" id="student-date" class="input-field" readonly>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─ Criteria Grading Table ──────────────────────── -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-4 border-b border-slate-100">
+          <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide">Criteria Grading</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Select a grade for each criterion. Use Override to enter a specific score instead of the grade midpoint.</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th class="text-center w-16">Wt %</th>
+                <th class="text-center">Grade</th>
+                <th class="text-center w-24">Midpoint</th>
+                <th class="text-center w-24">Override</th>
+                <th class="text-center w-28">Final /100</th>
+                <th class="text-center w-24">Weighted</th>
+                <th class="text-center">Tier</th>
+              </tr>
+            </thead>
+            <tbody id="criteria-tbody"></tbody>
+            <tfoot>
+              <tr id="weight-check-row">
+                <td colspan="2" class="text-xs text-slate-400 font-semibold py-3 px-3">Weight check</td>
+                <td colspan="4" id="weight-check-cell" class="text-xs text-center font-bold py-3"></td>
+                <td colspan="2" id="weighted-total-cell" class="text-right text-base font-bold text-blue-700 px-3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      <!-- ─ Penalty & Grade ─────────────────────────────── -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="penalty-section">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div class="flex-1">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Late Submission Penalty</label>
+            <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.recalculate()" style="max-width:320px"></select>
+          </div>
+          <div class="flex-1 text-right">
+            <div class="text-xs font-semibold text-slate-400 mb-1">Penalised Score / Suggested Grade</div>
+            <div class="flex items-baseline justify-end gap-3">
+              <span class="score-badge text-slate-800" id="penalised-score-display">–</span>
+              <span class="text-slate-400 text-sm">/100</span>
+              <span class="grade-badge text-2xl px-4 py-1 bg-blue-100 text-blue-700" id="grade-display">–</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade Override -->
+        <div class="mt-4 flex items-center gap-3">
+          <label class="text-xs font-semibold text-slate-400 shrink-0">Grade Override <span class="font-normal">(optional)</span></label>
+          <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
+                 placeholder="e.g. B+" maxlength="3" oninput="S.onOverrideGrade()">
+          <span class="text-xs text-slate-400">Type a grade to override the calculated result (e.g. B+). Leave blank to use calculated grade.</span>
+        </div>
+      </section>
+
+      <!-- Penalty+grade print version -->
+      <section class="hidden bg-slate-50 rounded-xl border border-slate-200 p-4 print-penalty-section">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-slate-500">Late Penalty</div>
+            <div class="font-bold text-slate-700" id="print-penalty-label">None</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-slate-500">Weighted Score</div>
+            <div class="font-bold text-xl text-slate-700" id="print-weighted-score">–</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-slate-500">Penalised Score</div>
+            <div class="font-bold text-xl text-slate-700" id="print-penalised-score">–</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-slate-500">Final Grade</div>
+            <div class="font-bold text-2xl text-blue-700" id="print-grade">–</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─ Cooked Feedback ─────────────────────────────── -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <div class="flex items-center justify-between mb-4 no-print">
+          <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide">🍳 Cooked Feedback</h2>
+          <div class="flex gap-2">
+            <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy</button>
+            <button class="btn btn-ghost text-sm" onclick="window.print()">🖨 Print</button>
+            <button class="btn btn-amber text-sm" onclick="S.downloadExcel()">📥 Excel</button>
+          </div>
+        </div>
+        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="false"></textarea>
+
+        <!-- Additional comments -->
+        <div class="mt-4">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Additional Comments <span class="font-normal">(not included in copied feedback unless added manually)</span></label>
+          <textarea id="additional-comments" class="feedback-box no-print" rows="3" placeholder="Add any personalised or summary comments here…" style="min-height:70px"></textarea>
+        </div>
+      </section>
+
+      <!-- ─ Action buttons ──────────────────────────────── -->
+      <section class="flex flex-wrap gap-3 justify-center pb-8 no-print">
+        <button class="btn btn-blue" onclick="S.copyFeedback()">📋 Copy Feedback</button>
+        <button class="btn btn-amber" onclick="S.downloadExcel()">📥 Download Excel</button>
+        <button class="btn btn-ghost" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
+        <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/shared.js"></script>
+  <script src="js/excel.js"></script>
+  <script>
+  'use strict';
+  /* ============================================================
+     Scorer — live grading logic
+     ============================================================ */
+  const S = (function () {
+
+    let config         = null;
+    let studentGrades  = [];   // [{ grade, override }]
+    let latePenaltyIdx = 0;
+    let scoreResult    = null;
+
+    /* ── Init ────────────────────────────────────────────── */
+    function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id') || SA.getActiveId();
+
+      config = id ? SA.loadConfig(id) : SA.loadActiveConfig();
+
+      if (!config) {
+        document.getElementById('no-config').classList.remove('hidden');
+        return;
+      }
+
+      SA.setActiveId(config.id);
+      document.getElementById('app').classList.remove('hidden');
+
+      // Header & nav
+      document.getElementById('nav-scorer-name').textContent = config.name || '';
+      document.getElementById('hdr-title').textContent =
+        [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Score Automator';
+      document.getElementById('hdr-subtitle').textContent =
+        [config.assignmentInfo, config.universityName].filter(Boolean).join('  ·  ');
+
+      document.getElementById('nav-edit-link').href = 'builder.html?id=' + config.id;
+      document.getElementById('edit-scorer-btn').href = 'builder.html?id=' + config.id;
+
+      // Date
+      document.getElementById('student-date').value = SA.formatDate();
+
+      // Student grades array
+      studentGrades = config.criteria.map(() => ({ grade: '', override: '' }));
+
+      // Late penalty select
+      const sel = document.getElementById('late-penalty-select');
+      if (!config.enableLatePenalties) {
+        document.getElementById('penalty-section').style.display = 'none';
+      } else {
+        config.latePenalties.forEach((lp, i) => {
+          const opt = document.createElement('option');
+          opt.value = i; opt.textContent = lp.label;
+          sel.appendChild(opt);
+        });
+      }
+
+      renderCriteriaRows();
+      recalculate();
+    }
+
+    /* ── Render criteria table rows ──────────────────────── */
+    function renderCriteriaRows() {
+      const tbody = document.getElementById('criteria-tbody');
+      tbody.innerHTML = '';
+
+      config.criteria.forEach((c, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-medium text-slate-700">${escHtml(c.name)}</td>
+          <td class="text-center text-sm text-slate-500 font-semibold">${c.weight}%</td>
+          <td class="text-center">
+            <select class="grade-select" id="grade-sel-${i}" onchange="S.onGradeChange(${i})">
+              <option value="">— Select —</option>
+              ${SA.GRADES.map(g => `<option value="${g}">${g}</option>`).join('')}
+            </select>
+          </td>
+          <td class="text-center">
+            <span class="cell-calc rounded px-2 py-1 text-sm" id="midpoint-${i}">—</span>
+          </td>
+          <td class="text-center">
+            <input type="number" id="override-${i}" class="override-input" placeholder="–"
+                   min="0" max="100" step="0.5" oninput="S.onOverrideChange(${i})">
+          </td>
+          <td class="text-center">
+            <span class="font-bold text-slate-700 text-sm" id="final-score-${i}">—</span>
+          </td>
+          <td class="text-center">
+            <span class="font-bold text-blue-700 text-sm" id="weighted-${i}">—</span>
+          </td>
+          <td class="text-center">
+            <span class="tier-pill" id="tier-${i}"></span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ── Event handlers ──────────────────────────────────── */
+    function onGradeChange(i) {
+      studentGrades[i].grade    = document.getElementById('grade-sel-' + i).value;
+      studentGrades[i].override = '';
+      document.getElementById('override-' + i).value = '';
+      recalculate();
+    }
+
+    function onOverrideChange(i) {
+      studentGrades[i].override = document.getElementById('override-' + i).value;
+      recalculate();
+    }
+
+    function onStudentChange() { updateFeedback(); }
+
+    function onOverrideGrade() { updateFeedback(); }
+
+    /* ── Recalculate ─────────────────────────────────────── */
+    function recalculate() {
+      latePenaltyIdx = parseInt(document.getElementById('late-penalty-select').value || '0', 10);
+      scoreResult    = SA.computeScores(config, studentGrades, latePenaltyIdx);
+
+      const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty } = scoreResult;
+
+      // Update row cells
+      let weightSum = 0;
+      rows.forEach((row, i) => {
+        const TIER_COLOURS = {
+          excellent: 'bg-green-100 text-green-800',
+          proficient: 'bg-blue-100 text-blue-800',
+          developing: 'bg-yellow-100 text-yellow-800',
+          unsatisfactory: 'bg-red-100 text-red-800'
+        };
+        if (row.grade) {
+          weightSum += row.criterion.weight;
+          el('midpoint-' + i).textContent  = row.midpoint;
+          el('final-score-' + i).textContent = row.finalScore;
+          el('weighted-' + i).textContent  = row.weightedScore.toFixed(1);
+          el('tier-' + i).textContent      = row.tier ? SA.TIER_LABELS[row.tier].split(' (')[0] : '';
+          el('tier-' + i).className        = 'tier-pill ' + (TIER_COLOURS[row.tier] || '');
+
+          // Check override band
+          const overInp = el('override-' + i);
+          if (row.override !== null) {
+            // Check if override is outside the selected grade's band
+            const midpt = SA.GRADE_MIDPOINTS[row.grade];
+            const oob   = row.override < midpt - 6 || row.override > midpt + 6;
+            overInp.className = 'override-input' + (oob ? ' out-of-band' : '');
+          } else {
+            overInp.className = 'override-input';
+          }
+        } else {
+          el('midpoint-' + i).textContent  = '—';
+          el('final-score-' + i).textContent = '—';
+          el('weighted-' + i).textContent  = '—';
+          el('tier-' + i).textContent      = '';
+          el('tier-' + i).className        = 'tier-pill';
+        }
+      });
+
+      // Weight check
+      const wOk = Math.round(weightSum) === 100 || weightSum === 0;
+      el('weight-check-cell').innerHTML = weightSum === 0
+        ? '<span class="text-slate-400">No grades selected yet</span>'
+        : `<span class="${Math.round(weightSum) === 100 ? 'text-green-600' : 'text-amber-600'}">${Math.round(weightSum) === 100 ? '✓' : '⚠'} Graded criteria: ${weightSum}%</span>`;
+
+      el('weighted-total-cell').textContent = weightedTotal > 0 ? weightedTotal.toFixed(1) + ' / 100' : '';
+
+      // Grade display
+      el('penalised-score-display').textContent = penalisedScore > 0 ? penalisedScore.toFixed(1) : '–';
+      const gradeBadge = el('grade-display');
+      gradeBadge.textContent = weightedTotal > 0 ? suggestedGrade : '–';
+
+      const gradeColours = {
+        'A+': 'bg-green-100 text-green-800', 'A': 'bg-green-100 text-green-800',
+        'A-': 'bg-green-100 text-green-800', 'B+': 'bg-blue-100 text-blue-800',
+        'B':  'bg-blue-100 text-blue-800',   'B-': 'bg-blue-100 text-blue-800',
+        'C+': 'bg-yellow-100 text-yellow-800','C': 'bg-yellow-100 text-yellow-800',
+        'C-': 'bg-yellow-100 text-yellow-800','D':  'bg-red-100 text-red-800'
+      };
+      gradeBadge.className = 'grade-badge text-2xl px-4 py-1 ' + (gradeColours[suggestedGrade] || 'bg-slate-100 text-slate-600');
+
+      // Print cells
+      el('print-penalty-label').textContent  = latePenalty ? latePenalty.label : 'None';
+      el('print-weighted-score').textContent = weightedTotal > 0 ? weightedTotal.toFixed(1) : '–';
+      el('print-penalised-score').textContent= penalisedScore > 0 ? penalisedScore.toFixed(1) : '–';
+      el('print-grade').textContent          = weightedTotal > 0 ? suggestedGrade : '–';
+
+      updateFeedback();
+    }
+
+    /* ── Feedback generation ─────────────────────────────── */
+    function updateFeedback() {
+      if (!scoreResult || scoreResult.weightedTotal === 0) {
+        el('feedback-text').value = '';
+        return;
+      }
+
+      // Check for grade override
+      const overrideRaw  = (el('grade-override').value || '').trim().toUpperCase();
+      const effectiveRes = overrideRaw && SA.GRADES.includes(overrideRaw)
+        ? { ...scoreResult, suggestedGrade: overrideRaw }
+        : scoreResult;
+
+      const text = SA.generateFeedbackText(config, effectiveRes);
+
+      // Optionally prefix student name
+      const name  = el('student-name').value.trim();
+      const tutor = el('student-tutor').value.trim();
+      const header = name
+        ? `Dear ${name},\n\n`
+        : '';
+
+      el('feedback-text').value = header + text;
+    }
+
+    /* ── Copy feedback ───────────────────────────────────── */
+    function copyFeedback() {
+      const ta = el('feedback-text');
+      if (!ta.value.trim()) { alert('No feedback to copy — please grade at least one criterion first.'); return; }
+      navigator.clipboard.writeText(ta.value).then(() => {
+        const btn = document.querySelector('[onclick="S.copyFeedback()"]');
+        if (btn) { const orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = orig, 2000); }
+      }).catch(() => {
+        ta.select(); document.execCommand('copy');
+      });
+    }
+
+    /* ── Excel download ──────────────────────────────────── */
+    function downloadExcel() {
+      if (!scoreResult || scoreResult.weightedTotal === 0) {
+        alert('Please grade at least one criterion before downloading.'); return;
+      }
+      const student = {
+        name:  el('student-name').value,
+        id:    el('student-id').value,
+        tutor: el('student-tutor').value
+      };
+      const feedbackText = el('feedback-text').value;
+      const comments     = el('additional-comments').value;
+      SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
+    }
+
+    /* ── New student ─────────────────────────────────────── */
+    function newStudent() {
+      if (!confirm('Clear all grades and start a new student?')) return;
+      el('student-name').value  = '';
+      el('student-id').value    = '';
+      el('student-tutor').value = '';
+      el('grade-override').value= '';
+      el('additional-comments').value = '';
+      el('late-penalty-select').value = 0;
+      studentGrades = config.criteria.map(() => ({ grade: '', override: '' }));
+      config.criteria.forEach((_, i) => {
+        const sel = el('grade-sel-' + i); if (sel) sel.value = '';
+        const ovr = el('override-' + i);  if (ovr) ovr.value = '';
+      });
+      recalculate();
+    }
+
+    /* ── Helpers ─────────────────────────────────────────── */
+    function el(id) { return document.getElementById(id); }
+    function escHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
+             recalculate, copyFeedback, downloadExcel, newStudent };
+  })();
+
+  document.addEventListener('DOMContentLoaded', S.init);
+  </script>
+</body>
+</html>

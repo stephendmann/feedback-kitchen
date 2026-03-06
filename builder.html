@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Builder — Score Automator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .step-dot { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center;
+                justify-content: center; font-weight: 700; font-size: 0.8rem; transition: all 0.2s; }
+    .step-line { flex: 1; height: 2px; background: #e2e8f0; transition: background 0.3s; }
+    .step-line.done { background: #2563eb; }
+    .input-field { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 0.5rem; padding: 0.6rem 0.85rem;
+                   font-size: 0.95rem; outline: none; transition: border-color 0.15s; background: white; }
+    .input-field:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .input-yellow { background: #fefce8 !important; }
+    textarea.input-field { resize: vertical; min-height: 90px; }
+    .label { display: block; font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; }
+    .btn-primary { background: #2563eb; color: white; font-weight: 600; padding: 0.65rem 1.5rem;
+                   border-radius: 0.5rem; border: none; cursor: pointer; transition: background 0.15s; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #f1f5f9; color: #334155; font-weight: 600; padding: 0.65rem 1.5rem;
+                     border-radius: 0.5rem; border: none; cursor: pointer; transition: background 0.15s; }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; font-weight: 600; padding: 0.4rem 0.85rem;
+                  border-radius: 0.5rem; border: none; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
+    .btn-danger:hover { background: #fecaca; }
+    .accordion-header { cursor: pointer; user-select: none; }
+    .weight-badge { font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 9999px; }
+    .tier-tab { padding: 0.4rem 0.9rem; border-radius: 0.4rem; font-size: 0.8rem; font-weight: 600;
+                cursor: pointer; border: none; transition: all 0.15s; }
+    .error-msg { color: #dc2626; font-size: 0.8rem; margin-top: 0.3rem; display: none; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- ── Nav ──────────────────────────────────────────────── -->
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between h-14">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-blue-700">
+        <span>📊</span> Score Automator
+      </a>
+      <span class="text-slate-500 text-sm" id="save-status">Not saved yet</span>
+    </div>
+  </nav>
+
+  <!-- ── Step Progress ────────────────────────────────────── -->
+  <div class="bg-white border-b border-slate-100 px-4 py-4">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex items-center">
+        <div class="flex flex-col items-center" data-step-indicator="1">
+          <div class="step-dot bg-blue-600 text-white" id="dot-1">1</div>
+          <span class="text-xs mt-1 text-slate-500 font-medium hidden sm:block">Details</span>
+        </div>
+        <div class="step-line" id="line-1-2"></div>
+        <div class="flex flex-col items-center" data-step-indicator="2">
+          <div class="step-dot bg-slate-200 text-slate-500" id="dot-2">2</div>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Criteria</span>
+        </div>
+        <div class="step-line" id="line-2-3"></div>
+        <div class="flex flex-col items-center" data-step-indicator="3">
+          <div class="step-dot bg-slate-200 text-slate-500" id="dot-3">3</div>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Rubric</span>
+        </div>
+        <div class="step-line" id="line-3-4"></div>
+        <div class="flex flex-col items-center" data-step-indicator="4">
+          <div class="step-dot bg-slate-200 text-slate-500" id="dot-4">4</div>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Feedback</span>
+        </div>
+        <div class="step-line" id="line-4-5"></div>
+        <div class="flex flex-col items-center" data-step-indicator="5">
+          <div class="step-dot bg-slate-200 text-slate-500" id="dot-5">5</div>
+          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Settings</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main ─────────────────────────────────────────────── -->
+  <main class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- ─ Step 1: Assessment Details ──────────────────────── -->
+    <div id="step-1" class="step-panel">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Assessment Details</h2>
+        <p class="text-slate-500 mb-6 text-sm">Give your scorer a name and set the basic assessment information.</p>
+
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div class="sm:col-span-2">
+            <label class="label">Scorer Name <span class="text-red-500">*</span></label>
+            <input type="text" id="s1-name" class="input-field input-yellow" placeholder="e.g. MRKTG101 5Cs Analysis Scorer">
+            <div class="error-msg" id="err-s1-name">Please give your scorer a name.</div>
+          </div>
+          <div>
+            <label class="label">Assessment Title <span class="text-red-500">*</span></label>
+            <input type="text" id="s1-assessmentTitle" class="input-field input-yellow" placeholder="e.g. 5Cs Analysis">
+            <div class="error-msg" id="err-s1-title">Please enter the assessment title.</div>
+          </div>
+          <div>
+            <label class="label">Course / Paper Code</label>
+            <input type="text" id="s1-courseName" class="input-field" placeholder="e.g. MRKTG101">
+          </div>
+          <div>
+            <label class="label">University / Institution</label>
+            <input type="text" id="s1-universityName" class="input-field" placeholder="e.g. University of Waikato">
+          </div>
+          <div>
+            <label class="label">Version</label>
+            <input type="text" id="s1-version" class="input-field" placeholder="e.g. 1.0" value="1.0">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
+            <input type="text" id="s1-assignmentInfo" class="input-field" placeholder="e.g. Progress Report 1  |  Weighting: 15% of final grade">
+          </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-blue-50 rounded-xl text-sm text-blue-700">
+          💡 <strong>Tip:</strong> A clear scorer name helps when you have multiple scorers saved — include the course code and assessment type (e.g. "MGMT301 Case Study Scorer").
+        </div>
+      </div>
+    </div>
+
+    <!-- ─ Step 2: Criteria & Weights ──────────────────────── -->
+    <div id="step-2" class="step-panel hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Criteria &amp; Weights</h2>
+        <p class="text-slate-500 mb-2 text-sm">Add each marking criterion and assign a percentage weight. Weights must total exactly 100%.</p>
+
+        <div class="flex items-center gap-3 mb-6 p-3 rounded-xl border-2" id="weight-check-banner">
+          <span id="weight-check-icon" class="text-xl">⚠️</span>
+          <span id="weight-check-text" class="text-sm font-semibold">Weights must total 100%</span>
+          <span id="weight-total-display" class="ml-auto font-bold text-lg">0%</span>
+        </div>
+
+        <div id="criteria-list" class="space-y-3 mb-4"></div>
+
+        <button class="btn-secondary w-full mt-2 text-blue-600" id="btn-add-criterion" onclick="B.addCriterion()">
+          + Add Criterion
+        </button>
+        <div class="error-msg block mt-2" id="err-criteria" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- ─ Step 3: Rubric Descriptors ──────────────────────── -->
+    <div id="step-3" class="step-panel hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Rubric Descriptors</h2>
+        <p class="text-slate-500 mb-2 text-sm">For each criterion, write a short descriptor for each performance tier. These appear in the generated student feedback.</p>
+
+        <div class="p-3 bg-amber-50 rounded-xl text-sm text-amber-800 mb-6">
+          📝 The tier a student falls in (Excellent / Proficient / Developing / Unsatisfactory) is determined automatically by the grade you select when scoring. You can leave any field blank and the feedback will simply omit that descriptor.
+        </div>
+
+        <div id="rubric-list" class="space-y-4"></div>
+      </div>
+    </div>
+
+    <!-- ─ Step 4: Grade Feedback ───────────────────────────── -->
+    <div id="step-4" class="step-panel hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Feedback Templates</h2>
+        <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Defaults are provided — edit any you'd like to personalise.</p>
+
+        <div class="flex gap-2 flex-wrap mb-6" id="grade-tier-filters">
+          <button class="tier-tab bg-slate-800 text-white" data-filter="all" onclick="B.filterFeedbackTier('all', this)">All Grades</button>
+          <button class="tier-tab bg-green-100 text-green-800" data-filter="excellent" onclick="B.filterFeedbackTier('excellent', this)">Excellent (A)</button>
+          <button class="tier-tab bg-blue-100 text-blue-800" data-filter="proficient" onclick="B.filterFeedbackTier('proficient', this)">Proficient (B)</button>
+          <button class="tier-tab bg-yellow-100 text-yellow-800" data-filter="developing" onclick="B.filterFeedbackTier('developing', this)">Developing (C)</button>
+          <button class="tier-tab bg-red-100 text-red-800" data-filter="unsatisfactory" onclick="B.filterFeedbackTier('unsatisfactory', this)">Unsatisfactory (D)</button>
+        </div>
+
+        <div id="grade-feedback-list" class="space-y-3"></div>
+      </div>
+    </div>
+
+    <!-- ─ Step 5: Settings & Save ──────────────────────────── -->
+    <div id="step-5" class="step-panel hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">Settings &amp; Save</h2>
+        <p class="text-slate-500 mb-6 text-sm">Configure late penalties and then save your scorer to start grading.</p>
+
+        <!-- Late penalties toggle -->
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-700">Late Submission Penalties</h3>
+            <p class="text-sm text-slate-400">Automatically apply a deduction for late work when scoring.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="enable-late-penalties" class="sr-only peer" checked onchange="B.toggleLatePenalties(this.checked)">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
+        </div>
+
+        <div id="penalties-section">
+          <p class="text-sm text-slate-500 mb-3">Penalty bands (first option = no penalty, always kept at 0%)</p>
+          <div id="penalties-list" class="space-y-2 mb-3"></div>
+          <button class="btn-secondary text-sm" onclick="B.addPenalty()">+ Add Penalty Band</button>
+        </div>
+
+        <!-- Review summary -->
+        <div class="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <h3 class="font-bold text-slate-700 mb-3">Scorer Summary</h3>
+          <div id="review-summary" class="text-sm text-slate-600 space-y-1.5"></div>
+        </div>
+
+        <!-- Import / Export JSON -->
+        <div class="mt-6 border-t border-slate-100 pt-5">
+          <h3 class="font-semibold text-slate-600 text-sm mb-3">Import / Export Config</h3>
+          <div class="flex gap-3 flex-wrap">
+            <button class="btn-secondary text-sm" onclick="B.exportJSON()">⬇ Export as JSON</button>
+            <label class="btn-secondary text-sm cursor-pointer">
+              ⬆ Import JSON <input type="file" accept=".json" class="hidden" onchange="B.importJSON(event)">
+            </label>
+          </div>
+        </div>
+
+        <!-- Save & Launch -->
+        <button class="btn-primary w-full mt-8 text-base py-3" onclick="B.saveAndLaunch()">
+          💾 Save &amp; Start Scoring →
+        </button>
+
+        <div class="error-msg block mt-2 text-center" id="err-save" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- ── Navigation ───────────────────────────────────────── -->
+    <div class="flex items-center justify-between mt-6">
+      <button class="btn-secondary" id="btn-back" onclick="B.prevStep()" style="display:none">← Back</button>
+      <div class="ml-auto">
+        <button class="btn-primary" id="btn-next" onclick="B.nextStep()">Next Step →</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script>
+  'use strict';
+  /* ============================================================
+     Builder — wizard logic
+     ============================================================ */
+  const B = (function () {
+
+    let config   = SA.newConfig();
+    let step     = 1;
+    const STEPS  = 5;
+
+    /* ── Init ────────────────────────────────────────────── */
+    function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id     = params.get('id');
+      if (id) {
+        const existing = SA.loadConfig(id);
+        if (existing) config = existing;
+      }
+      populateStep1();
+      populateStep2();
+      populateStep3();
+      populateStep4();
+      populateStep5();
+      showStep(1);
+    }
+
+    /* ── Step navigation ─────────────────────────────────── */
+    function showStep(n) {
+      step = n;
+      document.querySelectorAll('.step-panel').forEach(el => el.classList.add('hidden'));
+      document.getElementById('step-' + n).classList.remove('hidden');
+
+      document.getElementById('btn-back').style.display = n > 1 ? '' : 'none';
+      document.getElementById('btn-next').textContent   = n < STEPS ? 'Next Step →' : 'Review ↓';
+      document.getElementById('btn-next').style.display = n === STEPS ? 'none' : '';
+
+      // Update dots & lines
+      SA.GRADES.slice(0, STEPS).forEach((_, i) => {
+        const s = i + 1;
+        const dot  = document.getElementById('dot-' + s);
+        const line = document.getElementById('line-' + s + '-' + (s + 1));
+        if (s < n) {
+          dot.className = 'step-dot bg-blue-600 text-white';
+          dot.textContent = '✓';
+          if (line) line.classList.add('done');
+        } else if (s === n) {
+          dot.className = 'step-dot bg-blue-600 text-white';
+          dot.textContent = s;
+          if (line) line.classList.remove('done');
+        } else {
+          dot.className = 'step-dot bg-slate-200 text-slate-500';
+          dot.textContent = s;
+          if (line) line.classList.remove('done');
+        }
+      });
+
+      updateSaveStatus('Draft — not saved');
+      if (n === 5) populateReviewSummary();
+    }
+
+    function nextStep() {
+      if (!validateStep(step)) return;
+      syncFromForms();
+      if (step < STEPS) { populateStep(step + 1); showStep(step + 1); }
+    }
+
+    function prevStep() {
+      syncFromForms();
+      if (step > 1) showStep(step - 1);
+    }
+
+    function populateStep(n) {
+      if (n === 2) { populateStep2(); }
+      if (n === 3) { populateStep3(); }
+      if (n === 4) { populateStep4(); }
+      if (n === 5) { populateStep5(); }
+    }
+
+    /* ── Validation ──────────────────────────────────────── */
+    function validateStep(n) {
+      if (n === 1) {
+        const name  = v('s1-name');
+        const title = v('s1-assessmentTitle');
+        let ok = true;
+        if (!name)  { show('err-s1-name',  true);  ok = false; } else show('err-s1-name',  false);
+        if (!title) { show('err-s1-title', true);  ok = false; } else show('err-s1-title', false);
+        return ok;
+      }
+      if (n === 2) {
+        syncCriteria();
+        const total = config.criteria.reduce((s, c) => s + Number(c.weight), 0);
+        if (Math.round(total) !== 100) {
+          showEl('err-criteria', 'Weights must total exactly 100%. Current total: ' + total + '%.');
+          return false;
+        }
+        const emptyNames = config.criteria.some(c => !c.name.trim());
+        if (emptyNames) {
+          showEl('err-criteria', 'All criteria must have a name.');
+          return false;
+        }
+        show('err-criteria', false);
+        return true;
+      }
+      return true; // steps 3–5 have no hard blocking validation
+    }
+
+    /* ── Form sync helpers ───────────────────────────────── */
+    function syncFromForms() {
+      if (step === 1) syncStep1();
+      if (step === 2) syncCriteria();
+      if (step === 3) syncRubric();
+      if (step === 4) syncGradeFeedback();
+      if (step === 5) syncPenalties();
+    }
+
+    function syncStep1() {
+      config.name            = v('s1-name');
+      config.assessmentTitle = v('s1-assessmentTitle');
+      config.courseName      = v('s1-courseName');
+      config.universityName  = v('s1-universityName');
+      config.version         = v('s1-version') || '1.0';
+      config.assignmentInfo  = v('s1-assignmentInfo');
+    }
+
+    function syncCriteria() {
+      config.criteria.forEach(c => {
+        c.name   = v('crit-name-' + c.id) || c.name;
+        c.weight = parseFloat(v('crit-weight-' + c.id)) || 0;
+      });
+      updateWeightCheck();
+    }
+
+    function syncRubric() {
+      config.criteria.forEach(c => {
+        ['excellent', 'proficient', 'developing', 'unsatisfactory'].forEach(tier => {
+          const el = document.getElementById('rubric-' + c.id + '-' + tier);
+          if (el) c.rubric[tier] = el.value;
+        });
+      });
+    }
+
+    function syncGradeFeedback() {
+      config.gradeFeedback.forEach(gf => {
+        const intro = document.getElementById('gf-intro-' + gf.grade);
+        const outro = document.getElementById('gf-outro-' + gf.grade);
+        if (intro) gf.intro = intro.value;
+        if (outro) gf.outro = outro.value;
+      });
+    }
+
+    function syncPenalties() {
+      config.enableLatePenalties = document.getElementById('enable-late-penalties').checked;
+      const rows = document.querySelectorAll('.penalty-row');
+      config.latePenalties = Array.from(rows).map((row, i) => {
+        const label     = row.querySelector('.penalty-label').value;
+        const deduction = parseFloat(row.querySelector('.penalty-deduction').value) || 0;
+        const fail      = row.querySelector('.penalty-fail') && row.querySelector('.penalty-fail').checked;
+        return { label, deduction: i === 0 ? 0 : deduction, fail: fail || false };
+      });
+    }
+
+    /* ── Step 1 populate ─────────────────────────────────── */
+    function populateStep1() {
+      setV('s1-name',            config.name);
+      setV('s1-assessmentTitle', config.assessmentTitle);
+      setV('s1-courseName',      config.courseName);
+      setV('s1-universityName',  config.universityName);
+      setV('s1-version',         config.version || '1.0');
+      setV('s1-assignmentInfo',  config.assignmentInfo);
+    }
+
+    /* ── Step 2 populate ─────────────────────────────────── */
+    function populateStep2() {
+      renderCriteriaList();
+    }
+
+    function renderCriteriaList() {
+      const list = document.getElementById('criteria-list');
+      list.innerHTML = '';
+      config.criteria.forEach((c, idx) => {
+        const row = document.createElement('div');
+        row.className = 'flex gap-3 items-center p-3 bg-slate-50 rounded-xl border border-slate-200';
+        row.innerHTML = `
+          <span class="text-slate-400 font-bold text-sm w-5 shrink-0">${idx + 1}</span>
+          <input type="text" id="crit-name-${c.id}" value="${escHtml(c.name)}"
+                 class="input-field input-yellow flex-1" placeholder="Criterion name"
+                 oninput="B.syncAndUpdateWeight()">
+          <div class="flex items-center gap-1 shrink-0">
+            <input type="number" id="crit-weight-${c.id}" value="${c.weight}"
+                   min="0" max="100" class="input-field input-yellow w-20 text-center"
+                   oninput="B.syncAndUpdateWeight()">
+            <span class="text-slate-500 text-sm font-medium">%</span>
+          </div>
+          <button class="btn-danger shrink-0" onclick="B.removeCriterion('${c.id}')" title="Remove">✕</button>
+        `;
+        list.appendChild(row);
+      });
+      updateWeightCheck();
+    }
+
+    function addCriterion() {
+      syncCriteria();
+      config.criteria.push({
+        id: SA.uid(), name: '', weight: 0,
+        rubric: { excellent: '', proficient: '', developing: '', unsatisfactory: '' }
+      });
+      renderCriteriaList();
+    }
+
+    function removeCriterion(id) {
+      if (config.criteria.length <= 1) {
+        alert('You must have at least one criterion.'); return;
+      }
+      syncCriteria();
+      config.criteria = config.criteria.filter(c => c.id !== id);
+      renderCriteriaList();
+    }
+
+    function syncAndUpdateWeight() {
+      syncCriteria();
+      updateWeightCheck();
+    }
+
+    function updateWeightCheck() {
+      const total  = config.criteria.reduce((s, c) => s + (parseFloat(v('crit-weight-' + c.id)) || 0), 0);
+      const banner = document.getElementById('weight-check-banner');
+      const icon   = document.getElementById('weight-check-icon');
+      const text   = document.getElementById('weight-check-text');
+      const disp   = document.getElementById('weight-total-display');
+      disp.textContent = total.toFixed(0) + '%';
+      if (Math.round(total) === 100) {
+        banner.className = 'flex items-center gap-3 mb-6 p-3 rounded-xl border-2 bg-green-50 border-green-300';
+        icon.textContent = '✅'; text.textContent = 'Weights total 100% — good to go!';
+        text.className = 'text-sm font-semibold text-green-700';
+        disp.className = 'ml-auto font-bold text-lg text-green-700';
+      } else {
+        banner.className = 'flex items-center gap-3 mb-6 p-3 rounded-xl border-2 bg-amber-50 border-amber-300';
+        icon.textContent = '⚠️'; text.textContent = 'Weights must total 100%';
+        text.className = 'text-sm font-semibold text-amber-700';
+        disp.className = 'ml-auto font-bold text-lg text-amber-700';
+      }
+    }
+
+    /* ── Step 3 populate ─────────────────────────────────── */
+    function populateStep3() {
+      syncCriteria();
+      const list = document.getElementById('rubric-list');
+      list.innerHTML = '';
+      const tiers = [
+        { key: 'excellent',      label: 'Excellent',      range: 'A+ / A / A-', bg: 'bg-green-100',  text: 'text-green-800'  },
+        { key: 'proficient',     label: 'Proficient',     range: 'B+ / B / B-', bg: 'bg-blue-100',   text: 'text-blue-800'   },
+        { key: 'developing',     label: 'Developing',     range: 'C+ / C / C-', bg: 'bg-yellow-100', text: 'text-yellow-800' },
+        { key: 'unsatisfactory', label: 'Unsatisfactory', range: 'D',           bg: 'bg-red-100',    text: 'text-red-800'    }
+      ];
+
+      config.criteria.forEach((c, idx) => {
+        const card = document.createElement('div');
+        card.className = 'border border-slate-200 rounded-xl overflow-hidden';
+        card.innerHTML = `
+          <div class="accordion-header flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+               onclick="B.toggleAccordion('rubric-acc-${c.id}')">
+            <div class="flex items-center gap-3">
+              <span class="text-slate-400 font-bold text-sm">${idx + 1}</span>
+              <span class="font-semibold text-slate-800">${escHtml(c.name || '(unnamed criterion)')}</span>
+              <span class="weight-badge bg-blue-100 text-blue-700">${c.weight}%</span>
+            </div>
+            <span class="text-slate-400 text-sm" id="rubric-arrow-${c.id}">▼</span>
+          </div>
+          <div id="rubric-acc-${c.id}" class="hidden p-4 grid sm:grid-cols-2 gap-4 bg-white">
+            ${tiers.map(t => `
+              <div>
+                <label class="label">
+                  <span class="inline-flex items-center gap-1">
+                    <span class="weight-badge ${t.bg} ${t.text}">${t.label}</span>
+                    <span class="text-slate-400 font-normal">${t.range}</span>
+                  </span>
+                </label>
+                <textarea id="rubric-${c.id}-${t.key}" class="input-field"
+                          placeholder="Describe what a ${t.label.toLowerCase()} submission looks like for this criterion..."
+                >${escHtml(c.rubric[t.key] || '')}</textarea>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        list.appendChild(card);
+        // Auto-expand first criterion
+        if (idx === 0) toggleAccordion('rubric-acc-' + c.id);
+      });
+    }
+
+    /* ── Step 4 populate ─────────────────────────────────── */
+    function populateStep4() {
+      const list = document.getElementById('grade-feedback-list');
+      list.innerHTML = '';
+      const tierMap = {
+        'A+': 'excellent', 'A': 'excellent', 'A-': 'excellent',
+        'B+': 'proficient', 'B': 'proficient', 'B-': 'proficient',
+        'C+': 'developing',  'C': 'developing',  'C-': 'developing',
+        'D':  'unsatisfactory'
+      };
+      const colours = {
+        excellent: 'bg-green-100 text-green-800', proficient: 'bg-blue-100 text-blue-800',
+        developing: 'bg-yellow-100 text-yellow-800', unsatisfactory: 'bg-red-100 text-red-800'
+      };
+
+      config.gradeFeedback.forEach(gf => {
+        const tier = tierMap[gf.grade] || 'developing';
+        const div  = document.createElement('div');
+        div.className = 'border border-slate-200 rounded-xl overflow-hidden';
+        div.dataset.tier = tier;
+        div.innerHTML = `
+          <div class="accordion-header flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+               onclick="B.toggleAccordion('gf-acc-${gf.grade}')">
+            <div class="flex items-center gap-3">
+              <span class="weight-badge ${colours[tier]} font-bold text-base px-3">${gf.grade}</span>
+              <span class="text-sm text-slate-400">${SA.TIER_LABELS[tier].split(' (')[0]}</span>
+            </div>
+            <span class="text-slate-400 text-sm" id="gf-arrow-${gf.grade}">▼</span>
+          </div>
+          <div id="gf-acc-${gf.grade}" class="hidden p-4 space-y-4 bg-white">
+            <div>
+              <label class="label">Intro Paragraph <span class="text-slate-400 font-normal">(shown at the top of the student's feedback)</span></label>
+              <textarea id="gf-intro-${gf.grade}" class="input-field" rows="4">${escHtml(gf.intro)}</textarea>
+            </div>
+            <div>
+              <label class="label">Outro Paragraph <span class="text-slate-400 font-normal">(shown at the bottom, after the criterion breakdown)</span></label>
+              <textarea id="gf-outro-${gf.grade}" class="input-field" rows="4">${escHtml(gf.outro)}</textarea>
+            </div>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function filterFeedbackTier(filter, btn) {
+      document.querySelectorAll('#grade-tier-filters .tier-tab').forEach(b => {
+        b.className = 'tier-tab bg-slate-100 text-slate-600';
+      });
+      btn.className = 'tier-tab ' + (filter === 'all' ? 'bg-slate-800 text-white' :
+        filter === 'excellent' ? 'bg-green-100 text-green-800' :
+        filter === 'proficient' ? 'bg-blue-100 text-blue-800' :
+        filter === 'developing' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+
+      document.querySelectorAll('#grade-feedback-list > div').forEach(el => {
+        el.style.display = (filter === 'all' || el.dataset.tier === filter) ? '' : 'none';
+      });
+    }
+
+    /* ── Step 5 populate ─────────────────────────────────── */
+    function populateStep5() {
+      syncRubric();
+      syncGradeFeedback();
+      document.getElementById('enable-late-penalties').checked = config.enableLatePenalties !== false;
+      renderPenalties();
+      populateReviewSummary();
+    }
+
+    function renderPenalties() {
+      const list = document.getElementById('penalties-list');
+      list.innerHTML = '';
+      config.latePenalties.forEach((lp, i) => {
+        const row = document.createElement('div');
+        row.className = 'penalty-row flex gap-2 items-center p-2 bg-slate-50 rounded-lg border border-slate-200';
+        const isFirst = i === 0;
+        row.innerHTML = `
+          <input type="text" class="penalty-label input-field flex-1" value="${escHtml(lp.label)}"
+                 placeholder="Label" ${isFirst ? 'readonly' : ''}>
+          <div class="flex items-center gap-1 shrink-0">
+            <input type="number" class="penalty-deduction input-field w-16 text-center"
+                   value="${lp.deduction}" min="0" max="100" ${isFirst ? 'readonly disabled' : ''}>
+            <span class="text-slate-500 text-sm">%</span>
+          </div>
+          ${!isFirst ? `<button class="btn-danger shrink-0" onclick="B.removePenalty(this)">✕</button>` : '<div class="w-8"></div>'}
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function addPenalty() {
+      syncPenalties();
+      config.latePenalties.push({ label: 'New penalty', deduction: 10 });
+      renderPenalties();
+    }
+
+    function removePenalty(btn) {
+      btn.closest('.penalty-row').remove();
+    }
+
+    function toggleLatePenalties(enabled) {
+      document.getElementById('penalties-section').style.opacity = enabled ? '1' : '0.4';
+      document.getElementById('penalties-section').style.pointerEvents = enabled ? '' : 'none';
+    }
+
+    function populateReviewSummary() {
+      syncStep1(); syncCriteria(); syncRubric(); syncGradeFeedback(); syncPenalties();
+      const el = document.getElementById('review-summary');
+      const totalWeight = config.criteria.reduce((s, c) => s + c.weight, 0);
+      const filledRubric = config.criteria.filter(c =>
+        c.rubric.excellent || c.rubric.proficient || c.rubric.developing || c.rubric.unsatisfactory
+      ).length;
+
+      el.innerHTML = `
+        <div class="flex justify-between"><span class="text-slate-400">Scorer name</span><span class="font-medium">${escHtml(config.name || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Assessment</span><span class="font-medium">${escHtml(config.assessmentTitle || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Course</span><span class="font-medium">${escHtml(config.courseName || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Criteria</span><span class="font-medium">${config.criteria.length} (total weight: ${totalWeight}%)</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Rubric descriptors</span><span class="font-medium">${filledRubric} / ${config.criteria.length} criteria have at least one descriptor</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Late penalties</span><span class="font-medium">${config.enableLatePenalties ? config.latePenalties.length + ' bands configured' : 'Disabled'}</span></div>
+      `;
+    }
+
+    /* ── Save & Launch ───────────────────────────────────── */
+    function saveAndLaunch() {
+      syncFromForms();
+      if (!config.name.trim()) {
+        showEl('err-save', 'Please give your scorer a name (Step 1).'); return;
+      }
+      if (!config.assessmentTitle.trim()) {
+        showEl('err-save', 'Please enter an assessment title (Step 1).'); return;
+      }
+      const total = config.criteria.reduce((s, c) => s + c.weight, 0);
+      if (Math.round(total) !== 100) {
+        showEl('err-save', 'Criteria weights must total 100% (Step 2).'); return;
+      }
+      show('err-save', false);
+      SA.saveConfig(config);
+      SA.setActiveId(config.id);
+      updateSaveStatus('Saved ✓');
+      window.location.href = 'scorer.html?id=' + config.id;
+    }
+
+    /* ── JSON Import / Export ────────────────────────────── */
+    function exportJSON() {
+      syncFromForms();
+      const json = JSON.stringify(config, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = (config.name || 'scorer').replace(/[^a-zA-Z0-9]/g, '_') + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.criteria || !imported.gradeFeedback) {
+            alert('Invalid scorer JSON file.'); return;
+          }
+          imported.id = imported.id || SA.uid(); // keep or assign id
+          config = imported;
+          populateStep1(); populateStep2(); populateStep3(); populateStep4(); populateStep5();
+          alert('Config imported successfully!');
+        } catch(err) { alert('Could not parse JSON file: ' + err.message); }
+      };
+      reader.readAsText(file);
+    }
+
+    /* ── Accordion helper ────────────────────────────────── */
+    function toggleAccordion(id) {
+      const el    = document.getElementById(id);
+      const critId = id.replace('rubric-acc-', '').replace('gf-acc-', '');
+      const arrow  = document.getElementById('rubric-arrow-' + critId)
+                  || document.getElementById('gf-arrow-' + critId);
+      if (!el) return;
+      const open = el.classList.toggle('hidden');
+      if (arrow) arrow.textContent = open ? '▼' : '▲';
+    }
+
+    /* ── DOM helpers ─────────────────────────────────────── */
+    function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function setV(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+    function show(id, visible) {
+      const el = document.getElementById(id); if (el) el.style.display = visible ? '' : 'none';
+    }
+    function showEl(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.style.display = ''; }
+    }
+    function updateSaveStatus(msg) {
+      const el = document.getElementById('save-status');
+      if (el) el.textContent = msg;
+    }
+    function escHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Public API ──────────────────────────────────────── */
+    return {
+      init, nextStep, prevStep,
+      addCriterion, removeCriterion, syncAndUpdateWeight,
+      toggleAccordion, filterFeedbackTier,
+      addPenalty, removePenalty, toggleLatePenalties,
+      saveAndLaunch, exportJSON, importJSON
+    };
+  })();
+
+  document.addEventListener('DOMContentLoaded', B.init);
+  </script>
+</body>
+</html>
