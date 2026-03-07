@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import Scorer — Feedback Kitchen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .drop-zone {
+      border: 2px dashed #cbd5e1;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone.drag-over {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- Nav -->
+  <nav class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2 text-slate-800 font-bold text-lg hover:text-blue-600 transition-colors">
+      🍳 Feedback Kitchen
+    </a>
+    <a href="index.html" class="text-sm text-slate-500 hover:text-slate-800 transition-colors">← Back to home</a>
+  </nav>
+
+  <main class="max-w-xl mx-auto px-4 py-12">
+
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-4">⬆</div>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Import a Scorer</h1>
+      <p class="text-slate-500 text-sm">Upload a <code class="bg-slate-100 px-1 rounded">.json</code> file exported from Feedback Kitchen to add it to your saved scorers on this device.</p>
+    </div>
+
+    <!-- Drop zone -->
+    <div id="drop-zone" class="drop-zone rounded-2xl p-10 text-center cursor-pointer mb-6 bg-white"
+         onclick="document.getElementById('file-input').click()"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)">
+      <div class="text-4xl mb-3">📂</div>
+      <p class="text-slate-600 font-medium mb-1">Drop your <code class="bg-slate-100 px-1 rounded">.json</code> file here</p>
+      <p class="text-slate-400 text-sm">or click to browse</p>
+      <input type="file" id="file-input" accept=".json,application/json" class="hidden" onchange="handleFileSelect(event)" />
+    </div>
+
+    <!-- Result panel (hidden initially) -->
+    <div id="result-panel" class="hidden rounded-2xl border p-6 bg-white mb-6">
+      <div id="result-icon" class="text-3xl mb-2 text-center"></div>
+      <h2 id="result-title" class="text-lg font-bold text-center text-slate-800 mb-1"></h2>
+      <p id="result-message" class="text-sm text-center text-slate-500"></p>
+
+      <!-- Preview card (shown on success) -->
+      <div id="preview-card" class="hidden mt-5 bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm space-y-1">
+        <div><span class="text-slate-400">Assessment:</span> <span id="prev-title" class="font-semibold text-slate-700"></span></div>
+        <div><span class="text-slate-400">Course:</span> <span id="prev-course" class="text-slate-700"></span></div>
+        <div><span class="text-slate-400">Criteria:</span> <span id="prev-criteria" class="text-slate-700"></span></div>
+        <div><span class="text-slate-400">Grade scale:</span> <span id="prev-scale" class="text-slate-700"></span></div>
+      </div>
+
+      <!-- Action buttons -->
+      <div id="action-buttons" class="hidden mt-5 flex gap-3 justify-center">
+        <button id="btn-save" onclick="saveImported()"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
+          ✓ Add to My Scorers
+        </button>
+        <button onclick="resetUI()"
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Duplicate warning (hidden initially) -->
+    <div id="duplicate-panel" class="hidden rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-800 mb-6">
+      <p class="font-semibold mb-1">⚠️ A scorer with this name already exists</p>
+      <p id="duplicate-message" class="mb-3"></p>
+      <div class="flex gap-3">
+        <button onclick="saveImported(true)"
+          class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+          Replace existing
+        </button>
+        <button onclick="saveImported(false, true)"
+          class="bg-white hover:bg-amber-100 border border-amber-300 text-amber-800 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+          Save as a copy
+        </button>
+        <button onclick="resetUI()"
+          class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400">Only <code>.json</code> files exported from Feedback Kitchen are supported. Nothing is uploaded to any server.</p>
+
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script>
+    let pendingConfig = null;
+
+    // ── Drag & drop handlers ─────────────────────────────────────────────────
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('drop-zone').classList.add('drag-over');
+    }
+    function handleDragLeave(e) {
+      document.getElementById('drop-zone').classList.remove('drag-over');
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('drop-zone').classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    }
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+    }
+
+    // ── File processing ──────────────────────────────────────────────────────
+    function processFile(file) {
+      if (!file.name.endsWith('.json')) {
+        showError('Wrong file type', 'Please upload a <code>.json</code> file exported from Feedback Kitchen.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          validateAndPreview(data);
+        } catch {
+          showError('Invalid file', 'This file could not be read. Make sure it\'s a valid Feedback Kitchen export.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function validateAndPreview(data) {
+      // Basic validation — must have the core fields a scorer needs
+      if (!data.assessmentTitle || !Array.isArray(data.criteria) || data.criteria.length === 0) {
+        showError('Not a valid scorer file', 'This file doesn\'t look like a Feedback Kitchen scorer. Make sure you\'re uploading the right file.');
+        return;
+      }
+
+      pendingConfig = data;
+
+      // Populate preview
+      document.getElementById('prev-title').textContent   = data.assessmentTitle || '—';
+      document.getElementById('prev-course').textContent  = data.courseCode || '—';
+      document.getElementById('prev-criteria').textContent = data.criteria.length + ' criteria';
+      document.getElementById('prev-scale').textContent   = data.gradeScale
+        ? data.gradeScale.map(g => g.grade).join(', ')
+        : 'NZ University (default)';
+
+      showSuccess();
+
+      // Check for duplicate name
+      const existing = SA.loadAllConfigs();
+      const duplicate = existing.find(c => c.assessmentTitle === data.assessmentTitle);
+      if (duplicate) {
+        document.getElementById('duplicate-message').textContent =
+          '"' + data.assessmentTitle + '" is already saved on this device. What would you like to do?';
+        document.getElementById('duplicate-panel').classList.remove('hidden');
+        document.getElementById('action-buttons').classList.add('hidden');
+      }
+    }
+
+    // ── Save logic ───────────────────────────────────────────────────────────
+    function saveImported(replace = false, asCopy = false) {
+      if (!pendingConfig) return;
+
+      const configs = SA.loadAllConfigs();
+
+      if (replace) {
+        // Remove existing with same title
+        const updated = configs.filter(c => c.assessmentTitle !== pendingConfig.assessmentTitle);
+        pendingConfig.id = SA.uid();
+        updated.push(pendingConfig);
+        SA.saveAllConfigs(updated);
+      } else if (asCopy) {
+        pendingConfig.id = SA.uid();
+        pendingConfig.assessmentTitle = pendingConfig.assessmentTitle + ' (imported copy)';
+        SA.saveConfig(pendingConfig);
+      } else {
+        pendingConfig.id = SA.uid();
+        SA.saveConfig(pendingConfig);
+      }
+
+      // Redirect home with success flag
+      window.location.href = 'index.html?imported=1';
+    }
+
+    // ── UI helpers ───────────────────────────────────────────────────────────
+    function showSuccess() {
+      const panel = document.getElementById('result-panel');
+      panel.classList.remove('hidden');
+      panel.className = panel.className.replace('border-red-200 bg-red-50', '').replace('border-green-200 bg-green-50', '');
+      panel.classList.add('border-green-200', 'bg-green-50');
+      document.getElementById('result-icon').textContent    = '✅';
+      document.getElementById('result-title').textContent   = 'Scorer file looks good!';
+      document.getElementById('result-message').textContent = 'Review the details below and click "Add to My Scorers" to import it.';
+      document.getElementById('preview-card').classList.remove('hidden');
+      document.getElementById('action-buttons').classList.remove('hidden');
+      document.getElementById('duplicate-panel').classList.add('hidden');
+    }
+
+    function showError(title, message) {
+      const panel = document.getElementById('result-panel');
+      panel.classList.remove('hidden');
+      panel.classList.add('border-red-200', 'bg-red-50');
+      document.getElementById('result-icon').textContent  = '❌';
+      document.getElementById('result-title').textContent = title;
+      document.getElementById('result-message').innerHTML = message;
+      document.getElementById('preview-card').classList.add('hidden');
+      document.getElementById('action-buttons').classList.add('hidden');
+      document.getElementById('duplicate-panel').classList.add('hidden');
+    }
+
+    function resetUI() {
+      pendingConfig = null;
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('duplicate-panel').classList.add('hidden');
+      document.getElementById('file-input').value = '';
+    }
+
+    // ── Show imported success toast if redirected back ───────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      // handled on index.html side via ?imported=1
+    });
+  </script>
+</body>
+</html>
