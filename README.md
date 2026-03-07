@@ -1,6 +1,6 @@
 # 🍳 Score Automator — Feedback Kitchen (Web Edition)
 
-A browser-based marking tool for university tutors. Build a custom scorer once, then grade students quickly and consistently — with auto-generated, tier-appropriate feedback ready to copy straight into your grading system.
+A browser-based marking tool for university tutors, lecturers or any course markers looking to standardise their marking and feedback processes. Build a custom scorer once, then grade students quickly and consistently — with auto-generated, tier-appropriate feedback ready to copy into Moodle or your institution's grading system.
 
 **No login. No installation. No data leaves your device.**
 
