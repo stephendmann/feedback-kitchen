@@ -106,9 +106,9 @@
             <div class="error-msg" id="err-s1-title">Please enter the assessment title.</div>
           </div>
           <div>
-            <label class="label" title="The course or paper code this assessment belongs to (e.g. 'MRKTG101'). Appears alongside the assessment title in the scorer header.">Course / Paper Code</label>
-            <input type="text" id="s1-courseName" class="input-field" placeholder="e.g. MRKTG101"
-                   title="The course or paper code this assessment belongs to. Appears alongside the assessment title in the scorer header.">
+            <label class="label" title="The course or paper code and year this assessment belongs to (e.g. 'MRKTG101 2026'). Appears alongside the assessment title in the scorer header.">Course / Paper Code / Year</label>
+            <input type="text" id="s1-courseName" class="input-field" placeholder="e.g. MRKTG101 2026"
+                   title="The course or paper code and year this assessment belongs to. Appears alongside the assessment title in the scorer header.">
           </div>
           <div>
             <label class="label" title="Your university or institution name. Recorded in exports — useful if you share scorers across institutions.">University / Institution</label>
@@ -121,13 +121,14 @@
                    title="Track changes to this rubric over time. Increment when you update criteria or grade bands so markers know which version they're using.">
           </div>
           <div>
-            <label class="label" title="Controls how calculated scores are displayed on the scoring page. Whole number is cleanest for most marking. Half point allows 0.5 increments. None shows full precision.">Score Display</label>
-            <select id="s1-rounding" class="input-field"
-                    title="Controls how calculated scores are displayed on the scoring page. Whole number is cleanest for most marking. Half point allows 0.5 increments. None shows full precision.">
+            <label class="label text-amber-600 font-semibold" title="Controls how scores are displayed throughout the scoring page. You can also override this on-the-fly from the scorer nav bar.">⚠ Score Display</label>
+            <select id="s1-rounding" class="input-field input-yellow"
+                    title="Full precision shows one decimal place (73.3). Half point rounds to the nearest 0.5 (73.5). Whole number rounds to the nearest integer (73). This can also be changed live on the scorer page.">
               <option value="none">Full precision (e.g. 73.3)</option>
               <option value="half">Half point (e.g. 73.5)</option>
               <option value="whole">Whole number (e.g. 73)</option>
             </select>
+            <p class="text-xs text-amber-600 mt-1">Sets how calculated scores appear — can also be toggled live on the scoring page.</p>
           </div>
           <div class="sm:col-span-2">
             <label class="label" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
