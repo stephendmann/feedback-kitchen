@@ -142,18 +142,24 @@
         <!-- Preset selector -->
         <div class="mb-6">
           <label class="label mb-3">Start from a preset</label>
-          <div class="grid sm:grid-cols-4 gap-3" id="preset-cards">
+          <div class="grid sm:grid-cols-5 gap-3" id="preset-cards">
             <button onclick="B.loadPreset('nz')" id="preset-nz"
               class="preset-card text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all"
-              title="Standard NZ university scale used at Waikato and most NZ institutions. A+ (90–100) down to D (40–49). 10 grade bands.">
+              title="Standard NZ university scale (Waikato and most NZ institutions). A+ (90–100) down to D (40–49). 10 grade bands with +/− modifiers.">
               <div class="font-bold text-slate-800 text-sm mb-1">🇳🇿 NZ University</div>
-              <div class="text-xs text-slate-500">A+→D  ·  10 grades  ·  Waikato / standard NZ scale</div>
+              <div class="text-xs text-slate-500">A+→D  ·  10 grades  ·  Waikato / standard NZ</div>
             </button>
-            <button onclick="B.loadPreset('uk')" id="preset-uk"
+            <button onclick="B.loadPreset('au')" id="preset-au"
               class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all"
-              title="Australian and some NZ Honours-style scale. HD = High Distinction (85+), D = Distinction (75–84), C = Credit (65–74), P = Pass (50–64), F = Fail. 5 grade bands.">
-              <div class="font-bold text-slate-800 text-sm mb-1">🎓 AU / NZ Honours</div>
+              title="Australian Honours scale used by most Australian universities. HD = High Distinction (85+), D = Distinction (75–84), C = Credit (65–74), P = Pass (50–64), F = Fail. 5 grade bands.">
+              <div class="font-bold text-slate-800 text-sm mb-1">🎓 Australian Honours</div>
               <div class="text-xs text-slate-500">HD→F  ·  5 grades  ·  High Distinction scale</div>
+            </button>
+            <button onclick="B.loadPreset('gb')" id="preset-gb"
+              class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all"
+              title="UK degree classification system. 1st = First Class (70+), 2:1 = Upper Second (60–69), 2:2 = Lower Second (50–59), 3rd = Third (40–49), F = Fail. 5 classification bands.">
+              <div class="font-bold text-slate-800 text-sm mb-1">🇬🇧 UK Degree</div>
+              <div class="text-xs text-slate-500">1st→F  ·  5 classes  ·  Degree classification</div>
             </button>
             <button onclick="B.loadPreset('us')" id="preset-us"
               class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all"
@@ -165,7 +171,7 @@
               class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all"
               title="Start from a blank slate — define your own grade labels, band ranges, midpoints, and tiers from scratch.">
               <div class="font-bold text-slate-800 text-sm mb-1">✏️ Custom</div>
-              <div class="text-xs text-slate-500">Start from scratch · define your own grades & bands</div>
+              <div class="text-xs text-slate-500">Start from scratch · define your own grades</div>
             </button>
           </div>
         </div>
@@ -503,18 +509,25 @@
         { grade: 'C-', midpoint: 52, bandLow: 50, bandHigh: 54,  tier: 'developing' },
         { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' }
       ],
-      uk: [
-        { grade: 'HD', midpoint: 90, bandLow: 85, bandHigh: 100, tier: 'excellent' },
+      au: [
+        { grade: 'HD', midpoint: 92, bandLow: 85, bandHigh: 100, tier: 'excellent' },
         { grade: 'D',  midpoint: 77, bandLow: 75, bandHigh: 84,  tier: 'proficient' },
         { grade: 'C',  midpoint: 67, bandLow: 65, bandHigh: 74,  tier: 'developing' },
         { grade: 'P',  midpoint: 55, bandLow: 50, bandHigh: 64,  tier: 'developing' },
-        { grade: 'F',  midpoint: 30, bandLow: 0,  bandHigh: 49,  tier: 'unsatisfactory' }
+        { grade: 'F',  midpoint: 25, bandLow: 0,  bandHigh: 49,  tier: 'unsatisfactory' }
+      ],
+      gb: [
+        { grade: '1st',  midpoint: 80, bandLow: 70, bandHigh: 100, tier: 'excellent' },
+        { grade: '2:1',  midpoint: 65, bandLow: 60, bandHigh: 69,  tier: 'proficient' },
+        { grade: '2:2',  midpoint: 55, bandLow: 50, bandHigh: 59,  tier: 'developing' },
+        { grade: '3rd',  midpoint: 45, bandLow: 40, bandHigh: 49,  tier: 'developing' },
+        { grade: 'F',    midpoint: 20, bandLow: 0,  bandHigh: 39,  tier: 'unsatisfactory' }
       ],
       us: [
         { grade: 'A',  midpoint: 95, bandLow: 90, bandHigh: 100, tier: 'excellent' },
         { grade: 'B',  midpoint: 85, bandLow: 80, bandHigh: 89,  tier: 'proficient' },
         { grade: 'C',  midpoint: 75, bandLow: 70, bandHigh: 79,  tier: 'developing' },
-        { grade: 'D',  midpoint: 60, bandLow: 60, bandHigh: 69,  tier: 'developing' },
+        { grade: 'D',  midpoint: 65, bandLow: 60, bandHigh: 69,  tier: 'developing' },
         { grade: 'F',  midpoint: 30, bandLow: 0,  bandHigh: 59,  tier: 'unsatisfactory' }
       ],
       custom: [
@@ -548,7 +561,7 @@
     }
 
     function highlightActivePreset(key) {
-      ['nz','uk','us','custom'].forEach(k => {
+      ['nz','au','gb','us','custom'].forEach(k => {
         const btn = document.getElementById('preset-' + k);
         if (!btn) return;
         btn.className = k === key
