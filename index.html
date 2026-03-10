@@ -28,7 +28,8 @@
       </a>
       <div class="flex items-center gap-3" id="nav-actions">
         <!-- Populated by JS if scorers exist -->
-        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors">
+        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors"
+           title="Load a scorer that was shared with you — a colleague can export their scorer as a .json file and send it to you. Click here to upload that file and add it to your scorers.">
           <span class="text-base">⬆</span> Upload
         </a>
         <a href="builder.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
@@ -248,7 +249,7 @@
       // Add "Use a Scorer" link in nav
       document.getElementById('nav-actions').innerHTML = `
         <a href="scorer.html" class="text-slate-600 font-medium text-sm hover:text-blue-600 transition-colors">Use a Scorer</a>
-        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors"><span style="font-size:1.1rem">⬆</span> Upload</a>
+        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors" title="Load a scorer that was shared with you — a colleague can export their scorer as a .json file and send it to you. Click here to upload that file and add it to your scorers."><span style="font-size:1.1rem">⬆</span> Upload</a>
         <a href="builder.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">+ Create Scorer</a>
       `;
 

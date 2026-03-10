@@ -29,10 +29,23 @@
 
   <main class="max-w-xl mx-auto px-4 py-12">
 
-    <div class="text-center mb-8">
+    <div class="text-center mb-6">
       <div class="text-5xl mb-4">⬆</div>
-      <h1 class="text-2xl font-bold text-slate-800 mb-2">Import a Scorer</h1>
-      <p class="text-slate-500 text-sm">Upload a <code class="bg-slate-100 px-1 rounded">.json</code> file exported from Feedback Kitchen to add it to your saved scorers on this device.</p>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Load a Shared Scorer</h1>
+      <p class="text-slate-500 text-sm mb-4">Upload a <code class="bg-slate-100 px-1 rounded">.json</code> file to add it to your saved scorers on this device.</p>
+    </div>
+
+    <!-- Plain-English explainer -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6 text-sm text-slate-700 space-y-2">
+      <p class="font-semibold text-blue-800">📖 What is a JSON file and why would I use one?</p>
+      <p>A <strong>.json file</strong> is simply a portable save file for a scorer. It's a small text file that stores all the rubric settings — criteria, grade bands, feedback templates — in a format Score Automator can read back exactly.</p>
+      <p><strong>When would you use this?</strong></p>
+      <ul class="list-disc list-inside space-y-1 ml-1 text-slate-600">
+        <li>A colleague built a scorer and emailed or shared the <code class="bg-slate-100 px-1 rounded">.json</code> file with you</li>
+        <li>You exported your own scorer from another computer or browser and want to restore it here</li>
+        <li>Your department is sharing a standard rubric across multiple markers</li>
+      </ul>
+      <p class="text-slate-500 text-xs pt-1">Nothing is uploaded to any server — the file is read directly in your browser and saved only on this device.</p>
     </div>
 
     <!-- Drop zone -->
@@ -94,7 +107,7 @@
       </div>
     </div>
 
-    <p class="text-center text-xs text-slate-400">Only <code>.json</code> files exported from Feedback Kitchen are supported. Nothing is uploaded to any server.</p>
+    <p class="text-center text-xs text-slate-400">Only <code>.json</code> files exported from Score Automator / Feedback Kitchen are supported.</p>
 
   </main>
 

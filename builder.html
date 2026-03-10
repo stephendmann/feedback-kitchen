@@ -297,15 +297,31 @@
           <div id="review-summary" class="text-sm text-slate-600 space-y-1.5"></div>
         </div>
 
-        <!-- Import / Export JSON -->
+        <!-- Backup & Share -->
         <div class="mt-6 border-t border-slate-100 pt-5">
-          <h3 class="font-semibold text-slate-600 text-sm mb-3">Import / Export Config</h3>
+          <h3 class="font-semibold text-slate-700 text-sm mb-1">📦 Backup &amp; Share</h3>
+          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            A <strong>JSON file</strong> is a portable save file for your scorer — it stores all your rubric settings,
+            criteria, grade bands, and feedback text in a small file you can keep on your computer.
+            Export one to <strong>back up your work</strong>, <strong>share it with a colleague</strong>,
+            or <strong>restore it on another device</strong>. Think of it like saving a Word document —
+            except this file loads straight back into Score Automator.
+          </p>
           <div class="flex gap-3 flex-wrap">
-            <button class="btn-secondary text-sm" onclick="B.exportJSON()">⬇ Export as JSON</button>
-            <label class="btn-secondary text-sm cursor-pointer">
+            <button class="btn-secondary text-sm" onclick="B.exportJSON()"
+                    title="Downloads a .json save file of this scorer to your computer. Use this to back it up, email it to a colleague, or restore it later on another device or browser.">
+              ⬇ Export (Save / Share)
+            </button>
+            <label id="import-json-label" class="btn-secondary text-sm cursor-pointer"
+                   title="Loads a .json file and replaces what's currently shown. Only use this if you want to overwrite this scorer with a file from elsewhere.">
               ⬆ Import JSON <input type="file" accept=".json" class="hidden" onchange="B.importJSON(event)">
             </label>
           </div>
+          <p id="import-hint" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 hidden">
+            💡 <strong>Got a file from a colleague?</strong> Use the
+            <a href="index.html" class="underline font-semibold">Upload button on the home page</a>
+            to add their scorer without overwriting your current work.
+          </p>
         </div>
 
         <!-- Save & Launch -->
@@ -893,6 +909,10 @@
       document.getElementById('enable-late-penalties').checked = config.enableLatePenalties !== false;
       renderPenalties();
       populateReviewSummary();
+      // Show the "use Upload instead" hint only when building a brand-new scorer
+      const isNew = !new URLSearchParams(window.location.search).get('id');
+      const hint  = document.getElementById('import-hint');
+      if (hint) hint.classList.toggle('hidden', !isNew);
     }
 
     function renderPenalties() {
