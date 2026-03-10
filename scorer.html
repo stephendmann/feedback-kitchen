@@ -83,7 +83,13 @@
           <span class="text-slate-300 mx-2">›</span>
           <span class="font-semibold text-slate-700 text-sm" id="nav-scorer-name"></span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1" title="Score display rounding — switch between full precision, half-point, or whole-number scores">
+            <span class="text-slate-400 text-xs mr-0.5">Scores:</span>
+            <button id="rnd-none"  onclick="S.setRounding('none')"  title="Full precision — e.g. 73.3"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1.0</button>
+            <button id="rnd-half"  onclick="S.setRounding('half')"  title="Half point — e.g. 73.5"     class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">½</button>
+            <button id="rnd-whole" onclick="S.setRounding('whole')" title="Whole number — e.g. 73"      class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1</button>
+          </div>
           <button class="btn btn-ghost text-sm" onclick="S.newStudent()">↺ New Student</button>
           <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link">⚙ Manage</a>
         </div>
@@ -252,10 +258,11 @@
      ============================================================ */
   const S = (function () {
 
-    let config         = null;
-    let studentGrades  = [];   // [{ grade, override }]
-    let latePenaltyIdx = 0;
-    let scoreResult    = null;
+    let config          = null;
+    let studentGrades   = [];   // [{ grade, override }]
+    let latePenaltyIdx  = 0;
+    let scoreResult     = null;
+    let _displayRounding = 'none'; // runtime override — initialised from config.scoreRounding
 
     /* ── Init ────────────────────────────────────────────── */
     function init() {
@@ -270,6 +277,8 @@
       }
 
       SA.setActiveId(config.id);
+      _displayRounding = config.scoreRounding || 'none';
+      highlightRoundingBtn(_displayRounding);
       document.getElementById('app').classList.remove('hidden');
 
       // Header, nav & page title
@@ -377,9 +386,9 @@
         };
         if (row.grade) {
           weightSum += row.criterion.weight;
-          el('midpoint-' + i).textContent   = SA.formatScore(row.midpoint, config.scoreRounding);
-          el('final-score-' + i).textContent = SA.formatScore(row.finalScore, config.scoreRounding);
-          el('weighted-' + i).textContent    = SA.formatScore(row.weightedScore, config.scoreRounding);
+          el('midpoint-' + i).textContent   = SA.formatScore(row.midpoint, _displayRounding);
+          el('final-score-' + i).textContent = SA.formatScore(row.finalScore, _displayRounding);
+          el('weighted-' + i).textContent    = SA.formatScore(row.weightedScore, _displayRounding);
           el('tier-' + i).textContent      = row.tier ? SA.TIER_LABELS[row.tier].split(' (')[0] : '';
           el('tier-' + i).className        = 'tier-pill ' + (TIER_COLOURS[row.tier] || '');
 
@@ -412,10 +421,10 @@
         ? '<span class="text-slate-400">No grades selected yet</span>'
         : `<span class="${Math.round(weightSum) === 100 ? 'text-green-600' : 'text-amber-600'}">${Math.round(weightSum) === 100 ? '✓' : '⚠'} Graded criteria: ${weightSum}%</span>`;
 
-      el('weighted-total-cell').textContent = weightedTotal > 0 ? SA.formatScore(weightedTotal, config.scoreRounding) + ' / 100' : '';
+      el('weighted-total-cell').textContent = weightedTotal > 0 ? SA.formatScore(weightedTotal, _displayRounding) + ' / 100' : '';
 
       // Grade display
-      el('penalised-score-display').textContent = isFail ? '0' : (penalisedScore > 0 ? SA.formatScore(penalisedScore, config.scoreRounding) : '–');
+      el('penalised-score-display').textContent = isFail ? '0' : (penalisedScore > 0 ? SA.formatScore(penalisedScore, _displayRounding) : '–');
       const gradeBadge = el('grade-display');
       gradeBadge.textContent = (weightedTotal > 0 || isFail) ? suggestedGrade : '–';
 
@@ -441,8 +450,8 @@
 
       // Print cells
       el('print-penalty-label').textContent   = latePenalty ? latePenalty.label : 'None';
-      el('print-weighted-score').textContent  = weightedTotal > 0 ? SA.formatScore(weightedTotal, config.scoreRounding) : '–';
-      el('print-penalised-score').textContent = isFail ? '0' : (penalisedScore > 0 ? SA.formatScore(penalisedScore, config.scoreRounding) : '–');
+      el('print-weighted-score').textContent  = weightedTotal > 0 ? SA.formatScore(weightedTotal, _displayRounding) : '–';
+      el('print-penalised-score').textContent = isFail ? '0' : (penalisedScore > 0 ? SA.formatScore(penalisedScore, _displayRounding) : '–');
       el('print-grade').textContent           = (weightedTotal > 0 || isFail) ? suggestedGrade : '–';
 
       updateFeedback();
@@ -527,8 +536,24 @@
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    function highlightRoundingBtn(val) {
+      ['none','half','whole'].forEach(function(k) {
+        var btn = document.getElementById('rnd-' + k);
+        if (!btn) return;
+        btn.className = k === val
+          ? 'px-2 py-1 rounded text-xs font-semibold bg-blue-600 text-white'
+          : 'px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200';
+      });
+    }
+
+    function setRounding(val) {
+      _displayRounding = val;
+      highlightRoundingBtn(val);
+      recalculate();
+    }
+
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
-             recalculate, copyFeedback, downloadExcel, newStudent, confirmNewStudent };
+             recalculate, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
