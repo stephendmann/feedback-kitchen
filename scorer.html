@@ -174,11 +174,19 @@
                     title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
           </div>
           <div class="flex-1 text-right">
-            <div class="text-xs font-semibold text-slate-400 mb-1">Penalised Score / Suggested Grade</div>
-            <div class="flex items-baseline justify-end gap-3">
-              <span class="score-badge text-slate-800" id="penalised-score-display">–</span>
+            <div class="flex items-center justify-end gap-2 mb-2">
+              <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
+              <span id="score-rounding-label"
+                    class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
+                    title="Current score display mode — change using the 1.0 / ½ / 1 buttons in the nav bar above">1 d.p.</span>
+            </div>
+            <div class="flex items-baseline justify-end gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2"
+                 title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change rounding with the 1.0 / ½ / 1 buttons in the nav bar.">
+              <span class="score-badge text-blue-800" id="penalised-score-display"
+                    title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
               <span class="text-slate-400 text-sm">/100</span>
-              <span class="grade-badge text-2xl px-4 py-1 bg-blue-100 text-blue-700" id="grade-display">–</span>
+              <span class="grade-badge text-2xl px-4 py-1 bg-blue-200 text-blue-800" id="grade-display"
+                    title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
             </div>
           </div>
         </div>
@@ -544,6 +552,11 @@
           ? 'px-2 py-1 rounded text-xs font-semibold bg-blue-600 text-white'
           : 'px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200';
       });
+      var lbl = document.getElementById('score-rounding-label');
+      if (lbl) {
+        var labels = { none: '1 d.p.', half: '½ pt', whole: 'whole #' };
+        lbl.textContent = labels[val] || '1 d.p.';
+      }
     }
 
     function setRounding(val) {
