@@ -105,20 +105,24 @@
         <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide mb-4">Student Details</h2>
         <div class="grid sm:grid-cols-4 gap-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Student Name</label>
-            <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()">
+            <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
+            <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()"
+                   title="The full name of the student being marked. Appears in the feedback header and your Excel record.">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Student ID</label>
-            <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()">
+            <label class="block text-xs font-semibold text-slate-400 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
+            <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()"
+                   title="The student's institutional ID number — used in your Excel record for identification.">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Tutor</label>
-            <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()">
+            <label class="block text-xs font-semibold text-slate-400 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
+            <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()"
+                   title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Date</label>
-            <input type="text" id="student-date" class="input-field" readonly>
+            <label class="block text-xs font-semibold text-slate-400 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
+            <input type="text" id="student-date" class="input-field" readonly
+                   title="Auto-filled with today's date. Recorded in your Excel marker's record.">
           </div>
         </div>
       </section>
@@ -133,14 +137,14 @@
           <table>
             <thead>
               <tr>
-                <th>Criterion</th>
-                <th class="text-center w-16">Wt %</th>
-                <th class="text-center">Grade</th>
-                <th class="text-center w-24">Midpoint</th>
-                <th class="text-center w-24">Override</th>
-                <th class="text-center w-28">Final /100</th>
-                <th class="text-center w-24">Weighted</th>
-                <th class="text-center">Tier</th>
+                <th title="The marking criterion as defined in your rubric.">Criterion</th>
+                <th class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
+                <th class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
+                <th class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
+                <th class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
+                <th class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
+                <th class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
+                <th class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
               </tr>
             </thead>
             <tbody id="criteria-tbody"></tbody>
@@ -159,8 +163,9 @@
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="penalty-section">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex-1">
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Late Submission Penalty</label>
-            <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.recalculate()" style="max-width:320px"></select>
+            <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
+            <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.recalculate()" style="max-width:320px"
+                    title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
           </div>
           <div class="flex-1 text-right">
             <div class="text-xs font-semibold text-slate-400 mb-1">Penalised Score / Suggested Grade</div>
@@ -176,8 +181,9 @@
         <div class="mt-4 flex items-center gap-3">
           <label class="text-xs font-semibold text-slate-400 shrink-0">Grade Override <span class="font-normal">(optional)</span></label>
           <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
-                 placeholder="e.g. B+" maxlength="3" oninput="S.onOverrideGrade()">
-          <span class="text-xs text-slate-400">Type a grade to override the calculated result (e.g. B+). Leave blank to use calculated grade.</span>
+                 placeholder="e.g. B+" maxlength="3" oninput="S.onOverrideGrade()"
+                 title="Overrides the final overall grade — use when your professional judgement differs from the weighted result. This is separate from the per-criterion Override Score above.">
+          <span class="text-xs text-slate-400">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
         </div>
       </section>
 
@@ -207,26 +213,29 @@
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div class="flex items-center justify-between mb-4 no-print">
           <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide">🍳 Cooked Feedback</h2>
-          <div class="flex gap-2">
-            <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy</button>
-            <button class="btn btn-ghost text-sm" onclick="window.print()">🖨 Print</button>
-            <button class="btn btn-amber text-sm" onclick="S.downloadExcel()">📥 Excel</button>
-          </div>
+          <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
         </div>
         <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="false"></textarea>
-
-        <!-- Additional comments -->
-        <div class="mt-4">
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Additional Comments <span class="font-normal">(not included in copied feedback unless added manually)</span></label>
-          <textarea id="additional-comments" class="feedback-box no-print" rows="3" placeholder="Add any personalised or summary comments here…" style="min-height:70px"></textarea>
-        </div>
       </section>
+
+      <!-- ─ Marker's Notes ──────────────────────────────── -->
+      <details class="bg-slate-50 border border-slate-200 rounded-2xl no-print" id="notes-panel">
+        <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
+          <span class="font-semibold text-sm text-slate-500">📝 Marker's Notes</span>
+          <span class="text-xs text-slate-400 font-normal">Saved to your Excel record — not included in copied feedback</span>
+        </summary>
+        <div class="px-5 pb-4 pt-2 border-t border-slate-200">
+          <textarea id="additional-comments" class="feedback-box" rows="3"
+            placeholder="Note concerns, patterns, or reasoning behind your grade — these appear in your Excel download as a marker's record."
+            style="min-height:80px; background:#fff;"></textarea>
+        </div>
+      </details>
 
       <!-- ─ Action buttons ──────────────────────────────── -->
       <section class="flex flex-wrap gap-3 justify-center pb-8 no-print">
-        <button class="btn btn-blue" onclick="S.copyFeedback()">📋 Copy Feedback</button>
-        <button class="btn btn-amber" onclick="S.downloadExcel()">📥 Download Excel</button>
-        <button class="btn btn-ghost" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copy the student feedback to your clipboard — paste into Moodle, Turnitin, or your grading system">📋 Copy Feedback</button>
+        <button class="btn btn-amber" onclick="S.downloadExcel()" title="Marker's record — full criterion breakdown, scores, feedback, and your notes. Ideal for moderation and audit trails.">📥 Marker's Record (Excel)</button>
+        <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
         <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
         <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
       </section>
@@ -263,10 +272,11 @@
       SA.setActiveId(config.id);
       document.getElementById('app').classList.remove('hidden');
 
-      // Header & nav
+      // Header, nav & page title
       document.getElementById('nav-scorer-name').textContent = config.name || '';
-      document.getElementById('hdr-title').textContent =
-        [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Score Automator';
+      const hdrTitle = [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Score Automator';
+      document.getElementById('hdr-title').textContent = hdrTitle;
+      document.title = hdrTitle === 'Score Automator' ? 'Score Automator' : 'Score Automator — ' + hdrTitle;
       document.getElementById('hdr-subtitle').textContent =
         [config.assignmentInfo, config.universityName].filter(Boolean).join('  ·  ');
 
@@ -493,11 +503,14 @@
 
     /* ── New student ─────────────────────────────────────── */
     function newStudent() {
-      if (!confirm('Clear all grades and start a new student?')) return;
-      el('student-name').value  = '';
-      el('student-id').value    = '';
-      el('student-tutor').value = '';
-      el('grade-override').value= '';
+      showNewStudentModal();
+    }
+
+    function confirmNewStudent() {
+      el('student-name').value   = '';
+      el('student-id').value     = '';
+      // Tutor name intentionally kept — same marker for the whole batch
+      el('grade-override').value = '';
       el('additional-comments').value = '';
       el('late-penalty-select').value = 0;
       studentGrades = config.criteria.map(() => ({ grade: '', override: '' }));
@@ -515,10 +528,41 @@
     }
 
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
-             recalculate, copyFeedback, downloadExcel, newStudent };
+             recalculate, copyFeedback, downloadExcel, newStudent, confirmNewStudent };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
+  </script>
+
+  <!-- ── New Student modal ─────────────────────────────────── -->
+  <div id="new-student-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="hideNewStudentModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+      <div class="text-4xl mb-3">↺</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Start a new student?</h3>
+      <p class="text-slate-500 text-sm mb-1">This will clear all grades, scores, and feedback.</p>
+      <p class="text-xs text-slate-400 mb-6">Your tutor name will be kept for the next student.</p>
+      <div class="flex gap-3">
+        <button onclick="hideNewStudentModal()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Cancel
+        </button>
+        <button onclick="hideNewStudentModal(); S.confirmNewStudent();"
+          class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm">
+          Yes, clear & continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showNewStudentModal() {
+      document.getElementById('new-student-modal').classList.remove('hidden');
+    }
+    function hideNewStudentModal() {
+      document.getElementById('new-student-modal').classList.add('hidden');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideNewStudentModal(); });
   </script>
 </body>
 </html>

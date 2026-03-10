@@ -67,7 +67,7 @@
     R.push([]);
 
     if (additionalComments && additionalComments.trim()) {
-      R.push(['ADDITIONAL COMMENTS']);
+      R.push(["MARKER'S NOTES"]);
       R.push([additionalComments]);
       R.push([]);
     }
