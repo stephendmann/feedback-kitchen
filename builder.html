@@ -531,7 +531,9 @@
     }
 
     function loadPreset(key) {
-      if (config.gradeScale && config.gradeScale.length > 0) {
+      // Only warn if the user has manually built a custom scale — switching between
+      // named presets is safe and should load immediately without a confirmation step.
+      if (_activePreset === 'custom' && config.gradeScale && config.gradeScale.length > 0) {
         showLoadPresetModal(key);
         return;
       }
