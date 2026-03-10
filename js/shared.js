@@ -159,7 +159,8 @@
       ],
       gradeFeedback:      JSON.parse(JSON.stringify(DEFAULT_GRADE_FEEDBACK)),
       latePenalties:      JSON.parse(JSON.stringify(DEFAULT_LATE_PENALTIES)),
-      enableLatePenalties: true
+      enableLatePenalties: true,
+      scoreRounding:      'none'   // 'none' | 'half' | 'whole'
     };
   }
 
@@ -306,6 +307,17 @@
     return parts.join('\n');
   }
 
+  /* ── Score formatting helper ──────────────────────────────── */
+  // Rounds and formats a numeric score according to the scorer's rounding preference.
+  // rounding: 'none' (1 d.p.), 'half' (nearest 0.5), 'whole' (nearest integer)
+  function formatScore(value, rounding) {
+    const n = parseFloat(value);
+    if (isNaN(n)) return value;
+    if (rounding === 'whole') return String(Math.round(n));
+    if (rounding === 'half')  return (Math.round(n * 2) / 2).toFixed(1);
+    return n.toFixed(1); // 'none' — default 1 decimal place
+  }
+
   /* ── Export to global ─────────────────────────────────────── */
   window.SA = {
     GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_BADGE_COLOURS,
@@ -313,6 +325,6 @@
     uid, scoreToGrade, scoreToGradeFromScale, formatDate, newConfig,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
-    computeScores, generateFeedbackText
+    computeScores, generateFeedbackText, formatScore
   };
 })();

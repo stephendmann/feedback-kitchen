@@ -120,6 +120,15 @@
             <input type="text" id="s1-version" class="input-field" placeholder="e.g. 1.0" value="1.0"
                    title="Track changes to this rubric over time. Increment when you update criteria or grade bands so markers know which version they're using.">
           </div>
+          <div>
+            <label class="label" title="Controls how calculated scores are displayed on the scoring page. Whole number is cleanest for most marking. Half point allows 0.5 increments. None shows full precision.">Score Display</label>
+            <select id="s1-rounding" class="input-field"
+                    title="Controls how calculated scores are displayed on the scoring page. Whole number is cleanest for most marking. Half point allows 0.5 increments. None shows full precision.">
+              <option value="none">Full precision (e.g. 73.3)</option>
+              <option value="half">Half point (e.g. 73.5)</option>
+              <option value="whole">Whole number (e.g. 73)</option>
+            </select>
+          </div>
           <div class="sm:col-span-2">
             <label class="label" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
             <input type="text" id="s1-assignmentInfo" class="input-field" placeholder="e.g. Progress Report 1  |  Weighting: 15% of final grade"
@@ -452,6 +461,7 @@
       config.universityName  = v('s1-universityName');
       config.version         = v('s1-version') || '1.0';
       config.assignmentInfo  = v('s1-assignmentInfo');
+      config.scoreRounding   = v('s1-rounding') || 'none';
     }
 
     function syncCriteria() {
@@ -697,6 +707,7 @@
       setV('s1-universityName',  config.universityName);
       setV('s1-version',         config.version || '1.0');
       setV('s1-assignmentInfo',  config.assignmentInfo);
+      setV('s1-rounding',        config.scoreRounding || 'none');
     }
 
     /* ── Step 3 populate ─────────────────────────────────── */
