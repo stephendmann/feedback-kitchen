@@ -191,10 +191,11 @@ Use **Export JSON** inside the builder to save your scorer configuration as a fi
 
 ## Acknowledgements
 
-Score Automator is adapted from the original *Feedback Kitchen* tool developed and generously shared by **Dr Michael Harker, University of Strathclyde**. Redesigned as a browser-based application for use at the **University of Waikato**, reflecting UW grading policy but adaptable to any institutional context.
+Score Automator is adapted from the original *Feedback Kitchen* Excel marking tool developed and generously shared by **Dr Michael Harker, University of Strathclyde** (michael.harker@strath.ac.uk). Redesigned as a browser-based application for use at the **University of Waikato**, reflecting UW grading policy but adaptable to any institutional context and free to use for all educators.
 
 Developed with AI assistance (Claude / Anthropic · Perplexity · Microsoft Copilot).
 
 ---
 
 *Score Automator is a static web application. It requires no server, no login, and no installation — just a modern browser.*
+
