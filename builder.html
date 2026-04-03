@@ -12,7 +12,7 @@
                 justify-content: center; font-weight: 700; font-size: 0.8rem; transition: all 0.2s; }
     .step-line { flex: 1; height: 2px; background: #e2e8f0; transition: background 0.3s; }
     .step-line.done { background: #2563eb; }
-    .input-field { width: 100%; border: 1.5px solid #e2e8f0;h border-radius: 0.5rem; padding: 0.6rem 0.85rem;
+    .input-field { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 0.5rem; padding: 0.6rem 0.85rem;
                    font-size: 0.95rem; outline: none; transition: border-color 0.15s; background: white; }
     .input-field:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     .input-yellow { background: #fefce8 !important; }
@@ -40,7 +40,7 @@
   <!-- ── Nav ──────────────────────────────────────────────── -->
   <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
     <div class="max-w-4xl mx-auto px-4 flex items-center justify-between h-14">
-      <a href="https://www.stephendmann.com/score-automator" class="flex items-center gap-2 font-bold text-blue-700">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-blue-700">
         <span>📊</span> Score Automator
       </a>
       <span class="text-slate-500 text-sm" id="save-status">Not saved yet</span>
@@ -242,8 +242,11 @@
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Rubric Descriptors</h2>
         <p class="text-slate-500 mb-2 text-sm">For each criterion, write a short descriptor for each performance tier. These appear in the generated student feedback.</p>
 
-        <div class="p-3 bg-amber-50 rounded-xl text-sm text-amber-800 mb-6">
+        <div class="p-3 bg-amber-50 rounded-xl text-sm text-amber-800 mb-3">
           📝 The tier a student falls in (Excellent / Proficient / Developing / Unsatisfactory) is determined automatically by the grade you select when scoring. You can leave any field blank and the feedback will simply omit that descriptor.
+        </div>
+        <div class="p-3 bg-blue-50 rounded-xl text-sm text-blue-800 mb-6">
+          ✍️ <strong>Writing effective descriptors:</strong> Each descriptor appears verbatim in the student's feedback, so write in the second person ("Your analysis demonstrates…") and be specific to this criterion. A strong Excellent descriptor explains what distinguishes top-tier work; a strong Developing descriptor names what is missing or underdeveloped — not just that the work is below standard.
         </div>
 
         <div id="rubric-list" class="space-y-4"></div>
@@ -255,6 +258,10 @@
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Feedback Templates</h2>
         <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Where defaults are provided you can edit them, or write your own from scratch.</p>
+
+        <div class="p-3 bg-blue-50 rounded-xl text-sm text-blue-800 mb-4">
+          ℹ️ <strong>Intros and outros are per grade, not per tier.</strong> This gives fine-grained control over tone — an A+ student gets a different opening than an A student, even though both fall in the Excellent tier. The defaults are production-ready; edit them to match your course voice or use them as-is.
+        </div>
 
         <div class="flex gap-2 flex-wrap mb-6" id="grade-tier-filters">
           <button class="tier-tab bg-slate-800 text-white" data-filter="all" onclick="B.filterFeedbackTier('all', this)">All Grades</button>

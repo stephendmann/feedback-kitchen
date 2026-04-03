@@ -146,6 +146,25 @@
     </div>
   </section>
 
+  <!-- ── First-run banner (shown to new users with no scorers) ── -->
+  <section id="first-run-banner" class="hidden bg-blue-50 border-y border-blue-100 py-8 px-4">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-start gap-4">
+        <span class="text-2xl mt-0.5 shrink-0">👋</span>
+        <div class="flex-1">
+          <h3 class="font-bold text-slate-800 mb-2">Welcome to Score Automator</h3>
+          <p class="text-sm text-slate-600 mb-3">Build a custom marking rubric once, then generate consistent, criterion-level feedback for every student in seconds. Start by clicking <strong>Build a New Scorer</strong> below — the wizard takes around 10–20 minutes for a new assessment.</p>
+          <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-3">
+            <span class="text-amber-500 shrink-0 mt-0.5">🔒</span>
+            <p class="text-xs text-amber-800"><strong>Your Scorers are saved in your browser's local storage</strong> — private to this device and browser. Use <strong>Export JSON</strong> inside the builder to back up your work or share a Scorer with a colleague. Note: JSON exports contain the Scorer configuration only — your personal feedback snippets stay private to your browser.</p>
+          </div>
+          <a href="README.md" target="_blank" class="text-xs text-blue-600 hover:underline font-medium">Read the full guide →</a>
+        </div>
+        <button onclick="dismissFirstRunBanner()" class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5" title="Dismiss">&times;</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ── CTA footer ────────────────────────────────────────── -->
   <section class="py-16 px-4 text-center">
     <div class="max-w-2xl mx-auto">
@@ -256,7 +275,12 @@
       }
 
       const configs = SA.loadAllConfigs();
-      if (!configs.length) return;
+      if (!configs.length) {
+        if (!localStorage.getItem('SA_WELCOME_DISMISSED')) {
+          document.getElementById('first-run-banner').classList.remove('hidden');
+        }
+        return;
+      }
 
       // Add "Use a Scorer" link in nav
       document.getElementById('nav-actions').innerHTML = `
@@ -303,6 +327,10 @@
     }
     function hideDeleteModal() {
       document.getElementById('delete-modal').classList.add('hidden');
+    }
+    function dismissFirstRunBanner() {
+      document.getElementById('first-run-banner').classList.add('hidden');
+      localStorage.setItem('SA_WELCOME_DISMISSED', '1');
     }
     // Close on Escape key
     document.addEventListener('keydown', e => { if (e.key === 'Escape') hideDeleteModal(); });
