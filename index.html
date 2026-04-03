@@ -41,7 +41,7 @@
   </nav>
 
   <!-- ── First-run banner (shown to new users with no scorers) ── -->
-  <section id="first-run-banner" class="hidden bg-blue-50 border-b border-blue-100 py-6 px-4">
+  <section id="first-run-banner" class="bg-blue-50 border-b border-blue-100 py-6 px-4">
     <div class="max-w-2xl mx-auto">
       <div class="flex items-start gap-4">
         <span class="text-2xl mt-0.5 shrink-0">👋</span>
@@ -275,12 +275,10 @@
       }
 
       const configs = SA.loadAllConfigs();
-      if (!configs.length) {
-        if (!localStorage.getItem('SA_WELCOME_DISMISSED')) {
-          document.getElementById('first-run-banner').classList.remove('hidden');
-        }
-        return;
+      if (configs.length || localStorage.getItem('SA_WELCOME_DISMISSED')) {
+        document.getElementById('first-run-banner').classList.add('hidden');
       }
+      if (!configs.length) return;
 
       // Add "Use a Scorer" link in nav
       document.getElementById('nav-actions').innerHTML = `
