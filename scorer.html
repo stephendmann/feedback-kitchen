@@ -238,7 +238,7 @@
             <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
           </div>
         </div>
-        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="false"></textarea>
+        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true"></textarea>
       </section>
 
       <!-- ─ Marker's Notes ──────────────────────────────── -->
@@ -248,7 +248,7 @@
           <span class="text-xs text-slate-400 font-normal">Saved to your Excel record — not included in copied feedback</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
-          <textarea id="additional-comments" class="feedback-box" rows="3"
+          <textarea id="additional-comments" class="feedback-box" rows="3" spellcheck="true"
             placeholder="Note concerns, patterns, or reasoning behind your grade — these appear in your Excel download as a marker's record."
             style="min-height:80px; background:#fff;"></textarea>
         </div>
@@ -880,7 +880,7 @@
         <h4 class="font-semibold text-slate-700 text-sm mb-2">Add New Snippet</h4>
         <div class="space-y-2">
           <input type="text" id="new-snippet-label" class="input-field text-sm" placeholder="Short label (e.g. 'APA formatting')">
-          <textarea id="new-snippet-text" class="input-field text-sm" rows="2" placeholder="Full comment text..."></textarea>
+          <textarea id="new-snippet-text" class="input-field text-sm" rows="2" placeholder="Full comment text..." spellcheck="true"></textarea>
           <button onclick="S.addSnippet()" class="btn btn-blue w-full justify-center text-sm py-2">Add Snippet</button>
         </div>
       </div>
