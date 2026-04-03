@@ -264,8 +264,8 @@ npx live-server
 
 Live instances — both open to all educators:
 
-- [marking.stephendmann.com](https://marking.stephendmann.com) — Feedback Kitchen instance
-- [www.stephendmann.com/score-automator](https://www.stephendmann.com/score-automator) — Score Automator, deployed as an example of AI-assisted productivity tooling by [Stephen Mann Consulting](https://www.stephendmann.com)
+- [marking.stephendmann.com](https://marking.stephendmann.com) — Score Automator, deployed as an example of AI-assisted productivity tooling by [Stephen Mann Consulting](https://www.stephendmann.com)
+- [www.stephendmann.com/score-automator](https://www.stephendmann.com/score-automator) — Feedback Kitchen instance in real-world testing (both instances are updated continuously based on user feedback)
 
 ---
 
