@@ -40,6 +40,25 @@
     </div>
   </nav>
 
+  <!-- ── First-run banner (shown to new users with no scorers) ── -->
+  <section id="first-run-banner" class="hidden bg-blue-50 border-b border-blue-100 py-6 px-4">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-start gap-4">
+        <span class="text-2xl mt-0.5 shrink-0">👋</span>
+        <div class="flex-1">
+          <h3 class="font-bold text-slate-800 mb-2">Welcome to Score Automator</h3>
+          <p class="text-sm text-slate-600 mb-3">Build a custom marking rubric once, then generate consistent, criterion-level feedback for every student in seconds. Start by clicking <strong>Build a New Scorer</strong> below — the wizard takes around 10–20 minutes for a new assessment.</p>
+          <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-3">
+            <span class="text-amber-500 shrink-0 mt-0.5">🔒</span>
+            <p class="text-xs text-amber-800"><strong>Your Scorers are saved in your browser's local storage</strong> — private to this device and browser. Use <strong>Export JSON</strong> inside the builder to back up your work or share a Scorer with a colleague. Note: JSON exports contain the Scorer configuration only — your personal feedback snippets stay private to your browser.</p>
+          </div>
+          <a href="README.md" target="_blank" class="text-xs text-blue-600 hover:underline font-medium">Read the full guide →</a>
+        </div>
+        <button onclick="dismissFirstRunBanner()" class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5" title="Dismiss">&times;</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ── Hero ─────────────────────────────────────────────── -->
   <section class="gradient-hero text-white py-20 px-4">
     <div class="max-w-4xl mx-auto text-center">
@@ -142,25 +161,6 @@
             <p class="text-slate-500">Copy the feedback to your clipboard and paste it into Moodle, Turnitin, or your institution's grading system. Download an Excel record of the grading, or print to PDF. Hit "New Student" and repeat.</p>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── First-run banner (shown to new users with no scorers) ── -->
-  <section id="first-run-banner" class="hidden bg-blue-50 border-y border-blue-100 py-8 px-4">
-    <div class="max-w-2xl mx-auto">
-      <div class="flex items-start gap-4">
-        <span class="text-2xl mt-0.5 shrink-0">👋</span>
-        <div class="flex-1">
-          <h3 class="font-bold text-slate-800 mb-2">Welcome to Score Automator</h3>
-          <p class="text-sm text-slate-600 mb-3">Build a custom marking rubric once, then generate consistent, criterion-level feedback for every student in seconds. Start by clicking <strong>Build a New Scorer</strong> below — the wizard takes around 10–20 minutes for a new assessment.</p>
-          <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-3">
-            <span class="text-amber-500 shrink-0 mt-0.5">🔒</span>
-            <p class="text-xs text-amber-800"><strong>Your Scorers are saved in your browser's local storage</strong> — private to this device and browser. Use <strong>Export JSON</strong> inside the builder to back up your work or share a Scorer with a colleague. Note: JSON exports contain the Scorer configuration only — your personal feedback snippets stay private to your browser.</p>
-          </div>
-          <a href="README.md" target="_blank" class="text-xs text-blue-600 hover:underline font-medium">Read the full guide →</a>
-        </div>
-        <button onclick="dismissFirstRunBanner()" class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5" title="Dismiss">&times;</button>
       </div>
     </div>
   </section>
