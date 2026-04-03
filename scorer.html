@@ -501,7 +501,7 @@
         : scoreResult;
 
       const name  = el('student-name').value.trim();
-      const header = name ? `Dear ${name},\n\n` : '';
+      const header = name ? `Hi ${name},\n\n` : '';
       const newGeneratedText = header + SA.generateFeedbackText(config, effectiveRes);
 
       const ta = el('feedback-text');
