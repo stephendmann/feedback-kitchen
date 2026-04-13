@@ -4,6 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <title>Score Automator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -134,32 +138,6 @@
         </div>
       </section>
 
-      <!-- ─ Quick Guide ────────────────────────────────────── -->
-      <details class="bg-blue-50 border border-blue-100 rounded-2xl no-print">
-        <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="font-semibold text-sm text-blue-700">ℹ️ Quick Guide — how this scorer works</span>
-          <span class="text-xs text-blue-400 font-normal">Click to expand</span>
-        </summary>
-        <div class="px-5 pb-5 pt-3 border-t border-blue-100 grid sm:grid-cols-2 gap-5 text-sm text-slate-600">
-          <div>
-            <p class="font-semibold text-slate-700 mb-1">Tiers vs. grades</p>
-            <p>Grades are grouped into four performance tiers: <strong>Excellent</strong> (A+/A/A–), <strong>Proficient</strong> (B+/B/B–), <strong>Developing</strong> (C+/C/C–), and <strong>Unsatisfactory</strong> (D). The rubric descriptor shown in each student's feedback is the one written for that tier — not the individual grade.</p>
-          </div>
-          <div>
-            <p class="font-semibold text-slate-700 mb-1">Feedback tone and late penalties</p>
-            <p>The opening and closing paragraphs always reflect the student's <strong>pre-penalty grade</strong> — they speak to the quality of the work itself. Any late deduction and the final penalised score are appended at the end of the feedback block, after the academic commentary.</p>
-          </div>
-          <div>
-            <p class="font-semibold text-slate-700 mb-1">Personal snippets</p>
-            <p>Use the <strong>💬 Insert snippet…</strong> dropdown in the Cooked Feedback panel to insert a saved phrase at the cursor. Select <strong>⚙ Manage snippets…</strong> to build your own library of reusable phrases in your own style. Snippets are personal to your browser — they are not included when you export or share a Scorer.</p>
-          </div>
-          <div>
-            <p class="font-semibold text-slate-700 mb-1">Marker's Notes</p>
-            <p>The <strong>Marker's Notes</strong> panel below the feedback is a private scratchpad. Notes are <em>not</em> included when you copy feedback to paste into Moodle or Turnitin — but <em>are</em> included in your Excel download as part of the formal marking record, useful for moderation.</p>
-          </div>
-        </div>
-      </details>
-
       <!-- ─ Criteria Grading Table ──────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="p-4 border-b border-slate-100">
@@ -253,18 +231,10 @@
       <!-- ─ Cooked Feedback ─────────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div class="flex items-center justify-between mb-4 no-print">
-          <div class="flex items-center gap-4">
-            <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide">🍳 Cooked Feedback</h2>
-            <select id="snippet-select" class="input-field text-sm py-1 px-2 w-48 bg-slate-50 border-slate-200 cursor-pointer" onchange="S.insertSnippet(this.value); this.value='';">
-              <option value="">💬 Insert snippet...</option>
-            </select>
-          </div>
-          <div class="flex gap-2">
-            <button class="btn btn-ghost text-sm" onclick="S.regenerateFeedback()" title="Discard manual edits and regenerate feedback from current grades">↺ Regenerate</button>
-            <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
-          </div>
+          <h2 class="font-bold text-slate-700 text-sm uppercase tracking-wide">🍳 Cooked Feedback</h2>
+          <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
         </div>
-        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true"></textarea>
+        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="false"></textarea>
       </section>
 
       <!-- ─ Marker's Notes ──────────────────────────────── -->
@@ -274,7 +244,7 @@
           <span class="text-xs text-slate-400 font-normal">Saved to your Excel record — not included in copied feedback</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
-          <textarea id="additional-comments" class="feedback-box" rows="3" spellcheck="true"
+          <textarea id="additional-comments" class="feedback-box" rows="3"
             placeholder="Note concerns, patterns, or reasoning behind your grade — these appear in your Excel download as a marker's record."
             style="min-height:80px; background:#fff;"></textarea>
         </div>
@@ -306,15 +276,6 @@
     let latePenaltyIdx  = 0;
     let scoreResult     = null;
     let _displayRounding = 'none'; // runtime override — initialised from config.scoreRounding
-
-    // State for feedback merging
-    let lastGeneratedText = "";
-    let lastScoreResult = null;
-    let lastConfig = null;
-
-    // Snippets
-    const SNIPPETS_KEY = 'SA_SNIPPETS';
-    let snippets = [];
 
     /* ── Init ────────────────────────────────────────────── */
     function init() {
@@ -362,7 +323,6 @@
         });
       }
 
-      loadSnippets();
       renderCriteriaRows();
       recalculate();
     }
@@ -514,8 +474,6 @@
     function updateFeedback() {
       if (!scoreResult || scoreResult.weightedTotal === 0) {
         el('feedback-text').value = '';
-        lastGeneratedText = '';
-        lastScoreResult = null;
         return;
       }
 
@@ -526,140 +484,16 @@
         ? { ...scoreResult, suggestedGrade: overrideRaw }
         : scoreResult;
 
+      const text = SA.generateFeedbackText(config, effectiveRes);
+
+      // Optionally prefix student name
       const name  = el('student-name').value.trim();
-      const header = name ? `Hi ${name},\n\n` : '';
-      const newGeneratedText = header + SA.generateFeedbackText(config, effectiveRes);
+      const tutor = el('student-tutor').value.trim();
+      const header = name
+        ? `Dear ${name},\n\n`
+        : '';
 
-      const ta = el('feedback-text');
-      const currentText = ta.value;
-
-      // If no previous state, or text is untouched, or text is empty
-      if (!lastScoreResult || currentText === lastGeneratedText || currentText.trim() === "") {
-        ta.value = newGeneratedText;
-        lastGeneratedText = newGeneratedText;
-        lastScoreResult = effectiveRes;
-        lastConfig = JSON.parse(JSON.stringify(config));
-        return;
-      }
-
-      // --- MERGE LOGIC ---
-      // The user has manually edited the textarea. We attempt to safely replace only the parts that changed.
-      let mergedText = currentText;
-      const rounding = config.scoreRounding || 'none';
-      const oldRounding = lastConfig.scoreRounding || 'none';
-
-      // 1. Update Intro/Outro based on overall grade
-      const oldGrade = lastScoreResult.suggestedGrade;
-      const newGrade = effectiveRes.suggestedGrade;
-      if (oldGrade !== newGrade) {
-        const oldEntry = lastConfig.gradeFeedback.find(gf => gf.grade === oldGrade);
-        const newEntry = config.gradeFeedback.find(gf => gf.grade === newGrade);
-        if (oldEntry && newEntry) {
-          if (oldEntry.intro && mergedText.includes(oldEntry.intro)) {
-            mergedText = mergedText.replace(oldEntry.intro, newEntry.intro);
-          }
-          if (oldEntry.outro && mergedText.includes(oldEntry.outro)) {
-            mergedText = mergedText.replace(oldEntry.outro, newEntry.outro);
-          }
-        }
-      }
-
-      // 2. Update Criteria
-      for (let i = 0; i < effectiveRes.rows.length; i++) {
-        const newRow = effectiveRes.rows[i];
-        const oldRow = lastScoreResult.rows[i];
-
-        if (!newRow.grade && !oldRow.grade) continue;
-
-        const newWs = SA.formatScore(newRow.weightedScore, rounding);
-        const newHeader = `${newRow.criterion.name} – ${newWs} / ${newRow.criterion.weight}`;
-
-        if (!oldRow.grade && newRow.grade) {
-          // Newly graded criterion
-          const newBlock = `${newHeader}\n${newRow.descriptor || ''}\n\n`;
-          const totalIdx = mergedText.indexOf('TOTAL SCORE:');
-          if (totalIdx !== -1) {
-            mergedText = mergedText.slice(0, totalIdx) + newBlock + mergedText.slice(totalIdx);
-          } else {
-            mergedText += '\n' + newBlock;
-          }
-        } else if (oldRow.grade && newRow.grade) {
-          // Update header
-          const oldWs = SA.formatScore(oldRow.weightedScore, oldRounding);
-          const oldHeader = `${oldRow.criterion.name} – ${oldWs} / ${oldRow.criterion.weight}`;
-          if (mergedText.includes(oldHeader)) {
-            mergedText = mergedText.replace(oldHeader, newHeader);
-          }
-
-          // Update descriptor
-          if (oldRow.descriptor !== newRow.descriptor) {
-            if (oldRow.descriptor && mergedText.includes(oldRow.descriptor)) {
-              mergedText = mergedText.replace(oldRow.descriptor, newRow.descriptor || '');
-            }
-          }
-        } else if (oldRow.grade && !newRow.grade) {
-          // Grade removed
-          const oldWs = SA.formatScore(oldRow.weightedScore, oldRounding);
-          const oldHeader = `${oldRow.criterion.name} – ${oldWs} / ${oldRow.criterion.weight}`;
-          if (mergedText.includes(oldHeader)) {
-            mergedText = mergedText.replace(oldHeader + '\n', '');
-          }
-          if (oldRow.descriptor && mergedText.includes(oldRow.descriptor)) {
-            mergedText = mergedText.replace(oldRow.descriptor + '\n\n', '');
-          }
-        }
-      }
-
-      // 3. Update Total Score
-      const oldTotalStr = `TOTAL SCORE: ${SA.formatScore(lastScoreResult.weightedTotal, oldRounding)} / 100`;
-      const newTotalStr = `TOTAL SCORE: ${SA.formatScore(effectiveRes.weightedTotal, rounding)} / 100`;
-      if (mergedText.includes(oldTotalStr)) {
-        mergedText = mergedText.replace(oldTotalStr, newTotalStr);
-      }
-
-      // 4. Update Penalty
-      let oldPenaltyStr = '';
-      if (lastScoreResult.latePenalty && (lastScoreResult.deduction > 0 || lastScoreResult.isFail)) {
-          const item = lastConfig.assessmentTitle || 'submission';
-          if (lastScoreResult.isFail) {
-            const failGrade = lastConfig.gradeScale ? lastConfig.gradeScale[lastConfig.gradeScale.length - 1].grade : 'D';
-            oldPenaltyStr = `LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.\nFINAL SCORE (after late penalty): 0 / 100`;
-          } else {
-            oldPenaltyStr = `LATE SUBMISSION NOTICE: As your ${item} was submitted ${lastScoreResult.latePenalty.label.toLowerCase()}, a further ${lastScoreResult.deduction}% (out of 100%) has been deducted from the total above.\nFINAL SCORE (after late penalty): ${SA.formatScore(lastScoreResult.penalisedScore, oldRounding)} / 100`;
-          }
-      }
-
-      let newPenaltyStr = '';
-      if (effectiveRes.latePenalty && (effectiveRes.deduction > 0 || effectiveRes.isFail)) {
-          const item = config.assessmentTitle || 'submission';
-          if (effectiveRes.isFail) {
-            const failGrade = config.gradeScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'D';
-            newPenaltyStr = `LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.\nFINAL SCORE (after late penalty): 0 / 100`;
-          } else {
-            newPenaltyStr = `LATE SUBMISSION NOTICE: As your ${item} was submitted ${effectiveRes.latePenalty.label.toLowerCase()}, a further ${effectiveRes.deduction}% (out of 100%) has been deducted from the total above.\nFINAL SCORE (after late penalty): ${SA.formatScore(effectiveRes.penalisedScore, rounding)} / 100`;
-          }
-      }
-
-      if (oldPenaltyStr !== newPenaltyStr) {
-          if (oldPenaltyStr && mergedText.includes(oldPenaltyStr)) {
-              mergedText = mergedText.replace(oldPenaltyStr, newPenaltyStr);
-          } else if (newPenaltyStr && !oldPenaltyStr) {
-              mergedText += '\n\n' + newPenaltyStr;
-          }
-      }
-
-      ta.value = mergedText;
-      lastGeneratedText = newGeneratedText;
-      lastScoreResult = effectiveRes;
-      lastConfig = JSON.parse(JSON.stringify(config));
-    }
-
-    function regenerateFeedback() {
-      if (!scoreResult || scoreResult.weightedTotal === 0) return;
-      if (confirm('This will discard any manual edits you have made to the feedback text. Are you sure?')) {
-        lastGeneratedText = ''; // Force a full regeneration
-        updateFeedback();
-      }
+      el('feedback-text').value = header + text;
     }
 
     /* ── Copy feedback ───────────────────────────────────── */
@@ -706,8 +540,6 @@
         const sel = el('grade-sel-' + i); if (sel) sel.value = '';
         const ovr = el('override-' + i);  if (ovr) ovr.value = '';
       });
-      lastGeneratedText = '';
-      lastScoreResult = null;
       recalculate();
     }
 
@@ -734,134 +566,12 @@
 
     function setRounding(val) {
       _displayRounding = val;
-      if (config) {
-        config.scoreRounding = val;
-        SA.saveConfig(config);
-      }
       highlightRoundingBtn(val);
       recalculate();
     }
 
-    /* ── Snippets ────────────────────────────────────────── */
-    function loadSnippets() {
-      try {
-        const stored = localStorage.getItem(SNIPPETS_KEY);
-        if (stored) {
-          snippets = JSON.parse(stored);
-        } else {
-          snippets = [
-            { id: SA.uid(), label: 'Great use of sources', text: 'Great use of academic sources to support your argument.' },
-            { id: SA.uid(), label: 'Proofreading needed', text: 'Please ensure you proofread carefully for grammatical errors before submitting.' },
-            { id: SA.uid(), label: 'APA formatting', text: 'Your formatting does not follow the required APA guidelines.' }
-          ];
-          saveSnippets();
-        }
-      } catch (e) { snippets = []; }
-      renderSnippetsDropdown();
-    }
-
-    function saveSnippets() {
-      localStorage.setItem(SNIPPETS_KEY, JSON.stringify(snippets));
-      renderSnippetsDropdown();
-      renderSnippetsList();
-    }
-
-    function renderSnippetsDropdown() {
-      const sel = el('snippet-select');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">💬 Insert snippet...</option>';
-      snippets.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.text;
-        opt.textContent = s.label;
-        sel.appendChild(opt);
-      });
-      sel.innerHTML += '<option disabled>──────────</option><option value="__manage__">⚙️ Manage snippets...</option>';
-    }
-
-    function insertSnippet(val) {
-      if (!val) return;
-      if (val === '__manage__') {
-        showSnippetModal();
-        return;
-      }
-      
-      const ta = el('feedback-text');
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const text = ta.value;
-      
-      const before = text.substring(0, start);
-      const after = text.substring(end);
-      
-      const insertText = (before.length > 0 && !before.endsWith(' ') && !before.endsWith('\n')) ? ' ' + val : val;
-      
-      ta.value = before + insertText + after;
-      
-      ta.selectionStart = ta.selectionEnd = start + insertText.length;
-      ta.focus();
-    }
-
-    function showSnippetModal() {
-      el('snippets-modal').classList.remove('hidden');
-      renderSnippetsList();
-    }
-
-    function hideSnippetModal() {
-      el('snippets-modal').classList.add('hidden');
-      el('snippet-select').value = '';
-    }
-
-    function renderSnippetsList() {
-      const list = el('snippets-list');
-      if (!list) return;
-      list.innerHTML = '';
-      if (snippets.length === 0) {
-        list.innerHTML = '<p class="text-sm text-slate-400 italic">No snippets yet.</p>';
-        return;
-      }
-      snippets.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'bg-slate-50 border border-slate-200 rounded-lg p-3 flex justify-between items-start gap-3';
-        div.innerHTML = `
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm text-slate-700 truncate">${escHtml(s.label)}</div>
-            <div class="text-xs text-slate-500 mt-1 line-clamp-2">${escHtml(s.text)}</div>
-          </div>
-          <button onclick="S.deleteSnippet('${s.id}')" class="text-slate-400 hover:text-red-500 shrink-0" title="Delete snippet">&times;</button>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    function addSnippet() {
-      const labelInp = el('new-snippet-label');
-      const textInp = el('new-snippet-text');
-      const label = labelInp.value.trim();
-      const text = textInp.value.trim();
-      
-      if (!label || !text) {
-        alert('Please provide both a label and the snippet text.');
-        return;
-      }
-      
-      snippets.push({ id: SA.uid(), label, text });
-      saveSnippets();
-      
-      labelInp.value = '';
-      textInp.value = '';
-    }
-
-    function deleteSnippet(id) {
-      if (confirm('Delete this snippet?')) {
-        snippets = snippets.filter(s => s.id !== id);
-        saveSnippets();
-      }
-    }
-
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
-             recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
-             insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet };
+             recalculate, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
@@ -888,31 +598,6 @@
     </div>
   </div>
 
-  <!-- ── Snippets modal ─────────────────────────────────── -->
-  <div id="snippets-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideSnippetModal()"></div>
-    <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[90vh]">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-slate-800 text-lg">💬 Manage Snippets</h3>
-        <button onclick="S.hideSnippetModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
-      </div>
-      <p class="text-slate-500 text-sm mb-4">Create reusable comments to quickly insert into the feedback box.</p>
-      
-      <div class="overflow-y-auto flex-1 pr-2 space-y-3 mb-4" id="snippets-list">
-        <!-- Snippets rendered here -->
-      </div>
-
-      <div class="border-t border-slate-100 pt-4 mt-auto">
-        <h4 class="font-semibold text-slate-700 text-sm mb-2">Add New Snippet</h4>
-        <div class="space-y-2">
-          <input type="text" id="new-snippet-label" class="input-field text-sm" placeholder="Short label (e.g. 'APA formatting')">
-          <textarea id="new-snippet-text" class="input-field text-sm" rows="2" placeholder="Full comment text..." spellcheck="true"></textarea>
-          <button onclick="S.addSnippet()" class="btn btn-blue w-full justify-center text-sm py-2">Add Snippet</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script>
     function showNewStudentModal() {
       document.getElementById('new-student-modal').classList.remove('hidden');
@@ -920,12 +605,7 @@
     function hideNewStudentModal() {
       document.getElementById('new-student-modal').classList.add('hidden');
     }
-    document.addEventListener('keydown', e => { 
-      if (e.key === 'Escape') {
-        hideNewStudentModal();
-        if (S && S.hideSnippetModal) S.hideSnippetModal();
-      }
-    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideNewStudentModal(); });
   </script>
 </body>
 </html>

@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <title>Builder — Score Automator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -242,11 +246,8 @@
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Rubric Descriptors</h2>
         <p class="text-slate-500 mb-2 text-sm">For each criterion, write a short descriptor for each performance tier. These appear in the generated student feedback.</p>
 
-        <div class="p-3 bg-amber-50 rounded-xl text-sm text-amber-800 mb-3">
+        <div class="p-3 bg-amber-50 rounded-xl text-sm text-amber-800 mb-6">
           📝 The tier a student falls in (Excellent / Proficient / Developing / Unsatisfactory) is determined automatically by the grade you select when scoring. You can leave any field blank and the feedback will simply omit that descriptor.
-        </div>
-        <div class="p-3 bg-blue-50 rounded-xl text-sm text-blue-800 mb-6">
-          ✍️ <strong>Writing effective descriptors:</strong> Each descriptor appears verbatim in the student's feedback, so write in the second person ("Your analysis demonstrates…") and be specific to this criterion. A strong Excellent descriptor explains what distinguishes top-tier work; a strong Developing descriptor names what is missing or underdeveloped — not just that the work is below standard.
         </div>
 
         <div id="rubric-list" class="space-y-4"></div>
@@ -258,10 +259,6 @@
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Feedback Templates</h2>
         <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Where defaults are provided you can edit them, or write your own from scratch.</p>
-
-        <div class="p-3 bg-blue-50 rounded-xl text-sm text-blue-800 mb-4">
-          ℹ️ <strong>Intros and outros are per grade, not per tier.</strong> This gives fine-grained control over tone — an A+ student gets a different opening than an A student, even though both fall in the Excellent tier. The defaults are production-ready; edit them to match your course voice or use them as-is.
-        </div>
 
         <div class="flex gap-2 flex-wrap mb-6" id="grade-tier-filters">
           <button class="tier-tab bg-slate-800 text-white" data-filter="all" onclick="B.filterFeedbackTier('all', this)">All Grades</button>
