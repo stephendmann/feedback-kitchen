@@ -516,16 +516,18 @@
 
       // Weight check
       const wOk = Math.round(weightSum) === 100 || weightSum === 0;
+      const displayWeightSum = Number.isInteger(weightSum) ? weightSum : parseFloat(weightSum.toFixed(2));
       el('weight-check-cell').innerHTML = weightSum === 0
         ? '<span class="text-slate-400">No grades selected yet</span>'
-        : `<span class="${Math.round(weightSum) === 100 ? 'text-green-600' : 'text-amber-600'}">${Math.round(weightSum) === 100 ? '✓' : '⚠'} Graded criteria: ${weightSum}%</span>`;
+        : `<span class="${Math.round(weightSum) === 100 ? 'text-green-600' : 'text-amber-600'}">${Math.round(weightSum) === 100 ? '✓' : '⚠'} Graded criteria: ${displayWeightSum}%</span>`;
 
-      el('weighted-total-cell').textContent = weightedTotal > 0 ? SA.formatScore(weightedTotal, _displayRounding) + ' / 100' : '';
+      const hasGrades = scoreResult.rows.some(r => r.grade);
+      el('weighted-total-cell').textContent = hasGrades ? SA.formatScore(weightedTotal, _displayRounding) + ' / 100' : '';
 
       // Grade display
-      el('penalised-score-display').textContent = isFail ? '0' : (penalisedScore > 0 ? SA.formatScore(penalisedScore, _displayRounding) : '–');
+      el('penalised-score-display').textContent = isFail ? '0' : (hasGrades ? SA.formatScore(penalisedScore, _displayRounding) : '–');
       const gradeBadge = el('grade-display');
-      gradeBadge.textContent = (weightedTotal > 0 || isFail) ? suggestedGrade : '–';
+      gradeBadge.textContent = (hasGrades || isFail) ? suggestedGrade : '–';
 
       const tierColourMap = {
         excellent: 'bg-green-100 text-green-800',
@@ -549,16 +551,16 @@
 
       // Print cells
       el('print-penalty-label').textContent   = latePenalty ? latePenalty.label : 'None';
-      el('print-weighted-score').textContent  = weightedTotal > 0 ? SA.formatScore(weightedTotal, _displayRounding) : '–';
-      el('print-penalised-score').textContent = isFail ? '0' : (penalisedScore > 0 ? SA.formatScore(penalisedScore, _displayRounding) : '–');
-      el('print-grade').textContent           = (weightedTotal > 0 || isFail) ? suggestedGrade : '–';
+      el('print-weighted-score').textContent  = hasGrades ? SA.formatScore(weightedTotal, _displayRounding) : '–';
+      el('print-penalised-score').textContent = isFail ? '0' : (hasGrades ? SA.formatScore(penalisedScore, _displayRounding) : '–');
+      el('print-grade').textContent           = (hasGrades || isFail) ? suggestedGrade : '–';
 
       updateFeedback();
     }
 
     /* ── Feedback generation ─────────────────────────────── */
     function updateFeedback() {
-      if (!scoreResult || scoreResult.weightedTotal === 0) {
+      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
         el('feedback-text').value = '';
         lastGeneratedText = '';
         lastScoreResult = null;
@@ -701,7 +703,7 @@
     }
 
     function regenerateFeedback() {
-      if (!scoreResult || scoreResult.weightedTotal === 0) return;
+      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) return;
       if (confirm('This will discard any manual edits you have made to the feedback text. Are you sure?')) {
         lastGeneratedText = ''; // Force a full regeneration
         updateFeedback();
@@ -722,7 +724,7 @@
 
     /* ── Excel download ──────────────────────────────────── */
     function downloadExcel() {
-      if (!scoreResult || scoreResult.weightedTotal === 0) {
+      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
         alert('Please grade at least one criterion before downloading.'); return;
       }
       const student = {
@@ -923,7 +925,7 @@
 
     /* ── AI Garnish (beta) — Stage 0 ─────────────────────── */
     function _aiGuards() {
-      if (!scoreResult || scoreResult.weightedTotal === 0) {
+      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
         alert('Grade at least one criterion before using AI Garnish.');
         return false;
       }
@@ -932,7 +934,8 @@
         .filter(function (r) { return r.grade; })
         .reduce(function (s, r) { return s + r.criterion.weight; }, 0);
       if (Math.round(weightSum) !== 100) {
-        alert('Graded criteria weight ' + weightSum + '% — must total 100% before building the AI prompt.');
+        const displayWeightSum = Number.isInteger(weightSum) ? weightSum : parseFloat(weightSum.toFixed(2));
+        alert('Graded criteria weight ' + displayWeightSum + '% — must total 100% before building the AI prompt.');
         return false;
       }
       return true;

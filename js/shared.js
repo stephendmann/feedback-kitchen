@@ -229,8 +229,13 @@
         ? (scaleMidpoints[sg.grade] !== undefined ? scaleMidpoints[sg.grade] : 50)
         : (GRADE_MIDPOINTS[sg.grade] !== undefined ? GRADE_MIDPOINTS[sg.grade] : 50);
 
-      const override   = (sg.override !== undefined && sg.override !== null && sg.override !== '')
-                           ? parseFloat(sg.override) : null;
+      let override = null;
+      if (sg.override !== undefined && sg.override !== null && sg.override !== '') {
+        const parsed = parseFloat(sg.override);
+        if (!isNaN(parsed)) {
+          override = parsed;
+        }
+      }
       const finalScore = override !== null ? override : midpoint;
       const weightedScore = finalScore * criterion.weight / 100;
 
