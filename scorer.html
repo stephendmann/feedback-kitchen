@@ -1051,7 +1051,7 @@
 
     async function aiGarnishDirect() {
       const guard = _aiGuards();
-      if (!guard.ok) return;
+      if (!guard) return;
       if (!hasAICreds()) {
         alert('No AI Garnish credentials saved. Click "🔐 AI Login" in the nav bar to enter them.');
         showAISettings();
