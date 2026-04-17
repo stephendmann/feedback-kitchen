@@ -106,6 +106,7 @@
             <button id="rnd-half"  onclick="S.setRounding('half')"  title="Half point — e.g. 73.5"     class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">½</button>
             <button id="rnd-whole" onclick="S.setRounding('whole')" title="Whole number — e.g. 73"      class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1</button>
           </div>
+          <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="AI Garnish login — username & password for direct AI access">🔐 AI Login</button>
           <button class="btn btn-ghost text-sm" onclick="S.newStudent()">↺ New Student</button>
           <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link">⚙ Manage</a>
         </div>
@@ -283,12 +284,14 @@
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-amber-200 space-y-3">
           <p class="text-xs text-amber-800">
-            <strong>Stage 0 workflow:</strong> build the prompt → paste into Claude Pro (or similar) → paste the reply back below → click <em>Assemble &amp; Copy Final Feedback</em>.
-            <br><strong>Do not</strong> paste real student identifiers into Marker's Notes — this prompt embeds those notes verbatim.
+            <strong>Recommended (Stage 2):</strong> click <em>Garnish with AI (direct)</em> — uses shared test credentials to call Claude via our proxy. Set up credentials via <em>🔐 AI Login</em> in the nav bar first.
+            <br><strong>Fallback (Stage 0):</strong> build the prompt → paste into Claude Pro → paste the reply back below → click <em>Assemble &amp; Copy Final Feedback</em>.
+            <br><strong>Do not</strong> paste real student identifiers into Marker's Notes — the prompt embeds those verbatim.
           </p>
 
           <div class="flex flex-wrap gap-2">
-            <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Assemble the prompt from current grades, rubric, marker's notes & snippets — copies to clipboard">🧾 Build AI prompt → Copy</button>
+            <button id="ai-garnish-direct-btn" class="btn btn-green text-sm" onclick="S.aiGarnishDirect()" title="Call Claude Haiku via the Feedback Kitchen proxy — auto-fills the criterion body and assembles the final feedback">✨ Garnish with AI (direct)</button>
+            <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Stage 0 fallback — copies the prompt to clipboard so you can paste it into Claude Pro manually">🧾 Build prompt → Copy</button>
             <button class="btn btn-ghost text-sm" onclick="S.aiResetPanel()" title="Clear the pasted AI reply and final assembled output">↺ Reset panel</button>
             <button class="btn btn-ghost text-sm" onclick="S.aiClearLog()" title="Clear the locally-stored AI prompt/reply log">🗑 Clear log</button>
           </div>
@@ -407,6 +410,7 @@
       loadSnippets();
       renderCriteriaRows();
       recalculate();
+      updateAILoginBadge();
     }
 
     /* ── Render criteria table rows ──────────────────────── */
@@ -997,10 +1001,124 @@
       alert('AI Garnish log cleared from this browser.');
     }
 
+    /* ── Stage 2: AI Garnish via Vercel proxy ────────────── */
+    const FK_USER_KEY = 'SA_FK_USER';
+    const FK_PASS_KEY = 'SA_FK_PASS';
+    const FK_PROXY_ENDPOINT = '/api/garnish';
+
+    function showAISettings() {
+      const u = localStorage.getItem(FK_USER_KEY) || '';
+      const p = localStorage.getItem(FK_PASS_KEY) || '';
+      const uIn = el('fk-user-input'); if (uIn) uIn.value = u;
+      const pIn = el('fk-pass-input'); if (pIn) pIn.value = p;
+      const status = el('ai-settings-status');
+      if (status) status.textContent = u ? '✓ Saved credentials detected on this browser.' : 'No credentials saved yet.';
+      el('ai-settings-modal').classList.remove('hidden');
+    }
+    function hideAISettings() {
+      el('ai-settings-modal').classList.add('hidden');
+    }
+    function saveAICreds() {
+      const u = (el('fk-user-input').value || '').trim();
+      const p = (el('fk-pass-input').value || '').trim();
+      if (!u || !p) { alert('Please enter both username and password.'); return; }
+      localStorage.setItem(FK_USER_KEY, u);
+      localStorage.setItem(FK_PASS_KEY, p);
+      updateAILoginBadge();
+      hideAISettings();
+    }
+    function clearAICreds() {
+      if (!confirm('Clear saved AI Garnish credentials from this browser?')) return;
+      localStorage.removeItem(FK_USER_KEY);
+      localStorage.removeItem(FK_PASS_KEY);
+      const uIn = el('fk-user-input'); if (uIn) uIn.value = '';
+      const pIn = el('fk-pass-input'); if (pIn) pIn.value = '';
+      const status = el('ai-settings-status');
+      if (status) status.textContent = 'Credentials cleared.';
+      updateAILoginBadge();
+    }
+    function hasAICreds() {
+      return !!(localStorage.getItem(FK_USER_KEY) && localStorage.getItem(FK_PASS_KEY));
+    }
+    function updateAILoginBadge() {
+      const btn = el('ai-settings-btn');
+      if (!btn) return;
+      btn.textContent = hasAICreds() ? '🔓 AI Login' : '🔐 AI Login';
+      btn.title = hasAICreds()
+        ? 'AI Garnish credentials saved — click to manage'
+        : 'AI Garnish login — add credentials to enable direct AI rewrite';
+    }
+
+    async function aiGarnishDirect() {
+      const guard = _aiGuards();
+      if (!guard.ok) return;
+      if (!hasAICreds()) {
+        alert('No AI Garnish credentials saved. Click "🔐 AI Login" in the nav bar to enter them.');
+        showAISettings();
+        return;
+      }
+
+      const prompt = SA.buildAIGarnishPrompt(lastConfig, lastScoreResult, {
+        markerNotes: (el('additional-comments').value || '').trim(),
+        snippets: snippets
+      });
+
+      const btn = el('ai-garnish-direct-btn');
+      const originalLabel = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Calling Claude…'; }
+
+      try {
+        const res = await fetch(FK_PROXY_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: localStorage.getItem(FK_USER_KEY),
+            password: localStorage.getItem(FK_PASS_KEY),
+            prompt: prompt,
+            model: 'claude-haiku-4-5-20251001'
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert('Invalid username or password. Click "🔐 AI Login" to update.');
+            showAISettings();
+          } else if (res.status === 429) {
+            alert('Rate limit hit — wait a moment and try again.\n\n' + (data.error || ''));
+          } else {
+            alert('AI Garnish failed:\n\n' + (data.error || 'HTTP ' + res.status));
+          }
+          return;
+        }
+        const body = (data.body || '').trim();
+        if (!body) { alert('Empty response from AI. Try again, or use the copy-paste workflow.'); return; }
+
+        el('ai-body-input').value = body;
+
+        // Log the run (same store used by the copy-paste flow)
+        SA.logAIGarnish({
+          when: new Date().toISOString(),
+          student: (lastConfig && lastScoreResult) ? (el('student-name').value || '') : '',
+          model: data.model || 'claude-haiku-4-5-20251001',
+          promptChars: prompt.length,
+          replyChars: body.length,
+          via: 'direct'
+        });
+
+        // Auto-assemble final so the user sees the stitched result immediately
+        aiAssembleFinal();
+      } catch (err) {
+        alert('Network error contacting the proxy:\n\n' + (err && err.message ? err.message : err));
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = originalLabel; }
+      }
+    }
+
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
-             aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog };
+             aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog,
+             showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
@@ -1049,6 +1167,39 @@
           <button onclick="S.addSnippet()" class="btn btn-blue w-full justify-center text-sm py-2">Add Snippet</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── AI Settings modal ─────────────────────────────── -->
+  <div id="ai-settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideAISettings()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-slate-800 text-lg">🔐 AI Garnish Login</h3>
+        <button onclick="S.hideAISettings()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <p class="text-slate-500 text-sm mb-4">
+        Enter the shared testing credentials to enable direct AI Garnish (one-click rewrite). Credentials are stored in this browser only.
+      </p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Username</label>
+          <input type="text" id="fk-user-input" class="input-field" autocomplete="username" placeholder="Enter username">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+          <input type="password" id="fk-pass-input" class="input-field" autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <div id="ai-settings-status" class="text-xs text-slate-400"></div>
+      </div>
+      <div class="flex gap-2 mt-5">
+        <button onclick="S.clearAICreds()" class="btn btn-red text-sm">🗑 Clear saved</button>
+        <button onclick="S.hideAISettings()" class="btn btn-ghost text-sm ml-auto">Cancel</button>
+        <button onclick="S.saveAICreds()" class="btn btn-blue text-sm">💾 Save</button>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">
+        Credentials stay in this browser's localStorage and are only sent to the Feedback Kitchen proxy endpoint, never to Anthropic directly. Clear them on shared computers.
+      </p>
     </div>
   </div>
 

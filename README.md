@@ -216,9 +216,39 @@ JSON export is also the recommended backup — browser localStorage is cleared w
 
 ---
 
+## AI Garnish — Stage 2 (Beta, Sandbox Only)
+
+Stage 2 adds an optional one-click AI rewrite of the criterion-body section of Cooked Feedback, via a lightweight Vercel serverless proxy that forwards a prompt to Anthropic's Claude Haiku. The intro, outro, total score, and late-penalty notice remain deterministic — AI only touches the body commentary.
+
+**How it works:**
+
+1. A tutor clicks **✨ Garnish with AI (direct)** in the AI Garnish panel.
+2. The scorer assembles a prompt (rubric descriptors + selected grades + marker's notes + snippet suggestions) and POSTs it to `/api/garnish` with a shared username and password.
+3. The proxy validates credentials against Vercel environment variables, rate-limits per IP, and forwards the prompt to `claude-haiku-4-5-20251001`.
+4. The reply populates the criterion-body textarea and auto-assembles the final feedback, ready for tutor review and edit.
+
+**Credentials** are set once per browser via the **🔐 AI Login** button in the nav bar. They are stored in `localStorage` and sent only to the Feedback Kitchen proxy — never to Anthropic directly.
+
+**Sandbox only.** This deployment is for closed-group colleague testing. The Anthropic API key lives exclusively in Vercel environment variables. If this repository is forked for wider use, testers should either (a) remove Stage 2 and rely on the Stage 0 copy-paste workflow, or (b) provision their own Anthropic key and proxy credentials.
+
+### Deploying Stage 2
+
+Set these environment variables in the Vercel project dashboard:
+
+| Variable | Value |
+|---|---|
+| `ANTHROPIC_API_KEY` | Your Anthropic API key (from console.anthropic.com) |
+| `FK_PROXY_USER` | Shared username for colleague access |
+| `FK_PROXY_PASSWORD` | Shared password |
+| `FK_ALLOWED_ORIGINS` | (Optional) comma-separated allowed CORS origins. Defaults to `*`. |
+
+The proxy enforces a 20-call-per-minute-per-IP rate limit. Raise or lower this in `api/garnish.js` by editing `RATE_MAX_CALLS`.
+
+---
+
 ## Technical Architecture
 
-Score Automator is a fully static application. There is no backend, no database, no build step, and no framework dependency beyond CDN-loaded libraries.
+Score Automator is a fully static application with an optional single serverless function for Stage 2 AI Garnish. There is no database, no build step, and no framework dependency beyond CDN-loaded libraries.
 
 ```
 /
@@ -229,6 +259,9 @@ Score Automator is a fully static application. There is no backend, no database,
 ├── js/
 │   ├── shared.js     # Scoring engine, grade logic, localStorage helpers
 │   └── excel.js      # Excel export (SheetJS / xlsx)
+├── api/
+│   └── garnish.js    # Stage 2 Vercel serverless AI proxy (optional)
+├── vercel.json       # Vercel function config
 └── README.md
 ```
 
