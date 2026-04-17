@@ -2,7 +2,18 @@
 
 Score Automator is the browser-based successor to the original *Feedback Kitchen* Excel tool developed by Dr Michael Harker (University of Strathclyde), adapted and extended for use at the University of Waikato and beyond. Build your feedback kitchen once, then scale consistent, high-quality feedback across tutors, courses, and institutions.
 
-**No login. No installation. No student data leaves your device.**
+## Experimental sandbox notice
+
+This repository, `feedback-kitchen`, is an experimental sandbox for prototyping next-step features, including possible AI-assisted marking workflows.
+
+It is **not** the canonical live repository for the current production Score Automator instances on stephendmann.com.
+
+If you are looking for the live production version, go to:
+- https://github.com/stephendmann/score-automator
+- https://marking.stephendmann.com/
+- https://www.stephendmann.com/score-automator
+
+This sandbox may include experimental features, alternative deployments, or prototype integrations that are not present in the production application.
 
 ---
 
@@ -244,28 +255,13 @@ Each Scorer configuration object contains: assessment details, grade scale defin
 
 ---
 
-## Privacy & Data Storage
+## Data handling in this sandbox
 
-- **No student data is transmitted to any server.** Names, IDs, grades, scores, and feedback text never leave your device.
-- Scorer configurations and personal snippets are stored in **browser localStorage** — private to the browser and device on which they were created.
-- Clearing your browser data, switching browsers, or using a different device will not show your saved Scorers or snippets. Export a JSON backup to preserve your Scorer configuration — note that JSON exports do not include personal snippets, as each tutor builds their own independently.
-- **Student session data is never saved.** Grades, scores, and feedback are held in memory only and cleared when you click New Student or close the page.
-- Minimal anonymous usage analytics (page views, no personally identifiable information) may be collected by the hosting provider.
+Unlike the live `score-automator` production version, this sandbox may be used to test features with different data-handling patterns, including AI-assisted workflows.
 
----
+That means the privacy assumptions for the live production app do **not automatically apply** here.
 
-## Deployment
-
-Score Automator is a static site and can be hosted anywhere that serves HTML files. To run locally:
-
-```bash
-npx live-server
-```
-
-Live instances — both open to all educators:
-
-- [marking.stephendmann.com](https://marking.stephendmann.com) — Score Automator, deployed as an example of AI-assisted productivity tooling by [Stephen Mann Consulting](https://www.stephendmann.com)
-- [www.stephendmann.com/score-automator](https://www.stephendmann.com/score-automator) — Feedback Kitchen instance in real-world testing (both instances are updated continuously based on user feedback)
+Before using this version with any real student information, review the current implementation, deployment context, and any active integrations carefully. Where experimental AI features are introduced, student data may be processed differently from the production version.
 
 ---
 
