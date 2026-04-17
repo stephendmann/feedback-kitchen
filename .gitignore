@@ -1,0 +1,23 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+secrets.*
+credentials.*
+
+# Vercel
+.vercel
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Safety nets — files with these naming patterns
+*not*upload*
+*do*not*commit*
+*private*
+*sensitive*
