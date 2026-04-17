@@ -244,25 +244,30 @@
       rows.push({ criterion, grade: sg.grade, midpoint, override, finalScore, weightedScore, tier, descriptor });
     }
 
+    const rounding = config.scoreRounding || 'none';
+    const roundedTotal = parseFloat(formatScore(weightedTotal, rounding));
+
     const lp = (config.enableLatePenalties && latePenaltyIndex != null)
                  ? config.latePenalties[latePenaltyIndex]
                  : config.latePenalties[0];
 
     const isFail         = lp && lp.fail;
     const deduction      = lp ? lp.deduction : 0;
-    const penalisedScore = isFail ? 0 : Math.max(0, weightedTotal - deduction);
+    const penalisedScore = isFail ? 0 : Math.max(0, roundedTotal - deduction);
+    const roundedPenalisedScore = parseFloat(formatScore(penalisedScore, rounding));
 
     // Use custom scale thresholds for grade suggestion if available
     const suggestedGrade = isFail ? (useCustomScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'D')
       : useCustomScale
-        ? scoreToGradeFromScale(penalisedScore, config.gradeScale)
-        : scoreToGrade(penalisedScore);
+        ? scoreToGradeFromScale(roundedPenalisedScore, config.gradeScale)
+        : scoreToGrade(roundedPenalisedScore);
 
-    return { rows, weightedTotal, deduction, isFail, penalisedScore, suggestedGrade, latePenalty: lp };
+    return { rows, weightedTotal: roundedTotal, deduction, isFail, penalisedScore: roundedPenalisedScore, suggestedGrade, latePenalty: lp, rawTotal: weightedTotal };
   }
 
   function generateFeedbackText(config, scoreResult) {
     const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty, deduction, isFail } = scoreResult;
+    const rounding = config.scoreRounding || 'none';
 
     // Intro/outro always reflects the quality of the actual work (pre-penalty grade),
     // so a late deduction doesn't unfairly colour the academic feedback tone.
@@ -278,13 +283,13 @@
 
     for (const row of rows) {
       if (!row.grade) continue;
-      const ws = row.weightedScore.toFixed(1);
+      const ws = formatScore(row.weightedScore, rounding);
       parts.push(`${row.criterion.name} – ${ws} / ${row.criterion.weight}`);
       if (row.descriptor) parts.push(row.descriptor);
       parts.push('');
     }
 
-    parts.push(`TOTAL SCORE: ${weightedTotal.toFixed(1)} / 100`);
+    parts.push(`TOTAL SCORE: ${formatScore(weightedTotal, rounding)} / 100`);
 
     // Outro sits here — after the score summary, before any late penalty notice
     if (entry?.outro) { parts.push(''); parts.push(entry.outro); }
@@ -300,12 +305,160 @@
         parts.push(`FINAL SCORE (after late penalty): 0 / 100`);
       } else {
         parts.push(`LATE SUBMISSION NOTICE: As your ${item} was submitted ${latePenalty.label.toLowerCase()}, a further ${deduction}% (out of 100%) has been deducted from the total above.`);
-        parts.push(`FINAL SCORE (after late penalty): ${penalisedScore.toFixed(1)} / 100`);
+        parts.push(`FINAL SCORE (after late penalty): ${formatScore(penalisedScore, rounding)} / 100`);
       }
     }
 
     return parts.join('\n');
   }
+
+  /* ── AI Garnish (beta) — Stage 0 prompt builder ──────────── */
+  // SANDBOX ONLY. Builds a prompt string the marker can paste into Claude Pro
+  // (or similar). The model rewrites ONLY the criterion-by-criterion body —
+  // intro, outro, TOTAL SCORE line, and late-penalty wording are produced
+  // deterministically and stitched back together by assembleFinalFeedback().
+  const AI_LOG_KEY     = 'SA_AI_LOG';
+  const SNIPPETS_KEY   = 'SA_SNIPPETS';
+  const AI_LOG_MAX     = 20;
+  const AI_BODY_WORD_CAP_DEFAULT = 350;
+
+  function loadSnippets() {
+    try { return JSON.parse(localStorage.getItem(SNIPPETS_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+
+  function buildAIGarnishPrompt(config, scoreResult, opts) {
+    opts = opts || {};
+    const markerNotes  = (opts.markerNotes || '').trim();
+    const snippets     = Array.isArray(opts.snippets) ? opts.snippets : loadSnippets();
+    const wordCap      = opts.wordCap || AI_BODY_WORD_CAP_DEFAULT;
+    const exemplars    = snippets.slice(0, 5).map(function (s) {
+      // Snippets may be strings or { label, text } objects — handle both
+      if (typeof s === 'string') return s;
+      return (s && (s.text || s.label)) || '';
+    }).filter(Boolean);
+
+    const { rows, weightedTotal } = scoreResult;
+    const useCustomScale = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
+    const prepenaltyGrade = useCustomScale
+      ? scoreToGradeFromScale(weightedTotal, config.gradeScale)
+      : scoreToGrade(weightedTotal);
+
+    const rounding = config.scoreRounding || 'none';
+    const criteriaBlock = rows
+      .filter(function (r) { return r.grade; })
+      .map(function (r) {
+        return [
+          'CRITERION: ' + r.criterion.name,
+          '  Weight: ' + r.criterion.weight + '%',
+          '  Grade awarded: ' + r.grade + '  (tier: ' + (r.tier || 'n/a') + ')',
+          '  Weighted score: ' + formatScore(r.weightedScore, rounding) + ' / ' + r.criterion.weight,
+          '  Rubric descriptor (substantive claims MUST be preserved):',
+          '    ' + (r.descriptor || '(no descriptor)').replace(/\n/g, '\n    ')
+        ].join('\n');
+      }).join('\n\n');
+
+    const exemplarBlock = exemplars.length
+      ? exemplars.map(function (e, i) { return '  [' + (i + 1) + '] ' + e; }).join('\n')
+      : '  (none supplied — use a warm, specific, second-person academic voice)';
+
+    const notesBlock = markerNotes
+      ? markerNotes
+      : '(none supplied — rely on rubric descriptors; do not invent criticism)';
+
+    return [
+      'ROLE: You are drafting the CRITERION-BY-CRITERION BODY of feedback for a',
+      'university assessment. This is a rewrite/personalisation task, not a grading',
+      'task.',
+      '',
+      'HARD RULES:',
+      '  1. Do NOT change, mention, justify, or re-derive the grade.',
+      '  2. Do NOT produce an intro, outro, TOTAL SCORE line, or late-penalty wording.',
+      '     Those are produced separately by deterministic code and will be stitched',
+      '     around your output.',
+      '  3. Preserve every substantive claim in each rubric descriptor.',
+      '  4. Integrate the marker\'s private notes naturally into the relevant criterion',
+      '     where they are specific to that criterion. Do not invent criticism or',
+      '     praise that is not supported by the rubric descriptor or the notes.',
+      '  5. Use Au/NZ spelling. Address the student in the second person.',
+      '  6. Match the tutor voice exemplars where natural.',
+      '  7. Stay under ' + wordCap + ' words for the whole body.',
+      '  8. Output format: one block per criterion, in the same order as below.',
+      '     For each criterion use exactly this header line:',
+      '       <Criterion name> – <weighted score to 1 d.p.> / <weight>',
+      '     followed by one or two short paragraphs of personalised commentary.',
+      '     Separate criteria with a single blank line. No markdown, no bullet list.',
+      '',
+      'CONTEXT (for your information only — do not quote):',
+      '  Assessment: ' + (config.assessmentTitle || '(untitled)'),
+      '  Course: '     + (config.courseName || '(unspecified)'),
+      '  Pre-penalty grade (set by marker — do not mention): ' + prepenaltyGrade,
+      '',
+      'CRITERIA TO REWRITE:',
+      '',
+      criteriaBlock || '(no graded criteria — abort)',
+      '',
+      'MARKER\'S PRIVATE NOTES (integrate where relevant):',
+      notesBlock,
+      '',
+      'TUTOR VOICE EXEMPLARS (preferred phrasings):',
+      exemplarBlock,
+      '',
+      'Return ONLY the rewritten criterion-by-criterion body. Nothing else.'
+    ].join('\n');
+  }
+
+  // Stitches: [student header] + intro + AI body + TOTAL SCORE + outro + late-penalty.
+  // aiBody is the raw paste-back from the LLM (just the criteria rewrite).
+  function assembleFinalFeedback(config, scoreResult, aiBody, opts) {
+    opts = opts || {};
+    const studentName = (opts.studentName || '').trim();
+    const useCustomScale = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
+    const { weightedTotal, penalisedScore, latePenalty, deduction, isFail } = scoreResult;
+    const prepenaltyGrade = useCustomScale
+      ? scoreToGradeFromScale(weightedTotal, config.gradeScale)
+      : scoreToGrade(weightedTotal);
+    const entry = config.gradeFeedback.find(function (gf) { return gf.grade === prepenaltyGrade; });
+
+    const parts = [];
+    if (studentName) { parts.push('Hi ' + studentName + ','); parts.push(''); }
+    if (entry && entry.intro) { parts.push(entry.intro); parts.push(''); }
+
+    const rounding = config.scoreRounding || 'none';
+
+    parts.push(String(aiBody || '').trim());
+    parts.push('');
+    parts.push('TOTAL SCORE: ' + formatScore(weightedTotal, rounding) + ' / 100');
+
+    if (entry && entry.outro) { parts.push(''); parts.push(entry.outro); }
+
+    if (latePenalty && (deduction > 0 || isFail)) {
+      parts.push('');
+      const item = config.assessmentTitle || 'submission';
+      if (isFail) {
+        const failGrade = useCustomScale
+          ? config.gradeScale[config.gradeScale.length - 1].grade
+          : 'D';
+        parts.push('LATE SUBMISSION NOTICE: This ' + item + ' was submitted more than 3 days late and receives a grade of ' + failGrade + ' as per university policy.');
+        parts.push('FINAL SCORE (after late penalty): 0 / 100');
+      } else {
+        parts.push('LATE SUBMISSION NOTICE: As your ' + item + ' was submitted ' + latePenalty.label.toLowerCase() + ', a further ' + deduction + '% (out of 100%) has been deducted from the total above.');
+        parts.push('FINAL SCORE (after late penalty): ' + formatScore(penalisedScore, rounding) + ' / 100');
+      }
+    }
+    return parts.join('\n');
+  }
+
+  function logAIGarnish(entry) {
+    try {
+      const log = JSON.parse(localStorage.getItem(AI_LOG_KEY) || '[]');
+      log.unshift(Object.assign({ ts: new Date().toISOString() }, entry));
+      while (log.length > AI_LOG_MAX) log.pop();
+      localStorage.setItem(AI_LOG_KEY, JSON.stringify(log));
+    } catch (e) { /* ignore */ }
+  }
+
+  function clearAIGarnishLog() { localStorage.removeItem(AI_LOG_KEY); }
 
   /* ── Score formatting helper ──────────────────────────────── */
   // Rounds and formats a numeric score according to the scorer's rounding preference.
@@ -325,6 +478,8 @@
     uid, scoreToGrade, scoreToGradeFromScale, formatDate, newConfig,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
-    computeScores, generateFeedbackText, formatScore
+    computeScores, generateFeedbackText, formatScore,
+    buildAIGarnishPrompt, assembleFinalFeedback,
+    loadSnippets, logAIGarnish, clearAIGarnishLog
   };
 })();
