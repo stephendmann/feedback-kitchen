@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <title>Score Automator</title>
+  <title>Feedback Kitchen</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -95,20 +95,22 @@
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print">
       <div class="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
         <div>
-          <a href="index.html" class="font-bold text-blue-700 text-sm">📊 Score Automator</a>
-          <span class="text-slate-300 mx-2">›</span>
-          <span class="font-semibold text-slate-700 text-sm" id="nav-scorer-name"></span>
+          <a href="index.html" class="font-bold text-blue-700 text-lg inline-flex items-center gap-2">
+            <img src="/favicon-32.png" alt="" width="28" height="28" class="inline-block" style="vertical-align:middle">
+            Feedback Kitchen
+          </a>
+          <span class="hidden" id="nav-scorer-name"></span>
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1" title="Score display rounding — switch between full precision, half-point, or whole-number scores">
-            <span class="text-slate-400 text-xs mr-0.5">Scores:</span>
+            <span class="text-slate-500 text-xs font-semibold mr-1">Round:</span>
             <button id="rnd-none"  onclick="S.setRounding('none')"  title="Full precision — e.g. 73.3"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1.0</button>
             <button id="rnd-half"  onclick="S.setRounding('half')"  title="Half point — e.g. 73.5"     class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">½</button>
             <button id="rnd-whole" onclick="S.setRounding('whole')" title="Whole number — e.g. 73"      class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1</button>
           </div>
           <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="AI Garnish login — username & password for direct AI access">🔐 AI Login</button>
-          <button class="btn btn-ghost text-sm" onclick="S.newStudent()">↺ New Student</button>
-          <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link">⚙ Manage</a>
+          <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link" title="Manage your scorers (kitchens)">⚙ Manage</a>
+          <button class="btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New Student</button>
         </div>
       </div>
     </nav>
@@ -126,7 +128,7 @@
       <!-- ─ A. Student Details ───────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <h2 class="step-title mb-1"><span class="step-badge">A</span>Enter Student Details</h2>
-        <p class="step-sub mb-4">Name, ID and tutor — date is auto-filled. Tutor name persists between students.</p>
+        <p class="step-sub mb-4">Name, ID and tutor. Date auto-fills. Tutor name persists between students.</p>
         <div class="grid sm:grid-cols-4 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
@@ -154,7 +156,7 @@
       <!-- ─ B. Grade Student using Rubric Criteria ──────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="p-4 border-b border-slate-100">
-          <h2 class="step-title"><span class="step-badge">B</span>Grade Student using Rubric Criteria</h2>
+          <h2 class="step-title"><span class="step-badge">B</span>Grade by Rubric</h2>
           <p class="step-sub">Select a grade for each criterion. Use Override to enter a specific score instead of the grade midpoint.</p>
         </div>
         <div class="overflow-x-auto">
@@ -185,8 +187,8 @@
 
       <!-- ─ C. Apply Any Penalty ─────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="penalty-section">
-        <h2 class="step-title mb-1"><span class="step-badge">C</span>Apply Any Penalty (and review the suggested grade)</h2>
-        <p class="step-sub mb-4">Apply a late-submission penalty if needed. Override the overall grade at the bottom if your professional judgement differs.</p>
+        <h2 class="step-title mb-1"><span class="step-badge">C</span>Apply Penalties</h2>
+        <p class="step-sub mb-4">Review the suggested grade. Apply a late-submission penalty or override the overall grade if your professional judgement differs.</p>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex-1">
             <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
@@ -246,8 +248,8 @@
       <!-- ─ D. Add Snippets to Precooked Feedback ────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div class="mb-3 no-print">
-          <h2 class="step-title"><span class="step-badge">D</span>Add Personalised Snippets to 🍳 Cooked Feedback</h2>
-          <p class="step-sub">Feedback auto-generates from your grades. Drop in reusable snippets from the dropdown, then tweak the text directly.</p>
+          <h2 class="step-title" title="🍳 Cooked Feedback = the auto-generated feedback assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Add Feedback Snippets</h2>
+          <p class="step-sub">Feedback auto-generates from your grades into the 🍳 Cooked Feedback box. Drop in reusable snippets from the dropdown, then tweak the text directly.</p>
         </div>
         <div class="flex items-center justify-between mb-4 no-print">
           <div class="flex items-center gap-4">
@@ -266,7 +268,7 @@
       <!-- ─ E. Marker's Notes ────────────────────────────── -->
       <details class="bg-slate-50 border border-slate-200 rounded-2xl no-print" id="notes-panel">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="step-title"><span class="step-badge slate">E</span>Add your Marker's Notes 📝</span>
+          <span class="step-title"><span class="step-badge slate">E</span>Add Marker's Notes 📝</span>
           <span class="text-xs text-slate-400 font-normal">Saved to your Excel record — not included in copied feedback</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
@@ -279,42 +281,56 @@
       <!-- ─ F. AI Garnish Preview (beta) ─────────────────── -->
       <details class="bg-amber-50 border border-amber-200 rounded-2xl no-print" id="ai-garnish-panel">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="step-title"><span class="step-badge amber">F</span>Preview with ✨ AI Garnish for more variation <span class="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-2 align-middle">BETA · SANDBOX</span></span>
-          <span class="text-xs text-amber-700 font-normal">Rewrites only the criterion body — intro, outro & late penalty stay deterministic</span>
+          <span class="step-title"><span class="step-badge amber">F</span>Apply AI Garnish ✨ <span class="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-2 align-middle">BETA · SANDBOX</span></span>
+          <span class="text-xs text-amber-700 font-normal">AI rewrites only the criterion body. Greeting, wrap-up and late-penalty notice stay fixed.</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-amber-200 space-y-3">
-          <p class="text-xs text-amber-800">
-            <strong>Recommended (Stage 2):</strong> click <em>Garnish with AI (direct)</em> — uses shared test credentials to call Claude via our proxy. Set up credentials via <em>🔐 AI Login</em> in the nav bar first.
-            <br><strong>Fallback (Stage 0):</strong> build the prompt → paste into Claude Pro → paste the reply back below → click <em>Assemble &amp; Copy Final Feedback</em>.
-            <br><strong>Do not</strong> paste real student identifiers into Marker's Notes — the prompt embeds those verbatim.
+          <p class="text-xs text-amber-800 leading-relaxed">
+            Click <strong>✨ Garnish with AI</strong> below to let Claude rewrite the criterion body for more varied, personalised feedback. Your grades, rubric descriptors, marker's notes and snippets shape the rewrite. Set up credentials via <em>🔐 AI Login</em> in the nav bar first.
           </p>
 
+          <!-- Privacy callout -->
+          <div class="flex gap-2 items-start bg-red-50 border border-red-200 rounded-lg p-3">
+            <span class="text-red-600 text-lg leading-none pt-0.5">⚠</span>
+            <p class="text-xs text-red-800 leading-relaxed">
+              <strong>Privacy:</strong> do not paste real student identifiers (name, ID, email) into <em>Marker's Notes</em>. The AI prompt includes marker's notes verbatim, so anything private you type there is sent to Claude.
+            </p>
+          </div>
+
           <div class="flex flex-wrap gap-2">
-            <button id="ai-garnish-direct-btn" class="btn btn-green text-sm" onclick="S.aiGarnishDirect()" title="Call Claude Haiku via the Feedback Kitchen proxy — auto-fills the criterion body and assembles the final feedback">✨ Garnish with AI (direct)</button>
-            <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Stage 0 fallback — copies the prompt to clipboard so you can paste it into Claude Pro manually">🧾 Build prompt → Copy</button>
+            <button id="ai-garnish-direct-btn" class="btn btn-green text-sm" onclick="S.aiGarnishDirect()" title="Call Claude Haiku via the Feedback Kitchen proxy — auto-fills the criterion body and assembles the final feedback">✨ Garnish with AI</button>
             <button class="btn btn-ghost text-sm" onclick="S.aiResetPanel()" title="Clear the pasted AI reply and final assembled output">↺ Reset panel</button>
             <button class="btn btn-ghost text-sm" onclick="S.aiClearLog()" title="Clear the locally-stored AI prompt/reply log">🗑 Clear log</button>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-amber-900 mb-1" title="Paste the criterion-body rewrite returned by your LLM here. Do not paste an intro or outro.">Paste AI reply here (criterion body only)</label>
-            <textarea id="ai-body-input" class="feedback-box" rows="6" placeholder="Paste the LLM's rewritten criterion body here…" style="background:#fff"></textarea>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            <button class="btn btn-green text-sm" onclick="S.aiAssembleFinal()" title="Stitch deterministic intro + your AI body + TOTAL SCORE + deterministic outro + late-penalty notice">🧩 Assemble &amp; Copy Final Feedback</button>
-          </div>
-
-          <div>
             <label class="block text-xs font-semibold text-amber-900 mb-1">Final assembled feedback (editable before copy)</label>
-            <textarea id="ai-final-output" class="feedback-box" rows="8" placeholder="Final assembled feedback will appear here after assembly…" style="background:#fff"></textarea>
+            <textarea id="ai-final-output" class="feedback-box" rows="8" placeholder="Click ✨ Garnish with AI to generate. The assembled feedback will appear here for you to review and edit before copying." style="background:#fff"></textarea>
             <div class="flex gap-2 mt-2">
               <button class="btn btn-blue text-sm" onclick="S.aiCopyFinal()">📋 Copy final to clipboard</button>
             </div>
           </div>
 
+          <!-- Stage 0 manual fallback, collapsed by default -->
+          <details class="bg-white/60 border border-amber-200 rounded-lg">
+            <summary class="cursor-pointer px-3 py-2 text-xs font-semibold text-amber-900 select-none">
+              ⚙ Manual fallback (Stage 0) — if the direct AI call isn't available
+            </summary>
+            <div class="px-3 pb-3 pt-1 space-y-2">
+              <p class="text-[11px] text-amber-800 leading-relaxed">
+                Build the prompt → paste into your own Claude / ChatGPT account → paste the reply below → click <em>Assemble</em>.
+              </p>
+              <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Copies the prompt to clipboard so you can paste it into Claude Pro manually">🧾 Build prompt → Copy</button>
+              <div>
+                <label class="block text-xs font-semibold text-amber-900 mt-2 mb-1" title="Paste the criterion-body rewrite returned by your LLM here. Do not paste an intro or outro.">Paste AI reply here (criterion body only)</label>
+                <textarea id="ai-body-input" class="feedback-box" rows="5" placeholder="Paste the LLM's rewritten criterion body here…" style="background:#fff"></textarea>
+              </div>
+              <button class="btn btn-green text-sm" onclick="S.aiAssembleFinal()" title="Stitch deterministic intro + your AI body + TOTAL SCORE + deterministic outro + late-penalty notice">🧩 Assemble Final Feedback</button>
+            </div>
+          </details>
+
           <p class="text-[11px] text-amber-700 leading-relaxed">
-            Stored locally (last 20 prompts) under <code>SA_AI_LOG</code> in your browser. Never transmitted. Clear with <em>Clear log</em>.
+            Last 20 prompts are stored locally in your browser only (never transmitted). Clear with <em>🗑 Clear log</em>.
           </p>
         </div>
       </details>
@@ -322,7 +338,7 @@
       <!-- ─ G. Final Edit & Copy ─────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
         <div class="mb-4">
-          <h2 class="step-title"><span class="step-badge green">G</span>Edit &amp; copy final feedback to clipboard</h2>
+          <h2 class="step-title"><span class="step-badge green">G</span>Copy &amp; Export</h2>
           <p class="step-sub">Review the text above (🍳 Cooked Feedback, or the ✨ AI Garnish output if used), then copy to your grading system. Download the Excel record for your files.</p>
         </div>
         <div class="flex flex-wrap gap-3 justify-center">
@@ -379,10 +395,11 @@
       document.getElementById('app').classList.remove('hidden');
 
       // Header, nav & page title
-      document.getElementById('nav-scorer-name').textContent = config.name || '';
-      const hdrTitle = [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Score Automator';
+      const navParts = [config.name, config.assessmentTitle].filter(Boolean);
+      document.getElementById('nav-scorer-name').textContent = navParts.join(' · ');
+      const hdrTitle = [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Feedback Kitchen';
       document.getElementById('hdr-title').textContent = hdrTitle;
-      document.title = hdrTitle === 'Score Automator' ? 'Score Automator' : 'Score Automator — ' + hdrTitle;
+      document.title = hdrTitle === 'Feedback Kitchen' ? 'Feedback Kitchen' : 'Feedback Kitchen — ' + hdrTitle;
       document.getElementById('hdr-subtitle').textContent =
         [config.assignmentInfo, config.universityName].filter(Boolean).join('  ·  ');
 
@@ -478,10 +495,10 @@
       let weightSum = 0;
       rows.forEach((row, i) => {
         const TIER_COLOURS = {
-          excellent: 'bg-green-100 text-green-800',
-          proficient: 'bg-blue-100 text-blue-800',
-          developing: 'bg-yellow-100 text-yellow-800',
-          unsatisfactory: 'bg-red-100 text-red-800'
+          excellent:      'bg-blue-200 text-blue-900 ring-1 ring-blue-300',
+          proficient:     'bg-green-200 text-green-900 ring-1 ring-green-300',
+          developing:     'bg-amber-200 text-amber-900 ring-1 ring-amber-300',
+          unsatisfactory: 'bg-red-200 text-red-900 ring-1 ring-red-300'
         };
         if (row.grade) {
           weightSum += row.criterion.weight;

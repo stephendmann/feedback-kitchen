@@ -199,6 +199,7 @@
 
   /* ── Scoring engine ──────────────────────────────────────── */
   function computeScores(config, studentGrades, latePenaltyIndex) {
+    const rounding = config.scoreRounding || 'none';
     let weightedTotal = 0;
     const rows        = [];
 
@@ -245,11 +246,13 @@
 
       const descriptor = criterion.rubric[tier] || '';
 
-      weightedTotal += weightedScore;
+      // Sum the displayed (rounded) per-criterion weighted scores so the
+      // total always equals the visible column sum. This trades a theoretical
+      // sub-0.5 precision drift for perfect visual consistency for markers.
+      weightedTotal += parseFloat(formatScore(weightedScore, rounding));
       rows.push({ criterion, grade: sg.grade, midpoint, override, finalScore, weightedScore, tier, descriptor });
     }
 
-    const rounding = config.scoreRounding || 'none';
     const roundedTotal = parseFloat(formatScore(weightedTotal, rounding));
 
     const lp = (config.enableLatePenalties && latePenaltyIndex != null)
