@@ -150,6 +150,7 @@
       universityName: '',
       assignmentInfo: '',
       version:        '1.0',
+      appVersion:     '2.0',   // Feedback Kitchen app version for export provenance
       gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
       criteria: [
         {
@@ -468,6 +469,105 @@
 
   function clearAIGarnishLog() { localStorage.removeItem(AI_LOG_KEY); }
 
+  /* ── Cohort persistence (per scorer) ─────────────────────────
+     Stores completed-student records under SA_COHORT_<scorerId>.
+     Shape:
+       {
+         scorerId, label, multiMarker, createdAt, updatedAt,
+         students: [ { id, key, name, studentId, tutor, date,
+                       grades: [...], penaltyIdx, scoreResult,
+                       feedbackText, markerNotes, savedAt } ]
+       }
+     Match-key for upsert: studentId (case-insensitive, trimmed) if present,
+     otherwise name (case-insensitive, trimmed).
+  ─────────────────────────────────────────────────────────────── */
+  const COHORT_PREFIX = 'SA_COHORT_';
+
+  function cohortKey(scorerId) { return COHORT_PREFIX + scorerId; }
+
+  function studentMatchKey(student) {
+    const sid  = (student.studentId || '').trim().toLowerCase();
+    if (sid) return 'sid:' + sid;
+    const name = (student.name || '').trim().toLowerCase();
+    return name ? 'name:' + name : null;
+  }
+
+  function getCohort(scorerId) {
+    try {
+      const raw = localStorage.getItem(cohortKey(scorerId));
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) { return null; }
+  }
+
+  function saveCohort(cohort) {
+    if (!cohort || !cohort.scorerId) return;
+    cohort.updatedAt = new Date().toISOString();
+    localStorage.setItem(cohortKey(cohort.scorerId), JSON.stringify(cohort));
+  }
+
+  function initCohort(scorerId, label, multiMarker) {
+    const cohort = {
+      scorerId:    scorerId,
+      label:       (label || '').trim() || 'Cohort',
+      multiMarker: !!multiMarker,
+      createdAt:   new Date().toISOString(),
+      updatedAt:   new Date().toISOString(),
+      students:    []
+    };
+    saveCohort(cohort);
+    return cohort;
+  }
+
+  function addToCohort(scorerId, studentRecord) {
+    let cohort = getCohort(scorerId);
+    if (!cohort) {
+      // No cohort yet — caller must prompt first. Initialise as unlabelled fallback
+      // so we don't lose data, but this path should rarely be hit.
+      cohort = initCohort(scorerId, 'Untitled cohort', false);
+    }
+    const key = studentMatchKey(studentRecord);
+    if (!key) {
+      // No ID and no name — refuse to save
+      return { saved: false, reason: 'no-identifier' };
+    }
+    studentRecord.key     = key;
+    studentRecord.savedAt = new Date().toISOString();
+    if (!studentRecord.id) studentRecord.id = uid();
+
+    const existingIdx = cohort.students.findIndex(s => s.key === key);
+    let replaced = false;
+    if (existingIdx >= 0) {
+      studentRecord.id        = cohort.students[existingIdx].id;
+      studentRecord.createdAt = cohort.students[existingIdx].createdAt || cohort.students[existingIdx].savedAt;
+      cohort.students[existingIdx] = studentRecord;
+      replaced = true;
+    } else {
+      studentRecord.createdAt = studentRecord.savedAt;
+      cohort.students.push(studentRecord);
+    }
+    saveCohort(cohort);
+    return { saved: true, replaced: replaced, count: cohort.students.length };
+  }
+
+  function removeFromCohort(scorerId, studentKey) {
+    const cohort = getCohort(scorerId);
+    if (!cohort) return false;
+    cohort.students = cohort.students.filter(s => s.key !== studentKey);
+    saveCohort(cohort);
+    return true;
+  }
+
+  function clearCohort(scorerId) {
+    localStorage.removeItem(cohortKey(scorerId));
+  }
+
+  function cohortAgeDays(cohort) {
+    if (!cohort || !cohort.createdAt) return 0;
+    const ms = Date.now() - new Date(cohort.createdAt).getTime();
+    return Math.floor(ms / (1000 * 60 * 60 * 24));
+  }
+
   /* ── Score formatting helper ──────────────────────────────── */
   // Rounds and formats a numeric score according to the scorer's rounding preference.
   // rounding: 'none' (1 d.p.), 'half' (nearest 0.5), 'whole' (nearest integer)
@@ -488,6 +588,9 @@
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,
     buildAIGarnishPrompt, assembleFinalFeedback,
-    loadSnippets, logAIGarnish, clearAIGarnishLog
+    loadSnippets, logAIGarnish, clearAIGarnishLog,
+    // Cohort API
+    getCohort, initCohort, saveCohort, addToCohort,
+    removeFromCohort, clearCohort, cohortAgeDays, studentMatchKey
   };
 })();

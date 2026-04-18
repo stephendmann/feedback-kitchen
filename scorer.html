@@ -82,9 +82,13 @@
   <div id="no-config" class="hidden min-h-screen flex items-center justify-center p-8">
     <div class="text-center max-w-md">
       <div class="text-6xl mb-6">🛠</div>
-      <h2 class="text-2xl font-bold text-slate-800 mb-3">No Scorer Found</h2>
-      <p class="text-slate-500 mb-8">You haven't built a scorer yet, or the requested scorer doesn't exist. Head to the builder to create one.</p>
-      <a href="builder.html" class="btn btn-blue text-base">Build a Scorer →</a>
+      <h2 class="text-2xl font-bold text-slate-800 mb-3" id="no-config-title">No Scorer Found</h2>
+      <p class="text-slate-500 mb-6" id="no-config-msg">You haven't built a scorer yet, or the requested scorer doesn't exist. Head to the builder to create one.</p>
+      <div id="no-config-list" class="mb-6 text-left"></div>
+      <div class="flex gap-3 justify-center">
+        <a href="index.html" class="btn btn-ghost text-sm">← Home</a>
+        <a href="builder.html" class="btn btn-blue text-sm">Build a Scorer →</a>
+      </div>
     </div>
   </div>
 
@@ -342,19 +346,47 @@
           <p class="step-sub">Review the text above (🍳 Cooked Feedback, or the ✨ AI Garnish output if used), then copy to your grading system. Download the Excel record for your files.</p>
         </div>
         <div class="flex flex-wrap gap-3 justify-center">
-          <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copy the student feedback to your clipboard — paste into Moodle, Turnitin, or your grading system">📋 Copy Feedback</button>
-          <button class="btn btn-amber" onclick="S.downloadExcel()" title="Marker's record — full criterion breakdown, scores, feedback, and your notes. Ideal for moderation and audit trails.">📥 Marker's Record (Excel)</button>
+          <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle/Turnitin) AND adds this student to the cohort workbook in Section H.">📋 Copy Feedback (+ add to cohort)</button>
+          <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (full criterion breakdown, scores, feedback and marker's notes — for moderation/audit) AND adds this student to the cohort workbook in Section H.">📥 Marker's Record — single student (+ add to cohort)</button>
           <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
           <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
           <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
         </div>
       </section>
 
+      <!-- ─ H. Cohort (cumulative cohort export) ─────────────── -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="cohort-section">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
+          <div>
+            <h2 class="step-title mb-1"><span class="step-badge slate">H</span>Cohort Workbook</h2>
+            <p class="step-sub">Each student is added to the cohort automatically when you click <strong>Copy Feedback</strong> or <strong>Marker's Record</strong>. Export the full class workbook when you're done.</p>
+          </div>
+          <div class="text-right text-sm">
+            <div class="text-slate-400 text-xs">Cohort label</div>
+            <div class="font-semibold text-slate-700" id="cohort-label">—</div>
+            <div class="text-xs text-slate-500 mt-0.5"><span id="cohort-count">0</span> students saved</div>
+          </div>
+        </div>
+
+        <!-- Privacy banner — visible whenever cohort has ≥1 student -->
+        <div id="cohort-privacy-banner" class="hidden border border-amber-300 bg-amber-50 text-amber-800 text-xs rounded-xl px-4 py-3 mt-3">
+          ⚠️ <strong><span id="cohort-banner-count">0</span> students cached locally on this device.</strong>
+          Export the cohort to Excel to save permanently — local data will be lost if you clear browser storage.
+        </div>
+
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to a single Excel workbook with grade matrix, per-student feedback, rubric and grade-feedback reference sheets.">📥 Export Cohort Workbook (Excel)</button>
+          <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">👥 View Cohort List</button>
+          <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">✏️ Rename</button>
+          <button class="btn btn-ghost text-red-600" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer.">🗑 Clear Cohort</button>
+        </div>
+      </section>
+
     </main>
   </div>
 
-  <script src="js/shared.js"></script>
-  <script src="js/excel.js"></script>
+  <script src="js/shared.js?v=2.0.2"></script>
+  <script src="js/excel.js?v=2.0.2"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -384,8 +416,16 @@
 
       config = id ? SA.loadConfig(id) : SA.loadActiveConfig();
 
+      // Fallback: no active id but scorers exist → use the first one.
       if (!config) {
-        document.getElementById('no-config').classList.remove('hidden');
+        const all = SA.loadAllConfigs();
+        if (all && all.length > 0) {
+          config = all[0];
+        }
+      }
+
+      if (!config) {
+        renderNoConfigScreen();
         return;
       }
 
@@ -428,6 +468,49 @@
       renderCriteriaRows();
       recalculate();
       updateAILoginBadge();
+      refreshCohortUI();
+
+      // Warn user if they try to leave with unsaved cohort data (not yet exported)
+      window.addEventListener('beforeunload', function (e) {
+        const cohort = SA.getCohort(config && config.id);
+        if (cohort && cohort.students && cohort.students.length > 0) {
+          e.preventDefault();
+          e.returnValue = 'You have ' + cohort.students.length + ' students in this cohort. Export before closing to save permanently.';
+          return e.returnValue;
+        }
+      });
+
+      // 30-day nudge
+      const existing = SA.getCohort(config.id);
+      if (existing && SA.cohortAgeDays(existing) > 30 && existing.students.length > 0) {
+        setTimeout(function () {
+          showCohortToast('Cohort "' + (existing.label || '—') + '" is over 30 days old — export or clear.', 'amber');
+        }, 1200);
+      }
+    }
+
+    /* ── No-config screen (with list if scorers exist) ───── */
+    function renderNoConfigScreen() {
+      const screen = document.getElementById('no-config');
+      const list   = document.getElementById('no-config-list');
+      const title  = document.getElementById('no-config-title');
+      const msg    = document.getElementById('no-config-msg');
+      const all    = (SA.loadAllConfigs && SA.loadAllConfigs()) || [];
+
+      if (all.length > 0) {
+        // Requested ?id= missing but other scorers exist — offer them.
+        title.textContent = 'Pick a scorer';
+        msg.textContent = 'The requested scorer wasn\'t found, but you have these saved scorers:';
+        list.innerHTML = all.map(function (c) {
+          const label = [c.name, c.assessmentTitle].filter(Boolean).join(' · ') || c.id;
+          return '<a href="scorer.html?id=' + encodeURIComponent(c.id) +
+                 '" class="block px-4 py-3 mb-2 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-colors text-slate-700">' +
+                 escHtml(label) + '</a>';
+        }).join('');
+      } else {
+        list.innerHTML = '';
+      }
+      screen.classList.remove('hidden');
     }
 
     /* ── Render criteria table rows ──────────────────────── */
@@ -737,9 +820,11 @@
       }).catch(() => {
         ta.select(); document.execCommand('copy');
       });
+      // Auto-add to cohort
+      saveCurrentStudentToCohort({ silent: false });
     }
 
-    /* ── Excel download ──────────────────────────────────── */
+    /* ── Excel download (single student) ─────────────────── */
     function downloadExcel() {
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
         alert('Please grade at least one criterion before downloading.'); return;
@@ -752,6 +837,219 @@
       const feedbackText = el('feedback-text').value;
       const comments     = el('additional-comments').value;
       SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
+      // Also auto-add to cohort
+      saveCurrentStudentToCohort({ silent: false });
+    }
+
+    /* ── Cohort management ───────────────────────────────── */
+    const COHORT_VERSION = '2.0';
+
+    function ensureCohortInitialised(onReady) {
+      if (!config || !config.id) { onReady && onReady(null); return; }
+      let cohort = SA.getCohort(config.id);
+      if (cohort) { onReady && onReady(cohort); return; }
+      // Show first-use prompt
+      showCohortSetupModal(function (label, multiMarker) {
+        cohort = SA.initCohort(config.id, label, multiMarker);
+        refreshCohortUI();
+        onReady && onReady(cohort);
+      });
+    }
+
+    function saveCurrentStudentToCohort(opts) {
+      opts = opts || {};
+      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) return;
+      const studentName = (el('student-name').value || '').trim();
+      const studentId   = (el('student-id').value   || '').trim();
+      if (!studentName && !studentId) {
+        showCohortToast('Enter a student name or ID before saving to the cohort.', 'amber');
+        return;
+      }
+      ensureCohortInitialised(function (cohort) {
+        if (!cohort) return;
+        const record = {
+          name:         studentName,
+          studentId:    studentId,
+          tutor:        (el('student-tutor').value || '').trim(),
+          date:         (el('student-date').value || ''),
+          grades:       JSON.parse(JSON.stringify(studentGrades || [])),
+          penaltyIdx:   parseInt(el('late-penalty-select').value, 10) || 0,
+          scoreResult:  cloneScoreResultForStorage(scoreResult),
+          feedbackText: el('feedback-text').value || '',
+          markerNotes:  el('additional-comments').value || '',
+          overrideGrade: (el('grade-override').value || '').trim()
+        };
+        const result = SA.addToCohort(config.id, record);
+        if (!result.saved) {
+          showCohortToast('Could not save — please add a name or student ID.', 'amber');
+          return;
+        }
+        refreshCohortUI();
+        if (!opts.silent) {
+          showCohortToast(
+            (result.replaced ? 'Updated ' : 'Added ') + (studentName || studentId) +
+            ' · ' + result.count + ' in cohort',
+            'green'
+          );
+        }
+      });
+    }
+
+    // Strip functions / circular refs for safe localStorage storage
+    function cloneScoreResultForStorage(sr) {
+      if (!sr) return null;
+      return {
+        weightedTotal:   sr.weightedTotal,
+        penalisedScore:  sr.penalisedScore,
+        deduction:       sr.deduction,
+        isFail:          !!sr.isFail,
+        suggestedGrade:  sr.suggestedGrade,
+        rawTotal:        sr.rawTotal,
+        latePenalty:     sr.latePenalty ? {
+          label: sr.latePenalty.label, deduction: sr.latePenalty.deduction, fail: !!sr.latePenalty.fail
+        } : null,
+        rows: (sr.rows || []).map(function (r) {
+          return {
+            criterion: r.criterion ? { name: r.criterion.name, weight: r.criterion.weight } : null,
+            grade: r.grade, midpoint: r.midpoint, override: r.override,
+            finalScore: r.finalScore, weightedScore: r.weightedScore,
+            tier: r.tier, descriptor: r.descriptor
+          };
+        })
+      };
+    }
+
+    function exportCohort() {
+      const cohort = SA.getCohort(config.id);
+      if (!cohort || !cohort.students.length) {
+        alert('No students in the cohort yet. Grade at least one student and click Copy Feedback or Marker\'s Record to add them.');
+        return;
+      }
+      const filename = SAExcel.exportCohortToExcel(config, cohort);
+      if (filename) showPostExportWipeModal(cohort.students.length, filename);
+    }
+
+    function renameCohort() {
+      const cohort = SA.getCohort(config.id);
+      if (!cohort) { ensureCohortInitialised(function(){ refreshCohortUI(); }); return; }
+      const next = prompt('Rename cohort label:', cohort.label || '');
+      if (next === null) return;
+      cohort.label = next.trim() || cohort.label;
+      SA.saveCohort(cohort);
+      refreshCohortUI();
+    }
+
+    function confirmClearCohort() {
+      const cohort = SA.getCohort(config.id);
+      if (!cohort || !cohort.students.length) {
+        SA.clearCohort(config.id);
+        refreshCohortUI();
+        return;
+      }
+      if (!confirm('Delete all ' + cohort.students.length + ' students from this cohort?\n\nThis cannot be undone. Make sure you have exported the cohort workbook first.')) return;
+      if (!confirm('Final check — permanently delete ' + cohort.students.length + ' student record(s)?')) return;
+      SA.clearCohort(config.id);
+      refreshCohortUI();
+      showCohortToast('Cohort cleared.', 'slate');
+    }
+
+    function viewCohortList() {
+      const cohort = SA.getCohort(config.id);
+      const body = el('cohort-list-body');
+      const modal = el('cohort-list-modal');
+      if (!body || !modal) return;
+      if (!cohort || !cohort.students.length) {
+        body.innerHTML = '<p class="text-sm text-slate-500 italic">No students saved yet.</p>';
+      } else {
+        body.innerHTML = '<div class="text-xs text-slate-400 mb-2">' + cohort.students.length + ' students · cohort "' + (cohort.label || '—') + '"</div>' +
+          '<ul class="divide-y divide-slate-100">' +
+          cohort.students.map(function (s, i) {
+            const sr = s.scoreResult || {};
+            const score = sr.penalisedScore != null ? SA.formatScore(sr.penalisedScore, config.scoreRounding || 'none') : '—';
+            return '<li class="py-2 flex items-center justify-between gap-2 text-sm">' +
+              '<div class="min-w-0 flex-1">' +
+                '<div class="font-medium text-slate-700 truncate">' + (i + 1) + '. ' + escHtml(s.name || '(no name)') + (s.studentId ? ' <span class="text-slate-400">· ' + escHtml(s.studentId) + '</span>' : '') + '</div>' +
+                '<div class="text-xs text-slate-400">' + escHtml(sr.suggestedGrade || '—') + ' · ' + score + '/100 · saved ' + (s.savedAt ? new Date(s.savedAt).toLocaleString('en-NZ') : '—') + '</div>' +
+              '</div>' +
+              '<button class="text-xs text-red-500 hover:text-red-700" onclick="S.removeCohortStudent(\'' + s.key.replace(/'/g, "\\'") + '\')">Remove</button>' +
+            '</li>';
+          }).join('') + '</ul>';
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function removeCohortStudent(key) {
+      if (!confirm('Remove this student from the cohort?')) return;
+      SA.removeFromCohort(config.id, key);
+      refreshCohortUI();
+      viewCohortList();
+    }
+
+    function hideCohortListModal() { const m = el('cohort-list-modal'); if (m) m.classList.add('hidden'); }
+
+    function refreshCohortUI() {
+      const cohort = SA.getCohort(config && config.id);
+      const count  = cohort ? cohort.students.length : 0;
+      const label  = cohort ? (cohort.label || '—') : '—';
+      setText('cohort-label', label);
+      setText('cohort-count', String(count));
+      setText('cohort-banner-count', String(count));
+      const banner = el('cohort-privacy-banner');
+      if (banner) banner.classList.toggle('hidden', count === 0);
+    }
+
+    function setText(id, v) { const e = el(id); if (e) e.textContent = v; }
+
+    function showCohortToast(msg, color) {
+      const t = document.createElement('div');
+      const bg = color === 'amber' ? 'bg-amber-600' : color === 'slate' ? 'bg-slate-700' : 'bg-green-600';
+      t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 ' + bg + ' text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-lg z-50';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(function () { t.remove(); }, 400); }, 2800);
+    }
+
+    /* ── Cohort setup modal (first-use prompt) ───────────── */
+    function showCohortSetupModal(onConfirm) {
+      const modal = el('cohort-setup-modal');
+      if (!modal) { onConfirm && onConfirm('Cohort', false); return; }
+      // Pre-fill suggested label
+      const suggested = (config.assessmentTitle || config.name || 'Cohort') + ' — ' + SA.formatDate();
+      const labelInput = el('cohort-setup-label');
+      if (labelInput) labelInput.value = suggested;
+      modal.classList.remove('hidden');
+      // Wire confirm button
+      const confirmBtn = el('cohort-setup-confirm');
+      confirmBtn.onclick = function () {
+        const multi = el('cohort-setup-multi-yes').checked;
+        let label = (labelInput.value || '').trim() || suggested;
+        if (multi) {
+          // Marker name included by convention — if marker's tutor name is present, prepend
+          const tutor = (el('student-tutor').value || '').trim();
+          if (tutor && label.toLowerCase().indexOf(tutor.toLowerCase()) === -1) {
+            label = tutor + ' — ' + label;
+          }
+        }
+        modal.classList.add('hidden');
+        onConfirm && onConfirm(label, multi);
+      };
+    }
+
+    function hideCohortSetupModal() { const m = el('cohort-setup-modal'); if (m) m.classList.add('hidden'); }
+
+    function showPostExportWipeModal(count, filename) {
+      const modal = el('cohort-wipe-modal');
+      if (!modal) return;
+      setText('cohort-wipe-count', String(count));
+      setText('cohort-wipe-filename', filename || 'Cohort.xlsx');
+      modal.classList.remove('hidden');
+    }
+    function hideCohortWipeModal() { const m = el('cohort-wipe-modal'); if (m) m.classList.add('hidden'); }
+    function wipeCohortAfterExport() {
+      SA.clearCohort(config.id);
+      refreshCohortUI();
+      hideCohortWipeModal();
+      showCohortToast('Cohort saved to Excel and cleared locally.', 'green');
     }
 
     /* ── New student ─────────────────────────────────────── */
@@ -1138,7 +1436,11 @@
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
              aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog,
-             showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge };
+             showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge,
+             // Cohort API
+             exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
+             hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
+             refreshCohortUI };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
@@ -1160,6 +1462,79 @@
         <button onclick="hideNewStudentModal(); S.confirmNewStudent();"
           class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm">
           Yes, clear & continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cohort setup (first-use) modal ───────────────────── -->
+  <div id="cohort-setup-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortSetupModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <div class="text-3xl mb-3 text-center">👥</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2 text-center">Set up this cohort</h3>
+      <p class="text-slate-500 text-sm mb-5 text-center">Students will accumulate in a single workbook for this scorer. Set the cohort label and marker context now.</p>
+
+      <label class="block text-xs font-semibold text-slate-500 mb-1">Cohort label</label>
+      <input type="text" id="cohort-setup-label" class="input-field cell-yellow mb-4" placeholder="e.g. MRKTG101 Sem1 2026">
+
+      <label class="block text-xs font-semibold text-slate-500 mb-2">Are you the only marker for this assessment?</label>
+      <div class="space-y-2 mb-5 text-sm">
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="radio" name="cohort-multi" id="cohort-setup-multi-no" checked class="mt-1">
+          <span><strong>Only marker</strong> — use one combined cohort for all students.</span>
+        </label>
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="radio" name="cohort-multi" id="cohort-setup-multi-yes" class="mt-1">
+          <span><strong>Multiple markers</strong> — prefix my cohort with the Tutor name from the form above so exports merge cleanly.</span>
+        </label>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="S.hideCohortSetupModal()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Cancel
+        </button>
+        <button id="cohort-setup-confirm"
+          class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm">
+          Start cohort
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cohort list modal ───────────────────────────────── -->
+  <div id="cohort-list-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortListModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-slate-800 text-lg">👥 Cohort students</h3>
+        <button onclick="S.hideCohortListModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <div id="cohort-list-body" class="overflow-y-auto flex-1 pr-2"></div>
+      <div class="pt-4 border-t border-slate-100 mt-4 text-center">
+        <button onclick="S.hideCohortListModal()" class="btn btn-ghost text-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Post-export wipe prompt ─────────────────────────── -->
+  <div id="cohort-wipe-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortWipeModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
+      <div class="text-3xl mb-3">✅</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Cohort saved to Excel</h3>
+      <p class="text-sm text-slate-600 mb-1"><strong id="cohort-wipe-filename"></strong></p>
+      <p class="text-sm text-slate-500 mb-1"><span id="cohort-wipe-count"></span> students exported.</p>
+      <p class="text-xs text-slate-400 mb-6">For privacy, clear the local copy now that the cohort is safely saved in Excel. You can always start a new cohort after this.</p>
+      <div class="flex gap-3">
+        <button onclick="S.hideCohortWipeModal()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Keep for now
+        </button>
+        <button onclick="S.wipeCohortAfterExport()"
+          class="flex-1 bg-red-600 text-white font-semibold py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
+          Yes, clear local copy
         </button>
       </div>
     </div>
