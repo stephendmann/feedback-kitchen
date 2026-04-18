@@ -131,8 +131,8 @@
 
       <!-- ─ A. Student Details ───────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <h2 class="step-title mb-1"><span class="step-badge">A</span>Enter Student Details</h2>
-        <p class="step-sub mb-4">Name, ID and tutor. Date auto-fills. Tutor name persists between students.</p>
+        <h2 class="step-title mb-1"><span class="step-badge">A</span>Student</h2>
+        <p class="step-sub mb-4">Name, ID, tutor. Date auto-fills; tutor persists between students.</p>
         <div class="grid sm:grid-cols-4 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
@@ -160,8 +160,8 @@
       <!-- ─ B. Grade Student using Rubric Criteria ──────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="p-4 border-b border-slate-100">
-          <h2 class="step-title"><span class="step-badge">B</span>Grade by Rubric</h2>
-          <p class="step-sub">Select a grade for each criterion. Use Override to enter a specific score instead of the grade midpoint.</p>
+          <h2 class="step-title"><span class="step-badge">B</span>Rubric scores <span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span></h2>
+          <p class="step-sub">Pick a grade per criterion. Override lets you enter a specific score instead of the midpoint.</p>
         </div>
         <div class="overflow-x-auto">
           <table>
@@ -191,8 +191,8 @@
 
       <!-- ─ C. Apply Any Penalty ─────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="penalty-section">
-        <h2 class="step-title mb-1"><span class="step-badge">C</span>Apply Penalties</h2>
-        <p class="step-sub mb-4">Review the suggested grade. Apply a late-submission penalty or override the overall grade if your professional judgement differs.</p>
+        <h2 class="step-title mb-1"><span class="step-badge">C</span>Adjustments</h2>
+        <p class="step-sub mb-4">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex-1">
             <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
@@ -252,8 +252,8 @@
       <!-- ─ D. Add Snippets to Precooked Feedback ────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div class="mb-3 no-print">
-          <h2 class="step-title" title="🍳 Cooked Feedback = the auto-generated feedback assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Add Feedback Snippets</h2>
-          <p class="step-sub">Feedback auto-generates from your grades into the 🍳 Cooked Feedback box. Drop in reusable snippets from the dropdown, then tweak the text directly.</p>
+          <h2 class="step-title" title="🍳 Cooked Feedback = the auto-generated feedback assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Feedback builder <span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
+          <p class="step-sub">Grades generate the draft. Add a snippet from the dropdown or edit the text directly.</p>
         </div>
         <div class="flex items-center justify-between mb-4 no-print">
           <div class="flex items-center gap-4">
@@ -272,7 +272,7 @@
       <!-- ─ E. Marker's Notes ────────────────────────────── -->
       <details class="bg-slate-50 border border-slate-200 rounded-2xl no-print" id="notes-panel">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="step-title"><span class="step-badge slate">E</span>Add Marker's Notes 📝</span>
+          <span class="step-title"><span class="step-badge slate">E</span>Marker's notes 📝</span>
           <span class="text-xs text-slate-400 font-normal">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
@@ -285,12 +285,12 @@
       <!-- ─ F. AI Garnish Preview (beta) ─────────────────── -->
       <details class="bg-amber-50 border border-amber-200 rounded-2xl no-print" id="ai-garnish-panel">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="step-title"><span class="step-badge amber">F</span>Apply AI Garnish ✨ <span class="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-2 align-middle">BETA · SANDBOX</span></span>
-          <span class="text-xs text-amber-700 font-normal">AI rewrites only the criterion body. Greeting, wrap-up and late-penalty notice stay fixed.</span>
+          <span class="step-title"><span class="step-badge amber">F</span>AI polish ✨ <span id="ai-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Not applied</span> <span class="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-2 align-middle">BETA</span></span>
+          <span class="text-xs text-amber-700 font-normal">AI rewrites the feedback body only. Greeting, closing and penalty notes stay unchanged.</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-amber-200 space-y-3">
           <p class="text-xs text-amber-800 leading-relaxed">
-            Click <strong>✨ Garnish with AI</strong> below to let Claude rewrite the criterion body for more varied, personalised feedback. Your grades, rubric descriptors, marker's notes and snippets shape the rewrite. Set up credentials via <em>🔐 AI Login</em> in the nav bar first.
+            AI rewrites the feedback body for clarity, tone and consistency. It will not change scores or penalty settings. Your grades, rubric descriptors, marker's notes and snippets are used as context. Review before copying. Set up credentials via <em>🔐 AI Login</em> in the nav bar first.
           </p>
 
           <!-- Privacy callout -->
@@ -342,12 +342,12 @@
       <!-- ─ G. Final Edit & Copy ─────────────────────────── -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
         <div class="mb-4">
-          <h2 class="step-title"><span class="step-badge green">G</span>Copy &amp; Export</h2>
-          <p class="step-sub">Review the text above (🍳 Cooked Feedback, or the ✨ AI Garnish output if used), then copy to your grading system. Download the Excel record for your files.</p>
+          <h2 class="step-title"><span class="step-badge green">G</span>Export</h2>
+          <p class="step-sub">Review the text above, then copy to your grading system or download the Excel record.</p>
         </div>
         <div class="flex flex-wrap gap-3 justify-center">
-          <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle/Turnitin) AND adds this student to the cohort workbook in Section H.">📋 Copy Feedback (+ add to cohort)</button>
-          <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (full criterion breakdown, scores, feedback and marker's notes — for moderation/audit) AND adds this student to the cohort workbook in Section H.">📥 Marker's Record — single student (+ add to cohort)</button>
+          <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle / Turnitin) and adds this student to the cohort workbook.">📋 Copy feedback</button>
+          <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (criterion breakdown, scores, feedback, marker's notes) and adds this student to the cohort workbook.">📥 Export student record</button>
           <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
           <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
           <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
@@ -358,8 +358,8 @@
       <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="cohort-section">
         <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
           <div>
-            <h2 class="step-title mb-1"><span class="step-badge slate">H</span>Cohort Workbook</h2>
-            <p class="step-sub">Each student is added to the cohort automatically when you click <strong>Copy Feedback</strong> or <strong>Marker's Record</strong>. Export the full class workbook when you're done.</p>
+            <h2 class="step-title mb-1"><span class="step-badge slate">H</span>Cohort export <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Empty</span></h2>
+            <p class="step-sub">Students are auto-added when you copy feedback or export a student record. Export the full workbook when done.</p>
           </div>
           <div class="text-right text-sm">
             <div class="text-slate-400 text-xs">Cohort label</div>
@@ -375,8 +375,8 @@
         </div>
 
         <div class="flex flex-wrap gap-3 mt-4">
-          <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to a single Excel workbook with grade matrix, per-student feedback, rubric and grade-feedback reference sheets.">📥 Export Cohort Workbook (Excel)</button>
-          <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">👥 View Cohort List</button>
+          <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to one Excel workbook: Student Feedback, Grade Matrix, Cohort Summary, Rubric and Grade Feedback reference.">📥 Export cohort (Excel)</button>
+          <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">👥 View list</button>
           <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">✏️ Rename</button>
           <button class="btn btn-ghost text-red-600" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer.">🗑 Clear Cohort</button>
         </div>
@@ -385,8 +385,8 @@
     </main>
   </div>
 
-  <script src="js/shared.js?v=2.0.4"></script>
-  <script src="js/excel.js?v=2.0.4"></script>
+  <script src="js/shared.js?v=2.1.1"></script>
+  <script src="js/excel.js?v=2.1.1"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -656,6 +656,7 @@
       el('print-grade').textContent           = (hasGrades || isFail) ? suggestedGrade : '–';
 
       updateFeedback();
+      refreshStatusChips();
     }
 
     /* ── Feedback generation ─────────────────────────────── */
@@ -996,6 +997,48 @@
       setText('cohort-banner-count', String(count));
       const banner = el('cohort-privacy-banner');
       if (banner) banner.classList.toggle('hidden', count === 0);
+      refreshStatusChips();
+    }
+
+    /* ── Status chips (live UI state) ─────────────────────── */
+    let _aiApplied = false;
+    function refreshStatusChips() {
+      // Rubric chip: X of Y graded
+      const rChip = el('rubric-status-chip');
+      if (rChip && config && config.criteria) {
+        const total  = config.criteria.length;
+        const graded = (studentGrades || []).filter(g => g && g.grade).length;
+        rChip.textContent = graded + ' of ' + total + ' graded';
+        rChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
+          + (graded === 0 ? 'bg-slate-200 text-slate-600'
+            : graded < total ? 'bg-amber-100 text-amber-800'
+            : 'bg-green-100 text-green-800');
+      }
+      // Feedback chip
+      const fChip = el('feedback-status-chip');
+      if (fChip) {
+        const ta = el('feedback-text');
+        const hasText = ta && ta.value && ta.value.trim().length > 0;
+        fChip.textContent = hasText ? 'Draft ready' : 'Draft pending';
+        fChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
+          + (hasText ? 'bg-green-100 text-green-800' : 'bg-slate-200 text-slate-600');
+      }
+      // AI chip
+      const aChip = el('ai-status-chip');
+      if (aChip) {
+        aChip.textContent = _aiApplied ? 'Applied' : 'Not applied';
+        aChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
+          + (_aiApplied ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600');
+      }
+      // Cohort chip
+      const cChip = el('cohort-status-chip');
+      if (cChip) {
+        const cohort = SA.getCohort(config && config.id);
+        const count  = cohort ? cohort.students.length : 0;
+        cChip.textContent = count === 0 ? 'Empty' : count + ' saved';
+        cChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
+          + (count === 0 ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-800');
+      }
     }
 
     function setText(id, v) { const e = el(id); if (e) e.textContent = v; }
@@ -1087,7 +1130,9 @@
         SA.clearAIGarnishLog();
       }
 
+      _aiApplied = false;
       recalculate();
+      refreshStatusChips();
     }
 
     /* ── Helpers ─────────────────────────────────────────── */
@@ -1294,6 +1339,8 @@
       });
       el('ai-final-output').value = final;
       SA.logAIGarnish({ stage: 'assembled', bodyLen: body.length, finalLen: final.length });
+      _aiApplied = true;
+      refreshStatusChips();
     }
 
     function aiCopyFinal() {
