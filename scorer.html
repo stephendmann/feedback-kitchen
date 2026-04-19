@@ -130,6 +130,21 @@
       </div>
     </nav>
 
+    <!-- Section rail (v2.2) -->
+    <div id="section-rail"
+         class="no-print sticky top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="max-w-5xl mx-auto px-4 h-9 flex items-center gap-3 overflow-x-auto text-xs font-semibold text-slate-400">
+        <a href="#sec-student"  data-rail="A" class="hover:text-blue-700 whitespace-nowrap">A · Student</a>
+        <a href="#sec-rubric"   data-rail="B" class="hover:text-blue-700 whitespace-nowrap">B · Rubric</a>
+        <a href="#sec-adjust"   data-rail="C" class="hover:text-blue-700 whitespace-nowrap">C · Adjustments</a>
+        <a href="#sec-feedback" data-rail="D" class="hover:text-blue-700 whitespace-nowrap">D · Feedback</a>
+        <a href="#sec-notes"    data-rail="E" class="hover:text-blue-700 whitespace-nowrap">E · Notes</a>
+        <a href="#sec-ai"       data-rail="F" class="hover:text-blue-700 whitespace-nowrap">F · AI</a>
+        <a href="#sec-export"   data-rail="G" class="hover:text-blue-700 whitespace-nowrap">G · Export</a>
+        <a href="#sec-cohort"   data-rail="H" class="hover:text-blue-700 whitespace-nowrap">H · Cohort</a>
+      </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-blue-700 text-white px-4 py-6 no-print">
       <div class="max-w-5xl mx-auto">
@@ -141,7 +156,7 @@
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 print-full">
 
       <!-- ─ A. Student Details ───────────────────────────── -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+      <section id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <h2 class="step-title mb-1"><span class="step-badge">A</span>Student</h2>
         <p class="step-sub mb-4">Name, ID, tutor. Date auto-fills; tutor persists between students.</p>
         <div class="grid sm:grid-cols-4 gap-4">
@@ -169,7 +184,7 @@
       </section>
 
       <!-- ─ B. Grade Student using Rubric Criteria ──────── -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <section id="sec-rubric" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="p-4 border-b border-slate-100">
           <h2 class="step-title"><span class="step-badge">B</span>Rubric scores <span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span></h2>
           <p class="step-sub">Pick a grade per criterion. Override lets you enter a specific score instead of the midpoint.</p>
@@ -201,7 +216,7 @@
       </section>
 
       <!-- ─ C. Apply Any Penalty ─────────────────────────── -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="penalty-section">
+      <section id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
         <h2 class="step-title mb-1"><span class="step-badge">C</span>Adjustments</h2>
         <p class="step-sub mb-4">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -261,7 +276,7 @@
       </section>
 
       <!-- ─ D. Add Snippets to Precooked Feedback ────────── -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+      <section id="sec-feedback" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div class="mb-3 no-print">
           <h2 class="step-title" title="🍳 Cooked Feedback = the auto-generated feedback assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Feedback builder <span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
           <p class="step-sub">Grades generate the draft. Add a snippet from the dropdown or edit the text directly.</p>
@@ -281,7 +296,7 @@
       </section>
 
       <!-- ─ E. Marker's Notes ────────────────────────────── -->
-      <details class="bg-slate-50 border border-slate-200 rounded-2xl no-print" id="notes-panel">
+      <details id="sec-notes" class="bg-slate-50 border border-slate-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title"><span class="step-badge slate">E</span>Marker's notes 📝</span>
           <span class="text-xs text-slate-400 font-normal">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>
@@ -294,7 +309,7 @@
       </details>
 
       <!-- ─ F. AI Garnish Preview (beta) ─────────────────── -->
-      <details class="bg-amber-50 border border-amber-200 rounded-2xl no-print" id="ai-garnish-panel">
+      <details id="sec-ai" class="bg-amber-50 border border-amber-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title"><span class="step-badge amber">F</span>AI polish ✨ <span id="ai-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Not applied</span> <span class="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-2 align-middle">BETA</span></span>
           <span class="text-xs text-amber-700 font-normal">AI rewrites the feedback body only. Greeting, closing and penalty notes stay unchanged.</span>
@@ -351,7 +366,7 @@
       </details>
 
       <!-- ─ G. Final Edit & Copy ─────────────────────────── -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
+      <section id="sec-export" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
         <div class="mb-4">
           <h2 class="step-title"><span class="step-badge green">G</span>Export</h2>
           <p class="step-sub">Review the text above, then copy to your grading system or download the Excel record.</p>
@@ -369,7 +384,7 @@
       </section>
 
       <!-- ─ H. Cohort (cumulative cohort export) ─────────────── -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print" id="cohort-section">
+      <section id="sec-cohort" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
         <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
           <div>
             <h2 class="step-title mb-1"><span class="step-badge slate">H</span>Cohort export <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Empty</span></h2>
@@ -433,8 +448,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.2.2"></script>
-  <script src="js/excel.js?v=2.2.2"></script>
+  <script src="js/shared.js?v=2.2.3"></script>
+  <script src="js/excel.js?v=2.2.3"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -503,7 +518,7 @@
       // Late penalty select
       const sel = document.getElementById('late-penalty-select');
       if (!config.enableLatePenalties) {
-        document.getElementById('penalty-section').style.display = 'none';
+        document.getElementById('sec-adjust').style.display = 'none';
       } else {
         config.latePenalties.forEach((lp, i) => {
           const opt = document.createElement('option');
@@ -1726,6 +1741,21 @@
         if (S && S.hideSnippetModal) S.hideSnippetModal();
       }
     });
+
+    (function () {
+      const rail = document.querySelectorAll('#section-rail [data-rail]');
+      if (!rail.length) return;
+      const highlight = id => rail.forEach(a => {
+        a.classList.toggle('text-blue-700', a.getAttribute('href') === '#' + id);
+        a.classList.toggle('text-slate-400', a.getAttribute('href') !== '#' + id);
+      });
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      ['sec-student','sec-rubric','sec-adjust','sec-feedback',
+       'sec-notes','sec-ai','sec-export','sec-cohort']
+        .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
+    })();
   </script>
 </body>
 </html>
