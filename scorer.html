@@ -448,8 +448,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.2.5"></script>
-  <script src="js/excel.js?v=2.2.5"></script>
+  <script src="js/shared.js?v=2.2.6"></script>
+  <script src="js/excel.js?v=2.2.6"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -899,7 +899,8 @@
         ta.select(); document.execCommand('copy');
       });
       // Auto-add to cohort
-      saveCurrentStudentToCohort({ silent: false });
+      saveCurrentStudentToCohort({ silent: true });
+      showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
     }
 
     /* ── Excel download (single student) ─────────────────── */
