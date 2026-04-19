@@ -43,7 +43,7 @@
     .feedback-box { font-family: monospace; font-size: 0.82rem; line-height: 1.65;
                     background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 0.75rem;
                     padding: 1rem; width: 100%; min-height: 200px; resize: vertical;
-                    white-space: pre-wrap; outline: none; }
+                    white-space: pre-wrap; outline: none; field-sizing: content; max-height: 60vh; }
     .feedback-box:focus { border-color: #2563eb; }
     .btn { font-weight: 600; padding: 0.55rem 1.2rem; border-radius: 0.5rem;
            border: none; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; display: inline-flex;
@@ -448,8 +448,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.2.4"></script>
-  <script src="js/excel.js?v=2.2.4"></script>
+  <script src="js/shared.js?v=2.2.5"></script>
+  <script src="js/excel.js?v=2.2.5"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -528,6 +528,17 @@
       }
 
       loadSnippets();
+
+      document.querySelectorAll('.feedback-box').forEach(ta => {
+        const grow = () => {
+          if (CSS && CSS.supports && CSS.supports('field-sizing: content')) return;
+          ta.style.height = 'auto';
+          ta.style.height = Math.min(ta.scrollHeight + 2, window.innerHeight * 0.6) + 'px';
+        };
+        ta.addEventListener('input', grow);
+        grow();
+      });
+
       renderCriteriaRows();
       recalculate();
       updateAILoginBadge();
