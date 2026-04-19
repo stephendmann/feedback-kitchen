@@ -8,6 +8,16 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <title>Feedback Kitchen — Build Custom Assessment Feedback Tools</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQSJNBBPKZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LQSJNBBPKZ', {
+      anonymize_ip: true
+    });
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -194,9 +204,22 @@
   </section>
 
   <!-- ── Footer ───────────────────────────────────────────── -->
-  <footer class="bg-slate-800 text-slate-400 text-center text-sm py-8 px-4">
-    <p class="font-semibold text-slate-200 mb-1 flex items-center justify-center gap-2"><img src="favicon-32.png" alt="" width="20" height="20" style="filter:grayscale(1) brightness(2)"> Feedback Kitchen</p>
-    <p>Built for educators.<sup><a href="#acknowledgements" class="text-blue-400 hover:text-blue-200 transition-colors font-semibold">¹</a></sup> Free to use. 100% local processing — student data never leaves your device.</p>
+  <footer class="bg-slate-800 text-slate-400 text-sm py-8 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+      <div class="text-center md:text-left">
+        <p class="font-semibold text-slate-200 mb-1 flex items-center justify-center md:justify-start gap-2"><img src="favicon-32.png" alt="" width="20" height="20" style="filter:grayscale(1) brightness(2)"> Feedback Kitchen</p>
+        <p>Built for educators.<sup><a href="#acknowledgements" class="text-blue-400 hover:text-blue-200 transition-colors font-semibold">¹</a></sup> Free to use. 100% local processing — student data never leaves your device.</p>
+      </div>
+      <div class="flex flex-col items-center md:items-end gap-3 text-center md:text-right">
+        <p class="text-xs text-slate-500 md:whitespace-nowrap">If my tools save you time, a tip helps cover hosting and AI tokens to keep them improving.</p>
+        <a href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer" aria-label="Support Stephen on Ko-fi" class="inline-block transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded">
+          <img src="https://storage.ko-fi.com/cdn/brandasset/v2/support_me_on_kofi_blue.png"
+               alt="Support me on Ko-fi"
+               height="36"
+               style="height:36px;width:auto;border:0;display:block">
+        </a>
+      </div>
+    </div>
   </footer>
 
   <!-- ── Acknowledgements ──────────────────────────────────── -->

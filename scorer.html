@@ -78,6 +78,12 @@
     .step-title { display: inline-flex; align-items: center; font-size: 0.95rem;
                   font-weight: 800; color: #1e293b; text-transform: none; letter-spacing: 0; }
     .step-sub { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; margin-left: 2.15rem; font-weight: 400; }
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; }
+    details[open] > summary { border-bottom: 1px solid #f1f5f9; }
+    details > .section-body { padding: 1rem 1.25rem; }
+    details > .section-body.compact { padding: 0 0 0.5rem 0; } /* for rubric table which has its own table padding */
     body { padding-bottom: 4.5rem; }
     @media print {
       .no-print { display: none !important; }
@@ -123,6 +129,9 @@
             <button id="rnd-half"  onclick="S.setRounding('half')"  title="Half point — e.g. 73.5"     class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">½</button>
             <button id="rnd-whole" onclick="S.setRounding('whole')" title="Whole number — e.g. 73"      class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1</button>
           </div>
+          <button class="btn btn-ghost text-sm"
+                  onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
+                  title="Keyboard shortcuts (press ?)">⌨</button>
           <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="AI Garnish login — username & password for direct AI access">🔐 AI Login</button>
           <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link" title="Manage your scorers (kitchens)">⚙ Manage</a>
           <button class="btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New Student</button>
@@ -142,6 +151,9 @@
         <a href="#sec-ai"       data-rail="F" class="hover:text-blue-700 whitespace-nowrap">F · AI</a>
         <a href="#sec-export"   data-rail="G" class="hover:text-blue-700 whitespace-nowrap">G · Export</a>
         <a href="#sec-cohort"   data-rail="H" class="hover:text-blue-700 whitespace-nowrap">H · Cohort</a>
+        <span class="flex-1"></span>
+        <button onclick="S.setAllDetails(true)"  class="text-slate-500 hover:text-blue-700 whitespace-nowrap" title="Expand all sections">⤢ Expand all</button>
+        <button onclick="S.setAllDetails(false)" class="text-slate-500 hover:text-blue-700 whitespace-nowrap" title="Collapse all sections except the current one">⤡ Collapse all</button>
       </div>
     </div>
 
@@ -156,102 +168,115 @@
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 print-full">
 
       <!-- ─ A. Student Details ───────────────────────────── -->
-      <section id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <h2 class="step-title mb-1"><span class="step-badge">A</span>Student</h2>
-        <p class="step-sub mb-4">Name, ID, tutor. Date auto-fills; tutor persists between students.</p>
-        <div class="grid sm:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
-            <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()"
-                   title="The full name of the student being marked. Appears in the feedback header and your Excel record.">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
-            <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()"
-                   title="The student's institutional ID number — used in your Excel record for identification.">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
-            <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()"
-                   title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
-            <input type="text" id="student-date" class="input-field" readonly
-                   title="Auto-filled with today's date. Recorded in your Excel marker's record.">
+      <details open id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100">
+        <summary>
+          <h2 class="step-title mb-0"><span class="step-badge">A</span>Student</h2>
+          <span class="text-[11px] text-slate-400">click to collapse</span>
+        </summary>
+        <div class="section-body">
+          <p class="step-sub mb-4" style="margin-left:2.15rem">Name, ID, tutor. Date auto-fills; tutor persists between students.</p>
+          <div class="grid sm:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
+              <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()"
+                     title="The full name of the student being marked. Appears in the feedback header and your Excel record.">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
+              <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()"
+                     title="The student's institutional ID number — used in your Excel record for identification.">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
+              <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()"
+                     title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
+              <input type="text" id="student-date" class="input-field" readonly
+                     title="Auto-filled with today's date. Recorded in your Excel marker's record.">
+            </div>
           </div>
         </div>
-      </section>
+      </details>
 
       <!-- ─ B. Grade Student using Rubric Criteria ──────── -->
-      <section id="sec-rubric" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="p-4 border-b border-slate-100">
-          <h2 class="step-title"><span class="step-badge">B</span>Rubric scores <span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span></h2>
-          <p class="step-sub">Pick a grade per criterion. Override lets you enter a specific score instead of the midpoint.</p>
+      <details open id="sec-rubric" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <summary>
+          <h2 class="step-title mb-0"><span class="step-badge">B</span>Rubric scores <span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span></h2>
+          <span class="text-[11px] text-slate-400">click to collapse</span>
+        </summary>
+        <div class="section-body compact">
+          <p class="step-sub mb-4" style="margin-left:2.15rem">Pick a grade per criterion. Override lets you enter a specific score instead of the midpoint.</p>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th title="The marking criterion as defined in your rubric.">Criterion</th>
+                  <th class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
+                  <th class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
+                  <th class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
+                  <th class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
+                  <th class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
+                  <th class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
+                  <th class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
+                </tr>
+              </thead>
+              <tbody id="criteria-tbody"></tbody>
+              <tfoot>
+                <tr id="weight-check-row">
+                  <td colspan="2" class="text-xs text-slate-400 font-semibold py-3 px-3">Weight check</td>
+                  <td colspan="4" id="weight-check-cell" class="text-xs text-center font-bold py-3"></td>
+                  <td colspan="2" id="weighted-total-cell" class="text-right text-base font-bold text-blue-700 px-3"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
-        <div class="overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th title="The marking criterion as defined in your rubric.">Criterion</th>
-                <th class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
-                <th class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
-                <th class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
-                <th class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
-                <th class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
-                <th class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
-                <th class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
-              </tr>
-            </thead>
-            <tbody id="criteria-tbody"></tbody>
-            <tfoot>
-              <tr id="weight-check-row">
-                <td colspan="2" class="text-xs text-slate-400 font-semibold py-3 px-3">Weight check</td>
-                <td colspan="4" id="weight-check-cell" class="text-xs text-center font-bold py-3"></td>
-                <td colspan="2" id="weighted-total-cell" class="text-right text-base font-bold text-blue-700 px-3"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </section>
+      </details>
 
       <!-- ─ C. Apply Any Penalty ─────────────────────────── -->
-      <section id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
-        <h2 class="step-title mb-1"><span class="step-badge">C</span>Adjustments</h2>
-        <p class="step-sub mb-4">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
-        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div class="flex-1">
-            <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
-            <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.recalculate()" style="max-width:320px"
-                    title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
-          </div>
-          <div class="flex-1 text-right">
-            <div class="flex items-center justify-end gap-2 mb-2">
-              <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
-              <span id="score-rounding-label"
-                    class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
-                    title="Current score display mode — change using the 1.0 / ½ / 1 buttons in the nav bar above">1 d.p.</span>
+      <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
+        <summary>
+          <h2 class="step-title mb-0"><span class="step-badge">C</span>Adjustments</h2>
+          <span class="text-[11px] text-slate-400">click to collapse</span>
+        </summary>
+        <div class="section-body">
+          <p class="step-sub mb-4" style="margin-left:2.15rem">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div class="flex-1">
+              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
+              <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.recalculate()" style="max-width:320px"
+                      title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
             </div>
-            <div class="flex items-baseline justify-end gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2"
-                 title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change rounding with the 1.0 / ½ / 1 buttons in the nav bar.">
-              <span class="score-badge text-blue-800" id="penalised-score-display"
-                    title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
-              <span class="text-slate-400 text-sm">/100</span>
-              <span class="grade-badge text-2xl px-4 py-1 bg-blue-200 text-blue-800" id="grade-display"
-                    title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
+            <div class="flex-1 text-right">
+              <div class="flex items-center justify-end gap-2 mb-2">
+                <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
+                <span id="score-rounding-label"
+                      class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
+                      title="Current score display mode — change using the 1.0 / ½ / 1 buttons in the nav bar above">1 d.p.</span>
+              </div>
+              <div class="flex items-baseline justify-end gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2"
+                   title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change rounding with the 1.0 / ½ / 1 buttons in the nav bar.">
+                <span class="score-badge text-blue-800" id="penalised-score-display"
+                      title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
+                <span class="text-slate-400 text-sm">/100</span>
+                <span class="grade-badge text-2xl px-4 py-1 bg-blue-200 text-blue-800" id="grade-display"
+                      title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Grade Override -->
-        <div class="mt-4 flex items-center gap-3">
-          <label class="text-xs font-semibold text-slate-400 shrink-0">Grade Override <span class="font-normal">(optional)</span></label>
-          <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
-                 placeholder="e.g. B+" maxlength="3" oninput="S.onOverrideGrade()"
-                 title="Overrides the final overall grade — use when your professional judgement differs from the weighted result. This is separate from the per-criterion Override Score above.">
-          <span class="text-xs text-slate-400">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
+          <!-- Grade Override -->
+          <div class="mt-4 flex items-center gap-3">
+            <label class="text-xs font-semibold text-slate-400 shrink-0">Grade Override <span class="font-normal">(optional)</span></label>
+            <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
+                   placeholder="e.g. B+" maxlength="3" oninput="S.onOverrideGrade()"
+                   title="Overrides the final overall grade — use when your professional judgement differs from the weighted result. This is separate from the per-criterion Override Score above.">
+            <span class="text-xs text-slate-400">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
+          </div>
         </div>
-      </section>
+      </details>
 
       <!-- Penalty+grade print version -->
       <section class="hidden bg-slate-50 rounded-xl border border-slate-200 p-4 print-penalty-section">
@@ -276,24 +301,29 @@
       </section>
 
       <!-- ─ D. Add Snippets to Precooked Feedback ────────── -->
-      <section id="sec-feedback" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <div class="mb-3 no-print">
-          <h2 class="step-title" title="🍳 Cooked Feedback = the auto-generated feedback assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Feedback builder <span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
-          <p class="step-sub">Grades generate the draft. Add a snippet from the dropdown or edit the text directly.</p>
-        </div>
-        <div class="flex items-center justify-between mb-4 no-print">
-          <div class="flex items-center gap-4">
-            <select id="snippet-select" class="input-field text-sm py-1 px-2 w-48 bg-slate-50 border-slate-200 cursor-pointer" onchange="S.insertSnippet(this.value); this.value='';">
-              <option value="">💬 Insert snippet...</option>
-            </select>
+      <details open id="sec-feedback" class="bg-white rounded-2xl shadow-sm border border-slate-100">
+        <summary>
+          <h2 class="step-title mb-0" title="🍳 Cooked Feedback = the auto-generated feedback assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Feedback builder <span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
+          <span class="text-[11px] text-slate-400">click to collapse</span>
+        </summary>
+        <div class="section-body">
+          <div class="mb-3 no-print">
+            <p class="step-sub mb-4" style="margin-left:2.15rem">Grades generate the draft. Add a snippet from the dropdown or edit the text directly.</p>
           </div>
-          <div class="flex gap-2">
-            <button class="btn btn-ghost text-sm" onclick="S.regenerateFeedback()" title="Discard manual edits and regenerate feedback from current grades">↺ Regenerate</button>
-            <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
+          <div class="flex items-center justify-between mb-4 no-print">
+            <div class="flex items-center gap-4">
+              <select id="snippet-select" class="input-field text-sm py-1 px-2 w-48 bg-slate-50 border-slate-200 cursor-pointer" onchange="S.insertSnippet(this.value); this.value='';">
+                <option value="">💬 Insert snippet...</option>
+              </select>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost text-sm" onclick="S.regenerateFeedback()" title="Discard manual edits and regenerate feedback from current grades">↺ Regenerate</button>
+              <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
+            </div>
           </div>
+          <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true" oninput="S.refreshAIInputChips()"></textarea>
         </div>
-        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true" oninput="S.refreshAIInputChips()"></textarea>
-      </section>
+      </details>
 
       <!-- ─ E. Marker's Notes ────────────────────────────── -->
       <details id="sec-notes" class="bg-slate-50 border border-slate-200 rounded-2xl no-print">
@@ -355,6 +385,9 @@
             <button id="ai-action-shorten"  class="btn btn-amber text-sm" onclick="S.aiAssist('shorten')"  title="Compress the current body to fit typical LMS character limits">✂️ Shorten for LMS</button>
             <button class="btn btn-ghost text-sm" onclick="S.aiResetPanel()" title="Clear AI inputs and outputs">↺ Reset</button>
           </div>
+          <p class="text-[11px] text-amber-700 italic">
+            Partial marking is fine — AI Assist will skip ungraded criteria and note the partial total. Check the rubric chip to see what's covered.
+          </p>
 
           <!-- Privacy callout (kept from v2.1) -->
           <div class="flex gap-2 items-start bg-red-50 border border-red-200 rounded-lg p-3">
@@ -379,7 +412,7 @@
           </div>
 
           <!-- Stage 0 manual fallback kept, collapsed -->
-          <details class="bg-white/60 border border-amber-200 rounded-lg">
+          <details id="sec-ai-manual-fallback" class="bg-white/60 border border-amber-200 rounded-lg">
             <summary class="cursor-pointer px-3 py-2 text-xs font-semibold text-amber-900 select-none">
               ⚙ Manual fallback — paste an AI reply from your own Claude/ChatGPT session
             </summary>
@@ -400,50 +433,61 @@
       </details>
 
       <!-- ─ G. Final Edit & Copy ─────────────────────────── -->
-      <section id="sec-export" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
-        <div class="mb-4">
-          <h2 class="step-title"><span class="step-badge green">G</span>Export</h2>
-          <p class="step-sub">Review the text above, then Copy to your grading system or download the Excel record. Use the bar at the bottom for quick access.</p>
+      <details id="sec-export" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
+        <summary>
+          <h2 class="step-title mb-0"><span class="step-badge green">G</span>Export</h2>
+          <span class="text-[11px] text-slate-400">click to expand</span>
+        </summary>
+        <div class="section-body">
+          <div class="mb-4">
+            <p class="step-sub mb-4" style="margin-left:2.15rem">Review the text above, then Copy to your grading system or download the Excel record. Use the bar at the bottom for quick access.</p>
+          </div>
+          <div class="flex flex-wrap gap-3 justify-center hidden md:flex" id="section-g-buttons">
+            <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle / Turnitin) and adds this student to the cohort workbook.">📋 Copy feedback</button>
+            <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (criterion breakdown, scores, feedback, marker's notes) and adds this student to the cohort workbook.">📥 Export student record</button>
+            <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
+            <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
+            <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
+          </div>
+          <p class="md:hidden text-center text-xs text-slate-500 italic">
+            Export controls are now in the bar at the bottom of the screen.
+          </p>
         </div>
-        <div class="flex flex-wrap gap-3 justify-center hidden md:flex" id="section-g-buttons">
-          <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle / Turnitin) and adds this student to the cohort workbook.">📋 Copy feedback</button>
-          <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (criterion breakdown, scores, feedback, marker's notes) and adds this student to the cohort workbook.">📥 Export student record</button>
-          <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
-          <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
-          <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
-        </div>
-        <p class="md:hidden text-center text-xs text-slate-500 italic">
-          Export controls are now in the bar at the bottom of the screen.
-        </p>
-      </section>
+      </details>
 
       <!-- ─ H. Cohort (cumulative cohort export) ─────────────── -->
-      <section id="sec-cohort" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 no-print">
-        <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
-          <div>
-            <h2 class="step-title mb-1"><span class="step-badge slate">H</span>Cohort export <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Empty</span></h2>
-            <p class="step-sub">Students are auto-added when you copy feedback or export a student record. Export the full workbook when done.</p>
+      <details id="sec-cohort" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
+        <summary>
+          <div class="flex items-center justify-between gap-3 flex-wrap w-full">
+            <div>
+              <h2 class="step-title mb-0"><span class="step-badge slate">H</span>Cohort export <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Empty</span></h2>
+            </div>
+            <div class="text-right text-sm">
+              <div class="text-slate-400 text-xs">Cohort label</div>
+              <div class="font-semibold text-slate-700" id="cohort-label">—</div>
+              <div class="text-xs text-slate-500 mt-0.5"><span id="cohort-count">0</span> students saved</div>
+            </div>
           </div>
-          <div class="text-right text-sm">
-            <div class="text-slate-400 text-xs">Cohort label</div>
-            <div class="font-semibold text-slate-700" id="cohort-label">—</div>
-            <div class="text-xs text-slate-500 mt-0.5"><span id="cohort-count">0</span> students saved</div>
+        </summary>
+        <div class="section-body">
+          <div class="mb-2">
+            <p class="step-sub mb-4" style="margin-left:2.15rem">Students are auto-added when you copy feedback or export a student record. Export the full workbook when done.</p>
+          </div>
+
+          <!-- Privacy banner — visible whenever cohort has ≥1 student -->
+          <div id="cohort-privacy-banner" class="hidden border border-amber-300 bg-amber-50 text-amber-800 text-xs rounded-xl px-4 py-3 mt-3">
+            ⚠️ <strong><span id="cohort-banner-count">0</span> students cached locally on this device.</strong>
+            Export the cohort to Excel to save permanently — local data will be lost if you clear browser storage.
+          </div>
+
+          <div class="flex flex-wrap gap-3 mt-4">
+            <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to one Excel workbook: Student Feedback, Grade Matrix, Cohort Summary, Rubric and Grade Feedback reference.">📥 Export cohort (Excel)</button>
+            <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">👥 View list</button>
+            <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">✏️ Rename</button>
+            <button class="btn btn-ghost text-red-600" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer.">🗑 Clear Cohort</button>
           </div>
         </div>
-
-        <!-- Privacy banner — visible whenever cohort has ≥1 student -->
-        <div id="cohort-privacy-banner" class="hidden border border-amber-300 bg-amber-50 text-amber-800 text-xs rounded-xl px-4 py-3 mt-3">
-          ⚠️ <strong><span id="cohort-banner-count">0</span> students cached locally on this device.</strong>
-          Export the cohort to Excel to save permanently — local data will be lost if you clear browser storage.
-        </div>
-
-        <div class="flex flex-wrap gap-3 mt-4">
-          <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to one Excel workbook: Student Feedback, Grade Matrix, Cohort Summary, Rubric and Grade Feedback reference.">📥 Export cohort (Excel)</button>
-          <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">👥 View list</button>
-          <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">✏️ Rename</button>
-          <button class="btn btn-ghost text-red-600" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer.">🗑 Clear Cohort</button>
-        </div>
-      </section>
+      </details>
 
     </main>
 
@@ -458,6 +502,9 @@
              title="Live summary of the current student">
           No student yet
         </div>
+        <span class="hidden lg:inline text-[10px] text-slate-400 italic whitespace-nowrap mr-2">
+          Press <kbd class="px-1 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono">?</kbd> for shortcuts
+        </span>
         <button class="btn btn-ghost text-sm" onclick="S.newStudent()" title="Clear and start a new student">↺ New</button>
         <button class="btn btn-ghost text-sm" onclick="S.downloadExcel()" title="Download this student's marker's record">📥 Student</button>
         <button class="btn btn-ghost text-sm" onclick="S.exportCohort()" title="Export the full cohort workbook">📥 Cohort</button>
@@ -475,15 +522,18 @@
       </div>
       <div class="flex flex-col items-center md:items-end gap-3 text-center md:text-right">
         <p class="text-xs text-slate-500 md:whitespace-nowrap">If my tools save you time, a tip helps cover hosting and AI tokens to keep them improving.</p>
-        <a href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer" aria-label="Support Stephen on Ko-fi" class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-slate-900 shadow-sm hover:bg-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 transition">
-          <span aria-hidden="true">☕</span> Buy me a coffee
+        <a href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer" aria-label="Support Stephen on Ko-fi" class="inline-block transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 rounded">
+          <img src="https://storage.ko-fi.com/cdn/brandasset/v2/support_me_on_kofi_blue.png"
+               alt="Support me on Ko-fi"
+               height="36"
+               style="height:36px;width:auto;border:0;display:block">
         </a>
       </div>
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.3.3"></script>
-  <script src="js/excel.js?v=2.3.3"></script>
+  <script src="js/shared.js?v=2.5.1"></script>
+  <script src="js/excel.js?v=2.5.1"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -576,6 +626,7 @@
 
       renderCriteriaRows();
       recalculate();
+      restoreSectionState();
       updateAILoginBadge();
       refreshCohortUI();
 
@@ -596,6 +647,9 @@
           showCohortToast('Cohort "' + (existing.label || '—') + '" is over 30 days old — export or clear.', 'amber');
         }, 1200);
       }
+
+      wireSectionStatePersistence();
+      bindKeyboardShortcuts();
     }
 
     /* ── No-config screen (with list if scorers exist) ───── */
@@ -1447,17 +1501,26 @@
     /* ── AI Garnish (beta) — Stage 0 ─────────────────────── */
     function _aiGuards() {
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
-        alert('Grade at least one criterion before using AI Garnish.');
+        alert('Grade at least one criterion before using AI Assist.');
         return false;
       }
-      // Match existing weight-check behaviour — block prompt build if weights ≠ 100
       const weightSum = scoreResult.rows
         .filter(function (r) { return r.grade; })
         .reduce(function (s, r) { return s + r.criterion.weight; }, 0);
-      if (Math.round(weightSum) !== 100) {
-        const displayWeightSum = Number.isInteger(weightSum) ? weightSum : parseFloat(weightSum.toFixed(2));
-        alert('Graded criteria weight ' + displayWeightSum + '% — must total 100% before building the AI prompt.');
+      const displayWeightSum = Number.isInteger(weightSum) ? weightSum : parseFloat(weightSum.toFixed(2));
+      // Over-100% is a real configuration error — keep as a hard block.
+      if (Math.round(weightSum) > 100) {
+        alert('Graded criteria weight ' + displayWeightSum + '% — exceeds 100%. Check your weights before using AI Assist.');
         return false;
+      }
+      // Under-100% is a legitimate partial-mark scenario — soft confirm instead.
+      if (Math.round(weightSum) < 100) {
+        const proceed = confirm(
+          'Only ' + displayWeightSum + '% of criteria are graded.\n\n' +
+          'AI Assist will generate feedback only for the criteria you have graded. The TOTAL SCORE line will reflect ' + displayWeightSum + ' out of 100, not a full 100-point mark.\n\n' +
+          'Continue?'
+        );
+        if (!proceed) return false;
       }
       return true;
     }
@@ -1805,6 +1868,86 @@
       }
     }
 
+    function bindKeyboardShortcuts() {
+      function isEditing() {
+        const t = document.activeElement;
+        if (!t) return false;
+        const tag = t.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable;
+      }
+
+      function closeAnyOpenModal() {
+        ['cohort-list-modal', 'cohort-setup-modal', 'cohort-wipe-modal', 'ai-settings-modal', 'shortcuts-modal']
+          .forEach(function (id) {
+            const m = document.getElementById(id);
+            if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
+          });
+      }
+
+      document.addEventListener('keydown', function (e) {
+        // Esc — always close modals
+        if (e.key === 'Escape') { closeAnyOpenModal(); return; }
+
+        // ? — open shortcuts modal (only if not editing)
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) {
+          e.preventDefault();
+          const m = document.getElementById('shortcuts-modal');
+          if (m) m.classList.remove('hidden');
+          return;
+        }
+
+        // Ctrl/Cmd + Shift + <letter>
+        const mod = (e.ctrlKey || e.metaKey) && e.shiftKey;
+        if (!mod) return;
+        const key = e.key.toLowerCase();
+
+        if (key === 'c') { e.preventDefault(); copyFeedback(); return; }
+        if (key === 'e') { e.preventDefault(); downloadExcel(); return; }
+        if (key === 'x') { e.preventDefault(); exportCohort(); return; }
+        if (key === 'n') { e.preventDefault(); newStudent(); return; }
+      });
+    }
+
+    function setAllDetails(open) {
+      document.querySelectorAll('main details').forEach(function (d) {
+        d.open = !!open;
+      });
+      persistSectionState();
+    }
+
+    const SECTION_STATE_KEY = 'SA_SECTION_STATE_V1';
+
+    function persistSectionState() {
+      const state = {};
+      document.querySelectorAll('main details').forEach(function (d) {
+        if (!d.id) return;
+        state[d.id] = !!d.open;
+      });
+      try { localStorage.setItem(SECTION_STATE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    function restoreSectionState() {
+      let state = null;
+      try { 
+        const raw = localStorage.getItem(SECTION_STATE_KEY);
+        if (raw) state = JSON.parse(raw);
+      } catch (e) {}
+      
+      if (!state || Object.keys(state).length === 0) return;
+
+      document.querySelectorAll('main details').forEach(function (d) {
+        if (!d.id) return;
+        if (d.id in state) d.open = !!state[d.id];
+      });
+    }
+
+    function wireSectionStatePersistence() {
+      document.querySelectorAll('main details').forEach(function (d) {
+        if (!d.id) return;
+        d.addEventListener('toggle', persistSectionState);
+      });
+    }
+
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
@@ -1814,7 +1957,8 @@
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
-             refreshCohortUI, refreshStickySummary, refreshAIInputChips };
+             refreshCohortUI, refreshStickySummary, refreshAIInputChips,
+             setAllDetails, persistSectionState, restoreSectionState };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
@@ -1968,6 +2112,53 @@
       </div>
       <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">
         Credentials stay in this browser's localStorage and are only sent to the Feedback Kitchen proxy endpoint, never to Anthropic directly. Clear them on shared computers.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Keyboard shortcuts modal (v2.5) ─────────────────────── -->
+  <div id="shortcuts-modal"
+       class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print"
+       onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Keyboard shortcuts</h3>
+        <button class="text-slate-400 hover:text-slate-600 text-xl leading-none"
+                onclick="document.getElementById('shortcuts-modal').classList.add('hidden')"
+                aria-label="Close">×</button>
+      </div>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Copy feedback</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + C</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Export student record</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + E</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Export cohort</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + X</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">New student</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + N</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Show this help</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">?</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Close any modal</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Esc</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4 pt-2 border-t border-slate-100">
+          <dt class="text-slate-600">Tab</dt>
+          <dd class="text-xs text-slate-500 text-right">Native — cycles through grade dropdowns row by row</dd>
+        </div>
+      </dl>
+      <p class="text-xs text-slate-400 mt-4">
+        Tip: shortcuts also work while focused inside input fields, except <kbd class="px-1 bg-slate-100 border border-slate-200 rounded text-[10px]">?</kbd> which only opens help when no field is focused.
       </p>
     </div>
   </div>
