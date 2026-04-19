@@ -292,7 +292,7 @@
             <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
           </div>
         </div>
-        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true"></textarea>
+        <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true" oninput="S.refreshAIInputChips()"></textarea>
       </section>
 
       <!-- ─ E. Marker's Notes ────────────────────────────── -->
@@ -302,7 +302,7 @@
           <span class="text-xs text-slate-400 font-normal">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
-          <textarea id="additional-comments" class="feedback-box" rows="3" spellcheck="true"
+          <textarea id="additional-comments" class="feedback-box" rows="3" spellcheck="true" oninput="S.refreshAIInputChips()"
             placeholder="Your private marker's notes — concerns, patterns, moderation reasoning, grade justification. These are saved in the single-student Marker's Record (Excel) and in the Cohort Workbook (Student Feedback tab) for your records and moderation. They are NEVER directly copied to the student (note: if you run AI Garnish, the AI uses these notes as context to shape the rewrite, so avoid pasting real identifiers here)."
             style="min-height:80px; background:#fff;"></textarea>
         </div>
@@ -482,8 +482,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.3.0"></script>
-  <script src="js/excel.js?v=2.3.0"></script>
+  <script src="js/shared.js?v=2.3.1"></script>
+  <script src="js/excel.js?v=2.3.1"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -1376,6 +1376,7 @@
 
       ta.selectionStart = ta.selectionEnd = start + insertText.length;
       ta.focus();
+      refreshAIInputChips();
     }
 
     function showSnippetModal() {
@@ -1703,8 +1704,11 @@
       if (!box) return;
       const graded  = (studentGrades || []).filter(g => g && g.grade).length;
       const total   = config && config.criteria ? config.criteria.length : 0;
-      const notesLen = (el('additional-comments').value || '').trim().length;
-      const snipCount = (snippets || []).length;
+      const notesText = (el('additional-comments').value || '').trim();
+      const fbText = (el('feedback-text').value || '').trim();
+      const combinedText = notesText + '\n' + fbText;
+      const notesLen = notesText.length;
+      const snipCount = (snippets || []).filter(s => s.text && combinedText.includes(s.text)).length;
       const penaltyOn = parseInt(el('late-penalty-select').value || '0', 10) > 0;
 
       const chip = (label, ok) =>
@@ -1714,7 +1718,7 @@
         chip(graded + '/' + total + ' grades', graded > 0),
         chip('Rubric descriptors', graded > 0),
         chip(notesLen ? notesLen + ' chars notes' : 'No notes', notesLen > 0),
-        chip(snipCount + ' snippets', snipCount > 0),
+        chip(snipCount === 1 ? '1 snippet' : snipCount + ' snippets', snipCount > 0),
         chip(penaltyOn ? 'Penalty context' : 'No penalty', penaltyOn)
       ].join(' ');
     }
@@ -1795,7 +1799,7 @@
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
-             refreshCohortUI, refreshStickySummary };
+             refreshCohortUI, refreshStickySummary, refreshAIInputChips };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
