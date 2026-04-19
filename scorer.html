@@ -482,8 +482,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.3.1"></script>
-  <script src="js/excel.js?v=2.3.1"></script>
+  <script src="js/shared.js?v=2.3.2"></script>
+  <script src="js/excel.js?v=2.3.2"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -1257,7 +1257,8 @@
       el('student-id').value     = '';
       // Tutor name intentionally kept — same marker for the whole batch
       el('grade-override').value = '';
-      el('additional-comments').value = '';
+      const commentsEl = el('additional-comments');
+      if (commentsEl) { commentsEl.value = ''; commentsEl.dispatchEvent(new Event('input')); }
       el('late-penalty-select').value = 0;
       studentGrades = config.criteria.map(() => ({ grade: '', override: '' }));
       config.criteria.forEach((_, i) => {
@@ -1269,13 +1270,19 @@
 
       // Clear Cooked Feedback textarea
       const fbEl = el('feedback-text');
-      if (fbEl) fbEl.value = '';
+      if (fbEl) { fbEl.value = ''; fbEl.dispatchEvent(new Event('input')); }
 
       // Clear AI Garnish panel inputs/outputs
       const aiIn  = el('ai-body-input');
       const aiOut = el('ai-final-output');
-      if (aiIn)  aiIn.value  = '';
-      if (aiOut) aiOut.value = '';
+      if (aiIn)  { aiIn.value  = ''; aiIn.dispatchEvent(new Event('input')); }
+      if (aiOut) { aiOut.value = ''; aiOut.dispatchEvent(new Event('input')); }
+
+      const aiDiff = el('ai-diff-box');
+      if (aiDiff) { aiDiff.innerHTML = ''; aiDiff.classList.add('hidden'); }
+
+      const aiPrompt = el('ai-prompt-preview');
+      if (aiPrompt) { aiPrompt.textContent = ''; aiPrompt.classList.add('hidden'); }
 
       // Clear AI Garnish log from this browser
       if (SA && typeof SA.clearAIGarnishLog === 'function') {
@@ -1285,6 +1292,7 @@
       setAIState('idle');
       recalculate();
       refreshStatusChips();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /* ── Helpers ─────────────────────────────────────────── */
@@ -1511,8 +1519,15 @@
     function aiResetPanel() {
       const aiIn = el('ai-body-input');
       const aiOut = el('ai-final-output');
-      if (aiIn) aiIn.value = '';
-      if (aiOut) aiOut.value = '';
+      if (aiIn) { aiIn.value = ''; aiIn.dispatchEvent(new Event('input')); }
+      if (aiOut) { aiOut.value = ''; aiOut.dispatchEvent(new Event('input')); }
+
+      const aiDiff = el('ai-diff-box');
+      if (aiDiff) { aiDiff.innerHTML = ''; aiDiff.classList.add('hidden'); }
+
+      const aiPrompt = el('ai-prompt-preview');
+      if (aiPrompt) { aiPrompt.textContent = ''; aiPrompt.classList.add('hidden'); }
+
       setAIState('idle');
     }
 

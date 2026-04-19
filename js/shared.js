@@ -150,7 +150,7 @@
       universityName: '',
       assignmentInfo: '',
       version:        '1.0',
-      appVersion:     '2.3.1',   // Feedback Kitchen app version for export provenance
+      appVersion:     '2.3.2',   // Feedback Kitchen app version for export provenance
       gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
       criteria: [
         {
