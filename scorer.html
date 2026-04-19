@@ -482,8 +482,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.3.0-1"></script>
-  <script src="js/excel.js?v=2.3.0-1"></script>
+  <script src="js/shared.js?v=2.3.0-2"></script>
+  <script src="js/excel.js?v=2.3.0-2"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -562,6 +562,7 @@
       }
 
       loadSnippets();
+      refreshAIInputChips();
 
       document.querySelectorAll('.feedback-box').forEach(ta => {
         const grow = () => {
@@ -664,6 +665,7 @@
       studentGrades[i].override = '';
       document.getElementById('override-' + i).value = '';
       recalculate();
+      refreshAIInputChips();
     }
 
     function onOverrideChange(i) {
@@ -671,7 +673,7 @@
       recalculate();
     }
 
-    function onStudentChange() { updateFeedback(); refreshStickySummary(); }
+    function onStudentChange() { updateFeedback(); refreshStickySummary(); refreshAIInputChips(); }
 
     function onOverrideGrade() { updateFeedback(); }
 
@@ -765,6 +767,7 @@
 
       updateFeedback();
       refreshStatusChips();
+      refreshAIInputChips();
     }
 
     /* ── Feedback generation ─────────────────────────────── */
@@ -1171,6 +1174,7 @@
           + (count === 0 ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-800');
       }
       refreshStickySummary();
+      refreshAIInputChips();
     }
 
     function refreshStickySummary() {
@@ -1564,6 +1568,157 @@
         : 'AI Garnish login — add credentials to enable direct AI rewrite';
     }
 
+    async function aiAssist(mode) {
+      if (!_aiGuards()) return;
+      if (!hasAICreds()) { showAISettings(); return; }
+
+      const existingBody = extractExistingBody(el('feedback-text').value || '');
+      const prompt = SA.buildAIAssistPrompt(mode, config, scoreResult, {
+        markerNotes: (el('additional-comments').value || '').trim(),
+        snippets: snippets,
+        existingBody: existingBody
+      });
+
+      el('ai-prompt-preview').textContent = prompt;
+      refreshAIInputChips();
+
+      setAIState('drafting');
+      const buttons = ['ai-action-draft','ai-action-improve','ai-action-shorten']
+        .map(id => el(id)).filter(Boolean);
+      buttons.forEach(b => b.disabled = true);
+
+      try {
+        const res = await fetch(FK_PROXY_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: localStorage.getItem(FK_USER_KEY),
+            password: localStorage.getItem(FK_PASS_KEY),
+            prompt: prompt,
+            mode: mode,
+            model: 'claude-haiku-4-5-20251001'
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { setAIState('error'); alert(data.error || ('HTTP ' + res.status)); return; }
+        const body = (data.body || '').trim();
+        if (!body) { setAIState('error'); alert('Empty AI response.'); return; }
+
+        const overrideRaw = (el('grade-override').value || '').trim().toUpperCase();
+        const validGrades = config.gradeScale ? config.gradeScale.map(g => g.grade) : SA.GRADES;
+        const effectiveRes = overrideRaw && validGrades.includes(overrideRaw)
+          ? Object.assign({}, scoreResult, { suggestedGrade: overrideRaw })
+          : scoreResult;
+
+        const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
+          studentName: el('student-name').value
+        });
+        el('ai-final-output').value = final;
+
+        const editCount = approxLineEdits(el('feedback-text').value, final);
+        setAIState('applied', editCount);
+
+        SA.logAIGarnish({ stage: 'copilot', mode, bodyLen: body.length });
+      } catch (err) {
+        setAIState('error');
+        alert('Network error: ' + (err && err.message ? err.message : err));
+      } finally {
+        buttons.forEach(b => b.disabled = false);
+      }
+    }
+
+    function approxLineEdits(a, b) {
+      const al = (a || '').split('\n');
+      const bl = (b || '').split('\n');
+      let diff = Math.abs(al.length - bl.length);
+      const min = Math.min(al.length, bl.length);
+      for (let i = 0; i < min; i++) if (al[i] !== bl[i]) diff++;
+      return diff;
+    }
+
+    // Best-effort extraction of just the criterion body from the current feedback.
+    function extractExistingBody(full) {
+      if (!full) return '';
+      const lines = full.split('\n');
+      const totalIdx = lines.findIndex(l => l.startsWith('TOTAL SCORE:'));
+      // body starts after intro paragraph(s); intro ends at the first line that matches "<text> – <num> / <num>"
+      let startIdx = 0;
+      for (let i = 0; i < lines.length; i++) {
+        if (/ – \d/.test(lines[i])) { startIdx = i; break; }
+      }
+      const endIdx = totalIdx === -1 ? lines.length : totalIdx;
+      return lines.slice(startIdx, endIdx).join('\n').trim();
+    }
+
+    function aiReplaceDraft() {
+      const out = el('ai-final-output').value;
+      if (!out.trim()) { alert('Nothing to apply yet.'); return; }
+      if (!confirm('Replace the main feedback textarea with the AI suggestion? The current text will be overwritten.')) return;
+      el('feedback-text').value = out;
+      lastGeneratedText = out;           // prevent merge logic from clobbering
+      showCohortToast('AI suggestion applied to main feedback', 'green');
+    }
+
+    function aiInsertBelow() {
+      const out = el('ai-final-output').value;
+      if (!out.trim()) { alert('Nothing to insert yet.'); return; }
+      const ta = el('feedback-text');
+      ta.value = (ta.value.trimEnd() + '\n\n---\n\n' + out).trimStart();
+      showCohortToast('AI suggestion appended to main feedback', 'green');
+    }
+
+    function aiShowDiff() {
+      const main  = el('feedback-text').value || '';
+      const sugg  = el('ai-final-output').value || '';
+      const box   = el('ai-diff-box');
+      if (!sugg.trim()) { alert('Generate a suggestion first.'); return; }
+      box.classList.remove('hidden');
+      box.innerHTML = renderLineDiff(main, sugg);
+    }
+
+    function renderLineDiff(a, b) {
+      const al = a.split('\n'), bl = b.split('\n');
+      const out = [];
+      const max = Math.max(al.length, bl.length);
+      for (let i = 0; i < max; i++) {
+        const la = al[i] ?? '';
+        const lb = bl[i] ?? '';
+        if (la === lb) { out.push(escHtml(la)); }
+        else {
+          if (la) out.push('<span style="background:#fee2e2">− ' + escHtml(la) + '</span>');
+          if (lb) out.push('<span style="background:#dcfce7">+ ' + escHtml(lb) + '</span>');
+        }
+      }
+      return out.join('\n');
+    }
+
+    function aiTogglePrompt() {
+      const box = el('ai-prompt-preview');
+      if (!box) return;
+      box.classList.toggle('hidden');
+    }
+
+    function refreshAIInputChips() {
+      const box = el('ai-input-chips');
+      if (!box) return;
+      const graded  = (studentGrades || []).filter(g => g && g.grade).length;
+      const total   = config && config.criteria ? config.criteria.length : 0;
+      const notesLen = (el('additional-comments').value || '').trim().length;
+      const snipCount = (snippets || []).length;
+      const penaltyOn = parseInt(el('late-penalty-select').value || '0', 10) > 0;
+
+      const chip = (label, ok) =>
+        `<span class="px-2 py-0.5 rounded-full border text-[10px] font-semibold ${ok ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-slate-100 text-slate-500 border-slate-200'}">${label}</span>`;
+
+      box.innerHTML = [
+        chip(graded + '/' + total + ' grades', graded > 0),
+        chip('Rubric descriptors', graded > 0),
+        chip(notesLen ? notesLen + ' chars notes' : 'No notes', notesLen > 0),
+        chip(snipCount + ' snippets', snipCount > 0),
+        chip(penaltyOn ? 'Penalty context' : 'No penalty', penaltyOn)
+      ].join(' ');
+    }
+
     async function aiGarnishDirect() {
       const guard = _aiGuards();
       if (!guard) return;
@@ -1636,6 +1791,7 @@
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
              aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog,
              showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge,
+             aiAssist, aiReplaceDraft, aiInsertBelow, aiShowDiff, aiTogglePrompt,
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,

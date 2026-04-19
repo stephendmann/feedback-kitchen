@@ -417,6 +417,23 @@
     ].join('\n');
   }
 
+  function buildAIAssistPrompt(mode, config, scoreResult, opts) {
+    opts = opts || {};
+    const base = buildAIGarnishPrompt(config, scoreResult, opts);
+    const existingBody = (opts.existingBody || '').trim();
+    const extras = {
+      draft:
+        '\n\nMODE: DRAFT_FROM_RUBRIC — you are producing a fresh criterion-by-criterion body.',
+      improve:
+        '\n\nMODE: IMPROVE_CLARITY_AND_TONE — you are given an EXISTING criterion body below. Preserve every substantive claim; rewrite for clarity, tone, and consistency. Do not shorten aggressively.' +
+        '\n\nEXISTING BODY TO IMPROVE:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)'),
+      shorten:
+        '\n\nMODE: SHORTEN_FOR_LMS — you are given an EXISTING criterion body below. Preserve every substantive claim. Compress to under 1800 characters total. Keep the per-criterion structure.' +
+        '\n\nEXISTING BODY TO SHORTEN:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)')
+    };
+    return base + (extras[mode] || extras.draft);
+  }
+
   // Stitches: [student header] + intro + AI body + TOTAL SCORE + outro + late-penalty.
   // aiBody is the raw paste-back from the LLM (just the criteria rewrite).
   function assembleFinalFeedback(config, scoreResult, aiBody, opts) {
@@ -587,7 +604,7 @@
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,
-    buildAIGarnishPrompt, assembleFinalFeedback,
+    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback,
     loadSnippets, logAIGarnish, clearAIGarnishLog,
     // Cohort API
     getCohort, initCohort, saveCohort, addToCohort,
