@@ -356,13 +356,16 @@
           <h2 class="step-title"><span class="step-badge green">G</span>Export</h2>
           <p class="step-sub">Review the text above, then copy to your grading system or download the Excel record.</p>
         </div>
-        <div class="flex flex-wrap gap-3 justify-center">
+        <div class="flex flex-wrap gap-3 justify-center hidden md:flex" id="section-g-buttons">
           <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle / Turnitin) and adds this student to the cohort workbook.">📋 Copy feedback</button>
           <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (criterion breakdown, scores, feedback, marker's notes) and adds this student to the cohort workbook.">📥 Export student record</button>
           <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
           <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
           <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
         </div>
+        <p class="md:hidden text-center text-xs text-slate-500 italic">
+          Export controls are now in the bar at the bottom of the screen.
+        </p>
       </section>
 
       <!-- ─ H. Cohort (cumulative cohort export) ─────────────── -->
@@ -430,8 +433,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.2.1"></script>
-  <script src="js/excel.js?v=2.2.1"></script>
+  <script src="js/shared.js?v=2.2.2"></script>
+  <script src="js/excel.js?v=2.2.2"></script>
   <script>
   'use strict';
   /* ============================================================
