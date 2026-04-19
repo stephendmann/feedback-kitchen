@@ -150,7 +150,7 @@
       universityName: '',
       assignmentInfo: '',
       version:        '1.0',
-      appVersion:     '2.0',   // Feedback Kitchen app version for export provenance
+      appVersion:     '2.2',   // Feedback Kitchen app version for export provenance
       gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
       criteria: [
         {
@@ -593,4 +593,19 @@
     getCohort, initCohort, saveCohort, addToCohort,
     removeFromCohort, clearCohort, cohortAgeDays, studentMatchKey
   };
+
+  /* ── Analytics ────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a[href*="ko-fi.com/smann"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (typeof gtag === 'function') {
+          gtag('event', 'kofi_click', {
+            event_category: 'engagement',
+            event_label: 'footer_support_button',
+            transport_type: 'beacon'
+          });
+        }
+      });
+    });
+  });
 })();
