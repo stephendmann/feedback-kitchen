@@ -336,11 +336,68 @@
     catch (e) { return []; }
   }
 
+  /* ── PII scrubber ────────────────────────────────────────────
+     Strips configured student name and student ID from any string
+     before it enters the prompt. Called from buildAIGarnishPrompt
+     so the guarantee is code-enforced, not marker-discipline.
+     Pulls identifiers from the live DOM fields (#student-name,
+     #student-id) and also from any explicitly-passed opts.studentName
+     / opts.studentId. Case-insensitive, whole-token match, redacts
+     with [REDACTED]. Generic email pattern is also stripped.
+     ───────────────────────────────────────────────────────── */
+  function _getStudentIdentifiers(opts) {
+    const ids = [];
+    const push = v => {
+      const s = (v || '').trim();
+      if (s && s.length >= 1) ids.push(s);
+    };
+    push(opts && opts.studentName);
+    push(opts && opts.studentId);
+    if (typeof document !== 'undefined') {
+      const nameEl = document.getElementById('student-name');
+      const idEl   = document.getElementById('student-id');
+      if (nameEl) push(nameEl.value);
+      if (idEl)   push(idEl.value);
+      // Also strip name tokens individually (first name alone is still PII)
+      if (nameEl && nameEl.value) {
+        nameEl.value.trim().split(/\s+/).forEach(tok => {
+          if (tok.length >= 2) push(tok);
+        });
+      }
+    }
+    // De-dupe, sort longest-first so "John Smith" is replaced before "John"
+    return Array.from(new Set(ids)).sort((a, b) => b.length - a.length);
+  }
+
+  function _escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function scrubPII(text, opts) {
+    if (!text) return text;
+    let out = String(text);
+    const ids = _getStudentIdentifiers(opts || {});
+    // Unicode-aware "word" chars: any letter or number (any script) plus
+    // apostrophe variants and hyphen, so names like "Renée", "Müller",
+    // "O'Brien", "Ngāti", "Smith-Jones" are matched correctly.
+    ids.forEach(id => {
+      const re = new RegExp(
+        '(^|[^\\p{L}\\p{N}\\u2019\\u0027\\-])' +
+        _escapeRegex(id) +
+        '(?=[^\\p{L}\\p{N}\\u2019\\u0027\\-]|$)',
+        'giu'
+      );
+      out = out.replace(re, '$1[REDACTED]');
+    });
+    // Generic email pattern (safety net)
+    out = out.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED]');
+    return out;
+  }
+
   function buildAIGarnishPrompt(config, scoreResult, opts) {
     opts = opts || {};
-    const markerNotes  = (opts.markerNotes || '').trim();
-    const snippets     = Array.isArray(opts.snippets) ? opts.snippets : loadSnippets();
-    const wordCap      = opts.wordCap || AI_BODY_WORD_CAP_DEFAULT;
+    const markerNotesRaw = (opts.markerNotes || '').trim();
+    const markerNotes    = scrubPII(markerNotesRaw, opts);
+    const snippets       = Array.isArray(opts.snippets) ? opts.snippets : loadSnippets();
+    const wordCap        = opts.wordCap || AI_BODY_WORD_CAP_DEFAULT;
     const exemplars    = snippets.slice(0, 5).map(function (s) {
       // Snippets may be strings or { label, text } objects — handle both
       if (typeof s === 'string') return s;
@@ -420,7 +477,7 @@
   function buildAIAssistPrompt(mode, config, scoreResult, opts) {
     opts = opts || {};
     const base = buildAIGarnishPrompt(config, scoreResult, opts);
-    const existingBody = (opts.existingBody || '').trim();
+    const existingBody = scrubPII((opts.existingBody || '').trim(), opts);
     const extras = {
       draft:
         '\n\nMODE: DRAFT_FROM_RUBRIC — you are producing a fresh criterion-by-criterion body.',
@@ -475,7 +532,7 @@
     return parts.join('\n');
   }
 
-  function logAIGarnish(entry) {
+  function logAssistantRun(entry) {
     try {
       const log = JSON.parse(localStorage.getItem(AI_LOG_KEY) || '[]');
       log.unshift(Object.assign({ ts: new Date().toISOString() }, entry));
@@ -484,7 +541,11 @@
     } catch (e) { /* ignore */ }
   }
 
-  function clearAIGarnishLog() { localStorage.removeItem(AI_LOG_KEY); }
+  function clearAssistantLog() { localStorage.removeItem(AI_LOG_KEY); }
+
+  // Back-compat aliases (deprecated — remove after all callers updated)
+  const logAIGarnish = logAssistantRun;
+  const clearAIGarnishLog = clearAssistantLog;
 
   /* ── Cohort persistence (per scorer) ─────────────────────────
      Stores completed-student records under SA_COHORT_<scorerId>.
@@ -604,8 +665,10 @@
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,
-    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback,
-    loadSnippets, logAIGarnish, clearAIGarnishLog,
+    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, scrubPII,
+    loadSnippets, logAssistantRun, clearAssistantLog,
+    // Deprecated aliases
+    logAIGarnish, clearAIGarnishLog,
     // Cohort API
     getCohort, initCohort, saveCohort, addToCohort,
     removeFromCohort, clearCohort, cohortAgeDays, studentMatchKey

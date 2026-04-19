@@ -90,6 +90,70 @@
       body { background: white; padding-bottom: 0; }
       .print-full { max-width: none !important; }
     }
+    /* ── Section F panel system ──────────────────────────────── */
+    .panel { border-radius: 8px; padding: 12px 16px; margin: 8px 0; border-left: 4px solid #ccc; }
+    .panel-safe    { border-left-color: #16a34a; background: #f0fdf4; }
+    .panel-info    { border-left-color: #2563eb; background: #eff6ff; }
+    .panel-warning { border-left-color: #d97706; background: #fffbeb; }
+    .panel-light   { border-left-color: #6b7280; background: #f9fafb; }
+    .panel-suggestion { border-left-color: #7c3aed; background: #faf5ff; }
+    .panel-advanced { border-left-color: #9ca3af; background: #f3f4f6; border-left-width: 4px; }
+    .btn-help { display: block; font-size: 0.75em; color: #6b7280; font-weight: normal; margin-top: 2px; line-height: 1.3; }
+    .help-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #6b7280; color: #fff; font-size: 11px; font-weight: bold;
+      cursor: help; margin-left: 6px; vertical-align: middle;
+    }
+    /* Section F button hierarchy */
+    .btn-primary-step {
+      padding: 0.7rem 1.4rem;
+      font-size: 0.95rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .btn-primary-step:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .btn-secondary-step {
+      padding: 0.55rem 1.1rem;
+    }
+    .btn-utility {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      padding: 0.45rem 0.9rem;
+      font-weight: 500;
+    }
+    .btn-utility:hover { background: #f1f5f9; color: #1e293b; }
+    .step-num {
+      display: inline-block;
+      font-weight: 700;
+      opacity: 0.85;
+      margin-right: 2px;
+    }
+    /* Quick use step numbers align with button step numbers */
+    .panel-light ol strong { font-weight: 600; }
+    /* Collapsible explainer panels in Section F */
+    .ai-explainer > summary {
+      position: relative;
+      padding-left: 18px;
+      outline: none;
+    }
+    .ai-explainer > summary::-webkit-details-marker { display: none; }
+    .ai-explainer > summary::before {
+      content: '▸';
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: #64748b;
+      transition: transform 0.15s ease;
+    }
+    .ai-explainer[open] > summary::before {
+      transform: translateY(-50%) rotate(90deg);
+    }
+    .ai-explainer > summary:focus-visible {
+      box-shadow: 0 0 0 2px #94a3b8;
+      border-radius: 4px;
+    }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -132,7 +196,7 @@
           <button class="btn btn-ghost text-sm"
                   onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
                   title="Keyboard shortcuts (press ?)">⌨</button>
-          <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="AI Garnish login — username & password for direct AI access">🔐 AI Login</button>
+          <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="Wording assistant login — credentials for direct AI access">🔐 AI Login</button>
           <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link" title="Manage your scorers (kitchens)">⚙ Manage</a>
           <button class="btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New Student</button>
         </div>
@@ -148,7 +212,7 @@
         <a href="#sec-adjust"   data-rail="C" class="hover:text-blue-700 whitespace-nowrap">C · Adjustments</a>
         <a href="#sec-feedback" data-rail="D" class="hover:text-blue-700 whitespace-nowrap">D · Feedback</a>
         <a href="#sec-notes"    data-rail="E" class="hover:text-blue-700 whitespace-nowrap">E · Notes</a>
-        <a href="#sec-ai"       data-rail="F" class="hover:text-blue-700 whitespace-nowrap">F · AI</a>
+        <a href="#sec-ai"       data-rail="F" class="hover:text-blue-700 whitespace-nowrap">F · Wording</a>
         <a href="#sec-export"   data-rail="G" class="hover:text-blue-700 whitespace-nowrap">G · Export</a>
         <a href="#sec-cohort"   data-rail="H" class="hover:text-blue-700 whitespace-nowrap">H · Cohort</a>
         <span class="flex-1"></span>
@@ -333,102 +397,235 @@
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
           <textarea id="additional-comments" class="feedback-box" rows="3" spellcheck="true" oninput="S.refreshAIInputChips()"
-            placeholder="Your private marker's notes — concerns, patterns, moderation reasoning, grade justification. These are saved in the single-student Marker's Record (Excel) and in the Cohort Workbook (Student Feedback tab) for your records and moderation. They are NEVER directly copied to the student (note: if you run AI Garnish, the AI uses these notes as context to shape the rewrite, so avoid pasting real identifiers here)."
+            placeholder="Your private marker's notes — concerns, patterns, moderation reasoning, grade justification. These are saved in the single-student Marker's Record (Excel) and in the Cohort Workbook (Student Feedback tab) for your records and moderation. They are NEVER directly copied to the student (note: if you use the wording assistant, it uses these notes as context to shape the suggestion, so avoid pasting real identifiers here)."
             style="min-height:80px; background:#fff;"></textarea>
         </div>
       </details>
 
-      <!-- ─ F. AI Assist ─────────────────── -->
-      <details id="sec-ai" class="bg-amber-50 border border-amber-200 rounded-2xl no-print">
+      <!-- ─ F. Feedback wording assistant ───────────────────── -->
+      <details id="sec-ai" class="bg-white border border-slate-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title">
-            <span class="step-badge amber">F</span>AI Assist
+            <span class="step-badge amber">F</span>Feedback wording assistant
             <span id="ai-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Idle</span>
           </span>
-          <span class="text-xs text-amber-700 font-normal">Rewrites the feedback body only. Never changes scores or penalties.</span>
+          <span class="text-xs text-slate-500 font-normal">Optional · your wording, your choice &mdash; never changes scores or penalties</span>
         </summary>
 
-        <div class="px-5 pb-4 pt-2 border-t border-amber-200 space-y-4">
+        <div class="px-5 pb-4 pt-2 border-t border-slate-200 space-y-3">
 
-          <p class="text-xs text-amber-800 leading-relaxed">
-            AI can rewrite the body for clarity, tone, and consistency. It will not change scores or penalty settings. Review before copying.
-          </p>
-
-          <!-- Input pane -->
-          <div class="bg-white/70 border border-amber-200 rounded-lg p-3">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider">Input used</h4>
-              <button class="text-xs text-amber-800 underline" onclick="S.aiTogglePrompt()">Show prompt</button>
-            </div>
-            <div id="ai-input-chips" class="flex flex-wrap gap-1.5 text-[11px]">
-              <!-- chips injected by refreshAIInputChips() -->
-            </div>
-            <pre id="ai-prompt-preview" class="hidden mt-2 text-[10px] bg-slate-50 border border-slate-200 rounded p-2 overflow-auto max-h-48 whitespace-pre-wrap"></pre>
-          </div>
-
-          <!-- Locked pane -->
-          <div class="bg-white/70 border border-amber-200 rounded-lg p-3">
-            <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">Locked (AI never touches these)</h4>
-            <ul class="text-[11px] text-amber-900 list-disc pl-5">
-              <li>Greeting (<code>Hi &lt;student name&gt;</code>)</li>
-              <li>Intro &amp; outro paragraphs (driven by the pre-penalty grade)</li>
-              <li><code>TOTAL SCORE</code> line</li>
-              <li>Late submission notice &amp; final penalised score</li>
-            </ul>
-            <p class="text-[11px] text-amber-700 italic mt-1">These stay exactly as generated from your grades.</p>
-          </div>
-
-          <!-- Three action buttons -->
-          <div class="flex flex-wrap gap-2">
-            <button id="ai-action-draft"    class="btn btn-green text-sm" onclick="S.aiAssist('draft')"    title="Generate a fresh criterion-by-criterion body from your current grades, notes, and snippets">✍️ Draft from rubric</button>
-            <button id="ai-action-improve"  class="btn btn-blue  text-sm" onclick="S.aiAssist('improve')"  title="Light rewrite of the current criterion body for clarity and tone">🪄 Improve clarity &amp; tone</button>
-            <button id="ai-action-shorten"  class="btn btn-amber text-sm" onclick="S.aiAssist('shorten')"  title="Compress the current body to fit typical LMS character limits">✂️ Shorten for LMS</button>
-            <button class="btn btn-ghost text-sm" onclick="S.aiResetPanel()" title="Clear AI inputs and outputs">↺ Reset</button>
-          </div>
-          <p class="text-[11px] text-amber-700 italic">
-            Partial marking is fine — AI Assist will skip ungraded criteria and note the partial total. Check the rubric chip to see what's covered.
-          </p>
-
-          <!-- Privacy callout (kept from v2.1) -->
-          <div class="flex gap-2 items-start bg-red-50 border border-red-200 rounded-lg p-3">
-            <span class="text-red-600 text-lg leading-none pt-0.5">⚠</span>
-            <p class="text-xs text-red-800 leading-relaxed">
-              <strong>Privacy:</strong> Do not enter real student identifiers (name, ID, email) into Marker's Notes, as this text is included verbatim in the AI prompt and sent outside your local browser.
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-slate-600 leading-relaxed m-0">
+              Suggests clearer wording for your feedback &mdash; based on your rubric, scores, and optional notes.
+              Never changes marks or grades. You decide what to keep.
             </p>
+            <button type="button"
+                    class="text-xs text-slate-500 underline hover:text-slate-700 whitespace-nowrap ml-3"
+                    onclick="S.aiToggleAllExplainers()"
+                    id="ai-explainer-toggle-all"
+                    title="Collapse or expand all four explainer panels below.">
+              Collapse all explainers
+            </button>
           </div>
 
-          <!-- Output + output controls -->
-          <div>
-            <label class="block text-xs font-semibold text-amber-900 mb-1">AI suggestion (editable)</label>
-            <textarea id="ai-final-output" class="feedback-box" rows="8"
-              placeholder="Pick an action above to generate. The AI suggestion will appear here for review." style="background:#fff"></textarea>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <button class="btn btn-green text-sm" onclick="S.aiReplaceDraft()"  title="Replace the main feedback textarea with this suggestion">⬇️ Replace draft</button>
-              <button class="btn btn-blue  text-sm" onclick="S.aiInsertBelow()"   title="Append the suggestion below the main feedback">➕ Insert below current text</button>
-              <button class="btn btn-ghost text-sm" onclick="S.aiShowDiff()"      title="Show a line-by-line diff against the current main feedback">🔍 Compare changes</button>
-              <button class="btn btn-ghost text-sm" onclick="S.aiCopyFinal()"     title="Copy this suggestion to clipboard (does NOT replace the main feedback)">📋 Copy suggestion</button>
-            </div>
-            <div id="ai-diff-box" class="hidden mt-3 text-xs font-mono bg-slate-50 border border-slate-200 rounded p-2 whitespace-pre-wrap"></div>
-          </div>
-
-          <!-- Stage 0 manual fallback kept, collapsed -->
-          <details id="sec-ai-manual-fallback" class="bg-white/60 border border-amber-200 rounded-lg">
-            <summary class="cursor-pointer px-3 py-2 text-xs font-semibold text-amber-900 select-none">
-              ⚙ Manual fallback — paste an AI reply from your own Claude/ChatGPT session
+          <!-- What the assistant cannot change -->
+          <details class="panel panel-safe ai-explainer" data-explainer="cannot" open>
+            <summary class="cursor-pointer select-none list-none">
+              <h3 class="text-sm font-semibold text-green-800 inline">What the assistant cannot change</h3>
             </summary>
-            <div class="px-3 pb-3 pt-1 space-y-2">
-              <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Copies the current prompt to clipboard so you can paste it into your own LLM">🧾 Build prompt → Copy</button>
-              <div>
-                <label class="block text-xs font-semibold text-amber-900 mt-2 mb-1">Paste AI reply (criterion body only)</label>
-                <textarea id="ai-body-input" class="feedback-box" rows="5" placeholder="Paste the LLM's rewritten criterion body here…" style="background:#fff"></textarea>
-              </div>
-              <button class="btn btn-green text-sm" onclick="S.aiAssembleFinal()">🧩 Assemble</button>
+            <div class="mt-2">
+              <p class="text-xs text-green-900 mb-1">The following parts are fixed and always come from your own marking:</p>
+              <ul class="text-xs text-green-900 list-disc pl-5 space-y-0.5">
+                <li>Any scores you have entered</li>
+                <li>Any penalties (for lateness, academic integrity, etc.)</li>
+                <li>The greeting (for example, &ldquo;Hi&rdquo;)</li>
+                <li>Intro and closing paragraphs (based on the pre-penalty grade)</li>
+                <li>The <code>TOTAL SCORE</code> line</li>
+                <li>Late submission notice and the final penalised score</li>
+              </ul>
+              <p class="text-xs text-green-800 italic mt-2">
+                These stay exactly as generated from your grades, even if you use assistant suggestions.
+                Your professional judgement drives all scores; this tool only helps with wording.
+              </p>
             </div>
           </details>
 
-          <p class="text-[11px] text-amber-700 leading-relaxed">
-            Last 20 AI runs are logged locally in your browser only. <a href="#" onclick="S.aiClearLog();return false;" class="underline">Clear log</a>.
+          <!-- What the assistant uses -->
+          <details class="panel panel-info ai-explainer" data-explainer="works-from" open>
+            <summary class="cursor-pointer select-none list-none">
+              <h3 class="text-sm font-semibold text-blue-800 inline">What the assistant uses</h3>
+            </summary>
+            <div class="mt-2">
+              <p class="text-xs text-blue-900 mb-1">To draft or refine wording, the assistant only uses:</p>
+              <ul class="text-xs text-blue-900 list-disc pl-5 space-y-0.5">
+                <li>The rubric descriptors for each criterion</li>
+                <li>The scores you have entered so far</li>
+                <li>(Optional) your private marker&rsquo;s notes and saved snippets</li>
+              </ul>
+              <div id="ai-input-chips" class="flex flex-wrap gap-1.5 text-[11px] mt-2">
+                <!-- chips injected by refreshAIInputChips() -->
+              </div>
+              <pre id="ai-prompt-preview" class="hidden mt-2 text-[10px] bg-slate-50 border border-slate-200 rounded p-2 overflow-auto max-h-48 whitespace-pre-wrap"></pre>
+              <button class="text-xs text-blue-700 underline mt-1" onclick="S.aiTogglePrompt()">Show prompt</button>
+            </div>
+          </details>
+
+          <!-- Data handling (cannot change → uses → data → quick use) -->
+          <details class="panel panel-warning ai-explainer" data-explainer="data" open>
+            <summary class="cursor-pointer select-none list-none">
+              <h3 class="text-sm font-semibold text-amber-800 inline">What happens to my data?</h3>
+            </summary>
+            <div class="mt-2">
+              <p class="text-xs text-amber-900">
+                If you use this assistant, the selected text (rubric descriptors, your scores,
+                and any notes or snippets) is sent to the AI service to generate a suggestion.
+                If you do not use it, your marking stays entirely local to your browser.
+              </p>
+              <p class="text-xs text-amber-900 mt-2">
+                <strong>Built-in protection:</strong> student names and IDs entered in Sections A or B
+                are automatically removed from anything sent to the AI service, even if they appear
+                in Marker&rsquo;s Notes or your draft. Email addresses are also stripped.
+              </p>
+              <p class="text-xs text-amber-900 mt-2">
+                <strong>Good practice:</strong> still use initials or generic references in Marker&rsquo;s
+                Notes where possible &mdash; the scrub is a safety net, not a licence to paste PII.
+              </p>
+            </div>
+          </details>
+
+          <!-- Quick use guide -->
+          <details class="panel panel-light ai-explainer" data-explainer="quick-use" open>
+            <summary class="cursor-pointer select-none list-none">
+              <h3 class="text-sm font-semibold text-slate-700 inline">Quick use (recommended)</h3>
+            </summary>
+            <div class="mt-2">
+              <ol class="text-xs text-slate-700 list-decimal pl-5 space-y-1">
+                <li>Enter at least one score, then click <strong>Draft from rubric</strong> to create a first-pass set of comments.</li>
+                <li>Optionally click <strong>Improve clarity &amp; tone</strong> to tidy the wording.</li>
+                <li>Read and edit the suggestion, then click <strong>Replace draft</strong> when you are happy.</li>
+              </ol>
+            </div>
+          </details>
+
+          <!-- Primary action buttons (stepwise: 1 Draft → 2 Improve → 3 Make concise) -->
+          <div class="flex flex-wrap items-start gap-2">
+            <button id="ai-draft-from-rubric"
+                    class="btn btn-green btn-primary-step text-sm"
+                    onclick="S.aiAssist('draft')"
+                    title="Create a first draft of your feedback from the rubric. Requires at least one score.">
+              <span class="step-num">1.</span> Draft from rubric
+              <span class="btn-help">Start here. Requires at least one score.</span>
+            </button>
+            <button id="ai-improve-clarity"
+                    class="btn btn-blue btn-secondary-step text-sm"
+                    onclick="S.aiAssist('improve')"
+                    title="Polish the wording of your existing draft.">
+              <span class="step-num">2.</span> Improve clarity &amp; tone
+              <span class="btn-help">Polish the wording of your existing draft.</span>
+            </button>
+            <button id="ai-shorten-for-lms"
+                    class="btn btn-utility text-sm"
+                    onclick="S.aiAssist('shorten')"
+                    title="Shorten the feedback for systems with character limits.">
+              <span class="step-num">3.</span> Make concise
+              <span class="btn-help">Optional &mdash; shorten for systems with character limits.</span>
+            </button>
+            <button id="ai-reset"
+                    class="btn btn-utility text-sm ml-auto"
+                    onclick="S.aiResetPanel()"
+                    title="Clear the suggestion box and keep your original draft.">
+              Clear suggestion
+              <span class="btn-help">Empties suggestion box; leaves your draft untouched.</span>
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 italic">
+            You don&rsquo;t need to finish grading first &mdash; the assistant uses whatever
+            you&rsquo;ve scored so far and will note which criteria it covered.
           </p>
+
+          <!-- Editable suggestion area -->
+          <div class="panel panel-suggestion">
+            <h3 class="text-sm font-semibold text-violet-800 mb-1">Suggested wording (you can edit or ignore this)</h3>
+            <p class="text-xs text-slate-500 mb-2">
+              Click a button above to generate a suggestion. You can edit it, ignore it, or keep your own wording.
+            </p>
+            <textarea
+              id="ai-suggestion"
+              class="feedback-box"
+              rows="8"
+              placeholder="No suggestion yet. Pick an action above to generate a draft or revision."
+              style="background:#fff"
+            ></textarea>
+            <div id="ai-diff-box" class="hidden mt-3 text-xs font-mono bg-slate-50 border border-slate-200 rounded p-2 whitespace-pre-wrap"></div>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button class="btn btn-green text-sm" onclick="S.aiReplaceDraft()" title="Replaces your current draft with this suggestion (you can undo).">
+                Replace draft
+                <span class="btn-help">Replaces your current draft with this suggestion (you can undo).</span>
+              </button>
+              <button class="btn btn-blue text-sm" onclick="S.aiInsertBelow()" title="Adds this suggestion below your existing comments.">
+                Insert below current text
+                <span class="btn-help">Adds this suggestion below your existing comments.</span>
+              </button>
+              <button class="btn btn-ghost text-sm" onclick="S.aiShowDiff()" title="See what changed between your draft and this suggestion.">
+                See changes
+                <span class="btn-help">Shows line-by-line diff.</span>
+              </button>
+              <button id="ai-copy-suggestion" class="btn btn-ghost text-sm" onclick="S.aiCopyFinal()" title="Copies suggestion text only — your draft stays as is.">
+                Copy suggestion
+                <span class="btn-help">Copies suggestion text only &mdash; your draft stays as is.</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Advanced options (collapsed) -->
+          <details id="sec-ai-manual-fallback" class="panel panel-advanced">
+            <summary class="cursor-pointer text-xs font-semibold text-slate-700 select-none py-1">
+              Advanced options <span class="text-slate-400 font-normal">(for markers using external AI tools &mdash; optional)</span>
+            </summary>
+            <div class="advanced-content mt-3 space-y-3">
+              <p class="text-xs text-slate-600">
+                These tools are optional and intended for markers who already use external AI assistants
+                (e.g. Claude, ChatGPT). They do not affect your scores or penalties.
+              </p>
+
+              <div>
+                <h4 class="text-xs font-semibold text-slate-700 mb-1">Manual fallback</h4>
+                <p class="text-xs text-slate-500 mb-1">Paste a reply from your own Claude or ChatGPT session here to use it as the suggestion.</p>
+                <textarea
+                  id="ai-manual-suggestion"
+                  class="feedback-box"
+                  rows="4"
+                  placeholder="Paste text from an external AI assistant here to use as your suggestion."
+                  style="background:#fff"
+                ></textarea>
+                <button id="ai-use-manual-suggestion" class="btn btn-green text-sm mt-1" onclick="S.aiAssembleFinal()">Use pasted suggestion</button>
+              </div>
+
+              <div>
+                <h4 class="text-xs font-semibold text-slate-700 mb-1">Build prompt &rarr; copy / paste reply (criterion body only)</h4>
+                <p class="text-xs text-slate-500 mb-1">Generate a prompt you can paste into an external assistant. Then paste the reply into the box above.</p>
+                <textarea
+                  id="ai-prompt-builder"
+                  class="feedback-box"
+                  rows="4"
+                  readonly
+                  placeholder="Click 'Build prompt' to populate this."
+                  style="background:#fff"
+                ></textarea>
+                <button class="btn btn-amber text-sm mt-1" onclick="S.aiBuildPrompt()" title="Copies the current prompt to clipboard so you can paste it into your own AI tool">Build prompt &rarr; Copy</button>
+              </div>
+
+              <div>
+                <h4 class="text-xs font-semibold text-slate-700 mb-1">Local run log</h4>
+                <p class="text-xs text-slate-500">Last 20 runs stored locally in your browser only (for your moderation records).</p>
+                <div class="flex gap-2 mt-1">
+                  <button id="ai-view-log" class="btn btn-ghost text-sm" onclick="S.aiViewLog()">View local log</button>
+                  <button id="ai-clear-log" class="btn btn-ghost text-sm" onclick="S.aiClearLog()">Clear log</button>
+                </div>
+              </div>
+            </div>
+          </details>
+
         </div>
       </details>
 
@@ -518,7 +715,7 @@
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
       <div class="text-center md:text-left">
         <p class="font-semibold text-slate-200 mb-1 flex items-center justify-center md:justify-start gap-2"><img src="favicon-32.png" alt="" width="20" height="20" style="filter:grayscale(1) brightness(2)"> Feedback Kitchen</p>
-        <p>Built for educators.<sup><a href="index.html#acknowledgements" class="text-blue-400 hover:text-blue-200 transition-colors font-semibold">¹</a></sup> Free to use. 100% local processing — student data never leaves your device.</p>
+        <p>Built for educators.<sup><a href="index.html#acknowledgements" class="text-blue-400 hover:text-blue-200 transition-colors font-semibold">¹</a></sup> Free to use. All marking is local. The optional wording assistant sends rubric text, scores, and notes to Anthropic — student names and IDs are automatically stripped before sending.</p>
       </div>
       <div class="flex flex-col items-center md:items-end gap-3 text-center md:text-right">
         <p class="text-xs text-slate-500 md:whitespace-nowrap">If my tools save you time, a tip helps cover hosting and AI tokens to keep them improving.</p>
@@ -532,7 +729,7 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.5.1"></script>
+  <script src="js/shared.js?v=2.6.3"></script>
   <script src="js/excel.js?v=2.5.1"></script>
   <script>
   'use strict';
@@ -627,6 +824,7 @@
       renderCriteriaRows();
       recalculate();
       restoreSectionState();
+      restoreExplainerState();
       updateAILoginBadge();
       refreshCohortUI();
 
@@ -649,6 +847,7 @@
       }
 
       wireSectionStatePersistence();
+      wireExplainerPersistence();
       bindKeyboardShortcuts();
     }
 
@@ -1327,8 +1526,8 @@
       if (fbEl) { fbEl.value = ''; fbEl.dispatchEvent(new Event('input')); }
 
       // Clear AI Garnish panel inputs/outputs
-      const aiIn  = el('ai-body-input');
-      const aiOut = el('ai-final-output');
+      const aiIn  = el('ai-manual-suggestion');
+      const aiOut = el('ai-suggestion');
       if (aiIn)  { aiIn.value  = ''; aiIn.dispatchEvent(new Event('input')); }
       if (aiOut) { aiOut.value = ''; aiOut.dispatchEvent(new Event('input')); }
 
@@ -1338,9 +1537,9 @@
       const aiPrompt = el('ai-prompt-preview');
       if (aiPrompt) { aiPrompt.textContent = ''; aiPrompt.classList.add('hidden'); }
 
-      // Clear AI Garnish log from this browser
-      if (SA && typeof SA.clearAIGarnishLog === 'function') {
-        SA.clearAIGarnishLog();
+      // Clear assistant run log from this browser
+      if (SA && typeof SA.clearAssistantLog === 'function') {
+        SA.clearAssistantLog();
       }
 
       setAIState('idle');
@@ -1501,7 +1700,7 @@
     /* ── AI Garnish (beta) — Stage 0 ─────────────────────── */
     function _aiGuards() {
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
-        alert('Grade at least one criterion before using AI Assist.');
+        alert('Grade at least one criterion before using the wording assistant.');
         return false;
       }
       const weightSum = scoreResult.rows
@@ -1510,14 +1709,14 @@
       const displayWeightSum = Number.isInteger(weightSum) ? weightSum : parseFloat(weightSum.toFixed(2));
       // Over-100% is a real configuration error — keep as a hard block.
       if (Math.round(weightSum) > 100) {
-        alert('Graded criteria weight ' + displayWeightSum + '% — exceeds 100%. Check your weights before using AI Assist.');
+        alert('Graded criteria weight ' + displayWeightSum + '% — exceeds 100%. Check your weights before using the assistant.');
         return false;
       }
       // Under-100% is a legitimate partial-mark scenario — soft confirm instead.
       if (Math.round(weightSum) < 100) {
         const proceed = confirm(
           'Only ' + displayWeightSum + '% of criteria are graded.\n\n' +
-          'AI Assist will generate feedback only for the criteria you have graded. The TOTAL SCORE line will reflect ' + displayWeightSum + ' out of 100, not a full 100-point mark.\n\n' +
+          'The assistant will generate feedback only for the criteria you have graded. The TOTAL SCORE line will reflect ' + displayWeightSum + ' out of 100, not a full 100-point mark.\n\n' +
           'Continue?'
         );
         if (!proceed) return false;
@@ -1528,10 +1727,17 @@
     function aiBuildPrompt() {
       if (!_aiGuards()) return;
       const notes = (el('additional-comments').value || '').trim();
-      const prompt = SA.buildAIGarnishPrompt(config, scoreResult, {
+      let prompt = SA.buildAIGarnishPrompt(config, scoreResult, {
         markerNotes: notes,
         snippets: SA.loadSnippets()
       });
+      if (typeof SA.scrubPII === 'function') {
+        prompt = SA.scrubPII(prompt);
+      } else {
+        console.error('[PII] SA.scrubPII missing — refusing to send. Hard-refresh the page (Ctrl+Shift+R).');
+        alert('Privacy guard unavailable (cached shared.js). Please hard-refresh the page (Ctrl+Shift+R) and try again.');
+        throw new Error('scrubPII unavailable');
+      }
       navigator.clipboard.writeText(prompt).then(function () {
         const btn = document.querySelector('[onclick="S.aiBuildPrompt()"]');
         if (btn) {
@@ -1539,17 +1745,17 @@
           btn.textContent = '✓ Prompt copied!';
           setTimeout(function () { btn.textContent = orig; }, 2000);
         }
-        SA.logAIGarnish({ stage: 'prompt_built', prompt: prompt, notesLen: notes.length });
+        SA.logAssistantRun({ stage: 'prompt_built', prompt: prompt, notesLen: notes.length });
       }).catch(function () {
         // Fallback: show the prompt in the AI reply box so the user can copy manually
-        el('ai-body-input').value = prompt;
+        el('ai-prompt-builder').value = prompt;
         alert('Clipboard blocked — prompt placed in the paste box instead. Copy manually, then clear and paste the AI reply.');
       });
     }
 
     function aiAssembleFinal() {
       if (!_aiGuards()) return;
-      const body = (el('ai-body-input').value || '').trim();
+      const body = (el('ai-manual-suggestion').value || '').trim();
       if (!body) { alert('Paste the AI reply into the box above first.'); return; }
 
       const overrideRaw  = (el('grade-override').value || '').trim().toUpperCase();
@@ -1561,14 +1767,14 @@
       const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
         studentName: el('student-name').value
       });
-      el('ai-final-output').value = final;
-      SA.logAIGarnish({ stage: 'assembled', bodyLen: body.length, finalLen: final.length });
+      el('ai-suggestion').value = final;
+      SA.logAssistantRun({ stage: 'assembled', bodyLen: body.length, finalLen: final.length });
       setAIState('applied');
     }
 
     function aiCopyFinal() {
-      const ta = el('ai-final-output');
-      if (!ta.value.trim()) { alert('Nothing to copy — assemble the final feedback first.'); return; }
+      const ta = el('ai-suggestion');
+      if (!ta.value.trim()) { alert('Nothing to copy — generate or assemble a suggestion first.'); return; }
       navigator.clipboard.writeText(ta.value).then(function () {
         const btn = document.querySelector('[onclick="S.aiCopyFinal()"]');
         if (btn) {
@@ -1580,8 +1786,8 @@
     }
 
     function aiResetPanel() {
-      const aiIn = el('ai-body-input');
-      const aiOut = el('ai-final-output');
+      const aiIn = el('ai-manual-suggestion');
+      const aiOut = el('ai-suggestion');
       if (aiIn) { aiIn.value = ''; aiIn.dispatchEvent(new Event('input')); }
       if (aiOut) { aiOut.value = ''; aiOut.dispatchEvent(new Event('input')); }
 
@@ -1594,9 +1800,22 @@
       setAIState('idle');
     }
 
+    function aiViewLog() {
+      try {
+        const log = JSON.parse(localStorage.getItem('SA_AI_LOG') || '[]');
+        if (!log.length) { alert('No runs logged yet.'); return; }
+        const lines = log.map(function (e, i) {
+          const when = e.ts ? new Date(e.ts).toLocaleString() : '—';
+          return (i + 1) + '. ' + when + ' | ' + (e.stage || e.via || '?') + (e.model ? ' | ' + e.model : '') + (e.replyChars ? ' | ' + e.replyChars + ' chars' : '');
+        });
+        alert('Last ' + log.length + ' run(s):\n\n' + lines.join('\n'));
+      } catch (e) { alert('Could not read log.'); }
+    }
+
     function aiClearLog() {
-      SA.clearAIGarnishLog();
-      alert('AI Garnish log cleared from this browser.');
+      if (!confirm('Clear the local assistant log from this browser?')) return;
+      SA.clearAssistantLog();
+      alert('Assistant log cleared from this browser.');
     }
 
     /* ── Stage 2: AI Garnish via Vercel proxy ────────────── */
@@ -1626,7 +1845,7 @@
       hideAISettings();
     }
     function clearAICreds() {
-      if (!confirm('Clear saved AI Garnish credentials from this browser?')) return;
+      if (!confirm('Clear saved wording assistant credentials from this browser?')) return;
       localStorage.removeItem(FK_USER_KEY);
       localStorage.removeItem(FK_PASS_KEY);
       const uIn = el('fk-user-input'); if (uIn) uIn.value = '';
@@ -1643,8 +1862,8 @@
       if (!btn) return;
       btn.textContent = hasAICreds() ? '🔓 AI Login' : '🔐 AI Login';
       btn.title = hasAICreds()
-        ? 'AI Garnish credentials saved — click to manage'
-        : 'AI Garnish login — add credentials to enable direct AI rewrite';
+        ? 'Wording assistant credentials saved — click to manage'
+        : 'Wording assistant — add credentials to enable direct AI rewrite';
     }
 
     async function aiAssist(mode) {
@@ -1652,17 +1871,26 @@
       if (!hasAICreds()) { showAISettings(); return; }
 
       const existingBody = extractExistingBody(el('feedback-text').value || '');
-      const prompt = SA.buildAIAssistPrompt(mode, config, scoreResult, {
+      let prompt = SA.buildAIAssistPrompt(mode, config, scoreResult, {
         markerNotes: (el('additional-comments').value || '').trim(),
         snippets: snippets,
         existingBody: existingBody
       });
+      // Belt-and-braces: re-scrub whole prompt before sending, in case any
+      // identifier slipped through via rubric descriptors or snippets.
+      if (typeof SA.scrubPII === 'function') {
+        prompt = SA.scrubPII(prompt);
+      } else {
+        console.error('[PII] SA.scrubPII missing — refusing to send. Hard-refresh the page (Ctrl+Shift+R).');
+        alert('Privacy guard unavailable (cached shared.js). Please hard-refresh the page (Ctrl+Shift+R) and try again.');
+        throw new Error('scrubPII unavailable');
+      }
 
       el('ai-prompt-preview').textContent = prompt;
       refreshAIInputChips();
 
       setAIState('drafting');
-      const buttons = ['ai-action-draft','ai-action-improve','ai-action-shorten']
+      const buttons = ['ai-draft-from-rubric','ai-improve-clarity','ai-shorten-for-lms']
         .map(id => el(id)).filter(Boolean);
       buttons.forEach(b => b.disabled = true);
 
@@ -1692,12 +1920,12 @@
         const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
           studentName: el('student-name').value
         });
-        el('ai-final-output').value = final;
+        el('ai-suggestion').value = final;
 
         const editCount = approxLineEdits(el('feedback-text').value, final);
         setAIState('applied', editCount);
 
-        SA.logAIGarnish({ stage: 'copilot', mode, bodyLen: body.length });
+        SA.logAssistantRun({ stage: 'assistant', mode, bodyLen: body.length });
       } catch (err) {
         setAIState('error');
         alert('Network error: ' + (err && err.message ? err.message : err));
@@ -1730,25 +1958,25 @@
     }
 
     function aiReplaceDraft() {
-      const out = el('ai-final-output').value;
+      const out = el('ai-suggestion').value;
       if (!out.trim()) { alert('Nothing to apply yet.'); return; }
-      if (!confirm('Replace the main feedback textarea with the AI suggestion? The current text will be overwritten.')) return;
+      if (!confirm('Replace the main feedback textarea with this suggestion? The current text will be overwritten.')) return;
       el('feedback-text').value = out;
       lastGeneratedText = out;           // prevent merge logic from clobbering
-      showCohortToast('AI suggestion applied to main feedback', 'green');
+      showCohortToast('Assistant suggestion applied to main feedback', 'green');
     }
 
     function aiInsertBelow() {
-      const out = el('ai-final-output').value;
+      const out = el('ai-suggestion').value;
       if (!out.trim()) { alert('Nothing to insert yet.'); return; }
       const ta = el('feedback-text');
       ta.value = (ta.value.trimEnd() + '\n\n---\n\n' + out).trimStart();
-      showCohortToast('AI suggestion appended to main feedback', 'green');
+      showCohortToast('Assistant suggestion appended to main feedback', 'green');
     }
 
     function aiShowDiff() {
       const main  = el('feedback-text').value || '';
-      const sugg  = el('ai-final-output').value || '';
+      const sugg  = el('ai-suggestion').value || '';
       const box   = el('ai-diff-box');
       if (!sugg.trim()) { alert('Generate a suggestion first.'); return; }
       box.classList.remove('hidden');
@@ -1805,15 +2033,22 @@
       const guard = _aiGuards();
       if (!guard) return;
       if (!hasAICreds()) {
-        alert('No AI Garnish credentials saved. Click "🔐 AI Login" in the nav bar to enter them.');
+        alert('No credentials saved. Click "🔐 AI Login" in the nav bar to enter them.');
         showAISettings();
         return;
       }
 
-      const prompt = SA.buildAIGarnishPrompt(lastConfig, lastScoreResult, {
+      let prompt = SA.buildAIGarnishPrompt(lastConfig, lastScoreResult, {
         markerNotes: (el('additional-comments').value || '').trim(),
         snippets: snippets
       });
+      if (typeof SA.scrubPII === 'function') {
+        prompt = SA.scrubPII(prompt);
+      } else {
+        console.error('[PII] SA.scrubPII missing — refusing to send. Hard-refresh the page (Ctrl+Shift+R).');
+        alert('Privacy guard unavailable (cached shared.js). Please hard-refresh the page (Ctrl+Shift+R) and try again.');
+        throw new Error('scrubPII unavailable');
+      }
 
       const btn = el('ai-garnish-direct-btn');
       const originalLabel = btn ? btn.innerHTML : '';
@@ -1838,17 +2073,17 @@
           } else if (res.status === 429) {
             alert('Rate limit hit — wait a moment and try again.\n\n' + (data.error || ''));
           } else {
-            alert('AI Garnish failed:\n\n' + (data.error || 'HTTP ' + res.status));
+            alert('Assistant error:\n\n' + (data.error || 'HTTP ' + res.status));
           }
           return;
         }
         const body = (data.body || '').trim();
         if (!body) { alert('Empty response from AI. Try again, or use the copy-paste workflow.'); return; }
 
-        el('ai-body-input').value = body;
+        el('ai-manual-suggestion').value = body;
 
         // Log the run (same store used by the copy-paste flow)
-        SA.logAIGarnish({
+        SA.logAssistantRun({
           when: new Date().toISOString(),
           student: (lastConfig && lastScoreResult) ? (el('student-name').value || '') : '',
           model: data.model || 'claude-haiku-4-5-20251001',
@@ -1948,17 +2183,68 @@
       });
     }
 
+    /* ── Section F explainer panels: individual collapse state ── */
+    const AI_EXPLAINER_KEY = 'SA_AI_EXPLAINER_STATE_V1';
+
+    function persistExplainerState() {
+      const state = {};
+      document.querySelectorAll('.ai-explainer[data-explainer]').forEach(function (d) {
+        state[d.dataset.explainer] = !!d.open;
+      });
+      try { localStorage.setItem(AI_EXPLAINER_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    function restoreExplainerState() {
+      let state = null;
+      try {
+        const raw = localStorage.getItem(AI_EXPLAINER_KEY);
+        if (raw) state = JSON.parse(raw);
+      } catch (e) {}
+      if (!state) return;
+      document.querySelectorAll('.ai-explainer[data-explainer]').forEach(function (d) {
+        const key = d.dataset.explainer;
+        if (key in state) d.open = !!state[key];
+      });
+      refreshExplainerToggleLabel();
+    }
+
+    function wireExplainerPersistence() {
+      document.querySelectorAll('.ai-explainer[data-explainer]').forEach(function (d) {
+        d.addEventListener('toggle', function () {
+          persistExplainerState();
+          refreshExplainerToggleLabel();
+        });
+      });
+    }
+
+    function aiToggleAllExplainers() {
+      const panels = document.querySelectorAll('.ai-explainer[data-explainer]');
+      const anyOpen = Array.from(panels).some(function (d) { return d.open; });
+      panels.forEach(function (d) { d.open = !anyOpen; });
+      persistExplainerState();
+      refreshExplainerToggleLabel();
+    }
+
+    function refreshExplainerToggleLabel() {
+      const btn = document.getElementById('ai-explainer-toggle-all');
+      if (!btn) return;
+      const panels = document.querySelectorAll('.ai-explainer[data-explainer]');
+      const anyOpen = Array.from(panels).some(function (d) { return d.open; });
+      btn.textContent = anyOpen ? 'Collapse all explainers' : 'Expand all explainers';
+    }
+
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
-             aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog,
+             aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog, aiViewLog,
              showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge,
              aiAssist, aiReplaceDraft, aiInsertBelow, aiShowDiff, aiTogglePrompt,
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
-             setAllDetails, persistSectionState, restoreSectionState };
+             setAllDetails, persistSectionState, restoreSectionState,
+             aiToggleAllExplainers };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
@@ -2088,11 +2374,11 @@
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideAISettings()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-slate-800 text-lg">🔐 AI Garnish Login</h3>
+        <h3 class="font-bold text-slate-800 text-lg">🔐 Wording Assistant Login</h3>
         <button onclick="S.hideAISettings()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <p class="text-slate-500 text-sm mb-4">
-        Enter the shared testing credentials to enable direct AI Garnish (one-click rewrite). Credentials are stored in this browser only.
+        Enter the shared credentials to enable direct wording assistant access (one-click draft). Credentials are stored in this browser only.
       </p>
       <div class="space-y-3">
         <div>
