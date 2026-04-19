@@ -482,8 +482,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.2.6"></script>
-  <script src="js/excel.js?v=2.2.6"></script>
+  <script src="js/shared.js?v=2.3.0-1"></script>
+  <script src="js/excel.js?v=2.3.0-1"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -1113,7 +1113,15 @@
     }
 
     /* ── Status chips (live UI state) ─────────────────────── */
-    let _aiApplied = false;
+    let _aiState = 'idle';   // replaces the old _aiApplied boolean
+    let _aiLastEdits = 0;    // number of lines different from the main textarea on last apply
+
+    function setAIState(state, edits) {
+      _aiState = state;
+      if (typeof edits === 'number') _aiLastEdits = edits;
+      refreshStatusChips();
+    }
+
     function refreshStatusChips() {
       // Rubric chip: X of Y graded
       const rChip = el('rubric-status-chip');
@@ -1138,9 +1146,20 @@
       // AI chip
       const aChip = el('ai-status-chip');
       if (aChip) {
-        aChip.textContent = _aiApplied ? 'Applied' : 'Not applied';
-        aChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
-          + (_aiApplied ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600');
+        const labels = {
+          idle:     'Idle',
+          drafting: 'Drafting…',
+          applied:  'Applied' + (_aiLastEdits ? ' — ' + _aiLastEdits + ' edits' : ''),
+          error:    'Error'
+        };
+        const colors = {
+          idle:     'bg-slate-200 text-slate-600',
+          drafting: 'bg-amber-100 text-amber-800 animate-pulse',
+          applied:  'bg-green-100 text-green-800',
+          error:    'bg-red-100 text-red-800'
+        };
+        aChip.textContent = labels[_aiState];
+        aChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle ' + colors[_aiState];
       }
       // Cohort chip
       const cChip = el('cohort-status-chip');
@@ -1259,7 +1278,7 @@
         SA.clearAIGarnishLog();
       }
 
-      _aiApplied = false;
+      setAIState('idle');
       recalculate();
       refreshStatusChips();
     }
@@ -1468,8 +1487,7 @@
       });
       el('ai-final-output').value = final;
       SA.logAIGarnish({ stage: 'assembled', bodyLen: body.length, finalLen: final.length });
-      _aiApplied = true;
-      refreshStatusChips();
+      setAIState('applied');
     }
 
     function aiCopyFinal() {
@@ -1486,8 +1504,11 @@
     }
 
     function aiResetPanel() {
-      el('ai-body-input').value = '';
-      el('ai-final-output').value = '';
+      const aiIn = el('ai-body-input');
+      const aiOut = el('ai-final-output');
+      if (aiIn) aiIn.value = '';
+      if (aiOut) aiOut.value = '';
+      setAIState('idle');
     }
 
     function aiClearLog() {
