@@ -448,8 +448,8 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.2.3"></script>
-  <script src="js/excel.js?v=2.2.3"></script>
+  <script src="js/shared.js?v=2.2.4"></script>
+  <script src="js/excel.js?v=2.2.4"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -1555,6 +1555,8 @@
 
         // Auto-assemble final so the user sees the stitched result immediately
         aiAssembleFinal();
+        const aiPanel = document.getElementById('sec-ai');
+        if (aiPanel && !aiPanel.open) aiPanel.open = true;
       } catch (err) {
         alert('Network error contacting the proxy:\n\n' + (err && err.message ? err.message : err));
       } finally {
