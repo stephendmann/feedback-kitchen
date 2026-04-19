@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
   }
   body = body || {};
 
-  const { user, password, prompt, model, maxTokens } = body;
+  const { user, password, prompt, model, maxTokens, mode } = body;
 
   // ── Auth gate ──
   const expectedUser = process.env.FK_PROXY_USER;
@@ -152,6 +152,8 @@ module.exports = async function handler(req, res) {
       res.status(502).json({ error: 'Empty response from Anthropic.' });
       return;
     }
+
+    console.log('[garnish] ok', { mode: mode || 'legacy', ip });
 
     res.status(200).json({
       body: text,
