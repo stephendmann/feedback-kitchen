@@ -308,18 +308,55 @@
         </div>
       </details>
 
-      <!-- ─ F. AI Garnish Preview (beta) ─────────────────── -->
+      <!-- ─ F. AI Assist ─────────────────── -->
       <details id="sec-ai" class="bg-amber-50 border border-amber-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="step-title"><span class="step-badge amber">F</span>AI polish ✨ <span id="ai-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Not applied</span> <span class="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded ml-2 align-middle">BETA</span></span>
-          <span class="text-xs text-amber-700 font-normal">AI rewrites the feedback body only. Greeting, closing and penalty notes stay unchanged.</span>
+          <span class="step-title">
+            <span class="step-badge amber">F</span>AI Assist
+            <span id="ai-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Idle</span>
+          </span>
+          <span class="text-xs text-amber-700 font-normal">Rewrites the feedback body only. Never changes scores or penalties.</span>
         </summary>
-        <div class="px-5 pb-4 pt-2 border-t border-amber-200 space-y-3">
+
+        <div class="px-5 pb-4 pt-2 border-t border-amber-200 space-y-4">
+
           <p class="text-xs text-amber-800 leading-relaxed">
-            AI rewrites the feedback body for clarity, tone and consistency. It will not change scores or penalty settings. Your grades, rubric descriptors, marker's notes and snippets are used as context. Review before copying. Set up credentials via <em>🔐 AI Login</em> in the nav bar first.
+            AI can rewrite the body for clarity, tone, and consistency. It will not change scores or penalty settings. Review before copying.
           </p>
 
-          <!-- Privacy callout -->
+          <!-- Input pane -->
+          <div class="bg-white/70 border border-amber-200 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider">Input used</h4>
+              <button class="text-xs text-amber-800 underline" onclick="S.aiTogglePrompt()">Show prompt</button>
+            </div>
+            <div id="ai-input-chips" class="flex flex-wrap gap-1.5 text-[11px]">
+              <!-- chips injected by refreshAIInputChips() -->
+            </div>
+            <pre id="ai-prompt-preview" class="hidden mt-2 text-[10px] bg-slate-50 border border-slate-200 rounded p-2 overflow-auto max-h-48 whitespace-pre-wrap"></pre>
+          </div>
+
+          <!-- Locked pane -->
+          <div class="bg-white/70 border border-amber-200 rounded-lg p-3">
+            <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">Locked (AI never touches these)</h4>
+            <ul class="text-[11px] text-amber-900 list-disc pl-5">
+              <li>Greeting (<code>Hi &lt;student name&gt;</code>)</li>
+              <li>Intro &amp; outro paragraphs (driven by the pre-penalty grade)</li>
+              <li><code>TOTAL SCORE</code> line</li>
+              <li>Late submission notice &amp; final penalised score</li>
+            </ul>
+            <p class="text-[11px] text-amber-700 italic mt-1">These stay exactly as generated from your grades.</p>
+          </div>
+
+          <!-- Three action buttons -->
+          <div class="flex flex-wrap gap-2">
+            <button id="ai-action-draft"    class="btn btn-green text-sm" onclick="S.aiAssist('draft')"    title="Generate a fresh criterion-by-criterion body from your current grades, notes, and snippets">✍️ Draft from rubric</button>
+            <button id="ai-action-improve"  class="btn btn-blue  text-sm" onclick="S.aiAssist('improve')"  title="Light rewrite of the current criterion body for clarity and tone">🪄 Improve clarity &amp; tone</button>
+            <button id="ai-action-shorten"  class="btn btn-amber text-sm" onclick="S.aiAssist('shorten')"  title="Compress the current body to fit typical LMS character limits">✂️ Shorten for LMS</button>
+            <button class="btn btn-ghost text-sm" onclick="S.aiResetPanel()" title="Clear AI inputs and outputs">↺ Reset</button>
+          </div>
+
+          <!-- Privacy callout (kept from v2.1) -->
           <div class="flex gap-2 items-start bg-red-50 border border-red-200 rounded-lg p-3">
             <span class="text-red-600 text-lg leading-none pt-0.5">⚠</span>
             <p class="text-xs text-red-800 leading-relaxed">
@@ -327,40 +364,37 @@
             </p>
           </div>
 
-          <div class="flex flex-wrap gap-2">
-            <button id="ai-garnish-direct-btn" class="btn btn-green text-sm" onclick="S.aiGarnishDirect()" title="Call Claude Haiku via the Feedback Kitchen proxy — auto-fills the criterion body and assembles the final feedback">✨ Garnish with AI</button>
-            <button class="btn btn-ghost text-sm" onclick="S.aiResetPanel()" title="Clear the pasted AI reply and final assembled output">↺ Reset panel</button>
-            <button class="btn btn-ghost text-sm" onclick="S.aiClearLog()" title="Clear the locally-stored AI prompt/reply log">🗑 Clear log</button>
-          </div>
-
+          <!-- Output + output controls -->
           <div>
-            <label class="block text-xs font-semibold text-amber-900 mb-1">Final assembled feedback (editable before copy)</label>
-            <textarea id="ai-final-output" class="feedback-box" rows="8" placeholder="Click ✨ Garnish with AI to generate. The assembled feedback will appear here for you to review and edit before copying." style="background:#fff"></textarea>
-            <div class="flex gap-2 mt-2">
-              <button class="btn btn-blue text-sm" onclick="S.aiCopyFinal()">📋 Copy final to clipboard</button>
+            <label class="block text-xs font-semibold text-amber-900 mb-1">AI suggestion (editable)</label>
+            <textarea id="ai-final-output" class="feedback-box" rows="8"
+              placeholder="Pick an action above to generate. The AI suggestion will appear here for review." style="background:#fff"></textarea>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button class="btn btn-green text-sm" onclick="S.aiReplaceDraft()"  title="Replace the main feedback textarea with this suggestion">⬇️ Replace draft</button>
+              <button class="btn btn-blue  text-sm" onclick="S.aiInsertBelow()"   title="Append the suggestion below the main feedback">➕ Insert below current text</button>
+              <button class="btn btn-ghost text-sm" onclick="S.aiShowDiff()"      title="Show a line-by-line diff against the current main feedback">🔍 Compare changes</button>
+              <button class="btn btn-ghost text-sm" onclick="S.aiCopyFinal()"     title="Copy this suggestion to clipboard (does NOT replace the main feedback)">📋 Copy suggestion</button>
             </div>
+            <div id="ai-diff-box" class="hidden mt-3 text-xs font-mono bg-slate-50 border border-slate-200 rounded p-2 whitespace-pre-wrap"></div>
           </div>
 
-          <!-- Stage 0 manual fallback, collapsed by default -->
+          <!-- Stage 0 manual fallback kept, collapsed -->
           <details class="bg-white/60 border border-amber-200 rounded-lg">
             <summary class="cursor-pointer px-3 py-2 text-xs font-semibold text-amber-900 select-none">
-              ⚙ Manual fallback (Stage 0) — if the direct AI call isn't available
+              ⚙ Manual fallback — paste an AI reply from your own Claude/ChatGPT session
             </summary>
             <div class="px-3 pb-3 pt-1 space-y-2">
-              <p class="text-[11px] text-amber-800 leading-relaxed">
-                Build the prompt → paste into your own Claude / ChatGPT account → paste the reply below → click <em>Assemble</em>.
-              </p>
-              <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Copies the prompt to clipboard so you can paste it into Claude Pro manually">🧾 Build prompt → Copy</button>
+              <button class="btn btn-amber text-sm" onclick="S.aiBuildPrompt()" title="Copies the current prompt to clipboard so you can paste it into your own LLM">🧾 Build prompt → Copy</button>
               <div>
-                <label class="block text-xs font-semibold text-amber-900 mt-2 mb-1" title="Paste the criterion-body rewrite returned by your LLM here. Do not paste an intro or outro.">Paste AI reply here (criterion body only)</label>
+                <label class="block text-xs font-semibold text-amber-900 mt-2 mb-1">Paste AI reply (criterion body only)</label>
                 <textarea id="ai-body-input" class="feedback-box" rows="5" placeholder="Paste the LLM's rewritten criterion body here…" style="background:#fff"></textarea>
               </div>
-              <button class="btn btn-green text-sm" onclick="S.aiAssembleFinal()" title="Stitch deterministic intro + your AI body + TOTAL SCORE + deterministic outro + late-penalty notice">🧩 Assemble Final Feedback</button>
+              <button class="btn btn-green text-sm" onclick="S.aiAssembleFinal()">🧩 Assemble</button>
             </div>
           </details>
 
           <p class="text-[11px] text-amber-700 leading-relaxed">
-            Last 20 prompts are stored locally in your browser only (never transmitted). Clear with <em>🗑 Clear log</em>.
+            Last 20 AI runs are logged locally in your browser only. <a href="#" onclick="S.aiClearLog();return false;" class="underline">Clear log</a>.
           </p>
         </div>
       </details>
