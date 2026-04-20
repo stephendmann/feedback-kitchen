@@ -17,7 +17,7 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 - [Using the Scorer](#using-the-scorer)
 - [Late Penalties](#late-penalties)
 - [Cooked Feedback](#cooked-feedback)
-- [Feedback Wording Assistant] (#Feedback-Wording-Assistant)
+- [Feedback Wording Assistant](#feedback-wording-assistant)
 - [Personal Snippets](#personal-snippets)
 - [Marker's Notes](#markers-notes)
 - [Exporting Your Work](#exporting-your-work)
