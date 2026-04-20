@@ -4,7 +4,7 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 
 > Experimental sandbox notice
 >
-> This repository, feedback-kitchen, has been a sandbox for prototyping features and alternative deployments. The older version is available at: https://github.com/stephendmann/score-automator and https://www.stephendmann.com/score-automator where as this update can be tested at https://marking.stephendmann.com/
+> This repository, feedback-kitchen, has been a sandbox for prototyping features and alternative deployments. The older version is available at: https://github.com/stephendmann/score-automator and https://www.stephendmann.com/score-automator, where-as this update can be tested at https://marking.stephendmann.com/
 
 ---
 
@@ -17,6 +17,7 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 - [Using the Scorer](#using-the-scorer)
 - [Late Penalties](#late-penalties)
 - [Cooked Feedback](#cooked-feedback)
+- [Feedback Wording Assistant] (#Feedback-Wording-Assistant)
 - [Personal Snippets](#personal-snippets)
 - [Marker's Notes](#markers-notes)
 - [Exporting Your Work](#exporting-your-work)
@@ -159,6 +160,16 @@ The assembled text is fully editable before copying — add a personal note, adj
 
 ---
 
+## Feedback Wording Assistant
+
+Section F provides an optional AI-powered wording assistant to help polish or rephrase your assembled feedback before copying. It is distinct from the core marking workflow — the Scorer and rubric operate entirely independently of it.
+
+Before any prompt is sent, a PII scrubber automatically strips student names and IDs from the text — Unicode-aware, handling diacritics, macrons (e.g. Ngāti), apostrophes, and hyphenated names (e.g. Smith-Jones). Student identity never leaves your device via this route.
+
+The panel uses a stepwise button hierarchy with collapsible explainers. Explainer state is persisted to localStorage so your preferred panel layout is remembered between sessions.
+
+---
+
 ## Personal Snippets
 
 Each tutor can build their own à la carte library of reusable feedback phrases — saved once, available in every marking session on that device.
@@ -218,7 +229,7 @@ Feedback Kitchen is a fully static application. There is no database, no build s
 
 **Storage model:**
 
-All data is held in `localStorage`. No student data is transmitted to any server.
+All data is held in `localStorage`. No student data is transmitted to any server. Explainer and assistant panel preferences (for example, whether Section F explainers are expanded or collapsed) are also stored in localStorage, so your preferred layout is remembered on that device only. These settings never include student-identifiable data and can be safely reset by clearing your browser data.
 
 | Key | Contents |
 |---|---|
@@ -231,9 +242,9 @@ Each Scorer configuration object contains: assessment details, grade scale defin
 
 ---
 
-## Privacy & Data Storage
+## Privacy & Data Handling Disclosure
 
-No data leaves your device. Feedback Kitchen runs entirely in the browser — there is no server, no account, and no telemetry. All Scorer configurations and personal snippets are stored in your browser's localStorage and remain on your machine.
+No data leaves your device. Feedback Kitchen runs entirely in the browser — there is no server, no account, and no telemetry. All Scorer configurations and personal snippets are stored in your browser's localStorage and remain on your machine. If the Feedback Wording Assistant is used, the assembled feedback text is sent to an external AI provider with all student names and IDs automatically stripped before transmission. No student-identifiable data leaves your device.
 
 Student data (names, IDs, grades, scores, and assembled feedback) is held only in memory during a marking session and is never written to localStorage or transmitted anywhere.
 
