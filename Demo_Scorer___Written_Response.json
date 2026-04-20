@@ -1,0 +1,173 @@
+{
+  "id": "mo6ljpr2ihn8yd",
+  "created": "2026-04-20T02:49:35.006Z",
+  "name": "Demo Scorer — Written Response",
+  "assessmentTitle": "Short Written Response",
+  "courseName": "DEMO101 / 2026",
+  "universityName": "Feedback Kitchen Demo",
+  "assignmentInfo": "",
+  "version": "1.0",
+  "appVersion": "2.5.1",
+  "gradeScale": [
+    {
+      "grade": "A",
+      "midpoint": 92.5,
+      "bandLow": 85,
+      "bandHigh": 100,
+      "tier": "excellent"
+    },
+    {
+      "grade": "B",
+      "midpoint": 79.5,
+      "bandLow": 75,
+      "bandHigh": 84,
+      "tier": "proficient"
+    },
+    {
+      "grade": "C",
+      "midpoint": 69.5,
+      "bandLow": 65,
+      "bandHigh": 74,
+      "tier": "developing"
+    },
+    {
+      "grade": "D",
+      "midpoint": 57,
+      "bandLow": 50,
+      "bandHigh": 64,
+      "tier": "satisfactory"
+    },
+    {
+      "grade": "F",
+      "midpoint": 24.5,
+      "bandLow": 0,
+      "bandHigh": 49,
+      "tier": "unsatisfactory"
+    }
+  ],
+  "tierLabels": {
+    "excellent": "Excellent",
+    "proficient": "Very good",
+    "developing": "Good",
+    "satisfactory": "Satisfactory",
+    "unsatisfactory": "Needs Work"
+  },
+  "criteria": [
+    {
+      "id": "mo6ljpr2taayp3",
+      "name": "Understanding of the topic",
+      "weight": 25,
+      "rubric": {
+        "excellent": "Shows clear, accurate, and confident understanding of the topic.",
+        "proficient": "Shows strong understanding with only minor gaps.",
+        "developing": "Shows sound understanding of the main ideas.",
+        "satisfactory": "",
+        "unsatisfactory": "Shows limited or inaccurate understanding."
+      }
+    },
+    {
+      "id": "mo6lqr3nbraa9p",
+      "name": "Use of evidence or examples",
+      "weight": 20,
+      "rubric": {
+        "excellent": "Uses relevant examples or evidence effectively to support points.",
+        "proficient": "Uses good supporting evidence with minor weaknesses.",
+        "developing": "Uses some relevant evidence, though support may be uneven.",
+        "satisfactory": "",
+        "unsatisfactory": "Provides little or no effective support."
+      }
+    },
+    {
+      "id": "mo6lqyrml1tvp2",
+      "name": "Organisation and structure",
+      "weight": 20,
+      "rubric": {
+        "excellent": "Response is well structured, logical, and easy to follow.",
+        "proficient": "Structure is clear with only small lapses.",
+        "developing": "Organisation is generally clear.",
+        "satisfactory": "",
+        "unsatisfactory": "Response lacks clear organisation."
+      }
+    },
+    {
+      "id": "mo6lr6jmxhrxyg",
+      "name": "Critical thinking or insight",
+      "weight": 20,
+      "rubric": {
+        "excellent": "Shows thoughtful analysis and some original insight.",
+        "proficient": "Shows clear analysis and relevant interpretation.",
+        "developing": "Includes some analysis, though mostly descriptive.",
+        "satisfactory": "",
+        "unsatisfactory": "Little or no analysis is evident."
+      }
+    },
+    {
+      "id": "mo6lrdep796v0m",
+      "name": "Writing style and mechanics",
+      "weight": 15,
+      "rubric": {
+        "excellent": "Writing is clear, fluent, and virtually error free.",
+        "proficient": "Writing is clear with few errors.",
+        "developing": "Writing is mostly clear; some errors do not impede meaning.",
+        "satisfactory": "",
+        "unsatisfactory": "Errors or unclear expression significantly affect readability."
+      }
+    }
+  ],
+  "gradeFeedback": [
+    {
+      "grade": "A",
+      "intro": "This is a very strong submission that meets the task requirements at an excellent standard. Your work shows clear understanding of the topic and uses structure, evidence, and writing quality to communicate your ideas effectively. The comments below highlight the key strengths of your response and identify small areas where you can push your thinking even further.",
+      "outro": "Overall, this is an excellent piece of work that is well‑structured, well‑supported, and thoughtfully argued. You should feel confident about the quality of this response. Keep building on these strengths and look for opportunities to extend your analysis even more in future tasks. Outstanding effort — well done."
+    },
+    {
+      "grade": "B",
+      "intro": "This is a strong submission that meets the main expectations of the task at a very good standard. Your response demonstrates solid understanding of the topic and generally clear organisation, with effective use of evidence in many places. The comments below point out what is working well and where targeted improvements could lift your work into the highest band.",
+      "outro": "Overall, this is a very good piece of work that shows clear strengths in several areas. With some focused refinement — especially in the areas noted above — you are well positioned to reach an excellent level next time. Keep using the strategies that worked well here and use this feedback to plan your next steps."
+    },
+    {
+      "grade": "C",
+      "intro": "This submission meets the core requirements of the task at a good, developing level. You show a basic understanding of the topic and some effective ideas, though aspects of evidence, organisation, or depth of analysis could be strengthened. The feedback below explains what you are already doing well and highlights the most important areas to focus on next.",
+      "outro": "Overall, this is a solid starting point with clear potential to improve. Concentrating on the specific suggestions above — for example, strengthening your use of evidence and sharpening your structure — will make a noticeable difference to your next piece of work. Keep building on what you can already do and use this feedback as a guide for your next attempt."
+    },
+    {
+      "grade": "D",
+      "intro": "This submission meets some of the basic requirements of the task at a satisfactory level. You show partial understanding of the topic and have made an effort to respond, but important aspects such as clarity, support, or organisation need further development. The comments below outline the key strengths to keep and the main areas that require attention.",
+      "outro": "Overall, this work demonstrates that you are on the way, but there is significant room for improvement. Focusing first on the priority areas identified above will help you lift your performance into a higher band. Use this feedback to plan one or two specific changes for your next task, and reach out if you would like to discuss what those changes could look like."
+    },
+    {
+      "grade": "F",
+      "intro": "This submission currently sits below the expected standard for this task. Some elements of the response may be on the right track, but important requirements are missing or not yet developed enough to show clear understanding. The feedback below explains the main gaps and offers concrete steps you can take to improve in your next attempt.",
+      "outro": "Although this work does not yet meet the required level, it can be a useful starting point if you use the feedback carefully. Begin by addressing the most critical issues identified above, such as meeting the task requirements and clarifying your main ideas. Please consider asking for guidance or booking time to discuss concrete next steps — support is available, and improvement is very achievable with targeted effort."
+    }
+  ],
+  "latePenalties": [
+    {
+      "label": "On time — no penalty",
+      "deduction": 0,
+      "fail": false
+    },
+    {
+      "label": "1 day late (up to 24 hrs)",
+      "deduction": 10,
+      "fail": false
+    },
+    {
+      "label": "2 days late (up to 48 hrs)",
+      "deduction": 20,
+      "fail": false
+    },
+    {
+      "label": "3 days late (up to 72 hrs)",
+      "deduction": 30,
+      "fail": false
+    },
+    {
+      "label": "More than 3 days late",
+      "deduction": 0,
+      "fail": true
+    }
+  ],
+  "enableLatePenalties": true,
+  "scoreRounding": "none"
+}

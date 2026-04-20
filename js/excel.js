@@ -43,7 +43,7 @@
         row.override !== null ? row.override : '',
         row.finalScore,
         parseFloat(SA.formatScore(row.weightedScore, rounding)),
-        SA.TIER_LABELS[row.tier] || row.tier
+        SA.getTierLabel(config, row.tier, { withRange: true })
       ]);
     }
 
@@ -85,10 +85,11 @@
     RUB.push(['RUBRIC — ' + (config.assessmentTitle || 'Assessment')]);
     RUB.push([]);
     RUB.push(['Criterion', 'Weight (%)',
-              'Excellent (A+ / A / A-)',
-              'Proficient (B+ / B / B-)',
-              'Developing (C+ / C / C-)',
-              'Unsatisfactory (D)']);
+              SA.getTierLabel(config, 'excellent',      { withRange: true }),
+              SA.getTierLabel(config, 'proficient',     { withRange: true }),
+              SA.getTierLabel(config, 'developing',     { withRange: true }),
+              SA.getTierLabel(config, 'satisfactory',   { withRange: true }),
+              SA.getTierLabel(config, 'unsatisfactory', { withRange: true })]);
 
     for (const c of config.criteria) {
       RUB.push([
@@ -96,6 +97,7 @@
         c.rubric.excellent      || '',
         c.rubric.proficient     || '',
         c.rubric.developing     || '',
+        c.rubric.satisfactory   || '',
         c.rubric.unsatisfactory || ''
       ]);
     }
@@ -103,7 +105,7 @@
     const wsRubric = XLSX.utils.aoa_to_sheet(RUB);
     wsRubric['!cols'] = [
       { wch: 28 }, { wch: 10 },
-      { wch: 45 }, { wch: 45 }, { wch: 45 }, { wch: 45 }
+      { wch: 45 }, { wch: 45 }, { wch: 45 }, { wch: 45 }, { wch: 45 }
     ];
     XLSX.utils.book_append_sheet(wb, wsRubric, 'Rubric');
 
@@ -210,7 +212,7 @@
     SUM.push([]);
 
     // Tier distribution (based on suggestedGrade → tier)
-    const tierCounts = { excellent: 0, proficient: 0, developing: 0, unsatisfactory: 0 };
+    const tierCounts = { excellent: 0, proficient: 0, developing: 0, satisfactory: 0, unsatisfactory: 0 };
     const useCustomScale = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
     const tierOf = (grade) => {
       if (useCustomScale) {
@@ -225,10 +227,11 @@
       if (t && tierCounts[t] !== undefined) tierCounts[t]++;
     });
     SUM.push(['GRADE DISTRIBUTION']);
-    SUM.push(['Excellent:',      tierCounts.excellent]);
-    SUM.push(['Proficient:',     tierCounts.proficient]);
-    SUM.push(['Developing:',     tierCounts.developing]);
-    SUM.push(['Unsatisfactory:', tierCounts.unsatisfactory]);
+    SUM.push([SA.getTierLabel(config, 'excellent')      + ':', tierCounts.excellent]);
+    SUM.push([SA.getTierLabel(config, 'proficient')     + ':', tierCounts.proficient]);
+    SUM.push([SA.getTierLabel(config, 'developing')     + ':', tierCounts.developing]);
+    SUM.push([SA.getTierLabel(config, 'satisfactory')   + ':', tierCounts.satisfactory]);
+    SUM.push([SA.getTierLabel(config, 'unsatisfactory') + ':', tierCounts.unsatisfactory]);
 
     const wsSum = XLSX.utils.aoa_to_sheet(SUM);
     wsSum['!cols'] = [{ wch: 28 }, { wch: 40 }];
@@ -245,6 +248,9 @@
     headerRow.push('Late Penalty');
     headerRow.push('Final Score /100');
     headerRow.push('Suggested Grade');
+    headerRow.push('Override?');
+    headerRow.push('Weighted /100 (pre-override)');
+    headerRow.push('Pre-override Grade');
     MTX.push(headerRow);
 
     cohort.students.forEach(s => {
@@ -266,6 +272,12 @@
       row.push(lp ? (lp.fail ? 'Fail (late)' : (lp.deduction ? '-' + lp.deduction + '%' : 'On time')) : '');
       row.push(sr.penalisedScore != null ? parseFloat(SA.formatScore(sr.penalisedScore, rounding)) : '');
       row.push(sr.suggestedGrade || '');
+      // Override audit columns
+      const ov = sr.override;
+      row.push(ov ? (ov.snapped ? 'Yes (bumped)' : 'Yes (letter only)') : '');
+      row.push(ov && typeof ov.originalTotal === 'number'
+        ? parseFloat(SA.formatScore(ov.originalTotal, rounding)) : '');
+      row.push(ov ? (ov.originalGrade || '') : '');
       MTX.push(row);
     });
 
@@ -283,13 +295,15 @@
     avgRow.push('');
     avgRow.push(parseFloat(SA.formatScore(avg(penalised), rounding)));
     avgRow.push('');
+    // Pad for new override columns (Override?, Weighted pre-override, Pre-override Grade)
+    avgRow.push('', '', '');
     MTX.push([]);
     MTX.push(avgRow);
 
     const wsMtx = XLSX.utils.aoa_to_sheet(MTX);
     const mtxCols = [{ wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 14 }];
     criteria.forEach(() => { mtxCols.push({ wch: 10 }); mtxCols.push({ wch: 14 }); });
-    mtxCols.push({ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 });
+    mtxCols.push({ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 16 }, { wch: 22 }, { wch: 18 });
     wsMtx['!cols'] = mtxCols;
     // (appended later — new tab order is Student Feedback → Grade Matrix → Cohort Summary)
 
@@ -325,17 +339,21 @@
     RUB.push(['RUBRIC — ' + (config.assessmentTitle || 'Assessment')]);
     RUB.push([]);
     RUB.push(['Criterion', 'Weight (%)',
-              'Excellent (A+ / A / A-)', 'Proficient (B+ / B / B-)',
-              'Developing (C+ / C / C-)', 'Unsatisfactory (D)']);
+              SA.getTierLabel(config, 'excellent',      { withRange: true }),
+              SA.getTierLabel(config, 'proficient',     { withRange: true }),
+              SA.getTierLabel(config, 'developing',     { withRange: true }),
+              SA.getTierLabel(config, 'satisfactory',   { withRange: true }),
+              SA.getTierLabel(config, 'unsatisfactory', { withRange: true })]);
     criteria.forEach(c => {
       RUB.push([
         c.name, c.weight,
         c.rubric.excellent || '', c.rubric.proficient || '',
-        c.rubric.developing || '', c.rubric.unsatisfactory || ''
+        c.rubric.developing || '', c.rubric.satisfactory || '',
+        c.rubric.unsatisfactory || ''
       ]);
     });
     const wsRub = XLSX.utils.aoa_to_sheet(RUB);
-    wsRub['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 45 }, { wch: 45 }, { wch: 45 }, { wch: 45 }];
+    wsRub['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 45 }, { wch: 45 }, { wch: 45 }, { wch: 45 }, { wch: 45 }];
     XLSX.utils.book_append_sheet(wb, wsRub, 'Rubric');
 
     /* ── Sheet 5: Grade Feedback Reference ─────────────────── */

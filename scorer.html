@@ -184,6 +184,36 @@
   <!-- ── Main App ──────────────────────────────────────────── -->
   <div id="app" class="hidden">
 
+    <!-- Demo onboarding panel — only shown for the bundled demo scorer. -->
+    <section id="demo-onboarding" class="hidden no-print bg-blue-50 border-b border-blue-100 py-5 px-4">
+      <div class="max-w-5xl mx-auto flex items-start gap-4">
+        <span class="text-2xl mt-0.5 shrink-0">👋</span>
+        <div class="flex-1 text-sm text-slate-700 leading-relaxed">
+          <h3 class="font-bold text-slate-800 mb-1">Using the DEMO101 / 2026 Short Written Response scorer</h3>
+          <p class="mb-2">This demo scorer helps you mark a short written response using a clear rubric and generate plain‑language feedback. Use it to practise the workflow before building your own scorer.</p>
+          <ul class="list-disc pl-5 space-y-0.5 mb-2">
+            <li><strong>A · Student</strong> — Add the student name or identifier and any basic details.</li>
+            <li><strong>B · Rubric</strong> — Choose the level that best matches each criterion. The scorer calculates the total from the saved weights.</li>
+            <li><strong>C · Adjustments</strong> — Make a small manual adjustment if needed, and note why.</li>
+            <li><strong>D · Feedback</strong> — Review or edit the generated feedback so it matches your judgement and tone.</li>
+            <li><strong>E · Notes</strong> — Keep any private marker notes here (not shown to the student).</li>
+          </ul>
+          <p class="text-slate-500">Finish by checking the score, band, and feedback, then use <strong>↺ New Student</strong> to mark the next response.</p>
+        </div>
+        <button type="button" onclick="dismissDemoOnboarding()"
+                class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5"
+                title="Dismiss">&times;</button>
+      </div>
+    </section>
+    <script>
+      function dismissDemoOnboarding() {
+        var el = document.getElementById('demo-onboarding');
+        if (el) el.classList.add('hidden');
+        try { localStorage.setItem('SA_DEMO_ONBOARDING_DISMISSED', '1'); } catch (e) {}
+      }
+    </script>
+
+
     <!-- Nav -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print">
       <div class="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
@@ -318,8 +348,16 @@
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
             <div class="flex-1">
               <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
-              <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.recalculate()" style="max-width:320px"
+              <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.onPenaltyChange()" style="max-width:320px"
                       title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
+              <!-- Penalty × override conflict banners -->
+              <div id="penalty-override-conflict" class="hidden mt-2 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-3 py-2" role="alert" aria-live="polite">
+                <span class="font-semibold">Override removed:</span>
+                <span id="penalty-override-conflict-text"></span>
+              </div>
+              <div id="penalty-override-info" class="hidden mt-2 text-xs text-slate-500 italic" aria-live="polite">
+                Override and late penalty are both active — penalty applies after the bump.
+              </div>
             </div>
             <div class="flex-1 text-right">
               <div class="flex items-center justify-end gap-2 mb-2">
@@ -337,15 +375,22 @@
                       title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
               </div>
             </div>
+            <!-- Override audit badge (shown only when override is active) -->
+            <div id="override-audit" class="hidden mt-2 flex justify-end">
+              <span class="inline-flex items-center gap-2 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-1" aria-live="polite">
+                <span aria-hidden="true">↑</span>
+                <span id="override-audit-text"></span>
+              </span>
+            </div>
           </div>
 
           <!-- Grade Override -->
-          <div class="mt-4 flex items-center gap-3">
-            <label class="text-xs font-semibold text-slate-400 shrink-0">Grade Override <span class="font-normal">(optional)</span></label>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <label class="text-xs font-semibold text-slate-400 shrink-0" for="grade-override">Grade Override <span class="font-normal">(optional)</span></label>
             <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
-                   placeholder="e.g. B+" maxlength="3" oninput="S.onOverrideGrade()"
-                   title="Overrides the final overall grade — use when your professional judgement differs from the weighted result. This is separate from the per-criterion Override Score above.">
-            <span class="text-xs text-slate-400">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
+                   placeholder="—" maxlength="3" oninput="S.onOverrideGrade()"
+                   title="Bumps a borderline student up to the chosen band. Sets the grade letter AND raises /100 to the band minimum (e.g. B+ → 75). Per-criterion data is preserved. Never reduces a score.">
+            <span id="grade-override-status" class="text-xs text-slate-400" aria-live="polite">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
           </div>
         </div>
       </details>
@@ -772,8 +817,9 @@
     </div>
   </footer>
 
-  <script src="js/shared.js?v=2.6.7"></script>
-  <script src="js/excel.js?v=2.5.1"></script>
+  <script src="js/shared.js?v=2.8.0"></script>
+  <script src="js/excel.js?v=2.8.0"></script>
+  <script>/* scorer ui: v2.8.0 */</script>
   <script>
   'use strict';
   /* ============================================================
@@ -821,6 +867,13 @@
       highlightRoundingBtn(_displayRounding);
       document.getElementById('app').classList.remove('hidden');
 
+      // Show the demo onboarding panel once per fresh demo launch.
+      if (config.id === 'demo-written-response-v1'
+          && localStorage.getItem('SA_DEMO_ONBOARDING_DISMISSED') !== '1') {
+        const panel = document.getElementById('demo-onboarding');
+        if (panel) panel.classList.remove('hidden');
+      }
+
       // Header, nav & page title
       const navParts = [config.name, config.assessmentTitle].filter(Boolean);
       document.getElementById('nav-scorer-name').textContent = navParts.join(' · ');
@@ -853,6 +906,7 @@
 
       loadSnippets();
       refreshAIInputChips();
+      _setOverridePlaceholder();
 
       document.querySelectorAll('.feedback-box').forEach(ta => {
         const grow = () => {
@@ -971,14 +1025,111 @@
 
     function onStudentChange() { updateFeedback(); refreshStickySummary(); refreshAIInputChips(); }
 
-    function onOverrideGrade() { updateFeedback(); }
+    /* ── Grade-override helpers ──────────────────────────── */
+    function _activeGradeScale() {
+      return (config && Array.isArray(config.gradeScale) && config.gradeScale.length)
+        ? config.gradeScale.map(g => g.grade)
+        : SA.GRADES;
+    }
+    // Normalise common typing variants: trim, uppercase, en/em-dash → hyphen, strip spaces.
+    function normaliseGradeInput(raw) {
+      return String(raw || '')
+        .replace(/[\u2010-\u2015\u2212]/g, '-')   // hyphens, dashes, minus → '-'
+        .replace(/\s+/g, '')
+        .trim()
+        .toUpperCase();
+    }
+    function _renderOverrideStatus() {
+      const inp = document.getElementById('grade-override');
+      const out = document.getElementById('grade-override-status');
+      if (!inp || !out) return;
+      const raw = inp.value;
+      const norm = normaliseGradeInput(raw);
+      inp.classList.remove('out-of-band');
+      inp.style.borderColor = '';
+      if (!raw) {
+        out.className = 'text-xs text-slate-400';
+        out.innerHTML = 'Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.';
+        return;
+      }
+      const scale = _activeGradeScale();
+      if (scale.includes(norm)) {
+        inp.value = norm;  // reflect normalisation back to user
+        inp.style.borderColor = '#16a34a';
+        out.className = 'text-xs text-emerald-600 font-medium';
+        out.textContent = '✓ Override applied: ' + norm;
+      } else {
+        inp.style.borderColor = '#dc2626';
+        out.className = 'text-xs text-red-600';
+        out.textContent = 'Not in this rubric\u2019s grade scale. Valid: ' + scale.join(', ');
+      }
+    }
+    function onOverrideGrade() {
+      // Block override if a fail-grade late penalty is currently active.
+      const sel = document.getElementById('late-penalty-select');
+      const idx = parseInt(sel ? sel.value : '0', 10);
+      const lp  = (config && config.latePenalties && config.latePenalties[idx]) || null;
+      const ovrInput = el('grade-override');
+      if (lp && lp.fail && ovrInput && ovrInput.value.trim()) {
+        const out = el('grade-override-status');
+        ovrInput.style.borderColor = '#dc2626';
+        if (out) {
+          out.className = 'text-xs text-red-600';
+          out.textContent = 'Cannot override — current late penalty results in an automatic fail. Change the penalty first if you want to award a different grade.';
+        }
+        recalculate();
+        return;
+      }
+      _renderOverrideStatus();
+      recalculate();
+    }
+
+    // Late-penalty change handler — clears any active grade override if the
+    // selected penalty results in an automatic fail (per university policy).
+    function onPenaltyChange() {
+      const sel = document.getElementById('late-penalty-select');
+      const idx = parseInt(sel.value || '0', 10);
+      const lp  = (config && config.latePenalties && config.latePenalties[idx]) || null;
+      const ovrInput = el('grade-override');
+      const banner   = el('penalty-override-conflict');
+      const bannerTx = el('penalty-override-conflict-text');
+      // Hide banner by default each time this fires
+      banner.classList.add('hidden');
+      if (lp && lp.fail && ovrInput && ovrInput.value.trim()) {
+        const removed = ovrInput.value.trim().toUpperCase();
+        ovrInput.value = '';
+        // Reset border/status
+        ovrInput.style.borderColor = '';
+        const out = el('grade-override-status');
+        if (out) {
+          out.className = 'text-xs text-slate-400';
+          out.innerHTML = 'Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.';
+        }
+        bannerTx.textContent = ' Late penalty results in a fail grade, so the previous override (' + removed + ') was cleared. Re-enter it if you want to award a non-fail grade despite lateness.';
+        banner.classList.remove('hidden');
+      }
+      recalculate();
+    }
+    function _setOverridePlaceholder() {
+      const inp = document.getElementById('grade-override');
+      if (!inp) return;
+      const scale = _activeGradeScale();
+      // Pick a mid-scale example if available, else first.
+      const example = scale[Math.floor(scale.length / 2)] || scale[0] || '';
+      if (example) inp.placeholder = 'e.g. ' + example;
+    }
 
     /* ── Recalculate ─────────────────────────────────────── */
     function recalculate() {
       latePenaltyIdx = parseInt(document.getElementById('late-penalty-select').value || '0', 10);
       scoreResult    = SA.computeScores(config, studentGrades, latePenaltyIdx);
 
-      const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty, isFail } = scoreResult;
+      // Apply marker grade override (snaps total UP to band minimum of new grade).
+      // Per-criterion rows always come from the original scoreResult.
+      const overrideGrade = normaliseGradeInput(el('grade-override').value);
+      const effective     = SA.applyGradeOverride(config, scoreResult, overrideGrade);
+      const { rows } = scoreResult;
+      const { weightedTotal, penalisedScore, suggestedGrade, latePenalty, isFail } = effective;
 
       // Update row cells
       let weightSum = 0;
@@ -987,6 +1138,7 @@
           excellent:      'bg-blue-200 text-blue-900 ring-1 ring-blue-300',
           proficient:     'bg-green-200 text-green-900 ring-1 ring-green-300',
           developing:     'bg-amber-200 text-amber-900 ring-1 ring-amber-300',
+          satisfactory:   'bg-orange-200 text-orange-900 ring-1 ring-orange-300',
           unsatisfactory: 'bg-red-200 text-red-900 ring-1 ring-red-300'
         };
         if (row.grade) {
@@ -994,7 +1146,7 @@
           el('midpoint-' + i).textContent   = SA.formatScore(row.midpoint, _displayRounding);
           el('final-score-' + i).textContent = SA.formatScore(row.finalScore, _displayRounding);
           el('weighted-' + i).textContent    = SA.formatScore(row.weightedScore, _displayRounding);
-          el('tier-' + i).textContent      = row.tier ? SA.TIER_LABELS[row.tier].split(' (')[0] : '';
+          el('tier-' + i).textContent      = row.tier ? SA.getTierLabel(config, row.tier) : '';
           el('tier-' + i).className        = 'tier-pill ' + (TIER_COLOURS[row.tier] || '');
 
           // Check override band
@@ -1039,6 +1191,7 @@
         excellent: 'bg-green-100 text-green-800',
         proficient: 'bg-blue-100 text-blue-800',
         developing: 'bg-yellow-100 text-yellow-800',
+        satisfactory: 'bg-orange-100 text-orange-800',
         unsatisfactory: 'bg-red-100 text-red-800'
       };
       const gradeColours = {};
@@ -1054,6 +1207,34 @@
         'C-': 'bg-yellow-100 text-yellow-800','D':  'bg-red-100 text-red-800'
       });
       gradeBadge.className = 'grade-badge text-2xl px-4 py-1 ' + (gradeColours[suggestedGrade] || 'bg-slate-100 text-slate-600');
+
+      // Override + non-fail penalty info note
+      const infoNote = el('penalty-override-info');
+      if (infoNote) {
+        const hasOverride = !!(effective.override);
+        const hasPenalty  = !!(latePenalty && latePenalty.deduction > 0 && !isFail);
+        if (hasOverride && hasPenalty) infoNote.classList.remove('hidden');
+        else infoNote.classList.add('hidden');
+      }
+
+      // Override audit badge
+      const auditBox  = el('override-audit');
+      const auditText = el('override-audit-text');
+      if (effective.override && effective.override.snapped) {
+        const o = effective.override;
+        auditText.textContent = 'Bumped from ' + SA.formatScore(o.originalTotal, _displayRounding)
+          + ' (' + o.originalGrade + ') to ' + SA.formatScore(o.newTotal, _displayRounding)
+          + ' (' + o.newGrade + ') by marker override';
+        auditBox.classList.remove('hidden');
+      } else if (effective.override) {
+        // Letter-only override (already at or above band min — no snap needed)
+        const o = effective.override;
+        auditText.textContent = 'Marker override: grade set to ' + o.newGrade
+          + ' (was ' + o.originalGrade + ')';
+        auditBox.classList.remove('hidden');
+      } else {
+        auditBox.classList.add('hidden');
+      }
 
       // Print cells
       el('print-penalty-label').textContent   = latePenalty ? latePenalty.label : 'None';
@@ -1076,12 +1257,9 @@
         return;
       }
 
-      // Check for grade override
-      const overrideRaw  = (el('grade-override').value || '').trim().toUpperCase();
-      const validGrades  = config.gradeScale ? config.gradeScale.map(g => g.grade) : SA.GRADES;
-      const effectiveRes = overrideRaw && validGrades.includes(overrideRaw)
-        ? { ...scoreResult, suggestedGrade: overrideRaw }
-        : scoreResult;
+      // Check for grade override — snaps total to band min of new grade.
+      const overrideRaw  = normaliseGradeInput(el('grade-override').value);
+      const effectiveRes = SA.applyGradeOverride(config, scoreResult, overrideRaw);
 
       const name  = el('student-name').value.trim();
       const header = name ? `Hi ${name},\n\n` : '';
@@ -1279,6 +1457,9 @@
       }
       ensureCohortInitialised(function (cohort) {
         if (!cohort) return;
+        // Persist the overridden scoreResult so Excel exports reflect the marker bump.
+        const overrideRaw = normaliseGradeInput(el('grade-override').value);
+        const effectiveForSave = SA.applyGradeOverride(config, scoreResult, overrideRaw);
         const record = {
           name:         studentName,
           studentId:    studentId,
@@ -1286,7 +1467,7 @@
           date:         (el('student-date').value || ''),
           grades:       JSON.parse(JSON.stringify(studentGrades || [])),
           penaltyIdx:   parseInt(el('late-penalty-select').value, 10) || 0,
-          scoreResult:  cloneScoreResultForStorage(scoreResult),
+          scoreResult:  cloneScoreResultForStorage(effectiveForSave),
           feedbackText: el('feedback-text').value || '',
           markerNotes:  el('additional-comments').value || '',
           overrideGrade: (el('grade-override').value || '').trim()
@@ -1319,6 +1500,16 @@
         rawTotal:        sr.rawTotal,
         latePenalty:     sr.latePenalty ? {
           label: sr.latePenalty.label, deduction: sr.latePenalty.deduction, fail: !!sr.latePenalty.fail
+        } : null,
+        override:        sr.override ? {
+          originalGrade:    sr.override.originalGrade,
+          originalTotal:    sr.override.originalTotal,
+          originalPenalised:sr.override.originalPenalised,
+          newGrade:         sr.override.newGrade,
+          newTotal:         sr.override.newTotal,
+          newPenalised:     sr.override.newPenalised,
+          bandMin:          sr.override.bandMin,
+          snapped:          !!sr.override.snapped
         } : null,
         rows: (sr.rows || []).map(function (r) {
           return {
@@ -1801,11 +1992,8 @@
       const body = (el('ai-manual-suggestion').value || '').trim();
       if (!body) { alert('Paste the AI reply into the box above first.'); return; }
 
-      const overrideRaw  = (el('grade-override').value || '').trim().toUpperCase();
-      const validGrades  = config.gradeScale ? config.gradeScale.map(function (g) { return g.grade; }) : SA.GRADES;
-      const effectiveRes = overrideRaw && validGrades.includes(overrideRaw)
-        ? Object.assign({}, scoreResult, { suggestedGrade: overrideRaw })
-        : scoreResult;
+      const overrideRaw  = normaliseGradeInput(el('grade-override').value);
+      const effectiveRes = SA.applyGradeOverride(config, scoreResult, overrideRaw);
 
       const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
         studentName: el('student-name').value
@@ -1954,11 +2142,8 @@
         const body = (data.body || '').trim();
         if (!body) { setAIState('error'); alert('Empty AI response.'); return; }
 
-        const overrideRaw = (el('grade-override').value || '').trim().toUpperCase();
-        const validGrades = config.gradeScale ? config.gradeScale.map(g => g.grade) : SA.GRADES;
-        const effectiveRes = overrideRaw && validGrades.includes(overrideRaw)
-          ? Object.assign({}, scoreResult, { suggestedGrade: overrideRaw })
-          : scoreResult;
+        const overrideRaw  = normaliseGradeInput(el('grade-override').value);
+        const effectiveRes = SA.applyGradeOverride(config, scoreResult, overrideRaw);
 
         const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
           studentName: el('student-name').value
@@ -2276,7 +2461,7 @@
       btn.textContent = anyOpen ? 'Collapse all explainers' : 'Expand all explainers';
     }
 
-    return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade,
+    return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade, onPenaltyChange,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
              aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog, aiViewLog,

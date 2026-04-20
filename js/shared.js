@@ -27,17 +27,55 @@
     'D':  'unsatisfactory'
   };
 
+  // Tier severity order (highest → lowest). Used everywhere to render tiers consistently.
+  const TIER_ORDER = ['excellent', 'proficient', 'developing', 'satisfactory', 'unsatisfactory'];
+
   const TIER_LABELS = {
     excellent:      'Excellent (A+ / A / A-)',
     proficient:     'Proficient (B+ / B / B-)',
     developing:     'Developing (C+ / C / C-)',
+    satisfactory:   'Satisfactory',
     unsatisfactory: 'Unsatisfactory (D)'
   };
+
+  // Short default labels (no band suffix) — used as placeholders for the
+  // builder's tier-label customiser, and as a fallback when stripping the
+  // suffix from a TIER_LABELS entry isn't possible.
+  const TIER_LABELS_SHORT = {
+    excellent:      'Excellent',
+    proficient:     'Proficient',
+    developing:     'Developing',
+    satisfactory:   'Satisfactory',
+    unsatisfactory: 'Unsatisfactory'
+  };
+
+  // Returns the display label for a tier key, honouring config.tierLabels
+  // when present. opts.withRange = true appends the grade range in parens
+  // (e.g. "Very Good (A+ / A / A-)"). Falls back gracefully if config or
+  // tierLabels is missing.
+  function getTierLabel(config, tierKey, opts) {
+    opts = opts || {};
+    const custom = config && config.tierLabels && config.tierLabels[tierKey];
+    const base   = (custom && String(custom).trim()) || TIER_LABELS_SHORT[tierKey] || tierKey;
+    if (!opts.withRange) return base;
+    // Build range string from config.gradeScale or default mapping.
+    let range = '';
+    if (Array.isArray(config && config.gradeScale)) {
+      const grades = config.gradeScale.filter(g => g.tier === tierKey).map(g => g.grade).filter(Boolean);
+      if (grades.length) range = ' (' + grades.join(' / ') + ')';
+    } else {
+      const dflt = TIER_LABELS[tierKey] || '';
+      const m = dflt.match(/\(([^)]+)\)/);
+      if (m) range = ' (' + m[1] + ')';
+    }
+    return base + range;
+  }
 
   const TIER_BADGE_COLOURS = {
     excellent:      '#d1fae5',   // green-100
     proficient:     '#dbeafe',   // blue-100
     developing:     '#fef9c3',   // yellow-100
+    satisfactory:   '#ffedd5',   // orange-100
     unsatisfactory: '#fee2e2'    // red-100
   };
 
@@ -135,6 +173,64 @@
     return sorted[sorted.length - 1].grade;
   }
 
+  // Return the band minimum (lower threshold) for a grade letter, for either
+  // a custom gradeScale or the default NZ thresholds.
+  function bandMinimumForGrade(grade, gradeScale) {
+    if (Array.isArray(gradeScale) && gradeScale.length) {
+      const entry = gradeScale.find(g => g.grade === grade);
+      return entry ? entry.bandLow : null;
+    }
+    const entry = GRADE_THRESHOLDS.find(([_, g]) => g === grade);
+    return entry ? entry[0] : null;
+  }
+
+  // Apply a marker-chosen grade override to an existing scoreResult.
+  // - Snaps weightedTotal + penalisedScore UP to the band minimum of the new grade
+  //   (use case: bump a student at the top of one band into the next).
+  // - Leaves per-criterion rows untouched (audit trail preserved).
+  // - Attaches an `override` metadata object for downstream display/export.
+  // Returns a new object; does not mutate input. If overrideGrade is empty or
+  // not in the active scale, returns the original scoreResult unchanged.
+  function applyGradeOverride(config, scoreResult, overrideGrade) {
+    if (!scoreResult || !overrideGrade) return scoreResult;
+    const scale = Array.isArray(config && config.gradeScale) && config.gradeScale.length
+      ? config.gradeScale
+      : null;
+    const validGrades = scale ? scale.map(g => g.grade) : GRADES;
+    if (!validGrades.includes(overrideGrade)) return scoreResult;
+
+    const originalGrade = scoreResult.suggestedGrade;
+    const originalTotal = scoreResult.weightedTotal;
+    const originalPenalised = scoreResult.penalisedScore;
+    const bandMin = bandMinimumForGrade(overrideGrade, scale);
+    if (bandMin === null) {
+      // Fallback: letter-only change if we can't resolve a band minimum.
+      return Object.assign({}, scoreResult, {
+        suggestedGrade: overrideGrade,
+        override: { originalGrade, originalTotal, originalPenalised, newGrade: overrideGrade, newTotal: originalTotal, snapped: false }
+      });
+    }
+
+    // Snap up only — never reduce a student's mark via override.
+    const newTotal = Math.max(originalTotal, bandMin);
+    // Preserve any late-penalty deduction that was applied to the original total.
+    const deductionPoints = (typeof originalPenalised === 'number' && typeof originalTotal === 'number')
+      ? (originalTotal - originalPenalised)
+      : 0;
+    const newPenalised = Math.max(0, newTotal - Math.max(0, deductionPoints));
+
+    return Object.assign({}, scoreResult, {
+      suggestedGrade: overrideGrade,
+      weightedTotal:  newTotal,
+      penalisedScore: newPenalised,
+      override: {
+        originalGrade, originalTotal, originalPenalised,
+        newGrade: overrideGrade, newTotal, newPenalised,
+        bandMin, snapped: newTotal !== originalTotal
+      }
+    });
+  }
+
   function formatDate(date) {
     if (!date) date = new Date();
     return date.toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -152,10 +248,11 @@
       version:        '1.0',
       appVersion:     '2.5.1',   // Feedback Kitchen app version for export provenance
       gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
+      tierLabels:     null,   // null = use defaults; object {excellent, proficient, developing, unsatisfactory} = custom labels
       criteria: [
         {
           id: uid(), name: '', weight: 100,
-          rubric: { excellent: '', proficient: '', developing: '', unsatisfactory: '' }
+          rubric: { excellent: '', proficient: '', developing: '', satisfactory: '', unsatisfactory: '' }
         }
       ],
       gradeFeedback:      JSON.parse(JSON.stringify(DEFAULT_GRADE_FEEDBACK)),
@@ -187,8 +284,26 @@
     if (getActiveId() === id) localStorage.removeItem(ACTIVE_KEY);
   }
 
+  // Lazy upgrade for configs created before the 5th tier ('satisfactory') existed.
+  // Adds missing rubric keys per criterion. Non-destructive — does not touch
+  // existing values, gradeScale, or tierLabels. Returns the same config object.
+  function migrateConfig(config) {
+    if (!config) return config;
+    if (Array.isArray(config.criteria)) {
+      config.criteria.forEach(c => {
+        if (c && c.rubric) {
+          TIER_ORDER.forEach(tier => {
+            if (!(tier in c.rubric)) c.rubric[tier] = '';
+          });
+        }
+      });
+    }
+    return config;
+  }
+
   function loadConfig(id) {
-    return loadAllConfigs().find(c => c.id === id) || null;
+    const c = loadAllConfigs().find(c => c.id === id) || null;
+    return migrateConfig(c);
   }
 
   function getActiveId()    { return localStorage.getItem(ACTIVE_KEY); }
@@ -299,6 +414,17 @@
     }
 
     parts.push(`TOTAL SCORE: ${formatScore(weightedTotal, rounding)} / 100`);
+
+    // Marker-override disclosure (shown to student when total was bumped to next band).
+    if (scoreResult.override && scoreResult.override.snapped) {
+      const o = scoreResult.override;
+      parts.push('');
+      parts.push(
+        `Note: Your weighted criterion scores total ${formatScore(o.originalTotal, rounding)}/100. ` +
+        `I have rounded this up to ${formatScore(o.newTotal, rounding)}/100 (${o.newGrade}) ` +
+        `in recognition of your overall performance.`
+      );
+    }
 
     // Outro sits here — after the score summary, before any late penalty notice
     if (entry?.outro) { parts.push(''); parts.push(entry.outro); }
@@ -513,6 +639,17 @@
     parts.push('');
     parts.push('TOTAL SCORE: ' + formatScore(weightedTotal, rounding) + ' / 100');
 
+    // Marker-override disclosure (shown to student when total was bumped to next band).
+    if (scoreResult.override && scoreResult.override.snapped) {
+      const o = scoreResult.override;
+      parts.push('');
+      parts.push(
+        'Note: Your weighted criterion scores total ' + formatScore(o.originalTotal, rounding) + '/100. ' +
+        'I have rounded this up to ' + formatScore(o.newTotal, rounding) + '/100 (' + o.newGrade + ') ' +
+        'in recognition of your overall performance.'
+      );
+    }
+
     if (entry && entry.outro) { parts.push(''); parts.push(entry.outro); }
 
     if (latePenalty && (deduction > 0 || isFail)) {
@@ -659,9 +796,10 @@
 
   /* ── Export to global ─────────────────────────────────────── */
   window.SA = {
-    GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_BADGE_COLOURS,
+    GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_LABELS_SHORT, TIER_BADGE_COLOURS, TIER_ORDER,
+    getTierLabel, migrateConfig,
     GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
-    uid, scoreToGrade, scoreToGradeFromScale, formatDate, newConfig,
+    uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,

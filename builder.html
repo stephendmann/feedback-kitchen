@@ -223,6 +223,39 @@
 
         <button class="btn-secondary text-sm w-full" onclick="B.addGradeRow()">+ Add Grade Row</button>
 
+        <!-- Tier label customiser -->
+        <div class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <label class="label mb-0">Tier labels <span class="text-slate-400 font-normal">(optional)</span></label>
+              <p class="text-xs text-slate-500 mt-1">Rename the four performance tiers if your school uses different language (e.g. "Very Good" instead of "Proficient"). These labels appear in the rubric editor, scorer tier pills, and Excel exports. The internal grouping doesn't change — only the display name.</p>
+            </div>
+            <button type="button" class="text-xs text-blue-600 hover:text-blue-800 underline" onclick="B.resetTierLabels()" title="Restore default tier labels">Reset to defaults</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-3">
+            <div>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-green-700 mb-1">Top</label>
+              <input type="text" id="tier-label-excellent" class="input-field w-full" placeholder="Excellent" maxlength="40" oninput="B.onTierLabelChange()">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-blue-700 mb-1">Upper</label>
+              <input type="text" id="tier-label-proficient" class="input-field w-full" placeholder="Proficient" maxlength="40" oninput="B.onTierLabelChange()">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-yellow-700 mb-1">Middle</label>
+              <input type="text" id="tier-label-developing" class="input-field w-full" placeholder="Developing" maxlength="40" oninput="B.onTierLabelChange()">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-orange-700 mb-1">Lower</label>
+              <input type="text" id="tier-label-satisfactory" class="input-field w-full" placeholder="Satisfactory" maxlength="40" oninput="B.onTierLabelChange()">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-red-700 mb-1">Bottom</label>
+              <input type="text" id="tier-label-unsatisfactory" class="input-field w-full" placeholder="Unsatisfactory" maxlength="40" oninput="B.onTierLabelChange()">
+            </div>
+          </div>
+        </div>
+
         <div class="mt-5 p-3 bg-amber-50 rounded-xl text-sm text-amber-800">
           ⚠️ <strong>Changing the scale after setting up feedback templates (Step 5) will reset those templates.</strong> Set your scale here first, then customise feedback text later.
         </div>
@@ -272,10 +305,11 @@
 
         <div class="flex gap-2 flex-wrap mb-6" id="grade-tier-filters">
           <button class="tier-tab bg-slate-800 text-white" data-filter="all" onclick="B.filterFeedbackTier('all', this)">All Grades</button>
-          <button class="tier-tab bg-green-100 text-green-800" data-filter="excellent" onclick="B.filterFeedbackTier('excellent', this)">Excellent (A)</button>
-          <button class="tier-tab bg-blue-100 text-blue-800" data-filter="proficient" onclick="B.filterFeedbackTier('proficient', this)">Proficient (B)</button>
-          <button class="tier-tab bg-yellow-100 text-yellow-800" data-filter="developing" onclick="B.filterFeedbackTier('developing', this)">Developing (C)</button>
-          <button class="tier-tab bg-red-100 text-red-800" data-filter="unsatisfactory" onclick="B.filterFeedbackTier('unsatisfactory', this)">Unsatisfactory (D)</button>
+          <button id="tier-tab-excellent"      class="tier-tab bg-green-100 text-green-800"   data-filter="excellent"      onclick="B.filterFeedbackTier('excellent', this)">Excellent (A)</button>
+          <button id="tier-tab-proficient"     class="tier-tab bg-blue-100 text-blue-800"     data-filter="proficient"     onclick="B.filterFeedbackTier('proficient', this)">Proficient (B)</button>
+          <button id="tier-tab-developing"     class="tier-tab bg-yellow-100 text-yellow-800" data-filter="developing"     onclick="B.filterFeedbackTier('developing', this)">Developing (C)</button>
+          <button id="tier-tab-satisfactory"   class="tier-tab bg-orange-100 text-orange-800" data-filter="satisfactory"   onclick="B.filterFeedbackTier('satisfactory', this)">Satisfactory</button>
+          <button id="tier-tab-unsatisfactory" class="tier-tab bg-red-100 text-red-800"       data-filter="unsatisfactory" onclick="B.filterFeedbackTier('unsatisfactory', this)">Unsatisfactory (D)</button>
         </div>
 
         <div id="grade-feedback-list" class="space-y-3"></div>
@@ -381,7 +415,7 @@
     </div>
   </footer>
 
-  <script src="js/shared.js"></script>
+  <script src="js/shared.js?v=2.8.0"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -441,6 +475,8 @@
       });
 
       updateSaveStatus('Draft — not saved');
+      if (n === 2) populateTierLabelInputs();
+      if (n === 5) updateTierTabLabels();
       if (n === 6) populateReviewSummary();
     }
 
@@ -636,15 +672,64 @@
       });
     }
 
+    /* ── Tier label customiser ───────────────────────────── */
+    function populateTierLabelInputs() {
+      SA.TIER_ORDER.forEach(k => {
+        const inp = document.getElementById('tier-label-' + k);
+        if (!inp) return;
+        const v = (config.tierLabels && config.tierLabels[k]) || '';
+        inp.value = v;
+      });
+    }
+    function onTierLabelChange() {
+      const out = {};
+      let anyCustom = false;
+      SA.TIER_ORDER.forEach(k => {
+        const inp = document.getElementById('tier-label-' + k);
+        const v = inp ? inp.value.trim() : '';
+        if (v) { out[k] = v; anyCustom = true; }
+      });
+      config.tierLabels = anyCustom ? out : null;
+      // Re-render places that show tier labels live.
+      renderGradeScale();
+      updateTierTabLabels();
+    }
+    function resetTierLabels() {
+      config.tierLabels = null;
+      SA.TIER_ORDER.forEach(k => {
+        const inp = document.getElementById('tier-label-' + k);
+        if (inp) inp.value = '';
+      });
+      renderGradeScale();
+      updateTierTabLabels();
+    }
+    function updateTierTabLabels() {
+      // Step 5 filter tabs — keep the grade letter in parens for orientation.
+      const map = {
+        excellent:      'A',
+        proficient:     'B',
+        developing:     'C',
+        satisfactory:   '',
+        unsatisfactory: 'D'
+      };
+      SA.TIER_ORDER.forEach(k => {
+        const btn = document.getElementById('tier-tab-' + k);
+        if (!btn) return;
+        const letter = map[k];
+        btn.textContent = SA.getTierLabel(config, k) + (letter ? ' (' + letter + ')' : '');
+      });
+    }
+
     function renderGradeScale() {
       const tbody = document.getElementById('grade-scale-body');
       if (!tbody) return;
       tbody.innerHTML = '';
       const tierOptions = [
-        { key: 'excellent',      label: 'Excellent',      style: 'background:#dcfce7;color:#166534' },
-        { key: 'proficient',     label: 'Proficient',     style: 'background:#dbeafe;color:#1e40af' },
-        { key: 'developing',     label: 'Developing',     style: 'background:#fef9c3;color:#854d0e' },
-        { key: 'unsatisfactory', label: 'Unsatisfactory', style: 'background:#fee2e2;color:#991b1b' }
+        { key: 'excellent',      label: SA.getTierLabel(config, 'excellent'),      style: 'background:#dcfce7;color:#166534' },
+        { key: 'proficient',     label: SA.getTierLabel(config, 'proficient'),     style: 'background:#dbeafe;color:#1e40af' },
+        { key: 'developing',     label: SA.getTierLabel(config, 'developing'),     style: 'background:#fef9c3;color:#854d0e' },
+        { key: 'satisfactory',   label: SA.getTierLabel(config, 'satisfactory'),   style: 'background:#ffedd5;color:#9a3412' },
+        { key: 'unsatisfactory', label: SA.getTierLabel(config, 'unsatisfactory'), style: 'background:#fee2e2;color:#991b1b' }
       ];
       (config.gradeScale || []).forEach((g, i) => {
         const tr = document.createElement('tr');
@@ -799,7 +884,7 @@
       syncCriteria();
       config.criteria.push({
         id: SA.uid(), name: '', weight: 0,
-        rubric: { excellent: '', proficient: '', developing: '', unsatisfactory: '' }
+        rubric: { excellent: '', proficient: '', developing: '', satisfactory: '', unsatisfactory: '' }
       });
       renderCriteriaList();
     }
@@ -844,10 +929,11 @@
       const list = document.getElementById('rubric-list');
       list.innerHTML = '';
       const tiers = [
-        { key: 'excellent',      label: 'Excellent',      range: getScaleRange('excellent'),  bg: 'bg-green-100',  text: 'text-green-800'  },
-        { key: 'proficient',     label: 'Proficient',     range: getScaleRange('proficient'), bg: 'bg-blue-100',   text: 'text-blue-800'   },
-        { key: 'developing',     label: 'Developing',     range: getScaleRange('developing'), bg: 'bg-yellow-100', text: 'text-yellow-800' },
-        { key: 'unsatisfactory', label: 'Unsatisfactory', range: getScaleRange('unsatisfactory'), bg: 'bg-red-100', text: 'text-red-800' }
+        { key: 'excellent',      label: SA.getTierLabel(config, 'excellent'),      range: getScaleRange('excellent'),     bg: 'bg-green-100',  text: 'text-green-800'  },
+        { key: 'proficient',     label: SA.getTierLabel(config, 'proficient'),     range: getScaleRange('proficient'),    bg: 'bg-blue-100',   text: 'text-blue-800'   },
+        { key: 'developing',     label: SA.getTierLabel(config, 'developing'),     range: getScaleRange('developing'),    bg: 'bg-yellow-100', text: 'text-yellow-800' },
+        { key: 'satisfactory',   label: SA.getTierLabel(config, 'satisfactory'),   range: getScaleRange('satisfactory'),  bg: 'bg-orange-100', text: 'text-orange-800' },
+        { key: 'unsatisfactory', label: SA.getTierLabel(config, 'unsatisfactory'), range: getScaleRange('unsatisfactory'), bg: 'bg-red-100', text: 'text-red-800' }
       ];
 
       config.criteria.forEach((c, idx) => {
@@ -893,7 +979,8 @@
       const tierMap = buildTierMap();
       const colours = {
         excellent: 'bg-green-100 text-green-800', proficient: 'bg-blue-100 text-blue-800',
-        developing: 'bg-yellow-100 text-yellow-800', unsatisfactory: 'bg-red-100 text-red-800'
+        developing: 'bg-yellow-100 text-yellow-800', satisfactory: 'bg-orange-100 text-orange-800',
+        unsatisfactory: 'bg-red-100 text-red-800'
       };
       // Ensure gradeFeedback matches current grade scale
       ensureGradeFeedbackMatchesScale();
@@ -934,7 +1021,8 @@
       btn.className = 'tier-tab ' + (filter === 'all' ? 'bg-slate-800 text-white' :
         filter === 'excellent' ? 'bg-green-100 text-green-800' :
         filter === 'proficient' ? 'bg-blue-100 text-blue-800' :
-        filter === 'developing' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+        filter === 'developing' ? 'bg-yellow-100 text-yellow-800' :
+        filter === 'satisfactory' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800');
 
       document.querySelectorAll('#grade-feedback-list > div').forEach(el => {
         el.style.display = (filter === 'all' || el.dataset.tier === filter) ? '' : 'none';
@@ -1115,6 +1203,7 @@
       toggleAccordion, filterFeedbackTier,
       addPenalty, removePenalty, toggleLatePenalties,
       loadPreset, confirmLoadPreset, addGradeRow, removeGradeRow,
+      onTierLabelChange, resetTierLabels,
       saveAndLaunch, exportJSON, importJSON
     };
   })();
