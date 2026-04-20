@@ -248,7 +248,7 @@
        Uses a stable reserved id so the seed check is unambiguous and the
        scorer URL is shareable. Treated as a normal editable scorer once
        seeded — users can rename, edit, duplicate, or delete it. */
-    const DEMO_SCORER_ID = 'demo-written-response-v1';
+    const DEMO_SCORER_ID = 'demo-written-response-v2';
     const DEMO_SCORER = {
       id: DEMO_SCORER_ID,
       created: '2026-04-20T02:49:35.006Z',
@@ -279,7 +279,7 @@
             excellent: 'Shows clear, accurate, and confident understanding of the topic.',
             proficient: 'Shows strong understanding with only minor gaps.',
             developing: 'Shows sound understanding of the main ideas.',
-            satisfactory: '',
+            satisfactory: 'Shows partial understanding of the topic, with some ideas unclear or underdeveloped.',
             unsatisfactory: 'Shows limited or inaccurate understanding.'
           } },
         { id: 'demo-c2', name: 'Use of evidence or examples', weight: 20,
@@ -287,7 +287,7 @@
             excellent: 'Uses relevant examples or evidence effectively to support points.',
             proficient: 'Uses good supporting evidence with minor weaknesses.',
             developing: 'Uses some relevant evidence, though support may be uneven.',
-            satisfactory: '',
+            satisfactory: 'Provides limited evidence or examples, and support for points is often thin.',
             unsatisfactory: 'Provides little or no effective support.'
           } },
         { id: 'demo-c3', name: 'Organisation and structure', weight: 20,
@@ -295,7 +295,7 @@
             excellent: 'Response is well structured, logical, and easy to follow.',
             proficient: 'Structure is clear with only small lapses.',
             developing: 'Organisation is generally clear.',
-            satisfactory: '',
+            satisfactory: 'Organisation is uneven; the response is followable but the structure is not consistently clear.',
             unsatisfactory: 'Response lacks clear organisation.'
           } },
         { id: 'demo-c4', name: 'Critical thinking or insight', weight: 20,
@@ -303,7 +303,7 @@
             excellent: 'Shows thoughtful analysis and some original insight.',
             proficient: 'Shows clear analysis and relevant interpretation.',
             developing: 'Includes some analysis, though mostly descriptive.',
-            satisfactory: '',
+            satisfactory: 'Analysis is limited; the response is mostly descriptive with only brief attempts at interpretation.',
             unsatisfactory: 'Little or no analysis is evident.'
           } },
         { id: 'demo-c5', name: 'Writing style and mechanics', weight: 15,
@@ -311,7 +311,7 @@
             excellent: 'Writing is clear, fluent, and virtually error free.',
             proficient: 'Writing is clear with few errors.',
             developing: 'Writing is mostly clear; some errors do not impede meaning.',
-            satisfactory: '',
+            satisfactory: 'Writing is understandable but contains noticeable errors that occasionally affect clarity.',
             unsatisfactory: 'Errors or unclear expression significantly affect readability.'
           } }
       ],
