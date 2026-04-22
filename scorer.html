@@ -941,6 +941,8 @@
           <td class="text-center">
             <input type="number" id="override-${i}" class="override-input" placeholder="–"
                    min="0" max="100" step="0.5"
+                   onmousedown="S.onOverridePrime(${i})"
+                   onkeydown="S.onOverrideKeydown(${i}, event)"
                    onfocus="S.onOverrideFocus(${i})"
                    oninput="S.onOverrideChange(${i})">
           </td>
@@ -969,26 +971,44 @@
 
     function onGradeChange(i) {
       studentGrades[i].grade = document.getElementById('grade-sel-' + i).value;
-      if (!studentGrades[i].overrideManual) {
-        studentGrades[i].override = null;
-        document.getElementById('override-' + i).value = '';
-      }
+      // Always wipe override on grade change — fresh start.
+      studentGrades[i].override = null;
+      studentGrades[i].overrideManual = false;
+      document.getElementById('override-' + i).value = '';
       recalculate();
       refreshAIInputChips();
     }
 
-    function onOverrideFocus(i) {
-      if (studentGrades[i].override !== null) return;
+    // Seed the input's committed numeric value with the midpoint BEFORE the
+    // browser's spinner/keyboard logic reads it. Runs on mousedown (spinner
+    // click) and keydown (arrow keys) — both fire before the value changes.
+    function _primeOverrideFromMidpoint(i) {
+      if (studentGrades[i].override !== null) return false;
       const grade = studentGrades[i].grade;
-      if (!grade) return;
+      if (!grade) return false;
       const row = scoreResult && scoreResult.rows && scoreResult.rows[i];
-      if (!row || row.midpoint == null) return;
-      // Write midpoint into BOTH the DOM and state so spinner increments
-      // start from the midpoint, not from 0.
+      if (!row || row.midpoint == null) return false;
+      const el = document.getElementById('override-' + i);
+      if (!el || el.value !== '') return false;
+      el.value = row.midpoint;
       studentGrades[i].override = row.midpoint;
-      studentGrades[i].overrideManual = false; // focus-populate is not a manual edit
-      document.getElementById('override-' + i).value = row.midpoint;
-      recalculate();
+      studentGrades[i].overrideManual = false;
+      return true;
+    }
+
+    function onOverridePrime(i) {
+      _primeOverrideFromMidpoint(i);
+    }
+
+    function onOverrideKeydown(i, ev) {
+      if (ev && (ev.key === 'ArrowUp' || ev.key === 'ArrowDown')) {
+        _primeOverrideFromMidpoint(i);
+      }
+    }
+
+    function onOverrideFocus(i) {
+      // Kept for backwards compatibility; priming now happens on mousedown/keydown.
+      // Do not populate on focus alone — tabbing into the field shouldn't commit a value.
     }
 
     function onOverrideChange(i) {
@@ -2536,7 +2556,7 @@
       btn.textContent = anyOpen ? 'Collapse all explainers' : 'Expand all explainers';
     }
 
-    return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade, onPenaltyChange,
+    return { init, onGradeChange, onOverrideChange, onOverrideFocus, onOverridePrime, onOverrideKeydown, onStudentChange, onOverrideGrade, onPenaltyChange,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
              importSnippetsCsv, exportSnippetsCsv, onSnippetCsvChosen,
@@ -2776,6 +2796,50 @@
         if (S && S.hideSnippetModal) S.hideSnippetModal();
       }
     });
+
+    (function () {
+      const rail = document.querySelectorAll('#section-rail [data-rail]');
+      if (!rail.length) return;
+      const highlight = id => rail.forEach(a => {
+        a.classList.toggle('text-blue-700', a.getAttribute('href') === '#' + id);
+        a.classList.toggle('text-slate-400', a.getAttribute('href') !== '#' + id);
+      });
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      ['sec-student','sec-rubric','sec-adjust','sec-feedback',
+       'sec-notes','sec-ai','sec-export','sec-cohort']
+        .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
+    })();
+  </script>
+
+  <div id="site-footer"></div>
+  <script src="/js/footer.js"></script>
+</body>
+</html>
+    });
+
+    (function () {
+      const rail = document.querySelectorAll('#section-rail [data-rail]');
+      if (!rail.length) return;
+      const highlight = id => rail.forEach(a => {
+        a.classList.toggle('text-blue-700', a.getAttribute('href') === '#' + id);
+        a.classList.toggle('text-slate-400', a.getAttribute('href') !== '#' + id);
+      });
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      ['sec-student','sec-rubric','sec-adjust','sec-feedback',
+       'sec-notes','sec-ai','sec-export','sec-cohort']
+        .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
+    })();
+  </script>
+
+  <div id="site-footer"></div>
+  <script src="/js/footer.js"></script>
+</body>
+</html>
+
 
     (function () {
       const rail = document.querySelectorAll('#section-rail [data-rail]');
