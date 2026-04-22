@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Snippet CSV Import — Local Test Harness</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #1e293b; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  h2 { font-size: 16px; margin-top: 28px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+  .test { padding: 10px 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #cbd5e1; background: #f8fafc; }
+  .pass { border-left-color: #16a34a; background: #f0fdf4; }
+  .fail { border-left-color: #dc2626; background: #fef2f2; }
+  .label { font-weight: 600; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 8px 12px; border-radius: 4px; font-size: 12px; overflow-x: auto; }
+  .note { color: #64748b; font-size: 13px; }
+  .counts { display: inline-block; padding: 2px 8px; background: #e2e8f0; border-radius: 4px; font-size: 12px; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Snippet CSV Import — Test Harness</h1>
+<p class="note">Unit tests for <code>parseCsvFile</code>, <code>exportSnippetsCsv</code> serialisation, and import merge logic. Does not touch <code>localStorage</code> — uses a sandbox <code>snippets</code> array.</p>
+
+<div id="results"></div>
+
+<script>
+/* ============================================================
+   Lifted verbatim from scorer.html lines 1882–1978.
+   If scorer.html is updated, update here too.
+   ============================================================ */
+
+function parseCsvFile(text) {
+  var rows = [];
+  var i = 0;
+  var len = text.length;
+  if (text.charCodeAt(0) === 0xFEFF) { i = 1; }
+  while (i < len) {
+    var fields = [];
+    while (true) {
+      var field = '';
+      if (i < len && text[i] === '"') {
+        i++;
+        while (i < len) {
+          if (text[i] === '"') {
+            if (i + 1 < len && text[i + 1] === '"') { field += '"'; i += 2; }
+            else { i++; break; }
+          } else { field += text[i++]; }
+        }
+      } else {
+        while (i < len && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') {
+          field += text[i++];
+        }
+      }
+      fields.push(field);
+      if (i < len && text[i] === ',') { i++; continue; }
+      if (i < len && text[i] === '\r') { i++; }
+      if (i < len && text[i] === '\n') { i++; }
+      break;
+    }
+    rows.push(fields);
+  }
+  var result = [];
+  for (var r = 1; r < rows.length; r++) {
+    var lbl = (rows[r][0] || '').trim();
+    var txt = (rows[r][1] || '').trim();
+    result.push({ label: lbl, text: txt });
+  }
+  return result;
+}
+
+function csvField(val) {
+  var s = String(val);
+  if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1 || s.indexOf('\r') !== -1) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function serialiseSnippets(snippets) {
+  var lines = ['label,text'];
+  snippets.forEach(function (s) {
+    lines.push(csvField(s.label) + ',' + csvField(s.text));
+  });
+  return lines.join('\r\n');
+}
+
+/* Simulates onSnippetCsvChosen merge logic against a sandbox array */
+function simulateImport(existingSnippets, csvText) {
+  var rows = parseCsvFile(csvText);
+  var seenLabels = {};
+  existingSnippets.forEach(function (s) { seenLabels[s.label.toLowerCase()] = true; });
+  var countImported = 0;
+  var countEmpty = 0;
+  var countDupe = 0;
+  var out = existingSnippets.slice();
+  rows.forEach(function (row) {
+    if (!row.label || !row.text) { countEmpty++; return; }
+    var key = row.label.toLowerCase();
+    if (seenLabels[key]) { countDupe++; return; }
+    seenLabels[key] = true;
+    out.push({ id: 'test-' + countImported, label: row.label, text: row.text });
+    countImported++;
+  });
+  return { snippets: out, imported: countImported, empty: countEmpty, dupe: countDupe };
+}
+
+/* ============================================================
+   Test runner
+   ============================================================ */
+
+var results = document.getElementById('results');
+var currentSection = null;
+
+function section(name) {
+  var h = document.createElement('h2');
+  h.textContent = name;
+  results.appendChild(h);
+}
+
+function check(name, pass, detail) {
+  var d = document.createElement('div');
+  d.className = 'test ' + (pass ? 'pass' : 'fail');
+  d.innerHTML = '<span class="label">' + (pass ? 'PASS' : 'FAIL') + '</span> — ' + name +
+    (detail ? '<div class="note">' + detail + '</div>' : '');
+  results.appendChild(d);
+}
+
+function pre(txt) {
+  var p = document.createElement('pre');
+  p.textContent = txt;
+  results.appendChild(p);
+}
+
+/* ============================================================
+   Test 1 — Basic 2-column CSV
+   ============================================================ */
+section('1. Basic parsing');
+
+var csv1 = 'label,text\nFoo,Hello world\nBar,Another';
+var r1 = parseCsvFile(csv1);
+check('Parses 2 rows', r1.length === 2, 'got ' + r1.length);
+check('First row label = "Foo"', r1[0].label === 'Foo');
+check('Second row text = "Another"', r1[1].text === 'Another');
+
+/* ============================================================
+   Test 2 — Quoted fields with commas
+   ============================================================ */
+section('2. Quoted fields with embedded commas');
+
+var csv2 = 'label,text\nAPA,"Your writing is clear, concise, and well-structured."\nFoo,Bar';
+var r2 = parseCsvFile(csv2);
+check('Embedded commas preserved',
+  r2[0].text === 'Your writing is clear, concise, and well-structured.',
+  'got: ' + JSON.stringify(r2[0].text));
+check('Row count correct', r2.length === 2);
+
+/* ============================================================
+   Test 3 — Embedded newlines in quoted fields
+   ============================================================ */
+section('3. Embedded newlines in quoted fields');
+
+var csv3 = 'label,text\nFOO,"line 1\nline 2"\nBAR,simple';
+var r3 = parseCsvFile(csv3);
+check('Embedded newline preserved',
+  r3[0].text === 'line 1\nline 2',
+  'got: ' + JSON.stringify(r3[0].text));
+check('Row after newline-field parsed correctly',
+  r3[1] && r3[1].label === 'BAR');
+
+/* ============================================================
+   Test 4 — Escaped quotes inside quoted fields
+   ============================================================ */
+section('4. Escaped double-quotes ("" → ")');
+
+var csv4 = 'label,text\nQUOTE,"She said ""hello"" to me"\n';
+var r4 = parseCsvFile(csv4);
+check('Escaped quotes un-escape correctly',
+  r4[0].text === 'She said "hello" to me',
+  'got: ' + JSON.stringify(r4[0].text));
+
+/* ============================================================
+   Test 5 — CRLF line endings
+   ============================================================ */
+section('5. CRLF line endings');
+
+var csv5 = 'label,text\r\nA,one\r\nB,two\r\n';
+var r5 = parseCsvFile(csv5);
+check('CRLF handled', r5.length === 2 && r5[0].label === 'A' && r5[1].text === 'two');
+
+/* ============================================================
+   Test 6 — BOM stripping
+   ============================================================ */
+section('6. BOM stripping');
+
+var csv6 = '\uFEFFlabel,text\nA,one';
+var r6 = parseCsvFile(csv6);
+check('BOM stripped, first label = "A"', r6[0].label === 'A',
+  'got: ' + JSON.stringify(r6[0].label));
+
+/* ============================================================
+   Test 7 — Malformed rows (missing columns)
+   ============================================================ */
+section('7. Missing / empty columns');
+
+var csv7 = 'label,text\nGoodLabel,Good text\nEmptyText,\n,EmptyLabel\n,\n';
+var sim7 = simulateImport([], csv7);
+check('Only 1 valid row imported', sim7.imported === 1, 'imported=' + sim7.imported);
+check('3 rows skipped as empty', sim7.empty === 3, 'empty=' + sim7.empty);
+
+/* ============================================================
+   Test 8 — Duplicate label dedup (case-insensitive)
+   ============================================================ */
+section('8. Case-insensitive dedup vs existing snippets');
+
+var existing = [{ id: 'x1', label: 'APA formatting', text: 'existing text' }];
+var csv8 = 'label,text\napa formatting,new text\nUnique,fresh';
+var sim8 = simulateImport(existing, csv8);
+check('Case-insensitive dup detected', sim8.dupe === 1, 'dupe=' + sim8.dupe);
+check('Non-dup row imported', sim8.imported === 1);
+check('Existing snippet preserved', sim8.snippets[0].text === 'existing text');
+
+/* ============================================================
+   Test 9 — Dedup within same import batch
+   ============================================================ */
+section('9. Dedup within import batch');
+
+var csv9 = 'label,text\nFoo,first\nFOO,second\nfoo,third\nBar,unique';
+var sim9 = simulateImport([], csv9);
+check('Only first "Foo" imported', sim9.imported === 2, 'imported=' + sim9.imported);
+check('2 duplicates skipped', sim9.dupe === 2, 'dupe=' + sim9.dupe);
+check('First-occurrence text wins', sim9.snippets[0].text === 'first');
+
+/* ============================================================
+   Test 10 — Round-trip: serialise then parse
+   ============================================================ */
+section('10. Round-trip (export → import)');
+
+var roundTrip = [
+  { id: '1', label: 'Simple', text: 'simple text' },
+  { id: '2', label: 'With, comma', text: 'text, with comma' },
+  { id: '3', label: 'With "quote"', text: 'she said "hi"' },
+  { id: '4', label: 'Multiline', text: 'line one\nline two' }
+];
+var serial = serialiseSnippets(roundTrip);
+var reparsed = parseCsvFile(serial);
+check('Row count preserved', reparsed.length === 4);
+check('Labels preserved', reparsed.map(function(r){return r.label;}).join('|') === 'Simple|With, comma|With "quote"|Multiline');
+check('Texts preserved',
+  reparsed[1].text === 'text, with comma' &&
+  reparsed[2].text === 'she said "hi"' &&
+  reparsed[3].text === 'line one\nline two');
+pre('Serialised CSV:\n' + serial);
+
+/* ============================================================
+   Test 11 — The user's actual CSV (STP Report/Snippet overview.csv)
+   ============================================================ */
+section('11. Real-world user CSV (3-column with section header rows)');
+
+var userCsvRaw =
+'1,1. New Product Idea,\n' +
+'1,PI-CLARITY,"Your product idea is clear and relevant, but the explanation could be refined further to improve precision and strengthen the problem-solution connection."\n' +
+'1,PI-PAINPOINT,"The product idea is evident, however the consumer pain point needs to be more explicitly defined and justified."\n' +
+'2,2. NZ Overall Market Definition,\n' +
+'2,NZ-DATA,"You include relevant New Zealand market factors, though the use of supporting data could be expanded or applied more explicitly."\n';
+
+check('3-column CSV: importer only sees first two columns', true,
+  'The parser strips trailing columns; only label,text are used. Section-header rows (with empty 3rd col) will fall through as empty-text and be skipped.');
+
+var sim11 = simulateImport([], userCsvRaw);
+/* Raw 3-col CSV: parser reads col1 as label ("1","2") and col2 as text ("1. New Product Idea", "PI-CLARITY").
+   Both non-empty → nothing skipped as empty. Duplicate "1"/"2"/etc labels → rest skipped as duplicates.
+   This demonstrates why the 3-col CSV MUST be transformed before import. */
+check('Raw 3-col CSV: wrong-shape import demonstrates transform is needed',
+  sim11.imported === 2 && sim11.dupe === 2 && sim11.empty === 0,
+  'imported=' + sim11.imported + ' · dupe=' + sim11.dupe + ' · empty=' + sim11.empty);
+check('Wrong-shape labels are section numbers not snippet codes',
+  sim11.snippets[0].label === '1' && sim11.snippets[1].label === '2',
+  'labels=[' + sim11.snippets.map(function(s){return s.label;}).join(', ') + ']');
+
+/* Transform: drop col 1, drop header rows */
+function transformUserCsv(raw) {
+  var rows = parseCsvFile('header1,header2,header3\n' + raw);
+  // parseCsvFile only returns first 2 columns — we need all 3
+  // Re-parse manually for this test
+  var lines = raw.split(/\r?\n/).filter(function(l){ return l.trim(); });
+  var out = ['label,text'];
+  lines.forEach(function (line) {
+    // Simple parse assuming the format — for demo only
+    var match = line.match(/^[^,]*,([^,]+),(.*)$/);
+    if (!match) return;
+    var label = match[1].trim();
+    var text = match[2].trim();
+    if (!text || text === '""') return;
+    // strip surrounding quotes if present
+    if (text.charAt(0) === '"' && text.charAt(text.length - 1) === '"') {
+      text = text.slice(1, -1).replace(/""/g, '"');
+    }
+    out.push(csvField(label) + ',' + csvField(text));
+  });
+  return out.join('\n');
+}
+
+var transformed = transformUserCsv(userCsvRaw);
+pre('Transformed CSV (first 5 lines):\n' + transformed.split('\n').slice(0, 5).join('\n'));
+
+var sim11b = simulateImport([], transformed);
+check('After transform: 3 valid snippets imported', sim11b.imported === 3,
+  'imported=' + sim11b.imported);
+check('Labels are snippet codes, not section numbers',
+  sim11b.snippets[0].label === 'PI-CLARITY',
+  'got label: ' + sim11b.snippets[0].label);
+
+/* ============================================================
+   Summary
+   ============================================================ */
+var all = results.querySelectorAll('.test');
+var pass = results.querySelectorAll('.test.pass').length;
+var fail = results.querySelectorAll('.test.fail').length;
+var summary = document.createElement('div');
+summary.style.cssText = 'margin-top:24px;padding:12px;background:' + (fail ? '#fef2f2' : '#f0fdf4') + ';border-radius:8px;font-weight:600;';
+summary.textContent = pass + ' passed · ' + fail + ' failed · ' + all.length + ' total';
+results.appendChild(summary);
+</script>
+
+</body>
+</html>

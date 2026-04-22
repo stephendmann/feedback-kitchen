@@ -1,0 +1,6 @@
+label,text
+Valid Row,This one should import fine
+,Missing label row
+Missing text row,
+Valid Row 2,Another good one
+Valid Row,Duplicate of first valid row (should be skipped)

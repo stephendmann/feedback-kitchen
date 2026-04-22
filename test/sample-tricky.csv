@@ -1,0 +1,9 @@
+label,text
+Simple,Plain text here
+Has comma,"Text with, commas, inside"
+Has quotes,"She said ""well done"" nicely"
+Multiline,"First line
+Second line
+Third line"
+Has everything,"Comma, quote "" and
+a newline all together"
