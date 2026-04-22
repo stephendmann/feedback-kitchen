@@ -598,21 +598,21 @@
         { grade: 'HD', midpoint: 92, bandLow: 85, bandHigh: 100, tier: 'excellent' },
         { grade: 'D',  midpoint: 77, bandLow: 75, bandHigh: 84,  tier: 'proficient' },
         { grade: 'C',  midpoint: 67, bandLow: 65, bandHigh: 74,  tier: 'developing' },
-        { grade: 'P',  midpoint: 55, bandLow: 50, bandHigh: 64,  tier: 'developing' },
+        { grade: 'P',  midpoint: 55, bandLow: 50, bandHigh: 64,  tier: 'satisfactory' },
         { grade: 'F',  midpoint: 25, bandLow: 0,  bandHigh: 49,  tier: 'unsatisfactory' }
       ],
       gb: [
         { grade: '1st',  midpoint: 80, bandLow: 70, bandHigh: 100, tier: 'excellent' },
         { grade: '2:1',  midpoint: 65, bandLow: 60, bandHigh: 69,  tier: 'proficient' },
         { grade: '2:2',  midpoint: 55, bandLow: 50, bandHigh: 59,  tier: 'developing' },
-        { grade: '3rd',  midpoint: 45, bandLow: 40, bandHigh: 49,  tier: 'developing' },
+        { grade: '3rd',  midpoint: 45, bandLow: 40, bandHigh: 49,  tier: 'satisfactory' },
         { grade: 'F',    midpoint: 20, bandLow: 0,  bandHigh: 39,  tier: 'unsatisfactory' }
       ],
       us: [
         { grade: 'A',  midpoint: 95, bandLow: 90, bandHigh: 100, tier: 'excellent' },
         { grade: 'B',  midpoint: 85, bandLow: 80, bandHigh: 89,  tier: 'proficient' },
         { grade: 'C',  midpoint: 75, bandLow: 70, bandHigh: 79,  tier: 'developing' },
-        { grade: 'D',  midpoint: 65, bandLow: 60, bandHigh: 69,  tier: 'developing' },
+        { grade: 'D',  midpoint: 65, bandLow: 60, bandHigh: 69,  tier: 'satisfactory' },
         { grade: 'F',  midpoint: 30, bandLow: 0,  bandHigh: 59,  tier: 'unsatisfactory' }
       ],
       custom: [
@@ -622,9 +622,9 @@
 
     const PRESET_TIERS = {
       nz:     ['excellent', 'proficient', 'developing', 'unsatisfactory'],
-      au:     ['excellent', 'proficient', 'developing', 'unsatisfactory'],
-      gb:     ['excellent', 'proficient', 'developing', 'unsatisfactory'],
-      us:     ['excellent', 'proficient', 'developing', 'unsatisfactory'],
+      au:     ['excellent', 'proficient', 'developing', 'satisfactory', 'unsatisfactory'],
+      gb:     ['excellent', 'proficient', 'developing', 'satisfactory', 'unsatisfactory'],
+      us:     ['excellent', 'proficient', 'developing', 'satisfactory', 'unsatisfactory'],
       custom: ['excellent', 'proficient', 'developing', 'satisfactory', 'unsatisfactory']
     };
 
