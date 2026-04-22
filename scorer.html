@@ -983,7 +983,12 @@
       if (!grade) return;
       const row = scoreResult && scoreResult.rows && scoreResult.rows[i];
       if (!row || row.midpoint == null) return;
+      // Write midpoint into BOTH the DOM and state so spinner increments
+      // start from the midpoint, not from 0.
+      studentGrades[i].override = row.midpoint;
+      studentGrades[i].overrideManual = false; // focus-populate is not a manual edit
       document.getElementById('override-' + i).value = row.midpoint;
+      recalculate();
     }
 
     function onOverrideChange(i) {
