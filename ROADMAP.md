@@ -100,6 +100,40 @@ Drop any of these into whichever pass has capacity.
 - **PDF export** alongside Excel for single-student records (some institutions prefer it for moderation).
 - **Dark mode** — deferred until v3.
 
+# Best sequencing
+My suggested order is: 
+- 1) keyboard-first grade entry, 
+- 2) inline rubric descriptors, 
+- 3) scorer switcher, 
+- 4) cohort import, 
+- 5) PDF export, 
+- 6) dark mode.
+
+That order prioritizes improvements to the live marking loop first, then admin convenience, then rehydration/import complexity, and lastly alternate-output and cosmetic work.
+
+## Quick read
+If you want the strongest mix of payoff and buildability, I’d put them into four buckets:
+
+**Do next**: keyboard-first grade entry, inline rubric descriptors.
+
+**Quick win**: scorer switcher.
+
+**Useful but heavier**: cohort import.
+
+**Later**: PDF export, dark mode.
+
+## ProductScoring lens
+If I translate your list into a simple product lens, it looks like this:
+
+**Highest value-per-effort**: scorer switcher.
+
+**Highest absolute value**: keyboard-first grade entry.
+
+**Best quality-of-judgment aid**: inline rubric descriptors.
+
+**Highest implementation risk**: cohort import.
+
+**Most deferrable**: dark mode.
 ---
 
 ## 📝 Working notes for next session
@@ -125,3 +159,113 @@ Drop any of these into whichever pass has capacity.
 ## Resume cue (paste into next chat)
 
 > Resuming Feedback Kitchen. Current live version v2.1.1. Next planned pass is **v2.2 (sticky action bar + workspace polish)** per `ROADMAP.md` in the repo. Read that file first, then confirm scope before editing.
+
+
+## Missing
+(i) Quick Guide
+Tiers vs. grades
+
+Grades are grouped into four performance tiers: Excellent (A+/A/A–), Proficient (B+/B/B–), Developing (C+/C/C–), and Unsatisfactory (D). The rubric descriptor shown in each student's feedback is the one written for that tier — not the individual grade.
+
+Feedback tone and late penalties
+
+The opening and closing paragraphs always reflect the student's pre-penalty grade — they speak to the quality of the work itself. Any late deduction and the final penalised score are appended at the end of the feedback block, after the academic commentary.
+
+Personal snippets
+
+Use the 💬 Insert snippet… dropdown in the Cooked Feedback panel to insert a saved phrase at the cursor. Select ⚙ Manage snippets… to build your own library of reusable phrases in your own style. Snippets are personal to your browser — they are not included when you export or share a Scorer.
+
+Marker's Notes
+
+The Marker's Notes panel below the feedback is a private scratchpad. Notes are not included when you copy feedback to paste into Moodle or Turnitin — but are included in your Excel download as part of the formal marking record, useful for moderation.
+
+
+## Expand
+Click to expand vs click to **expand and contract** (marking.sdm version is **"click to collapse"**
+
+
+## SNIPPET CSV IMPORT 
+It would be fairly easy — probably a **small feature, not a major rebuild**. Since Feedback Kitchen already stores snippets locally in the browser and already renders them into the snippet dropdown, CSV import is mostly a matter of: upload file → parse rows → validate fields → merge into the existing snippet array → save back to local storage. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+## Effort level
+
+For a basic version, I’d estimate about **1–2 hours** if your current snippet code is reasonably tidy, because the app already has local snippet storage and a management UI. A more polished version with duplicate handling, import preview, overwrite/merge options, and error reporting is more like **3–5 hours**. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+## Simplest version
+
+The easiest CSV format would be just two required columns:
+
+```csv
+label,text
+PI-CLARITY,"Your product idea is clear and relevant, but the explanation could be refined further..."
+NZ-DATA,"You include relevant New Zealand market factors, though the use of supporting data could be expanded..."
+```
+
+That works well because your current snippet menu already behaves like a simple label-to-comment mapping, with each option showing a short label and then inserting the stored text. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+## Recommended import flow
+
+I’d add the CSV import inside the existing **Manage snippets** modal, because that is already the place where users create and manage reusable comments. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+- Add an **Import CSV** button
+- Let the user choose a `.csv` file
+- Parse rows into `{ id, label, text, core }`
+- Show a quick summary like “24 imported, 3 skipped, 2 duplicates”
+- Merge into existing custom snippets, while preserving core snippets
+- Save back to the same local snippet store the app already uses. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+## What makes it easy
+
+The page explicitly says snippets are stored locally in the browser on this device, so you do not need a backend, database, or API endpoint for import. That means the feature can be entirely client-side with something lightweight like Papa Parse or even a small custom parser if you want to keep dependencies minimal. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+## What to watch out for
+
+The main complexity is not parsing the CSV itself; it is handling bad rows and duplicates cleanly. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+- Some rows may be missing `label` or `text`
+- Some comments may contain commas, quotes, or line breaks
+- Some imported labels may duplicate existing ones
+- Core snippets should probably not be overwritten
+- You may want an option to either **merge**, **replace custom snippets**, or **skip duplicates**. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+## Best implementation choice
+
+If you want this done quickly and robustly, I’d use **Papa Parse** in the browser. It handles quoted cells and multiline comments much better than a hand-rolled `split(",")` parser, which would break as soon as a comment contains commas or line breaks. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
+
+Example outline:
+
+```ts
+import Papa from "papaparse";
+
+function importSnippetsFromCsv(file: File) {
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      const rows = results.data as Array<Record<string, string>>;
+
+      const imported = rows
+        .map((row) => ({
+          id: crypto.randomUUID(),
+          label: (row.label || "").trim(),
+          text: (row.text || "").trim(),
+          core: false,
+        }))
+        .filter((row) => row.label && row.text);
+
+      setSnippets((prev) => {
+        const existingCore = prev.filter((s) => s.core);
+        const existingCustom = prev.filter((s) => !s.core);
+
+        const merged = [...existingCore, ...existingCustom, ...imported];
+        saveSnippets(merged);
+        return merged;
+      });
+    },
+  });
+}
+```
+
+## My recommendation
+
+I’d call this a **worthwhile and low-difficulty upgrade** because it fits your workflow of building reusable comment banks for whole assessments, and the current app already has the right storage model and UI entry point for it. If you want, I can draft the exact React/JS code for a polished version next, including **Import CSV**, **Export CSV**, **duplicate detection**, and **merge vs replace** behaviour. [marking.stephendmann](https://marking.stephendmann.com/scorer.html?id=mo8bzrns7t5odb)
