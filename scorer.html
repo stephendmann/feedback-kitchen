@@ -1878,6 +1878,105 @@
       }
     }
 
+    /* ── Snippets CSV import / export ────────────────────── */
+    function parseCsvFile(text) {
+      var rows = [];
+      var i = 0;
+      var len = text.length;
+      if (text.charCodeAt(0) === 0xFEFF) { i = 1; } // strip BOM
+      while (i < len) {
+        var fields = [];
+        while (true) {
+          var field = '';
+          if (i < len && text[i] === '"') {
+            i++;
+            while (i < len) {
+              if (text[i] === '"') {
+                if (i + 1 < len && text[i + 1] === '"') { field += '"'; i += 2; }
+                else { i++; break; }
+              } else { field += text[i++]; }
+            }
+          } else {
+            while (i < len && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') {
+              field += text[i++];
+            }
+          }
+          fields.push(field);
+          if (i < len && text[i] === ',') { i++; continue; }
+          if (i < len && text[i] === '\r') { i++; }
+          if (i < len && text[i] === '\n') { i++; }
+          break;
+        }
+        rows.push(fields);
+      }
+      var result = [];
+      for (var r = 1; r < rows.length; r++) {
+        var lbl = (rows[r][0] || '').trim();
+        var txt = (rows[r][1] || '').trim();
+        result.push({ label: lbl, text: txt });
+      }
+      return result;
+    }
+
+    function exportSnippetsCsv() {
+      function csvField(val) {
+        var s = String(val);
+        if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1 || s.indexOf('\r') !== -1) {
+          return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+      }
+      var lines = ['label,text'];
+      snippets.forEach(function (s) {
+        lines.push(csvField(s.label) + ',' + csvField(s.text));
+      });
+      var csv = lines.join('\r\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var today = new Date();
+      var dd = String(today.getFullYear()) + '-' +
+               String(today.getMonth() + 1).padStart(2, '0') + '-' +
+               String(today.getDate()).padStart(2, '0');
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'feedback-kitchen-snippets-' + dd + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importSnippetsCsv() {
+      var inp = el('snippet-csv-input');
+      inp.value = '';
+      inp.click();
+    }
+
+    function onSnippetCsvChosen(input) {
+      var file = input.files[0];
+      if (!file) { return; }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var rows = parseCsvFile(e.target.result);
+        var seenLabels = {};
+        snippets.forEach(function (s) { seenLabels[s.label.toLowerCase()] = true; });
+        var countImported = 0;
+        var countEmpty = 0;
+        var countDupe = 0;
+        rows.forEach(function (row) {
+          if (!row.label || !row.text) { countEmpty++; return; }
+          var key = row.label.toLowerCase();
+          if (seenLabels[key]) { countDupe++; return; }
+          seenLabels[key] = true;
+          snippets.push({ id: SA.uid(), label: row.label, text: row.text });
+          countImported++;
+        });
+        saveSnippets();
+        alert('Imported: ' + countImported + ' · Skipped (empty): ' + countEmpty + ' · Skipped (duplicate labels): ' + countDupe);
+      };
+      reader.readAsText(file);
+    }
+
     /* ── AI Garnish (beta) — Stage 0 ─────────────────────── */
     function _aiGuards() {
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
@@ -2411,6 +2510,7 @@
     return { init, onGradeChange, onOverrideChange, onStudentChange, onOverrideGrade, onPenaltyChange,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
+             importSnippetsCsv, exportSnippetsCsv, onSnippetCsvChosen,
              aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog, aiViewLog,
              showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge,
              aiAssist, aiReplaceDraft, aiInsertBelow, aiShowDiff, aiTogglePrompt,
@@ -2528,6 +2628,13 @@
         <button onclick="S.hideSnippetModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <p class="text-slate-500 text-sm mb-4">Create reusable comments to quickly insert into the feedback box.</p>
+
+      <div class="flex gap-2 mb-3">
+        <button onclick="S.importSnippetsCsv()" class="btn-secondary text-sm flex-1">📥 Import CSV</button>
+        <button onclick="S.exportSnippetsCsv()" class="btn-secondary text-sm flex-1">📤 Export CSV</button>
+      </div>
+      <input type="file" id="snippet-csv-input" accept=".csv" class="hidden"
+             onchange="S.onSnippetCsvChosen(this)">
 
       <div class="overflow-y-auto flex-1 pr-2 space-y-3 mb-4" id="snippets-list">
         <!-- Snippets rendered here -->
