@@ -226,11 +226,14 @@
           <span class="hidden" id="nav-scorer-name"></span>
         </div>
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-1" title="Score display rounding — switch between full precision, half-point, or whole-number scores">
-            <span class="text-slate-500 text-xs font-semibold mr-1">Round:</span>
-            <button id="rnd-none"  onclick="S.setRounding('none')"  title="Full precision — e.g. 73.3"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1.0</button>
-            <button id="rnd-half"  onclick="S.setRounding('half')"  title="Half point — e.g. 73.5"     class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">½</button>
-            <button id="rnd-whole" onclick="S.setRounding('whole')" title="Whole number — e.g. 73"      class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">1</button>
+          <div class="flex flex-col gap-0.5">
+            <div class="flex items-center gap-1">
+              <span class="text-slate-500 text-xs font-semibold mr-1">Score rounding:</span>
+              <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">Exact</button>
+              <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">Half marks</button>
+              <button id="rnd-whole" onclick="S.setRounding('whole')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">Whole marks</button>
+            </div>
+            <p id="rounding-example" class="text-[10px] text-slate-400 ml-1"></p>
           </div>
           <button class="btn btn-ghost text-sm"
                   onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
@@ -365,10 +368,10 @@
                 <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
                 <span id="score-rounding-label"
                       class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
-                      title="Current score display mode — change using the 1.0 / ½ / 1 buttons in the nav bar above">1 d.p.</span>
+                      title="Current score display mode — change using Score rounding in the nav bar above">Exact</span>
               </div>
               <div class="flex items-baseline justify-end gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2"
-                   title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change rounding with the 1.0 / ½ / 1 buttons in the nav bar.">
+                   title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change using Score rounding in the nav bar.">
                 <span class="score-badge text-blue-800" id="penalised-score-display"
                       title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
                 <span class="text-slate-400 text-sm">/100</span>
@@ -1789,13 +1792,30 @@
         var btn = document.getElementById('rnd-' + k);
         if (!btn) return;
         btn.className = k === val
-          ? 'px-2 py-1 rounded text-xs font-semibold bg-blue-600 text-white'
+          ? 'px-2 py-1 rounded text-xs font-semibold bg-slate-800 text-white ring-2 ring-slate-400'
           : 'px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200';
       });
       var lbl = document.getElementById('score-rounding-label');
       if (lbl) {
-        var labels = { none: '1 d.p.', half: '½ pt', whole: 'whole #' };
-        lbl.textContent = labels[val] || '1 d.p.';
+        var labels = { none: 'Exact', half: 'Half marks', whole: 'Whole marks' };
+        lbl.textContent = labels[val] || 'Exact';
+      }
+      var ex = document.getElementById('rounding-example');
+      if (ex) {
+        // Use actual current penalised score if available, else static example
+        var raw = null;
+        try { raw = (typeof penalisedScore !== 'undefined' && penalisedScore != null) ? penalisedScore : null; } catch(e) {}
+        var n = (raw != null && !isNaN(raw)) ? raw : 76.4;
+        var nStr = n.toFixed(1);
+        if (val === 'none') {
+          ex.textContent = 'Scores shown at full precision, e.g. ' + nStr;
+        } else if (val === 'half') {
+          var rounded = Math.round(n * 2) / 2;
+          ex.textContent = 'Rounded to nearest 0.5, e.g. ' + nStr + ' → ' + rounded.toFixed(1);
+        } else {
+          var rounded = Math.round(n);
+          ex.textContent = 'Rounded to nearest whole mark, e.g. ' + nStr + ' → ' + rounded;
+        }
       }
     }
 
