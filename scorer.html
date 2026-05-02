@@ -2849,6 +2849,24 @@
         .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
     })();
 
+    // Manage link: resolve to builder.html?id=<current-id> when a scorer id is present in the URL.
+    // Falls back to index.html (manage all scorers) only when no id exists.
+    (function () {
+      try {
+        const link = document.getElementById('footer-edit-link');
+        if (!link) return;
+        const params = new URLSearchParams(location.search);
+        const id = params.get('id');
+        if (id) {
+          link.href = 'builder.html?id=' + encodeURIComponent(id);
+          link.title = 'Edit this scorer in the builder';
+        } else {
+          link.href = 'index.html';
+          link.title = 'Manage your scorers (kitchens)';
+        }
+      } catch (e) { /* no-op */ }
+    })();
+
     // Scroll-to-top on back-navigation from index.html (avoids landing at #sec-cohort exposing JS source)
     (function () {
       try {
@@ -2871,7 +2889,7 @@
   <!-- Utility meta-bar: secondary actions moved out of topbar -->
   <div class="no-print bg-slate-50 border-t border-slate-200 text-sm py-2 px-4">
     <div class="max-w-5xl mx-auto flex items-center gap-3 text-slate-500">
-      <a href="index.html" class="hover:text-slate-700 transition-colors" id="footer-edit-link" title="Manage your scorers (kitchens)">⚙ Manage</a>
+      <a href="index.html" class="hover:text-slate-700 transition-colors" id="footer-edit-link" title="Edit this scorer in the builder">⚙ Manage</a>
       <span class="text-slate-300" aria-hidden="true">·</span>
       <button class="hover:text-slate-700 transition-colors"
               onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
