@@ -848,7 +848,7 @@
       document.getElementById('hdr-subtitle').textContent =
         [config.assignmentInfo, config.universityName].filter(Boolean).join('  ·  ');
 
-      document.getElementById('nav-edit-link').href = 'builder.html?id=' + config.id;
+      document.getElementById('footer-edit-link').href = 'builder.html?id=' + config.id;
       document.getElementById('edit-scorer-btn').href = 'builder.html?id=' + config.id;
 
       // Date
@@ -2847,24 +2847,6 @@
       ['sec-student','sec-rubric','sec-adjust','sec-feedback',
        'sec-notes','sec-ai','sec-export','sec-cohort']
         .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
-    })();
-
-    // Manage link: resolve to builder.html?id=<current-id> when a scorer id is present in the URL.
-    // Falls back to index.html (manage all scorers) only when no id exists.
-    (function () {
-      try {
-        const link = document.getElementById('footer-edit-link');
-        if (!link) return;
-        const params = new URLSearchParams(location.search);
-        const id = params.get('id');
-        if (id) {
-          link.href = 'builder.html?id=' + encodeURIComponent(id);
-          link.title = 'Edit this scorer in the builder';
-        } else {
-          link.href = 'index.html';
-          link.title = 'Manage your scorers (kitchens)';
-        }
-      } catch (e) { /* no-op */ }
     })();
 
     // Scroll-to-top on back-navigation from index.html (avoids landing at #sec-cohort exposing JS source)
