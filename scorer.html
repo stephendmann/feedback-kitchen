@@ -217,38 +217,52 @@
 
     <!-- Nav -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print">
-      <div class="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
-        <div>
-          <a href="index.html" class="font-bold text-blue-700 text-lg inline-flex items-center gap-2">
-            <img src="/favicon-32.png" alt="" width="28" height="28" class="inline-block" style="vertical-align:middle">
-            Feedback Kitchen
+      <div class="max-w-5xl mx-auto px-4 flex flex-col gap-2 py-2 md:flex-row md:items-center md:justify-between md:h-14 md:gap-0 md:py-0">
+
+        <!-- Mobile row 1 / Desktop left: logo + mobile-only New button -->
+        <div class="flex items-center justify-between md:justify-start md:flex-shrink-0 w-full md:w-auto">
+          <a href="index.html" class="inline-flex items-center gap-2 whitespace-nowrap hover:opacity-80 transition-opacity">
+            <img src="/favicon-32.png" alt="" width="32" height="32" class="h-8 w-8 flex-shrink-0">
+            <span class="font-semibold text-slate-800 hidden md:inline">Feedback Kitchen</span>
+            <span class="font-semibold text-slate-800 md:hidden">FK</span>
           </a>
           <span class="hidden" id="nav-scorer-name"></span>
+          <button class="md:hidden btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New</button>
         </div>
+
+        <!-- Mobile row 2 / Desktop right: rounding + wording key + desktop New Student -->
         <div class="flex items-center gap-3">
+          <!-- Rounding group -->
           <div class="flex flex-col gap-0.5">
             <div class="flex items-center gap-1">
-              <span class="text-slate-500 text-xs font-semibold mr-1">Score rounding:</span>
-              <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">Exact</button>
-              <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">Half marks</button>
-              <button id="rnd-whole" onclick="S.setRounding('whole')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">Whole marks</button>
+              <span class="text-slate-500 text-xs font-semibold mr-1 whitespace-nowrap">
+                <span class="hidden md:inline">Score </span>Rounding:
+              </span>
+              <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Exact</button>
+              <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">
+                <span class="hidden md:inline">Half marks</span><span class="md:hidden">Half</span>
+              </button>
+              <button id="rnd-whole" onclick="S.setRounding('whole')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">
+                <span class="hidden md:inline">Whole marks</span><span class="md:hidden">Whole</span>
+              </button>
             </div>
-            <p id="rounding-example" class="text-[10px] text-slate-400 ml-1"></p>
+            <p id="rounding-example" class="text-[10px] text-slate-400 ml-1 hidden md:block"></p>
           </div>
-          <button class="btn btn-ghost text-sm"
-                  onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
-                  title="Keyboard shortcuts (press ?)">⌨</button>
-          <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="Wording assistant login — credentials for direct access">🔐 Wording key</button>
-          <a href="index.html" class="btn btn-ghost text-sm" id="nav-edit-link" title="Manage your scorers (kitchens)">⚙ Manage</a>
-          <button class="btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New Student</button>
+          <span class="w-px h-5 bg-slate-200 self-center hidden md:block"></span>
+          <!-- Wording key: icon-only on mobile, full label on desktop -->
+          <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="Wording assistant login — credentials for direct access">
+            <span id="ai-settings-icon">🔐</span><span class="hidden md:inline"> Wording key</span>
+          </button>
+          <!-- New Student: desktop only (mobile version lives in logo row above) -->
+          <button class="hidden md:inline-flex btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New Student</button>
         </div>
       </div>
     </nav>
 
     <!-- Section rail (v2.2) -->
     <div id="section-rail"
-         class="no-print sticky top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div class="max-w-5xl mx-auto px-4 h-9 flex items-center gap-3 overflow-x-auto text-xs font-semibold text-slate-400">
+         class="no-print sticky top-[88px] md:top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="max-w-5xl mx-auto px-4 py-2 flex flex-nowrap overflow-x-auto md:flex-wrap md:overflow-x-visible items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-400">
         <a href="#sec-student"  data-rail="A" class="hover:text-blue-700 whitespace-nowrap">A · Student</a>
         <a href="#sec-rubric"   data-rail="B" class="hover:text-blue-700 whitespace-nowrap">B · Rubric</a>
         <a href="#sec-adjust"   data-rail="C" class="hover:text-blue-700 whitespace-nowrap">C · Adjustments</a>
@@ -1792,8 +1806,8 @@
         var btn = document.getElementById('rnd-' + k);
         if (!btn) return;
         btn.className = k === val
-          ? 'px-2 py-1 rounded text-xs font-semibold bg-slate-800 text-white ring-2 ring-slate-400'
-          : 'px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200';
+          ? 'px-2 py-1 rounded text-xs font-semibold bg-slate-800 text-white ring-2 ring-slate-400 whitespace-nowrap'
+          : 'px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap';
       });
       var lbl = document.getElementById('score-rounding-label');
       if (lbl) {
@@ -2204,10 +2218,12 @@
       return !!(localStorage.getItem(FK_USER_KEY) && localStorage.getItem(FK_PASS_KEY));
     }
     function updateAILoginBadge() {
-      const btn = el('ai-settings-btn');
-      if (!btn) return;
-      btn.textContent = hasAICreds() ? '🔓 Wording key' : '🔐 Wording key';
-      btn.title = hasAICreds()
+      const icon = el('ai-settings-icon');
+      const btn  = el('ai-settings-btn');
+      if (!icon) return;
+      const creds = hasAICreds();
+      icon.textContent = creds ? '🔓' : '🔐';
+      if (btn) btn.title = creds
         ? 'Wording assistant credentials saved — click to manage'
         : 'Wording assistant — add credentials to enable direct AI rewrite';
     }
@@ -2832,6 +2848,17 @@
         .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
     })();
   </script>
+
+  <!-- Utility meta-bar: secondary actions moved out of topbar -->
+  <div class="no-print bg-slate-50 border-t border-slate-200 text-sm py-2 px-4">
+    <div class="max-w-5xl mx-auto flex items-center gap-3 text-slate-500">
+      <a href="index.html" class="hover:text-slate-700 transition-colors" id="footer-edit-link" title="Manage your scorers (kitchens)">⚙ Manage</a>
+      <span class="text-slate-300" aria-hidden="true">·</span>
+      <button class="hover:text-slate-700 transition-colors"
+              onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
+              title="Keyboard shortcuts (press ?)">⌨ Keyboard shortcuts</button>
+    </div>
+  </div>
 
   <div id="site-footer"></div>
   <script src="/js/footer.js"></script>
