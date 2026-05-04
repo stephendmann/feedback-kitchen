@@ -268,9 +268,8 @@
         <a href="#sec-adjust"   data-rail="C" class="hover:text-blue-700 whitespace-nowrap">C · Adjustments</a>
         <a href="#sec-feedback" data-rail="D" class="hover:text-blue-700 whitespace-nowrap">D · Feedback</a>
         <a href="#sec-notes"    data-rail="E" class="hover:text-blue-700 whitespace-nowrap">E · Notes</a>
-        <a href="#sec-ai"       data-rail="F" class="hover:text-blue-700 whitespace-nowrap">F · Wording</a>
-        <a href="#sec-export"   data-rail="G" class="hover:text-blue-700 whitespace-nowrap">G · Export</a>
-        <a href="#sec-cohort"   data-rail="H" class="hover:text-blue-700 whitespace-nowrap">H · Cohort</a>
+        <a href="#sec-export"   data-rail="F" class="hover:text-blue-700 whitespace-nowrap">F · Finish</a>
+        <a href="#sec-cohort"   data-rail="G" class="hover:text-blue-700 whitespace-nowrap"><span id="rail-cohort-label">G · Cohort</span></a>
         <span class="flex-1 min-w-[12px]"></span>
         <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center mx-1" aria-hidden="true"></span>
         <button onclick="S.setAllDetails(true)"  class="text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded px-1.5 py-0.5 whitespace-nowrap relative z-10" title="Expand all sections">⤢ Expand all</button>
@@ -458,10 +457,83 @@
             </div>
           </div>
           <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true" oninput="S.refreshAIInputChips()"></textarea>
+
+          <!-- Refine wording (inline assistant — folded in from old F section) -->
+          <div class="mt-3 no-print">
+            <button id="refine-wording-toggle" type="button"
+                    class="btn btn-ghost text-sm"
+                    onclick="S.toggleRefinePanel()"
+                    aria-expanded="false"
+                    aria-controls="refine-wording-panel"
+                    title="Optional: improve wording without changing marks.">
+              ✨ Refine wording
+              <span id="refine-wording-status" class="ml-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 hidden">Idle</span>
+            </button>
+            <span class="text-xs text-slate-500 ml-2 italic">Optional: improve wording without changing marks.</span>
+
+            <div id="refine-wording-panel" class="hidden mt-3 panel panel-light border border-slate-200 rounded-xl p-3 space-y-3">
+              <div class="flex flex-wrap items-start gap-2">
+                <button class="btn btn-blue btn-secondary-step text-sm"
+                        onclick="S.refineAction('improve')"
+                        title="Polish the wording of your existing draft. Preserves your edits.">
+                  Improve clarity &amp; tone
+                </button>
+                <button class="btn btn-utility text-sm"
+                        onclick="S.refineAction('shorten')"
+                        title="Shorten the feedback for systems with character limits.">
+                  Make concise
+                </button>
+                <button class="btn btn-green text-sm"
+                        onclick="S.refineAction('draft')"
+                        title="Create a first draft from the rubric. Requires at least one score.">
+                  Draft from rubric
+                </button>
+                <button class="btn btn-utility text-sm ml-auto"
+                        onclick="S.aiResetPanel()"
+                        title="Clear the suggestion box and keep your original draft.">
+                  Clear suggestion
+                </button>
+              </div>
+
+              <div class="panel panel-suggestion">
+                <h3 class="text-sm font-semibold text-violet-800 mb-1">Suggested wording (you can edit or ignore this)</h3>
+                <p class="text-xs text-slate-500 mb-2">Click an action above to generate a suggestion. Your draft above is untouched until you replace or insert.</p>
+                <textarea id="refine-suggestion-mirror" class="feedback-box" rows="6"
+                          placeholder="No suggestion yet. Pick an action above."
+                          style="background:#fff"
+                          oninput="S.refineMirrorInput()"></textarea>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <button class="btn btn-green text-sm" onclick="S.aiReplaceDraft()" title="Replaces your current draft with this suggestion (you can undo).">
+                    Replace draft
+                  </button>
+                  <button class="btn btn-blue text-sm" onclick="S.aiInsertBelow()" title="Adds this suggestion below your existing comments.">
+                    Insert below
+                  </button>
+                  <button class="btn btn-ghost text-sm" onclick="S.aiCopyFinal()" title="Copies suggestion text only — your draft stays as is.">
+                    Copy suggestion
+                  </button>
+                </div>
+              </div>
+
+              <!-- Advanced disclosure: only rendered if 'show advanced wording tools' setting is on -->
+              <div id="refine-advanced-shell" class="hidden">
+                <details id="refine-advanced" class="panel panel-advanced">
+                  <summary class="cursor-pointer text-xs font-semibold text-slate-700 select-none py-1"
+                           onclick="S.usageTrack('advanced_disclosure_opened')">
+                    Advanced wording tools <span class="text-slate-400 font-normal">(external AI workflows)</span>
+                  </summary>
+                  <div class="mt-2 text-xs text-slate-500">
+                    Manual fallback, prompt builder, and the local run log are kept in the legacy assistant panel below.
+                    <button class="underline ml-1" onclick="document.getElementById('sec-ai').open=true; document.getElementById('sec-ai').scrollIntoView({behavior:'smooth'});">Open legacy assistant ↓</button>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
         </div>
       </details>
 
-      <!-- ─ E. Marker's Notes ────────────────────────────── -->
+      <!-- ─ E. Marker's Notes (private context — also feeds the wording assistant) ─ -->
       <details id="sec-notes" class="bg-slate-50 border border-slate-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title"><span class="step-badge slate">E</span>Marker's notes 📝</span>
@@ -474,8 +546,8 @@
         </div>
       </details>
 
-      <!-- ─ F. Feedback wording assistant ───────────────────── -->
-      <details id="sec-ai" class="bg-white border border-slate-200 rounded-2xl no-print">
+      <!-- ─ Legacy F (Feedback wording assistant) — hidden unless 'Show advanced wording tools' is on. Primary controls live inline in D. ─ -->
+      <details id="sec-ai" class="bg-white border border-slate-200 rounded-2xl no-print" style="display:none">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title">
             <span class="step-badge amber">F</span>Feedback wording assistant
@@ -701,22 +773,20 @@
         </div>
       </details>
 
-      <!-- ─ G. Final Edit & Copy ─────────────────────────── -->
+      <!-- ─ F. Finish (end-of-student handoff) ─────────────── -->
       <details id="sec-export" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
-          <h2 class="step-title mb-0"><span class="step-badge green">G</span>Export</h2>
+          <h2 class="step-title mb-0"><span class="step-badge green">F</span>Finish</h2>
           <span class="text-[11px] text-slate-400">click to expand</span>
         </summary>
         <div class="section-body">
           <div class="mb-4">
-            <p class="step-sub mb-4" style="margin-left:2.15rem">Review the text above, then Copy to your grading system or download the Excel record. Use the bar at the bottom for quick access.</p>
+            <p class="step-sub mb-4" style="margin-left:2.15rem">End-of-student actions. Quick repeat actions (Copy feedback, New student) live in the bar at the bottom.</p>
           </div>
           <div class="flex flex-wrap gap-3 justify-center hidden md:flex" id="section-g-buttons">
-            <button class="btn btn-blue" onclick="S.copyFeedback()" title="Copies feedback to your clipboard (paste into Moodle / Turnitin) and adds this student to the cohort workbook.">📋 Copy feedback</button>
             <button class="btn btn-amber" onclick="S.downloadExcel()" title="Downloads a single-student Excel record (criterion breakdown, scores, feedback, marker's notes) and adds this student to the cohort workbook.">📥 Export student record</button>
-            <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print Page</button>
-            <button class="btn btn-ghost" onclick="S.newStudent()">↺ New Student</button>
-            <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit Scorer</a>
+            <button class="btn btn-ghost" onclick="window.print()" title="Print a formatted page snapshot — useful as a paper record or to save as PDF">🖨 Print page</button>
+            <a href="builder.html" id="edit-scorer-btn" class="btn btn-ghost">✏️ Edit scorer</a>
           </div>
           <p class="md:hidden text-center text-xs text-slate-500 italic">
             Export controls are now in the bar at the bottom of the screen.
@@ -724,12 +794,13 @@
         </div>
       </details>
 
-      <!-- ─ H. Cohort (cumulative cohort export) ─────────────── -->
-      <details id="sec-cohort" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
+      <!-- ─ G. Cohort (cumulative cohort export) — progressive: collapsed when empty, auto-expands on first save ─ -->
+      <details id="sec-cohort" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print"
+               ontoggle="this.dataset.userToggled='1'">
         <summary>
           <div class="flex items-center justify-between gap-3 flex-wrap w-full">
             <div>
-              <h2 class="step-title mb-0"><span class="step-badge slate">H</span>Cohort export <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Empty</span></h2>
+              <h2 class="step-title mb-0"><span class="step-badge slate">G</span>Cohort <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span></h2>
             </div>
             <div class="text-right text-sm">
               <div class="text-slate-400 text-xs">Cohort label</div>
@@ -740,7 +811,7 @@
         </summary>
         <div class="section-body">
           <div class="mb-2">
-            <p class="step-sub mb-4" style="margin-left:2.15rem">Students are auto-added when you copy feedback or export a student record. Export the full workbook when done.</p>
+            <p class="step-sub mb-4" style="margin-left:2.15rem">Your cohort workbook builds itself as you mark. Students are auto-added when you copy feedback or export a student record.</p>
           </div>
 
           <!-- Privacy banner — visible whenever cohort has ≥1 student -->
@@ -774,9 +845,7 @@
         <span class="hidden lg:inline text-[10px] text-slate-400 italic whitespace-nowrap mr-2">
           Press <kbd class="px-1 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono">?</kbd> for shortcuts
         </span>
-        <button class="btn btn-ghost text-sm" onclick="S.newStudent()" title="Clear and start a new student">↺ New</button>
-        <button class="btn btn-ghost text-sm" onclick="S.downloadExcel()" title="Download this student's marker's record">📥 Student</button>
-        <button class="btn btn-ghost text-sm" onclick="S.exportCohort()" title="Export the full cohort workbook">📥 Cohort</button>
+        <button class="btn btn-ghost text-sm" onclick="S.newStudent()" title="Clear and start a new student">↺ New student</button>
         <button class="btn btn-green text-sm" onclick="S.copyFeedback()" title="Copy feedback + auto-save to cohort">📋 Copy feedback</button>
       </div>
     </div>
@@ -784,7 +853,7 @@
 
   <script src="js/shared.js?v=2.8.0"></script>
   <script src="js/excel.js?v=2.8.0"></script>
-  <script>/* scorer ui: v2.8.0 */</script>
+  <script>/* scorer ui: v2.9.0 */</script>
   <script>
   'use strict';
   /* ============================================================
@@ -1665,14 +1734,24 @@
         aChip.textContent = labels[_aiState];
         aChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle ' + colors[_aiState];
       }
-      // Cohort chip
+      // Cohort chip + rail badge (progressive state)
       const cChip = el('cohort-status-chip');
+      const cohortForChip = SA.getCohort(config && config.id);
+      const cohortCount   = cohortForChip ? cohortForChip.students.length : 0;
       if (cChip) {
-        const cohort = SA.getCohort(config && config.id);
-        const count  = cohort ? cohort.students.length : 0;
-        cChip.textContent = count === 0 ? 'Empty' : count + ' saved';
+        cChip.textContent = cohortCount === 0 ? 'Ready' : cohortCount + ' saved';
         cChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
-          + (count === 0 ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-800');
+          + (cohortCount === 0 ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-800');
+      }
+      // Rail badge for H
+      const railLbl = el('rail-cohort-label');
+      if (railLbl) {
+        railLbl.textContent = cohortCount === 0 ? 'G · Cohort' : 'G · Cohort (' + cohortCount + ')';
+      }
+      // Auto-expand H once the first student is saved (only the first time per session)
+      const hSec = document.getElementById('sec-cohort');
+      if (hSec && cohortCount > 0 && !hSec.dataset.userToggled && !hSec.open) {
+        hSec.open = true;
       }
       refreshStickySummary();
       refreshAIInputChips();
@@ -2593,6 +2672,183 @@
       btn.textContent = anyOpen ? 'Collapse all explainers' : 'Expand all explainers';
     }
 
+    /* ============================================================
+       Wording refinement (folded F → D) + settings + usage instrumentation
+       ============================================================ */
+
+    /* ── Settings (scorer-level prefs) ──────────────────────── */
+    const SCORER_SETTINGS_KEY = 'SA_SCORER_SETTINGS_V1';
+    function getSetting(key, fallback) {
+      try {
+        const raw = localStorage.getItem(SCORER_SETTINGS_KEY);
+        const obj = raw ? JSON.parse(raw) : {};
+        return (key in obj) ? obj[key] : fallback;
+      } catch (e) { return fallback; }
+    }
+    function setSetting(key, value) {
+      try {
+        const raw = localStorage.getItem(SCORER_SETTINGS_KEY);
+        const obj = raw ? JSON.parse(raw) : {};
+        obj[key] = value;
+        localStorage.setItem(SCORER_SETTINGS_KEY, JSON.stringify(obj));
+      } catch (e) {}
+    }
+
+    /* ── Usage instrumentation (privacy-respecting, local-only) ── */
+    const USAGE_KEY = 'scorer.usage.v1';
+    const USAGE_EVENTS = [
+      'wording_panel_opened',
+      'used_clarity_tone',
+      'used_concise',
+      'used_draft_from_rubric',
+      'advanced_setting_enabled',
+      'advanced_disclosure_opened',
+      'used_manual_fallback',
+      'used_build_prompt',
+      'viewed_local_run_log'
+    ];
+    function usageInit() {
+      try {
+        const raw = localStorage.getItem(USAGE_KEY);
+        if (raw) return;
+        const seed = {
+          version: 1,
+          installedAt: new Date().toISOString(),
+          events: {},
+          session: { studentsMarkedTotal: 0 }
+        };
+        USAGE_EVENTS.forEach(function (n) {
+          seed.events[n] = { count: 0, lastUsed: null };
+        });
+        localStorage.setItem(USAGE_KEY, JSON.stringify(seed));
+      } catch (e) {}
+    }
+    function usageTrack(eventName) {
+      try {
+        const raw = localStorage.getItem(USAGE_KEY);
+        const data = raw ? JSON.parse(raw) : null;
+        if (!data || !data.events || !data.events[eventName]) return;
+        data.events[eventName].count = (data.events[eventName].count || 0) + 1;
+        data.events[eventName].lastUsed = new Date().toISOString();
+        localStorage.setItem(USAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    /* ── Refine wording panel (mirrors legacy F controls into D) ── */
+    function toggleRefinePanel() {
+      const panel  = document.getElementById('refine-wording-panel');
+      const btn    = document.getElementById('refine-wording-toggle');
+      if (!panel || !btn) return;
+      const opening = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      if (opening) {
+        usageTrack('wording_panel_opened');
+        // Sync mirror from canonical ai-suggestion textarea on open
+        const mirror = document.getElementById('refine-suggestion-mirror');
+        const canon  = document.getElementById('ai-suggestion');
+        if (mirror && canon) mirror.value = canon.value || '';
+        // Render advanced shell based on setting
+        applyAdvancedToolsVisibility();
+      }
+    }
+
+    function refineAction(mode) {
+      // Delegate to existing aiAssist logic; track which control was used.
+      if (mode === 'improve') usageTrack('used_clarity_tone');
+      else if (mode === 'shorten') usageTrack('used_concise');
+      else if (mode === 'draft') usageTrack('used_draft_from_rubric');
+      // After aiAssist resolves, sync the mirror textarea
+      const promise = aiAssist(mode);
+      const sync = function () {
+        const mirror = document.getElementById('refine-suggestion-mirror');
+        const canon  = document.getElementById('ai-suggestion');
+        if (mirror && canon) mirror.value = canon.value || '';
+      };
+      if (promise && typeof promise.then === 'function') {
+        promise.then(sync, sync);
+      } else {
+        setTimeout(sync, 600);
+      }
+    }
+
+    function refineMirrorInput() {
+      // Keep canonical hidden ai-suggestion in sync with the visible mirror
+      const mirror = document.getElementById('refine-suggestion-mirror');
+      const canon  = document.getElementById('ai-suggestion');
+      if (mirror && canon) canon.value = mirror.value;
+    }
+
+    /* ── Advanced tools visibility (gated by setting) ───────── */
+    function applyAdvancedToolsVisibility() {
+      const enabled = !!getSetting('showAdvancedWordingTools', false);
+      // Inline shell inside D
+      const shell = document.getElementById('refine-advanced-shell');
+      if (shell) shell.classList.toggle('hidden', !enabled);
+      // Legacy F section
+      const legacy = document.getElementById('sec-ai');
+      if (legacy) legacy.style.display = enabled ? '' : 'none';
+      // Settings checkbox (if present in modal)
+      const cb = document.getElementById('setting-show-advanced-wording');
+      if (cb) cb.checked = enabled;
+    }
+    function setShowAdvancedWordingTools(on) {
+      setSetting('showAdvancedWordingTools', !!on);
+      if (on) usageTrack('advanced_setting_enabled');
+      applyAdvancedToolsVisibility();
+    }
+
+    /* ── Diag page (?diag=usage) ────────────────────────────── */
+    function maybeRenderDiagUsage() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('diag') !== 'usage') return;
+        const raw = localStorage.getItem(USAGE_KEY);
+        const data = raw ? JSON.parse(raw) : { events: {} };
+        let html = '<div style="font-family:system-ui,Segoe UI,sans-serif;max-width:760px;margin:32px auto;padding:24px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;">';
+        html += '<h1 style="font-size:18px;margin:0 0 12px;">Scorer usage diagnostics</h1>';
+        html += '<p style="font-size:12px;color:#475569;margin:0 0 16px;">Local-only counters. No data leaves this device. Installed: ' + (data.installedAt || '—') + '</p>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr><th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:6px 4px;">Event</th><th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:6px 4px;">Count</th><th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:6px 4px;">Last used</th></tr></thead><tbody>';
+        USAGE_EVENTS.forEach(function (k) {
+          const ev = (data.events && data.events[k]) || { count: 0, lastUsed: null };
+          html += '<tr><td style="padding:6px 4px;border-bottom:1px solid #f1f5f9;">' + k + '</td><td style="padding:6px 4px;border-bottom:1px solid #f1f5f9;text-align:right;">' + (ev.count || 0) + '</td><td style="padding:6px 4px;border-bottom:1px solid #f1f5f9;">' + (ev.lastUsed || '—') + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div style="margin-top:16px;display:flex;gap:8px;">';
+        html += '<button id="diag-copy" style="padding:6px 12px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:12px;cursor:pointer;">Copy usage JSON</button>';
+        html += '<button id="diag-reset" style="padding:6px 12px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;border-radius:6px;font-size:12px;cursor:pointer;">Reset counters</button>';
+        html += '<a href="' + window.location.pathname + (window.location.search.replace(/[?&]diag=usage/,'') || '') + '" style="padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-size:12px;text-decoration:none;color:#0f172a;">Back to scorer</a>';
+        html += '</div></div>';
+        document.body.innerHTML = html;
+        document.getElementById('diag-copy').addEventListener('click', function () {
+          navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(function () {
+            this.textContent = 'Copied ✓';
+          }.bind(this)).catch(function () {});
+        });
+        document.getElementById('diag-reset').addEventListener('click', function () {
+          if (!confirm('Reset all usage counters? This cannot be undone.')) return;
+          localStorage.removeItem(USAGE_KEY);
+          usageInit();
+          window.location.reload();
+        });
+      } catch (e) { /* no-op */ }
+    }
+
+    // Run diag check + usage init early
+    usageInit();
+    document.addEventListener('DOMContentLoaded', function () {
+      maybeRenderDiagUsage();
+      applyAdvancedToolsVisibility();
+    });
+
+    /* ── Wrap legacy advanced-tool calls so we instrument them ── */
+    const _origAiBuildPrompt = aiBuildPrompt;
+    aiBuildPrompt = function () { usageTrack('used_build_prompt'); return _origAiBuildPrompt.apply(this, arguments); };
+    const _origAiAssembleFinal = aiAssembleFinal;
+    aiAssembleFinal = function () { usageTrack('used_manual_fallback'); return _origAiAssembleFinal.apply(this, arguments); };
+    const _origAiViewLog = aiViewLog;
+    aiViewLog = function () { usageTrack('viewed_local_run_log'); return _origAiViewLog.apply(this, arguments); };
+
     return { init, onGradeChange, onOverrideChange, onOverrideFocus, onOverridePrime, onOverrideKeydown, onStudentChange, onOverrideGrade, onPenaltyChange,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
@@ -2600,6 +2856,10 @@
              aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog, aiViewLog,
              showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge,
              aiAssist, aiReplaceDraft, aiInsertBelow, aiShowDiff, aiTogglePrompt,
+             // Refine panel + settings + usage
+             toggleRefinePanel, refineAction, refineMirrorInput,
+             setShowAdvancedWordingTools, applyAdvancedToolsVisibility,
+             usageTrack,
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
@@ -2640,8 +2900,6 @@
       <h3 class="font-bold text-slate-800 text-lg mb-2 text-center">Set up this cohort</h3>
       <p class="text-slate-500 text-sm mb-5 text-center">Students will accumulate in a single workbook for this scorer. Set the cohort label and marker context now.</p>
 
-      <label class="block text-xs font-semibold text-slate-500 mb-1">Cohort label</label>
-      <input type="text" id="cohort-setup-label" class="input-field cell-yellow mb-4" placeholder="e.g. MRKTG101 Sem1 2026">
 
       <label class="block text-xs font-semibold text-slate-500 mb-2">Are you the only marker for this assessment?</label>
       <div class="space-y-2 mb-5 text-sm">
@@ -2876,6 +3134,37 @@
       <button class="hover:text-slate-700 transition-colors"
               onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
               title="Keyboard shortcuts (press ?)">⌨ Keyboard shortcuts</button>
+      <span class="text-slate-300" aria-hidden="true">·</span>
+      <button class="hover:text-slate-700 transition-colors"
+              onclick="document.getElementById('scorer-settings-modal').classList.remove('hidden')"
+              title="Scorer settings">⚙ Settings</button>
+      <span class="text-slate-300" aria-hidden="true">·</span>
+      <a href="?diag=usage" class="hover:text-slate-700 transition-colors text-slate-400" title="Local usage diagnostics">📊 Diag</a>
+    </div>
+  </div>
+
+  <!-- Scorer settings modal (toggles for advanced features) -->
+  <div id="scorer-settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+         onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <h3 class="font-bold text-slate-800 text-lg mb-3">Scorer settings</h3>
+      <label class="flex items-start gap-3 cursor-pointer mb-4">
+        <input type="checkbox" id="setting-show-advanced-wording"
+               class="mt-1"
+               onchange="S.setShowAdvancedWordingTools(this.checked)">
+        <span class="text-sm text-slate-700">
+          <strong>Show advanced wording tools</strong>
+          <span class="block text-xs text-slate-500 mt-1">Enables manual fallback, prompt builder, and the local run log inside the wording assistant. Off by default.</span>
+        </span>
+      </label>
+      <div class="text-xs text-slate-500 border-t border-slate-100 pt-3">
+        Settings are saved on this device only.
+      </div>
+      <div class="flex justify-end mt-4">
+        <button class="btn btn-ghost text-sm"
+                onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')">Close</button>
+      </div>
     </div>
   </div>
 

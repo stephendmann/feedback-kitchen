@@ -22,3 +22,10 @@ Thumbs.db
 *do*not*commit*
 *private*
 *sensitive*
+
+# Files staged for manual deletion (sandbox cannot rm; remove from your shell)
+_todelete/
+
+# One-off timestamped backup files (use git history instead)
+scorer.backup.*.html
+*.backup.*.html
