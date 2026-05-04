@@ -1,9 +1,26 @@
 .site-footer {
   margin-top: 4rem;
-  padding: 3rem 1.25rem 2rem;
+  padding: 2rem 1.25rem 1.5rem;
   border-top: 1px solid #1e293b;
   background: #0f172a;
   color: #cbd5e1;
+}
+
+.site-footer__brand--utility {
+  margin-bottom: 0.25rem;
+}
+
+.site-footer__utility-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.site-footer__kofi-link {
+  font-weight: 600;
 }
 
 .site-footer__inner {
@@ -157,17 +174,21 @@
 }
 
 @media (min-width: 1100px) {
-  .site-footer__inner {
+  .site-footer__inner:not(:has(.site-footer__brand--utility)) {
     grid-template-columns: minmax(240px, 320px) 1fr;
     align-items: start;
   }
 
-  .site-footer__brand {
+  .site-footer__inner:not(:has(.site-footer__brand--utility)) .site-footer__brand {
     grid-column: 1 / 2;
   }
 
-  .site-footer__grid {
+  .site-footer__inner:not(:has(.site-footer__brand--utility)) .site-footer__grid {
     grid-column: 2 / 3;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .site-footer__inner:has(.site-footer__brand--utility) .site-footer__grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
