@@ -81,14 +81,14 @@
   <section class="gradient-hero text-white py-20 px-4">
     <div class="max-w-4xl mx-auto text-center">
       <div class="inline-flex items-center gap-2 bg-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-        <span>✨</span> No coding. No spreadsheet setup. Just great feedback.
+        <span>✨</span> Not an autograder — you choose the grades, the tool drafts the feedback.
       </div>
       <h1 class="text-4xl sm:text-5xl font-extrabold mb-6 leading-tight">
-        Build Custom Assessment<br>Feedback Tools — Instantly
+        Your rubric. Your judgement.<br>Done in clicks.
       </h1>
       <p class="text-xl text-blue-50 mb-10 max-w-2xl mx-auto">
-        Define your rubric, set your criteria, and score students with auto-generated,
-        personalised feedback. Your own à la carte Feedback Kitchen — any course, any criteria, every student.
+        Rubric-based marking and feedback assembly for university educators.
+        Build a scorer once, grade criterion by criterion, and generate editable feedback drafts — without sending student data to a server.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="builder.html" class="bg-amber-400 text-slate-900 font-bold px-8 py-4 rounded-xl text-lg hover:bg-amber-300 transition-colors shadow-lg">
@@ -104,13 +104,106 @@
     </div>
   </section>
 
-  <!-- ── Origins Strip ─────────────────────────────────────── -->
-  <section class="bg-white py-8 px-4 border-b border-slate-200">
+  <!-- ── Origins / Credibility Strip ──────────────────────── -->
+  <section class="bg-white py-10 px-4 border-b border-slate-200">
     <div class="max-w-4xl mx-auto text-center">
-      <p class="text-sm font-semibold text-slate-500 mb-6 uppercase tracking-wider">Adapted from research and used by educators at:</p>
-      <div class="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-70">
+      <p class="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Built on peer-reviewed research into AI-assisted grading<sup><a href="#acknowledgements" class="text-blue-500 hover:text-blue-700 transition-colors font-semibold">¹</a></sup></p>
+      <p class="text-xs text-slate-400 mb-6">Wetzler et al. 2025 · Flodén 2025 · EDUCAUSE 2025 · HEPI/Kortext 2025 · Birmingham/Graide 2025</p>
+      <p class="text-sm font-semibold text-slate-500 mb-5 uppercase tracking-wider">Used by educators at</p>
+      <div class="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-80">
         <img src="strath_main.jpg" alt="University of Strathclyde" class="h-12 sm:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300">
         <img src="University_of_Waikato_logo_2.svg.png" alt="University of Waikato" class="h-12 sm:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+      </div>
+      <p class="text-xs text-slate-500 mt-5 max-w-2xl mx-auto">Ongoing development is informed by research at the <strong>University of Waikato</strong> based on educator feedback. Suggestions and improvement ideas are welcome — please send them via <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline font-semibold">Ko-fi</a>.</p>
+    </div>
+  </section>
+
+  <!-- ── Why Feedback Kitchen ─────────────────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-16 pb-4">
+    <h2 class="text-3xl font-bold text-center text-slate-800 mb-8">Why use Feedback Kitchen?</h2>
+    <div class="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Consistent rubric-based feedback</strong> across tutors and markers.</p>
+      </div>
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Editable drafts, not automated grading.</strong> You stay in control.</p>
+      </div>
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Browser-only workflow</strong> with no login or database.</p>
+      </div>
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Wording assistant</strong> available with a <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Ko-fi</a>-issued key — improves phrasing only, identifiers stripped first.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── What Feedback Kitchen does NOT do ────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-12">
+    <div class="bg-slate-900 text-white rounded-2xl p-8 shadow-lg">
+      <h2 class="text-2xl font-bold text-center mb-2">What Feedback Kitchen <em>doesn't</em> do</h2>
+      <p class="text-center text-slate-300 text-sm mb-6">The boundaries are the point.</p>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not decide grades.</strong> You select every grade.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not invent comments.</strong> Only assembles sentences you wrote.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not upload student work</strong> to any server.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not require a login</strong> or institutional account.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not replace your LMS.</strong> Paste into Moodle, Canvas, or Turnitin as usual.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Wording assistant never sees identifiers</strong> — names and IDs are stripped first.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Privacy / institutional adoption ─────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-8">
+      <h2 class="text-2xl font-bold text-center text-emerald-900 mb-3">Adopt without waiting for IT approval</h2>
+      <p class="text-center text-emerald-900 text-base leading-relaxed max-w-2xl mx-auto">
+        Because no personal information is disclosed to a third-party processor, the institutional review trigger under the <strong>NZ Privacy Act 2020</strong> and <strong>AU Privacy Act 1988</strong> is not pulled.
+      </p>
+      <div class="flex flex-wrap justify-center gap-3 mt-5">
+        <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No DPIA</span>
+        <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No vendor review</span>
+        <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No IT approval queue</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Coordinator / departmental angle ─────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+    <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+      <div class="flex items-start gap-4">
+        <div class="feature-icon bg-indigo-100 shrink-0">👥</div>
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 mb-2">For course coordinators and tutor teams</h2>
+          <p class="text-slate-600 mb-3">Build the rubric logic, weights, and feedback language <strong>once</strong>, then export the Scorer as JSON and distribute it to your tutor team. Every marker uses the same descriptors, the same intros, and the same closing paragraphs — directly addressing the inter-rater reliability problem on large cohorts.</p>
+          <p class="text-slate-600 text-sm">No vendor procurement. No new institutional system. No movement of student data. Revise and reissue each semester to build a departmental library of vetted rubrics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Productivity stat strip ──────────────────────────── -->
+  <section class="bg-blue-50 border-y border-blue-100 py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl font-bold text-center text-slate-800 mb-2">Built for the productivity envelope of AI-assisted grading</h2>
+      <p class="text-center text-slate-600 text-sm mb-8 max-w-2xl mx-auto">Comparable to peer-reviewed benchmarks (e.g. Birmingham/Graide 2025: 74% time reduction, 7× feedback length) — without the autograder bias risks.</p>
+      <div class="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">~20 min</p>
+          <p class="text-xs text-slate-600 mt-1">Scorer setup, once per assessment</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">20–60 sec</p>
+          <p class="text-xs text-slate-600 mt-1">Per script after setup</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">3–4 scripts</p>
+          <p class="text-xs text-slate-600 mt-1">To pay back setup on a typical cohort</p>
+        </div>
       </div>
     </div>
   </section>
@@ -118,7 +211,7 @@
   <!-- ── Features ─────────────────────────────────────────── -->
   <section class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
     <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">Everything You Need</h2>
-    <p class="text-center text-slate-500 mb-12 text-lg">Built for educators who want speed, consistency, and quality feedback.<sup><a href="#acknowledgements" class="text-blue-500 hover:text-blue-700 transition-colors font-semibold">¹</a></sup></p>
+    <p class="text-center text-slate-500 mb-12 text-lg">Built for lecturers, course coordinators, and tutors who want speed, consistency, and quality feedback.<sup><a href="#acknowledgements" class="text-blue-500 hover:text-blue-700 transition-colors font-semibold">¹</a></sup></p>
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
@@ -133,8 +226,8 @@
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
         <div class="feature-icon bg-green-100 mb-4">💬</div>
-        <h3 class="font-bold text-slate-800 text-lg mb-2">Auto-Generated Feedback</h3>
-        <p class="text-slate-500 text-sm">Each student gets a fully assembled feedback block — intro, per-criterion commentary, score, late penalty notice, and a grade-tailored closing paragraph.</p>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Editable Feedback Draft</h3>
+        <p class="text-slate-500 text-sm">Each student gets a fully assembled feedback draft — intro, per-criterion commentary, score, late penalty notice, and a grade-tailored closing paragraph. Edit any of it before you send.</p>
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
         <div class="feature-icon bg-purple-100 mb-4">📤</div>
