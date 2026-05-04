@@ -65,7 +65,7 @@ document.getElementById('site-footer').innerHTML = `
         Redesigned as a browser-based application for use at the
         <strong>University of Waikato</strong>,
         reflecting UW grading policy but adaptable to any institutional context.
-        Developed with AI assistance
+        Site built with AI coding assistance
         <span class="site-footer__muted">(Claude / Anthropic &middot; Perplexity &middot; Microsoft Copilot)</span>.
       </p>
     </section>
