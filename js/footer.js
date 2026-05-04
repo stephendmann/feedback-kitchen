@@ -9,9 +9,10 @@ document.getElementById('site-footer').innerHTML = `
         <p class="site-footer__eyebrow">Feedback Kitchen</p>
       </div>
       <h2 id="site-footer-title" class="site-footer__title">
-        Built for educators. Free to use.
+        Rubric-based marking and feedback assembly for lecturers, coordinators, and tutors.
       </h2>
-      <p class="site-footer__tagline">Fast, practical marking support. 100% local processing &mdash; student data never leaves your device.</p>
+      <p class="site-footer__tagline">Generate editable feedback drafts from your rubric in clicks &mdash; without sending student data to a server.</p>
+      <p class="site-footer__tagline"><strong>Not an autograder</strong> &mdash; you choose the grades and author the feedback.</p>
     </div>
 
     <div class="site-footer__grid">
