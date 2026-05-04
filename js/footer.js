@@ -30,7 +30,7 @@ document.getElementById('site-footer').innerHTML = `
       <section class="site-footer__column" aria-labelledby="footer-support">
         <h3 id="footer-support">Support</h3>
         <p>
-          Support hosting, wording-assistant access, or custom course builds via
+          Support hosting and development, request wording-assistant access, or fund a custom course build via
           <a class="site-footer__kofi-link" href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer">Ko-fi</a>.
         </p>
       </section>
