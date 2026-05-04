@@ -2798,16 +2798,17 @@
       applyAdvancedToolsVisibility();
     }
 
-    /* ── Diag page (?diag=usage) ────────────────────────────── */
+    /* ── Local stats page (?view=local-stats; legacy ?diag=usage) ── */
     function maybeRenderDiagUsage() {
       try {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('diag') !== 'usage') return;
+        const isLocalStats = params.get('view') === 'local-stats' || params.get('diag') === 'usage';
+        if (!isLocalStats) return;
         const raw = localStorage.getItem(USAGE_KEY);
         const data = raw ? JSON.parse(raw) : { events: {} };
         let html = '<div style="font-family:system-ui,Segoe UI,sans-serif;max-width:760px;margin:32px auto;padding:24px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;">';
-        html += '<h1 style="font-size:18px;margin:0 0 12px;">Scorer usage diagnostics</h1>';
-        html += '<p style="font-size:12px;color:#475569;margin:0 0 16px;">Local-only counters. No data leaves this device. Installed: ' + (data.installedAt || '—') + '</p>';
+        html += '<h1 style="font-size:18px;margin:0 0 12px;">Feature use (this device)</h1>';
+        html += '<p style="font-size:12px;color:#475569;margin:0 0 16px;">Local feature counters stored in this browser only. Useful for support — never transmitted. Installed: ' + (data.installedAt || '—') + '</p>';
         html += '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr><th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:6px 4px;">Event</th><th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:6px 4px;">Count</th><th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:6px 4px;">Last used</th></tr></thead><tbody>';
         USAGE_EVENTS.forEach(function (k) {
           const ev = (data.events && data.events[k]) || { count: 0, lastUsed: null };
@@ -2817,7 +2818,7 @@
         html += '<div style="margin-top:16px;display:flex;gap:8px;">';
         html += '<button id="diag-copy" style="padding:6px 12px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:12px;cursor:pointer;">Copy usage JSON</button>';
         html += '<button id="diag-reset" style="padding:6px 12px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;border-radius:6px;font-size:12px;cursor:pointer;">Reset counters</button>';
-        html += '<a href="' + window.location.pathname + (window.location.search.replace(/[?&]diag=usage/,'') || '') + '" style="padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-size:12px;text-decoration:none;color:#0f172a;">Back to scorer</a>';
+        html += '<a href="' + window.location.pathname + (window.location.search.replace(/[?&](diag=usage|view=local-stats)/g,'') || '') + '" style="padding:6px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-size:12px;text-decoration:none;color:#0f172a;">Back to scorer</a>';
         html += '</div></div>';
         document.body.innerHTML = html;
         document.getElementById('diag-copy').addEventListener('click', function () {
@@ -3138,8 +3139,6 @@
       <button class="hover:text-slate-700 transition-colors"
               onclick="document.getElementById('scorer-settings-modal').classList.remove('hidden')"
               title="Scorer settings">⚙ Settings</button>
-      <span class="text-slate-300" aria-hidden="true">·</span>
-      <a href="?diag=usage" class="hover:text-slate-700 transition-colors text-slate-400" title="Local usage diagnostics">📊 Diag</a>
     </div>
   </div>
 
@@ -3158,8 +3157,13 @@
           <span class="block text-xs text-slate-500 mt-1">Enables manual fallback, prompt builder, and the local run log inside the wording assistant. Off by default.</span>
         </span>
       </label>
-      <div class="text-xs text-slate-500 border-t border-slate-100 pt-3">
-        Settings are saved on this device only.
+      <div class="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-2">
+        <p>Settings are saved on this device only.</p>
+        <p>
+          <a href="?view=local-stats"
+             class="text-blue-600 hover:underline"
+             title="Local feature counters stored in this browser only. Useful for support — never transmitted.">Feature use (this device) →</a>
+        </p>
       </div>
       <div class="flex justify-end mt-4">
         <button class="btn btn-ghost text-sm"
