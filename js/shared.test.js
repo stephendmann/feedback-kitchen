@@ -158,6 +158,24 @@ describe('validateAIBody', () => {
     expect(annotated).toMatch(/\[VALIDATION:/);
   });
 
+  test('stripValidationMarkers removes inline validation tags', () => {
+    const SA = loadShared();
+    const dirty = 'Some feedback. [VALIDATION: exceeds brief word cap (31 > 30)] More feedback.';
+    expect(SA.stripValidationMarkers(dirty)).toBe('Some feedback. More feedback.');
+  });
+
+  test('stripValidationMarkers handles multiple markers', () => {
+    const SA = loadShared();
+    const dirty = 'A. [VALIDATION: x] B. [VALIDATION: y] C.';
+    expect(SA.stripValidationMarkers(dirty)).toBe('A. B. C.');
+  });
+
+  test('stripValidationMarkers leaves clean text untouched', () => {
+    const SA = loadShared();
+    const clean = 'Clean feedback with no markers.';
+    expect(SA.stripValidationMarkers(clean)).toBe(clean);
+  });
+
   test('accepts Proofread as a valid sentence-2 verb', () => {
     const SA = loadShared();
     const body = 'Writing – 11 / 20\nYour writing has frequent typos and inconsistent APA formatting. Proofread the document for spelling errors and citation format.';

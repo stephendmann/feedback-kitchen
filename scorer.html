@@ -778,6 +778,14 @@
             <p class="text-xs text-slate-500 mb-2">
               Click a button above to generate a suggestion. You can edit it, ignore it, or keep your own wording.
             </p>
+            <!-- Validation badge: marker-only. Hidden by default. -->
+            <div id="validation-badge" class="hidden mb-2 text-xs px-2 py-1 rounded bg-amber-50 border border-amber-200 text-amber-900">
+              <span class="font-semibold">Marker note:</span>
+              <span id="validation-badge-text"></span>
+              <button type="button" class="ml-2 text-amber-700 underline" onclick="S.toggleValidationDetails()">details</button>
+              <pre id="validation-badge-details" class="hidden mt-1 text-[11px] whitespace-pre-wrap font-mono"></pre>
+              <p class="text-[11px] mt-1 italic text-amber-700">These notes are visible to you only. They are not shown to students and have already been stripped from the suggestion above.</p>
+            </div>
             <textarea
               id="ai-suggestion"
               class="feedback-box"
@@ -2628,14 +2636,24 @@
           introOverride: getIntroOverride(),
           outroOverride: getOutroOverride(),
           lengthMode:    getLengthMode()
+          // inlineValidationFlags omitted — student-facing path stays clean.
         });
-        el('ai-suggestion').value = final;
+        // Defensive strip in case any [VALIDATION: ...] marker leaked through.
+        const cleanFinal = (typeof SA.stripValidationMarkers === 'function')
+          ? SA.stripValidationMarkers(final)
+          : final;
+        el('ai-suggestion').value = cleanFinal;
 
-        // Telemetry: track validation failures so we can monitor prompt
-        // compliance over time without surfacing it to the marker.
-        if (typeof SA.validateAIBody === 'function') {
-          const v = SA.validateAIBody(body, { lengthMode: getLengthMode() });
-          if (!v.ok) usageTrack('validation_flagged');
+        // Surface validation result to the marker (not the student) via
+        // a small badge + telemetry. Read from the side channel.
+        const v = (typeof SA.getLastValidationResult === 'function')
+          ? SA.getLastValidationResult()
+          : null;
+        if (v && !v.ok) {
+          usageTrack('validation_flagged');
+          showValidationBadge(v);
+        } else {
+          hideValidationBadge();
         }
 
         const editCount = approxLineEdits(el('feedback-text').value, final);
@@ -2674,7 +2692,10 @@
     }
 
     function aiReplaceDraft() {
-      const out = el('ai-suggestion').value;
+      const raw = el('ai-suggestion').value;
+      const out = (typeof SA.stripValidationMarkers === 'function')
+        ? SA.stripValidationMarkers(raw)
+        : raw;
       if (!out.trim()) { alert('Nothing to apply yet.'); return; }
       if (!confirm('Replace the main feedback textarea with this suggestion? The current text will be overwritten.')) return;
       el('feedback-text').value = out;
@@ -2685,7 +2706,10 @@
     function aiInsertBelow() {
       // Renamed: "Merge into draft". Smart-replaces ONLY the criterion-by-criterion block,
       // preserving the marker's intro, TOTAL SCORE line, and outro from the existing draft.
-      const out = el('ai-suggestion').value;
+      const raw = el('ai-suggestion').value;
+      const out = (typeof SA.stripValidationMarkers === 'function')
+        ? SA.stripValidationMarkers(raw)
+        : raw;
       if (!out.trim()) { alert('Nothing to merge yet.'); return; }
       const ta = el('feedback-text');
       const current = ta.value || '';
@@ -3107,6 +3131,38 @@
       }
     }
 
+    /* ── Validation badge (marker-only) ───────────────────────
+       Surfaces validateAIBody() issues to the marker without
+       leaking technical text into student-facing output. The
+       suggestion textarea always shows clean text; the badge
+       is a separate visual element above it.
+    ─────────────────────────────────────────────────────────── */
+    function showValidationBadge(result) {
+      const badge = document.getElementById('validation-badge');
+      const text  = document.getElementById('validation-badge-text');
+      const det   = document.getElementById('validation-badge-details');
+      if (!badge || !text || !det) return;
+      const flagCount = (result.issues || []).length;
+      const overuse   = (result.overusedVerbs || []).length;
+      const summary = [];
+      if (flagCount) summary.push(flagCount + ' criterion ' + (flagCount === 1 ? 'flag' : 'flags'));
+      if (overuse)   summary.push((result.overusedVerbs || []).join('/') + ' overused');
+      text.textContent = ' Suggestion has ' + (summary.join(', ') || 'minor issues') + '. Review before sending.';
+      det.textContent = (result.issues || []).map(function (i) {
+        return '• ' + i.criterion + ': ' + (i.messages || []).join('; ');
+      }).join('\n') + (overuse ? '\n• verb overuse: ' + result.overusedVerbs.join(', ') : '');
+      det.classList.add('hidden');
+      badge.classList.remove('hidden');
+    }
+    function hideValidationBadge() {
+      const badge = document.getElementById('validation-badge');
+      if (badge) badge.classList.add('hidden');
+    }
+    function toggleValidationDetails() {
+      const det = document.getElementById('validation-badge-details');
+      if (det) det.classList.toggle('hidden');
+    }
+
     /* ── Mechanical clean-up (no AI) ──────────────────────────
        Runs the deterministic post-processor over the marker's
        existing draft. No Haiku call, no cost, no latency.
@@ -3132,16 +3188,23 @@
         ? extractExistingBody(draft)
         : draft;
       const cleanedBody = SA.postProcessAIBody(body, config);
-      // Optional validation pass — surface flags if the body doesn't conform.
-      let annotated = cleanedBody;
+      // Run validator and surface via the marker-only badge — never inline.
+      let validation = null;
       if (typeof SA.validateAIBody === 'function') {
-        const validation = SA.validateAIBody(cleanedBody, { lengthMode: getLengthMode() });
-        if (!validation.ok && typeof SA.annotateAIBodyWithValidation === 'function') {
-          annotated = SA.annotateAIBodyWithValidation(cleanedBody, validation);
-        }
+        validation = SA.validateAIBody(cleanedBody, { lengthMode: getLengthMode() });
       }
-      if (suggestionEl) suggestionEl.value = annotated;
-      if (mirrorEl) mirrorEl.value = annotated;
+      // Defensive strip in case the draft contained legacy [VALIDATION: ...] text.
+      const display = (typeof SA.stripValidationMarkers === 'function')
+        ? SA.stripValidationMarkers(cleanedBody)
+        : cleanedBody;
+      if (suggestionEl) suggestionEl.value = display;
+      if (mirrorEl) mirrorEl.value = display;
+      if (validation && !validation.ok) {
+        usageTrack('validation_flagged');
+        showValidationBadge(validation);
+      } else {
+        hideValidationBadge();
+      }
       setAIState && setAIState('ready');
     }
 
@@ -3352,6 +3415,7 @@
              aiAssist, aiReplaceDraft, aiInsertBelow, aiShowDiff, aiTogglePrompt,
              // Refine panel + settings + usage
              toggleRefinePanel, refineAction, refineMirrorInput, mechanicalCleanup,
+             showValidationBadge, hideValidationBadge, toggleValidationDetails,
              setShowAdvancedWordingTools, applyAdvancedToolsVisibility,
              // Phase 3 + 5: audience / length / group name
              setAudienceMode, setLengthMode, setGroupName,

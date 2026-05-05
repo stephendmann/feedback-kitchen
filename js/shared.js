@@ -738,12 +738,20 @@
 
     const rounding = config.scoreRounding || 'none';
 
-    let processedBody = postProcessAIBody(String(aiBody || '').trim(), config);
-    // Validation: default ON for the unified flow. Set opts.validate === false
-    // to suppress (e.g. legacy export paths that don't expect inline flags).
+    const cleanBody = postProcessAIBody(String(aiBody || '').trim(), config);
+    // Validation runs but does NOT mutate student-facing text. Inline
+    // [VALIDATION: ...] markers are reserved for the marker-only QA path
+    // ("Mechanical clean-up only"). The validation result is attached to
+    // the returned object via __validation for the caller to surface
+    // separately (badge, tooltip, telemetry).
+    let processedBody = cleanBody;
+    let validationResult = null;
     if (opts.validate !== false) {
-      const validation = validateAIBody(processedBody, { lengthMode: opts.lengthMode });
-      processedBody = annotateAIBodyWithValidation(processedBody, validation);
+      validationResult = validateAIBody(cleanBody, { lengthMode: opts.lengthMode });
+      // Only inject inline markers when explicitly requested (educator QA).
+      if (opts.inlineValidationFlags === true && !validationResult.ok) {
+        processedBody = annotateAIBodyWithValidation(cleanBody, validationResult);
+      }
     }
     parts.push(processedBody);
     parts.push('');
@@ -778,7 +786,24 @@
         parts.push('FINAL SCORE (after late penalty): ' + formatScore(penalisedScore, rounding) + ' / 100');
       }
     }
+    // Stash validation result on a module-scoped side channel so callers
+    // can surface badges/telemetry without changing the return type.
+    _lastValidationResult = validationResult;
     return parts.join('\n');
+  }
+
+  // Side-channel for the most recent assembleFinalFeedback validation.
+  // Read via getLastValidationResult(). Cleared on every call to
+  // assembleFinalFeedback (including when validation is skipped).
+  let _lastValidationResult = null;
+  function getLastValidationResult() { return _lastValidationResult; }
+
+  // Defensive: strip any [VALIDATION: ...] markers from text.
+  // Used when displaying student-facing output to ensure no markers leak
+  // through, even if a marker copies from a draft that contains them.
+  function stripValidationMarkers(text) {
+    if (!text) return text;
+    return String(text).replace(/\s*\[VALIDATION:[^\]]*\]\s*/g, ' ').replace(/[ \t]{2,}/g, ' ').trim();
   }
 
   /* ── Post-processor (non-LLM) ────────────────────────────────
@@ -1173,6 +1198,7 @@
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
     validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS,
+    getLastValidationResult, stripValidationMarkers,
     loadSnippets, logAssistantRun, clearAssistantLog,
     // Deprecated aliases
     logAIGarnish, clearAIGarnishLog,
