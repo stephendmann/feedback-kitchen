@@ -641,7 +641,7 @@
 
         '\n\nFOR EACH CRITERION, OUTPUT EXACTLY 2 SENTENCES:' +
         '\n  Sentence 1 (Evaluation): Rubric-grounded comment naming 1–2 specific strengths and/or weaknesses you observed in the work. Reference what the student/group actually did, not generic categories.' +
-        '\n  Sentence 2 (Action): Begin with an imperative verb. Must follow ONE of these patterns and ONLY these patterns:' +
+        '\n  Sentence 2 (Action): Action only — never a second evaluative comment. MUST begin with one of these exact verbs and MUST follow the matching pattern:' +
         '\n    • "Add [specific element] to [specific section/argument]."' +
         '\n    • "Clarify [specific concept/claim] by [specific method]."' +
         '\n    • "Compare [X] to [Y] using [evidence type]."' +
@@ -649,6 +649,8 @@
         '\n    • "Replace [vague element] with [specific element]."' +
         '\n    • "Restructure [section] so that [specific outcome]."' +
         '\n    • "Support [claim] with [specific evidence type]."' +
+        '\n  Sentence 2 MUST start with: Add, Clarify, Compare, Link, Replace, Restructure, or Support. No other openings are allowed.' +
+        '\n  Even for high-scoring criteria (e.g. 10/10), give one forward-looking action from the list above (e.g. "Add one sentence that..." or "Compare this to...").' +
         '\n  State the action only. Do NOT explain why it matters.' +
 
         '\n\nBANNED PHRASES (do not use unless immediately followed by a specific named change):' +
@@ -723,7 +725,15 @@
 
     const rounding = config.scoreRounding || 'none';
 
-    parts.push(postProcessAIBody(String(aiBody || '').trim(), config));
+    let processedBody = postProcessAIBody(String(aiBody || '').trim(), config);
+    // Validation: only annotate inline if opts.validate is explicitly true.
+    // Default behaviour returns the validation result alongside but does NOT
+    // mutate the body, so existing call sites remain unchanged.
+    if (opts.validate) {
+      const validation = validateAIBody(processedBody, { lengthMode: opts.lengthMode });
+      processedBody = annotateAIBodyWithValidation(processedBody, validation);
+    }
+    parts.push(processedBody);
     parts.push('');
     parts.push('TOTAL SCORE: ' + formatScore(weightedTotal, rounding) + ' / 100');
 
@@ -898,6 +908,122 @@
     return flagged.join('\n\n');
   }
 
+  /* ── Validator (post-processor) ──────────────────────────────
+     Lightweight conformance check on the AI body AFTER post-
+     processing. Per criterion, verifies:
+       • exactly 2 sentences
+       • sentence 2 starts with an allowed action verb
+       • word count within the active length cap
+     Returns an array of issues (one row per criterion that has
+     any). Non-blocking — markers see a [VALIDATION] flag inline
+     and a summary the UI can display. Also returns metadata for
+     telemetry / future analysis.
+  ─────────────────────────────────────────────────────────────── */
+  const VALID_ACTION_VERBS = ['Add', 'Clarify', 'Compare', 'Link', 'Replace', 'Restructure', 'Support'];
+
+  function _splitSentences(text) {
+    if (!text) return [];
+    // Split on . ? ! followed by space/end. Crude but workable.
+    return String(text)
+      .split(/(?<=[.?!])\s+/)
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+  }
+
+  function _wordCount(text) {
+    return (String(text || '').match(/\S+/g) || []).length;
+  }
+
+  // Splits a criterion block into { header, body } where header is the
+  // first line (Name – ws / weight) and body is the rest.
+  function _splitCriterionBlock(block) {
+    const lines = String(block).split('\n');
+    return {
+      header: lines[0] || '',
+      body:   lines.slice(1).join(' ').trim()
+    };
+  }
+
+  function validateAIBody(aiBody, opts) {
+    opts = opts || {};
+    const lengthMode = (opts.lengthMode === 'standard') ? 'standard' : 'brief';
+    const wordCap    = (lengthMode === 'brief') ? 30 : 50;
+    const blocks     = String(aiBody || '').split(/\n\s*\n/).map(function (b) { return b.trim(); }).filter(Boolean);
+
+    const issues = [];
+    const verbCounts = {};
+    VALID_ACTION_VERBS.forEach(function (v) { verbCounts[v] = 0; });
+
+    blocks.forEach(function (block, idx) {
+      const parts = _splitCriterionBlock(block);
+      const headerName = parts.header.replace(/\s[–-]\s.*$/, '').trim();
+      const body  = parts.body;
+      const sentences = _splitSentences(body);
+      const words = _wordCount(body);
+      const blockIssues = [];
+
+      // 1. Sentence count
+      if (sentences.length !== 2) {
+        blockIssues.push('expected 2 sentences, got ' + sentences.length);
+      }
+
+      // 2. Action verb on sentence 2
+      const s2 = sentences[1] || '';
+      const firstWord = (s2.match(/^[A-Z][a-z]+/) || [''])[0];
+      const verbOk = VALID_ACTION_VERBS.indexOf(firstWord) !== -1;
+      if (!verbOk) {
+        blockIssues.push('sentence 2 should start with one of ' + VALID_ACTION_VERBS.join('/') + ' (got "' + (firstWord || '?') + '")');
+      } else {
+        verbCounts[firstWord] = (verbCounts[firstWord] || 0) + 1;
+      }
+
+      // 3. Word cap
+      if (words > wordCap) {
+        blockIssues.push('exceeds ' + lengthMode + ' word cap (' + words + ' > ' + wordCap + ')');
+      }
+
+      if (blockIssues.length) {
+        issues.push({
+          index: idx,
+          criterion: headerName || ('block ' + (idx + 1)),
+          sentences: sentences.length,
+          words: words,
+          firstActionWord: firstWord,
+          messages: blockIssues
+        });
+      }
+    });
+
+    // 4. Verb overuse — same verb on >2 criteria
+    const overused = Object.keys(verbCounts).filter(function (v) { return verbCounts[v] > 2; });
+
+    return {
+      ok: issues.length === 0 && overused.length === 0,
+      issues: issues,
+      verbCounts: verbCounts,
+      overusedVerbs: overused,
+      lengthMode: lengthMode,
+      wordCap: wordCap,
+      blockCount: blocks.length
+    };
+  }
+
+  // Inline flag injector — wraps each flagged criterion's body with a
+  // [VALIDATION: ...] tag so markers see it without breaking flow.
+  // Returns the modified body.
+  function annotateAIBodyWithValidation(aiBody, validationResult) {
+    if (!aiBody || !validationResult || validationResult.ok) return aiBody;
+    const blocks = String(aiBody).split(/\n\s*\n/);
+    const issuesByIndex = {};
+    validationResult.issues.forEach(function (i) { issuesByIndex[i.index] = i; });
+
+    return blocks.map(function (block, idx) {
+      const issue = issuesByIndex[idx];
+      if (!issue) return block;
+      return block + '\n[VALIDATION: ' + issue.messages.join('; ') + ']';
+    }).join('\n\n');
+  }
+
   function logAssistantRun(entry) {
     try {
       const log = JSON.parse(localStorage.getItem(AI_LOG_KEY) || '[]');
@@ -1034,6 +1160,7 @@
     computeScores, generateFeedbackText, formatScore,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
+    validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS,
     loadSnippets, logAssistantRun, clearAssistantLog,
     // Deprecated aliases
     logAIGarnish, clearAIGarnishLog,

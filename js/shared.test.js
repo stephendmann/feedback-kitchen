@@ -91,6 +91,66 @@ describe('postProcessSingle (AU/NZ locale)', () => {
   });
 });
 
+describe('validateAIBody', () => {
+  test('passes a fully conformant body', () => {
+    setLocale('en-NZ');
+    const SA = loadShared();
+    const body = [
+      'New Product Idea – 10 / 10\nThe concept is convincing and well-supported. Add one sentence that explains how you would test this with NZ consumers.',
+      'NZ Market Definition – 4 / 10\nYour definition is too generic and lacks data. Support your definition with NZ demographics from Stats NZ.'
+    ].join('\n\n');
+
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
+  test('flags missing action verb on sentence 2', () => {
+    const SA = loadShared();
+    const body = 'New Product Idea – 10 / 10\nThe concept is convincing. The idea is ready to move forward.';
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(false);
+    expect(result.issues[0].messages.join(' ')).toMatch(/sentence 2 should start with/);
+  });
+
+  test('flags wrong sentence count', () => {
+    const SA = loadShared();
+    const body = 'Criterion – 5 / 10\nOnly one sentence here.';
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(false);
+    expect(result.issues[0].messages.join(' ')).toMatch(/expected 2 sentences/);
+  });
+
+  test('flags word cap exceeded in brief mode', () => {
+    const SA = loadShared();
+    // 35 words — exceeds 30-word brief cap
+    const body = 'Criterion – 5 / 10\nYour analysis is generally clear and shows real engagement with the material throughout the entire submission. Add more specific examples to your section three discussion of segmentation strategies and target market data.';
+    const result = SA.validateAIBody(body, { lengthMode: 'brief' });
+    expect(result.ok).toBe(false);
+    expect(result.issues[0].messages.join(' ')).toMatch(/exceeds brief word cap/);
+  });
+
+  test('flags verb overuse across more than two criteria', () => {
+    const SA = loadShared();
+    const body = [
+      'C1 – 5 / 10\nFirst eval. Add specific examples to your section.',
+      'C2 – 5 / 10\nSecond eval. Add citations to your introduction.',
+      'C3 – 5 / 10\nThird eval. Add data to your conclusion.'
+    ].join('\n\n');
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.overusedVerbs).toContain('Add');
+    expect(result.ok).toBe(false);
+  });
+
+  test('annotates flagged blocks inline when validate flag enabled', () => {
+    const SA = loadShared();
+    const body = 'Criterion – 5 / 10\nFirst sentence. Improve this further.';
+    const validation = SA.validateAIBody(body, { lengthMode: 'standard' });
+    const annotated = SA.annotateAIBodyWithValidation(body, validation);
+    expect(annotated).toMatch(/\[VALIDATION:/);
+  });
+});
+
 describe('locale gating', () => {
   test('US locale: spelling left untouched', () => {
     setLocale('en-US');

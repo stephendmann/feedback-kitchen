@@ -560,15 +560,20 @@
 
               <div class="flex flex-wrap items-start gap-2">
                 <button class="btn btn-green text-sm"
-                        onclick="S.refineAction('draft')"
-                        title="Add concrete improvement strategies tied to the rubric. Requires at least one score.">
-                  Add improvement strategies
+                        onclick="S.refineAction('improve_criterion_body')"
+                        title="Generate rubric-grounded criterion comments with one concrete improvement action each. Requires at least one score.">
+                  Improve feedback
                 </button>
-                <button class="btn btn-blue btn-secondary-step text-sm"
-                        onclick="S.refineAction('improve')"
-                        title="Polish the wording of your existing draft. Preserves your edits.">
-                  Polish commentary
-                </button>
+                <details class="ml-1">
+                  <summary class="text-xs text-slate-600 cursor-pointer select-none px-2 py-1 hover:text-slate-900">More actions</summary>
+                  <div class="mt-2 flex flex-wrap items-start gap-2">
+                    <button class="btn btn-ghost text-sm"
+                            onclick="S.mechanicalCleanup()"
+                            title="Apply punctuation, spacing, decimal, and AU/NZ spelling cleanup to your existing draft. No AI call.">
+                      Mechanical clean-up only
+                    </button>
+                  </div>
+                </details>
                 <button class="btn btn-utility text-sm ml-auto"
                         onclick="S.aiResetPanel()"
                         title="Clear the suggestion box and keep your original draft.">
@@ -726,28 +731,33 @@
             <div class="mt-2">
               <ol class="text-xs text-slate-700 list-decimal pl-5 space-y-1">
                 <li>Enter at least one score, then click <strong>Add improvement strategies</strong> to enrich your comments with rubric-aligned guidance.</li>
-                <li>Optionally click <strong>Polish commentary</strong> to tidy the wording.</li>
+                <li>Optionally use <strong>More actions → Mechanical clean-up only</strong> if you have hand-written comments to tidy without an AI call.</li>
                 <li>Read and edit the suggestion, then click <strong>Replace draft</strong> when you are happy.</li>
               </ol>
             </div>
           </details>
 
-          <!-- Primary action buttons (stepwise: 1 Add improvement strategies → 2 Polish commentary) -->
+          <!-- Primary action button (single mode: rubric-grounded improvement) -->
           <div class="flex flex-wrap items-start gap-2">
             <button id="ai-draft-from-rubric"
                     class="btn btn-green btn-primary-step text-sm"
-                    onclick="S.aiAssist('draft')"
-                    title="Add concrete improvement strategies tied to the rubric. Requires at least one score.">
-              <span class="step-num">1.</span> Add improvement strategies
-              <span class="btn-help">Start here. Requires at least one score.</span>
+                    onclick="S.aiAssist('improve_criterion_body')"
+                    title="Generate rubric-grounded criterion comments with one concrete improvement action each. Requires at least one score.">
+              Improve feedback
+              <span class="btn-help">Rubric-grounded comment + one action per criterion.</span>
             </button>
-            <button id="ai-improve-clarity"
-                    class="btn btn-blue btn-secondary-step text-sm"
-                    onclick="S.aiAssist('improve')"
-                    title="Polish the wording of your existing draft.">
-              <span class="step-num">2.</span> Polish commentary
-              <span class="btn-help">Polish the wording of your existing draft.</span>
-            </button>
+            <details class="ml-1">
+              <summary class="text-xs text-slate-600 cursor-pointer select-none px-2 py-1 hover:text-slate-900">More actions</summary>
+              <div class="mt-2 flex flex-wrap items-start gap-2">
+                <button id="ai-mechanical-cleanup"
+                        class="btn btn-ghost text-sm"
+                        onclick="S.mechanicalCleanup()"
+                        title="Apply punctuation, spacing, decimal, and AU/NZ spelling cleanup to your existing draft. No AI call.">
+                  Mechanical clean-up only
+                  <span class="btn-help">Non-AI: tidies punctuation, decimals, AU/NZ spelling.</span>
+                </button>
+              </div>
+            </details>
             <button id="ai-reset"
                     class="btn btn-utility text-sm ml-auto"
                     onclick="S.aiResetPanel()"
@@ -2585,7 +2595,7 @@
       refreshAIInputChips();
 
       setAIState('drafting');
-      const buttons = ['ai-draft-from-rubric','ai-improve-clarity','ai-shorten-for-lms']
+      const buttons = ['ai-draft-from-rubric','ai-mechanical-cleanup']
         .map(id => el(id)).filter(Boolean);
       buttons.forEach(b => b.disabled = true);
 
@@ -3005,6 +3015,9 @@
     const USAGE_KEY = 'scorer.usage.v1';
     const USAGE_EVENTS = [
       'wording_panel_opened',
+      'used_improve_feedback',
+      'used_mechanical_cleanup',
+      // Legacy counters retained for historical data; new events route to the two above.
       'used_clarity_tone',
       'used_concise',
       'used_draft_from_rubric',
@@ -3064,9 +3077,11 @@
 
     function refineAction(mode) {
       // Delegate to existing aiAssist logic; track which control was used.
-      if (mode === 'improve') usageTrack('used_clarity_tone');
-      else if (mode === 'shorten') usageTrack('used_concise');
-      else if (mode === 'draft') usageTrack('used_draft_from_rubric');
+      // Legacy mode names ('draft', 'improve', 'shorten') map to the unified
+      // mode in shared.js; track them under a single counter for telemetry.
+      if (mode === 'improve_criterion_body' || mode === 'draft' || mode === 'improve' || mode === 'shorten') {
+        usageTrack('used_improve_feedback');
+      }
       // After aiAssist resolves, sync the mirror textarea
       const promise = aiAssist(mode);
       const sync = function () {
@@ -3079,6 +3094,44 @@
       } else {
         setTimeout(sync, 600);
       }
+    }
+
+    /* ── Mechanical clean-up (no AI) ──────────────────────────
+       Runs the deterministic post-processor over the marker's
+       existing draft. No Haiku call, no cost, no latency.
+       Used when a marker has hand-written comments and just
+       wants punctuation, decimals, and AU/NZ spelling tidied.
+       Telemetry: counts each invocation so we can decide later
+       whether the affordance is worth keeping (target: >=10%
+       of marker sessions).
+    ─────────────────────────────────────────────────────────── */
+    function mechanicalCleanup() {
+      usageTrack('used_mechanical_cleanup');
+      const draftEl = document.getElementById('feedback-text');
+      const suggestionEl = document.getElementById('ai-suggestion');
+      const mirrorEl = document.getElementById('refine-suggestion-mirror');
+      const draft = (draftEl && draftEl.value || '').trim();
+      if (!draft) {
+        alert('No draft to clean up. Generate or paste feedback into the editable draft first.');
+        return;
+      }
+      // Extract just the criterion body (between intro and TOTAL SCORE) so we
+      // don't disturb scorer-managed sections.
+      const body = (typeof extractExistingBody === 'function')
+        ? extractExistingBody(draft)
+        : draft;
+      const cleanedBody = SA.postProcessAIBody(body, config);
+      // Optional validation pass — surface flags if the body doesn't conform.
+      let annotated = cleanedBody;
+      if (typeof SA.validateAIBody === 'function') {
+        const validation = SA.validateAIBody(cleanedBody, { lengthMode: getLengthMode() });
+        if (!validation.ok && typeof SA.annotateAIBodyWithValidation === 'function') {
+          annotated = SA.annotateAIBodyWithValidation(cleanedBody, validation);
+        }
+      }
+      if (suggestionEl) suggestionEl.value = annotated;
+      if (mirrorEl) mirrorEl.value = annotated;
+      setAIState && setAIState('ready');
     }
 
     function refineMirrorInput() {
@@ -3284,7 +3337,7 @@
              showAISettings, hideAISettings, saveAICreds, clearAICreds, aiGarnishDirect, updateAILoginBadge,
              aiAssist, aiReplaceDraft, aiInsertBelow, aiShowDiff, aiTogglePrompt,
              // Refine panel + settings + usage
-             toggleRefinePanel, refineAction, refineMirrorInput,
+             toggleRefinePanel, refineAction, refineMirrorInput, mechanicalCleanup,
              setShowAdvancedWordingTools, applyAdvancedToolsVisibility,
              // Phase 3 + 5: audience / length / group name
              setAudienceMode, setLengthMode, setGroupName,
