@@ -389,7 +389,8 @@
     return { rows, weightedTotal: roundedTotal, deduction, isFail, penalisedScore: roundedPenalisedScore, suggestedGrade, latePenalty: lp, rawTotal: weightedTotal };
   }
 
-  function generateFeedbackText(config, scoreResult) {
+  function generateFeedbackText(config, scoreResult, opts) {
+    opts = opts || {};
     const { rows, weightedTotal, penalisedScore, suggestedGrade, latePenalty, deduction, isFail } = scoreResult;
     const rounding = config.scoreRounding || 'none';
 
@@ -401,9 +402,24 @@
       : scoreToGrade(weightedTotal);
     const entry = config.gradeFeedback.find(gf => gf.grade === prepenaltyGrade);
 
+    // Phase 4: per-scorer intro/outro overrides with {name}/{group}/{grade}/{course} substitution.
+    const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
+    const subs = {
+      name:   (opts.studentName || '').trim(),
+      group:  (opts.groupName || '').trim() || (audienceMode === 'group' ? 'your group' : ''),
+      grade:  prepenaltyGrade,
+      course: config.courseName || ''
+    };
+    const introText = (typeof opts.introOverride === 'string' && opts.introOverride.trim())
+      ? substituteFeedbackVars(opts.introOverride, subs)
+      : (entry && entry.intro);
+    const outroText = (typeof opts.outroOverride === 'string' && opts.outroOverride.trim())
+      ? substituteFeedbackVars(opts.outroOverride, subs)
+      : (entry && entry.outro);
+
     const parts = [];
 
-    if (entry?.intro) { parts.push(entry.intro); parts.push(''); }
+    if (introText) { parts.push(introText); parts.push(''); }
 
     for (const row of rows) {
       if (!row.grade) continue;
@@ -427,7 +443,7 @@
     }
 
     // Outro sits here — after the score summary, before any late penalty notice
-    if (entry?.outro) { parts.push(''); parts.push(entry.outro); }
+    if (outroText) { parts.push(''); parts.push(outroText); }
 
     if (latePenalty && (deduction > 0 || isFail)) {
       parts.push('');
@@ -574,7 +590,7 @@
       '     praise that is not supported by the rubric descriptor or the notes.',
       '  5. Use Au/NZ spelling. Address the student in the second person.',
       '  6. Match the tutor voice exemplars where natural.',
-      '  7. Stay under ' + wordCap + ' words for the whole body.',
+      '  7. Stay under ' + wordCap + ' words for the whole body. PREFER BREVITY — students skim, so cut filler before adding qualifiers. Less is usually better.',
       '  8. Output format: one block per criterion, in the same order as below.',
       '     For each criterion use exactly this header line:',
       '       <Criterion name> – <weighted score to 1 d.p.> / <weight>',
@@ -604,24 +620,54 @@
     opts = opts || {};
     const base = buildAIGarnishPrompt(config, scoreResult, opts);
     const existingBody = scrubPII((opts.existingBody || '').trim(), opts);
+
+    // Phase 5: length mode — Brief enforces ~30 words/criterion; Standard keeps prior behaviour.
+    const lengthMode = (opts.lengthMode === 'standard') ? 'standard' : 'brief';
+    const lengthRule = (lengthMode === 'brief')
+      ? '\n\nLENGTH RULE: Brief mode — keep each criterion comment to 30 words or fewer. Prefer cutting filler over adding qualifiers. Students skim long feedback.'
+      : '\n\nLENGTH RULE: Standard length — 1–2 short paragraphs per criterion is fine, but cut any filler.';
+
+    // Phase 3: audience mode — Group rewrites second-person "you" as "your group".
+    const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
+    const audienceRule = (audienceMode === 'group')
+      ? '\n\nAUDIENCE RULE: This feedback is for a group submission. Address the recipients as "your group" (e.g. "Your group has demonstrated…", "Your group could strengthen…"). Do NOT use second-person singular ("you", "your response"). The student\'s name is still used in the greeting (handled separately) but body commentary refers to the group.'
+      : '\n\nAUDIENCE RULE: Individual submission — address the student in the second person ("you", "your response").';
+
     const extras = {
       draft:
-        '\n\nMODE: DRAFT_FROM_RUBRIC — you are producing a fresh criterion-by-criterion body.',
+        '\n\nMODE: ADD_IMPROVEMENT_STRATEGIES — produce a fresh criterion-by-criterion body. For each criterion, give a brief evaluative comment grounded in the rubric, then ONE concrete improvement strategy the student/group can act on. No filler.',
       improve:
-        '\n\nMODE: IMPROVE_CLARITY_AND_TONE — you are given an EXISTING criterion body below. Preserve every substantive claim; rewrite for clarity, tone, and consistency. Do not shorten aggressively.' +
-        '\n\nEXISTING BODY TO IMPROVE:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)'),
+        '\n\nMODE: POLISH_COMMENTARY — you are given an EXISTING criterion body below. Preserve every substantive claim. Rewrite for clarity, tone, and consistency. Do NOT expand or pad — your output should be the same length or shorter than the input.' +
+        '\n\nEXISTING BODY TO POLISH:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)'),
       shorten:
         '\n\nMODE: SHORTEN_FOR_LMS — you are given an EXISTING criterion body below. Preserve every substantive claim. Compress to under 1800 characters total. Keep the per-criterion structure.' +
         '\n\nEXISTING BODY TO SHORTEN:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)')
     };
-    return base + (extras[mode] || extras.draft);
+    return base + lengthRule + audienceRule + (extras[mode] || extras.draft);
+  }
+
+  // Substitute {name}, {group}, {grade}, {course} placeholders in custom intro/outro templates.
+  function substituteFeedbackVars(template, vars) {
+    if (!template) return template;
+    return String(template)
+      .replace(/\{name\}/g, vars.name || '')
+      .replace(/\{group\}/g, vars.group || '')
+      .replace(/\{grade\}/g, vars.grade || '')
+      .replace(/\{course\}/g, vars.course || '');
   }
 
   // Stitches: [student header] + intro + AI body + TOTAL SCORE + outro + late-penalty.
   // aiBody is the raw paste-back from the LLM (just the criteria rewrite).
+  // opts:
+  //   studentName  — student's name for greeting
+  //   audienceMode — 'individual' (default) or 'group'
+  //   groupName    — optional group label, used when audienceMode === 'group'
+  //   introOverride / outroOverride — per-scorer custom templates with {name}/{group}/{grade}/{course} vars
   function assembleFinalFeedback(config, scoreResult, aiBody, opts) {
     opts = opts || {};
     const studentName = (opts.studentName || '').trim();
+    const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
+    const groupName = (opts.groupName || '').trim();
     const useCustomScale = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
     const { weightedTotal, penalisedScore, latePenalty, deduction, isFail } = scoreResult;
     const prepenaltyGrade = useCustomScale
@@ -629,9 +675,24 @@
       : scoreToGrade(weightedTotal);
     const entry = config.gradeFeedback.find(function (gf) { return gf.grade === prepenaltyGrade; });
 
+    // Variable substitution map for custom intro/outro templates.
+    const subs = {
+      name:   studentName,
+      group:  groupName || (audienceMode === 'group' ? 'your group' : ''),
+      grade:  prepenaltyGrade,
+      course: config.courseName || ''
+    };
+
+    const introText = (typeof opts.introOverride === 'string' && opts.introOverride.trim())
+      ? substituteFeedbackVars(opts.introOverride, subs)
+      : (entry && entry.intro);
+    const outroText = (typeof opts.outroOverride === 'string' && opts.outroOverride.trim())
+      ? substituteFeedbackVars(opts.outroOverride, subs)
+      : (entry && entry.outro);
+
     const parts = [];
     if (studentName) { parts.push('Hi ' + studentName + ','); parts.push(''); }
-    if (entry && entry.intro) { parts.push(entry.intro); parts.push(''); }
+    if (introText) { parts.push(introText); parts.push(''); }
 
     const rounding = config.scoreRounding || 'none';
 
@@ -643,14 +704,15 @@
     if (scoreResult.override && scoreResult.override.snapped) {
       const o = scoreResult.override;
       parts.push('');
+      const subjPossessive = (audienceMode === 'group') ? "Your group's" : 'Your';
       parts.push(
-        'Note: Your weighted criterion scores total ' + formatScore(o.originalTotal, rounding) + '/100. ' +
+        'Note: ' + subjPossessive + ' weighted criterion scores total ' + formatScore(o.originalTotal, rounding) + '/100. ' +
         'I have rounded this up to ' + formatScore(o.newTotal, rounding) + '/100 (' + o.newGrade + ') ' +
-        'in recognition of your overall performance.'
+        'in recognition of ' + (audienceMode === 'group' ? "your group's" : 'your') + ' overall performance.'
       );
     }
 
-    if (entry && entry.outro) { parts.push(''); parts.push(entry.outro); }
+    if (outroText) { parts.push(''); parts.push(outroText); }
 
     if (latePenalty && (deduction > 0 || isFail)) {
       parts.push('');
@@ -803,7 +865,7 @@
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,
-    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, scrubPII,
+    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     loadSnippets, logAssistantRun, clearAssistantLog,
     // Deprecated aliases
     logAIGarnish, clearAIGarnishLog,
@@ -817,6 +879,106 @@
     document.querySelectorAll('a[href*="ko-fi.com/smann"]').forEach(el => {
       el.addEventListener('click', () => {
         if (typeof gtag === 'function') {
+          gtag('event', 'kofi_click', {
+            event_category: 'engagement',
+            event_label: 'footer_support_button',
+            transport_type: 'beacon'
+          });
+        }
+      });
+    });
+  });
+})();
+udentRecord) {
+    let cohort = getCohort(scorerId);
+    if (!cohort) {
+      // No cohort yet — caller must prompt first. Initialise as unlabelled fallback
+      // so we don't lose data, but this path should rarely be hit.
+      cohort = initCohort(scorerId, 'Untitled cohort', false);
+    }
+    const key = studentMatchKey(studentRecord);
+    if (!key) {
+      // No ID and no name — refuse to save
+      return { saved: false, reason: 'no-identifier' };
+    }
+    studentRecord.key     = key;
+    studentRecord.savedAt = new Date().toISOString();
+    if (!studentRecord.id) studentRecord.id = uid();
+
+    const existingIdx = cohort.students.findIndex(s => s.key === key);
+    let replaced = false;
+    if (existingIdx >= 0) {
+      studentRecord.id        = cohort.students[existingIdx].id;
+      studentRecord.createdAt = cohort.students[existingIdx].createdAt || cohort.students[existingIdx].savedAt;
+      cohort.students[existingIdx] = studentRecord;
+      replaced = true;
+    } else {
+      studentRecord.createdAt = studentRecord.savedAt;
+      cohort.students.push(studentRecord);
+    }
+    saveCohort(cohort);
+    return { saved: true, replaced: replaced, count: cohort.students.length };
+  }
+
+  function removeFromCohort(scorerId, studentKey) {
+    const cohort = getCohort(scorerId);
+    if (!cohort) return false;
+    cohort.students = cohort.students.filter(s => s.key !== studentKey);
+    saveCohort(cohort);
+    return true;
+  }
+
+  function clearCohort(scorerId) {
+    localStorage.removeItem(cohortKey(scorerId));
+  }
+
+  function cohortAgeDays(cohort) {
+    if (!cohort || !cohort.createdAt) return 0;
+    const ms = Date.now() - new Date(cohort.createdAt).getTime();
+    return Math.floor(ms / (1000 * 60 * 60 * 24));
+  }
+
+  /* ── Score formatting helper ──────────────────────────────── */
+  function formatScore(value, rounding) {
+    const n = parseFloat(value);
+    if (isNaN(n)) return value;
+    if (rounding === 'whole') return String(Math.round(n));
+    if (rounding === 'half')  return (Math.round(n * 2) / 2).toFixed(1);
+    return n.toFixed(1);
+  }
+
+  /* ── Export to global ─────────────────────────────────────── */
+  window.SA = {
+    GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_LABELS_SHORT, TIER_BADGE_COLOURS, TIER_ORDER,
+    getTierLabel, migrateConfig,
+    GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
+    uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig,
+    loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
+    getActiveId, setActiveId, loadActiveConfig,
+    computeScores, generateFeedbackText, formatScore,
+    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
+    loadSnippets, logAssistantRun, clearAssistantLog,
+    logAIGarnish, clearAIGarnishLog,
+    getCohort, initCohort, saveCohort, addToCohort,
+    removeFromCohort, clearCohort, cohortAgeDays, studentMatchKey
+  };
+
+  /* ── Analytics ────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a[href*="ko-fi.com/smann"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (typeof gtag === 'function') {
+          gtag('event', 'kofi_click', {
+            event_category: 'engagement',
+            event_label: 'footer_support_button',
+            transport_type: 'beacon'
+          });
+        }
+      });
+    });
+  });
+})();
+of gtag === 'function') {
           gtag('event', 'kofi_click', {
             event_category: 'engagement',
             event_label: 'footer_support_button',

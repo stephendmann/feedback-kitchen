@@ -477,6 +477,39 @@
               <button class="btn btn-green text-sm" onclick="S.copyFeedback()">📋 Copy to clipboard</button>
             </div>
           </div>
+
+          <!-- Phase 4: Customisable intro/outro overrides (per-scorer, persisted in localStorage) -->
+          <details id="sec-intro-outro-override" class="mb-3 no-print panel panel-light border border-slate-200 rounded-xl">
+            <summary class="cursor-pointer select-none px-3 py-2 text-sm font-semibold text-slate-700">
+              ✏️ Customise intro / outro <span class="text-xs font-normal text-slate-500 ml-1">(optional, this scorer only)</span>
+            </summary>
+            <div class="px-3 pb-3 pt-1 space-y-2">
+              <p class="text-xs text-slate-500">
+                Leave blank to use the grade band's default intro/outro. Variables you can use:
+                <code class="bg-slate-100 px-1 rounded">{name}</code>
+                <code class="bg-slate-100 px-1 rounded">{group}</code>
+                <code class="bg-slate-100 px-1 rounded">{grade}</code>
+                <code class="bg-slate-100 px-1 rounded">{course}</code>
+              </p>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="intro-override">Intro override</label>
+                <textarea id="intro-override" rows="2" class="input-field text-sm w-full"
+                          placeholder="e.g. Hi {name}, here's feedback on your {course} submission."
+                          oninput="S.setIntroOverride(this.value)"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="outro-override">Outro override</label>
+                <textarea id="outro-override" rows="2" class="input-field text-sm w-full"
+                          placeholder="e.g. Well done {name} — your final grade for this {course} task is {grade}."
+                          oninput="S.setOutroOverride(this.value)"></textarea>
+              </div>
+              <div class="flex gap-2">
+                <button class="btn btn-ghost text-xs" onclick="S.resetIntroOutroOverrides()" title="Clear both overrides for this scorer.">Reset to defaults</button>
+                <span id="intro-outro-status" class="text-xs text-slate-500 self-center"></span>
+              </div>
+            </div>
+          </details>
+
           <textarea id="feedback-text" class="feedback-box" placeholder="Select grades above to generate feedback…" spellcheck="true" oninput="S.refreshAIInputChips()"></textarea>
 
           <!-- Refine wording (inline assistant — folded in from old F section) -->
@@ -493,6 +526,38 @@
             <span class="text-xs text-slate-500 ml-2 italic">Optional: improve wording without changing marks.</span>
 
             <div id="refine-wording-panel" class="hidden mt-3 panel panel-light border border-slate-200 rounded-xl p-3 space-y-3">
+
+              <!-- Phase 3 + 5: audience and length controls (per-browser, persisted) -->
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                <div class="flex items-center gap-2">
+                  <label class="font-semibold text-slate-700" for="audience-mode">Address as:</label>
+                  <select id="audience-mode"
+                          class="input-field text-xs py-1 px-2 bg-white border-slate-300"
+                          onchange="S.setAudienceMode(this.value)"
+                          title="Individual: 'you'/'your response'. Group: 'your group'.">
+                    <option value="individual">Individual ("you")</option>
+                    <option value="group">Group ("your group")</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="font-semibold text-slate-700" for="length-mode">Length:</label>
+                  <select id="length-mode"
+                          class="input-field text-xs py-1 px-2 bg-white border-slate-300"
+                          onchange="S.setLengthMode(this.value)"
+                          title="Brief = ~30 words/criterion. Standard = 1-2 short paragraphs.">
+                    <option value="brief">Brief (≈30 words/criterion)</option>
+                    <option value="standard">Standard</option>
+                  </select>
+                </div>
+                <div id="group-name-wrap" class="flex items-center gap-2 hidden">
+                  <label class="font-semibold text-slate-700" for="group-name">Group name:</label>
+                  <input id="group-name" type="text"
+                         class="input-field text-xs py-1 px-2 bg-white border-slate-300 w-40"
+                         placeholder="e.g. Team Alpha (optional)"
+                         oninput="S.setGroupName(this.value)" />
+                </div>
+              </div>
+
               <div class="flex flex-wrap items-start gap-2">
                 <button class="btn btn-green text-sm"
                         onclick="S.refineAction('draft')"
@@ -966,6 +1031,7 @@
       restoreSectionState();
       restoreExplainerState();
       updateAILoginBadge();
+      applyAudienceLengthIntroOutroToUI();
       refreshCohortUI();
 
       // Warn user if they try to leave with unsaved cohort data (not yet exported)
@@ -1459,7 +1525,13 @@
 
       const name  = el('student-name').value.trim();
       const header = name ? `Hi ${name},\n\n` : '';
-      const newGeneratedText = header + SA.generateFeedbackText(config, effectiveRes);
+      const newGeneratedText = header + SA.generateFeedbackText(config, effectiveRes, {
+        studentName:    name,
+        audienceMode:   getAudienceMode(),
+        groupName:      getGroupName(),
+        introOverride:  getIntroOverride(),
+        outroOverride:  getOutroOverride()
+      });
 
       const ta = el('feedback-text');
       const currentText = ta.value;
@@ -2436,9 +2508,11 @@
 
       const existingBody = extractExistingBody(el('feedback-text').value || '');
       let prompt = SA.buildAIAssistPrompt(mode, config, scoreResult, {
-        markerNotes: (el('additional-comments').value || '').trim(),
-        snippets: snippets,
-        existingBody: existingBody
+        markerNotes:  (el('additional-comments').value || '').trim(),
+        snippets:     snippets,
+        existingBody: existingBody,
+        audienceMode: getAudienceMode(),
+        lengthMode:   getLengthMode()
       });
       // Belt-and-braces: re-scrub whole prompt before sending, in case any
       // identifier slipped through via rubric descriptors or snippets.
@@ -2479,7 +2553,11 @@
         const effectiveRes = SA.applyGradeOverride(config, scoreResult, overrideRaw);
 
         const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
-          studentName: el('student-name').value
+          studentName:   el('student-name').value,
+          audienceMode:  getAudienceMode(),
+          groupName:     getGroupName(),
+          introOverride: getIntroOverride(),
+          outroOverride: getOutroOverride()
         });
         el('ai-suggestion').value = final;
 
@@ -2920,6 +2998,96 @@
       applyAdvancedToolsVisibility();
     }
 
+    /* ── Phase 3 + 5: Audience & Length (per-browser) ───────── */
+    const AUDIENCE_KEY = 'SA_AUDIENCE_MODE';
+    const LENGTH_KEY   = 'SA_LENGTH_MODE';
+    const GROUP_NAME_KEY = 'SA_GROUP_NAME';
+
+    function getAudienceMode() {
+      const v = localStorage.getItem(AUDIENCE_KEY);
+      return (v === 'group') ? 'group' : 'individual';
+    }
+    function setAudienceMode(mode) {
+      const m = (mode === 'group') ? 'group' : 'individual';
+      localStorage.setItem(AUDIENCE_KEY, m);
+      const wrap = el('group-name-wrap');
+      if (wrap) wrap.classList.toggle('hidden', m !== 'group');
+      // Re-render feedback so intro/outro/audience swaps take effect immediately
+      try { regenerateFeedback(); } catch (e) {}
+    }
+    function getLengthMode() {
+      const v = localStorage.getItem(LENGTH_KEY);
+      return (v === 'standard') ? 'standard' : 'brief';
+    }
+    function setLengthMode(mode) {
+      const m = (mode === 'standard') ? 'standard' : 'brief';
+      localStorage.setItem(LENGTH_KEY, m);
+    }
+    function getGroupName() {
+      return localStorage.getItem(GROUP_NAME_KEY) || '';
+    }
+    function setGroupName(val) {
+      localStorage.setItem(GROUP_NAME_KEY, (val || '').trim());
+    }
+
+    /* ── Phase 4: Intro/Outro overrides (per-scorer) ─────────── */
+    function introOutroKey() {
+      const id = (config && config.id) ? config.id : 'unknown';
+      return 'SA_INTROOUTRO_' + id;
+    }
+    function readIntroOutro() {
+      try {
+        const raw = localStorage.getItem(introOutroKey());
+        return raw ? JSON.parse(raw) : { intro: '', outro: '' };
+      } catch (e) { return { intro: '', outro: '' }; }
+    }
+    function writeIntroOutro(obj) {
+      try { localStorage.setItem(introOutroKey(), JSON.stringify(obj || {})); } catch (e) {}
+    }
+    function getIntroOverride() { return (readIntroOutro().intro || '').trim(); }
+    function getOutroOverride() { return (readIntroOutro().outro || '').trim(); }
+    function setIntroOverride(val) {
+      const cur = readIntroOutro();
+      cur.intro = val || '';
+      writeIntroOutro(cur);
+      flashIntroOutroStatus(val ? 'Intro override saved.' : 'Intro override cleared (using default).');
+      try { regenerateFeedback(); } catch (e) {}
+    }
+    function setOutroOverride(val) {
+      const cur = readIntroOutro();
+      cur.outro = val || '';
+      writeIntroOutro(cur);
+      flashIntroOutroStatus(val ? 'Outro override saved.' : 'Outro override cleared (using default).');
+      try { regenerateFeedback(); } catch (e) {}
+    }
+    function resetIntroOutroOverrides() {
+      writeIntroOutro({ intro: '', outro: '' });
+      const i = el('intro-override'); if (i) i.value = '';
+      const o = el('outro-override'); if (o) o.value = '';
+      flashIntroOutroStatus('Reverted to grade-band defaults.');
+      try { regenerateFeedback(); } catch (e) {}
+    }
+    let _introOutroFlashT = null;
+    function flashIntroOutroStatus(msg) {
+      const s = el('intro-outro-status');
+      if (!s) return;
+      s.textContent = msg;
+      if (_introOutroFlashT) clearTimeout(_introOutroFlashT);
+      _introOutroFlashT = setTimeout(() => { s.textContent = ''; }, 2500);
+    }
+
+    function applyAudienceLengthIntroOutroToUI() {
+      const aud = getAudienceMode();
+      const len = getLengthMode();
+      const audSel = el('audience-mode'); if (audSel) audSel.value = aud;
+      const lenSel = el('length-mode');   if (lenSel) lenSel.value = len;
+      const wrap = el('group-name-wrap'); if (wrap) wrap.classList.toggle('hidden', aud !== 'group');
+      const gn = el('group-name'); if (gn) gn.value = getGroupName();
+      const io = readIntroOutro();
+      const i = el('intro-override'); if (i) i.value = io.intro || '';
+      const o = el('outro-override'); if (o) o.value = io.outro || '';
+    }
+
     /* ── Local stats page (?view=local-stats; legacy ?diag=usage) ── */
     function maybeRenderDiagUsage() {
       try {
@@ -2982,6 +3150,10 @@
              // Refine panel + settings + usage
              toggleRefinePanel, refineAction, refineMirrorInput,
              setShowAdvancedWordingTools, applyAdvancedToolsVisibility,
+             // Phase 3 + 5: audience / length / group name
+             setAudienceMode, setLengthMode, setGroupName,
+             // Phase 4: per-scorer intro/outro overrides
+             setIntroOverride, setOutroOverride, resetIntroOutroOverrides,
              usageTrack,
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
@@ -3298,3 +3470,330 @@
   <script src="/js/footer.js"></script>
 </body>
 </html>
+dent,
+             hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
+             refreshCohortUI, refreshStickySummary, refreshAIInputChips,
+             setAllDetails, persistSectionState, restoreSectionState,
+             aiToggleAllExplainers };
+  })();
+
+  document.addEventListener('DOMContentLoaded', S.init);
+  </script>
+
+  <!-- ── New Student modal ─────────────────────────────────── -->
+  <div id="new-student-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="hideNewStudentModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+      <div class="text-4xl mb-3">↺</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Start a new student?</h3>
+      <p class="text-slate-500 text-sm mb-1">This will clear all grades, scores, and feedback.</p>
+      <p class="text-xs text-slate-400 mb-6">Your tutor name will be kept for the next student.</p>
+      <div class="flex gap-3">
+        <button onclick="hideNewStudentModal()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Cancel
+        </button>
+        <button onclick="hideNewStudentModal(); S.confirmNewStudent();"
+          class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm">
+          Yes, clear & continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cohort setup (first-use) modal ───────────────────── -->
+  <div id="cohort-setup-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortSetupModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <div class="text-3xl mb-3 text-center">👥</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2 text-center">Set up this cohort</h3>
+      <p class="text-slate-500 text-sm mb-5 text-center">Students will accumulate in a single workbook for this scorer. Set the cohort label and marker context now.</p>
+
+
+      <label class="block text-xs font-semibold text-slate-500 mb-2">Are you the only marker for this assessment?</label>
+      <div class="space-y-2 mb-5 text-sm">
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="radio" name="cohort-multi" id="cohort-setup-multi-no" checked class="mt-1">
+          <span><strong>Only marker</strong> — use one combined cohort for all students.</span>
+        </label>
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input type="radio" name="cohort-multi" id="cohort-setup-multi-yes" class="mt-1">
+          <span><strong>Multiple markers</strong> — prefix my cohort with the Tutor name from the form above so exports merge cleanly.</span>
+        </label>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="S.hideCohortSetupModal()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Cancel
+        </button>
+        <button id="cohort-setup-confirm"
+          class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm">
+          Start cohort
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cohort list modal ───────────────────────────────── -->
+  <div id="cohort-list-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortListModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-slate-800 text-lg">👥 Cohort students</h3>
+        <button onclick="S.hideCohortListModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <div id="cohort-list-body" class="overflow-y-auto flex-1 pr-2"></div>
+      <div class="pt-4 border-t border-slate-100 mt-4 text-center">
+        <button onclick="S.hideCohortListModal()" class="btn btn-ghost text-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Post-export wipe prompt ─────────────────────────── -->
+  <div id="cohort-wipe-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortWipeModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
+      <div class="text-3xl mb-3">✅</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Cohort saved to Excel</h3>
+      <p class="text-sm text-slate-600 mb-1"><strong id="cohort-wipe-filename"></strong></p>
+      <p class="text-sm text-slate-500 mb-1"><span id="cohort-wipe-count"></span> students exported.</p>
+      <p class="text-xs text-slate-400 mb-6">For privacy, clear the local copy now that the cohort is safely saved in Excel. You can always start a new cohort after this.</p>
+      <div class="flex gap-3">
+        <button onclick="S.hideCohortWipeModal()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Keep for now
+        </button>
+        <button onclick="S.wipeCohortAfterExport()"
+          class="flex-1 bg-red-600 text-white font-semibold py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
+          Yes, clear local copy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Snippets modal ─────────────────────────────────── -->
+  <div id="snippets-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideSnippetModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-slate-800 text-lg">💬 Manage Snippets</h3>
+        <button onclick="S.hideSnippetModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <p class="text-slate-500 text-sm mb-4">Create reusable comments to quickly insert into the feedback box.</p>
+
+      <div class="flex gap-2 mb-3">
+        <button onclick="S.importSnippetsCsv()" class="btn-secondary text-sm flex-1">📥 Import CSV</button>
+        <button onclick="S.exportSnippetsCsv()" class="btn-secondary text-sm flex-1">📤 Export CSV</button>
+      </div>
+      <input type="file" id="snippet-csv-input" accept=".csv" class="hidden"
+             onchange="S.onSnippetCsvChosen(this)">
+
+      <div class="overflow-y-auto flex-1 pr-2 space-y-3 mb-4" id="snippets-list">
+        <!-- Snippets rendered here -->
+      </div>
+
+      <div class="border-t border-slate-100 pt-4 mt-auto">
+        <h4 class="font-semibold text-slate-700 text-sm mb-2">Add New Snippet</h4>
+        <div class="space-y-2">
+          <input type="text" id="new-snippet-label" class="input-field text-sm" placeholder="Short label (e.g. 'APA formatting')">
+          <textarea id="new-snippet-text" class="input-field text-sm" rows="2" placeholder="Full comment text..." spellcheck="true"></textarea>
+          <button onclick="S.addSnippet()" class="btn btn-blue w-full justify-center text-sm py-2">Add Snippet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI Settings modal ─────────────────────────────── -->
+  <div id="ai-settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideAISettings()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-slate-800 text-lg">🔐 Wording Assistant Login</h3>
+        <button onclick="S.hideAISettings()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <p class="text-slate-500 text-sm mb-4">
+        Enter the shared credentials to enable direct wording assistant access (one-click draft). Credentials are stored in this browser only.
+      </p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Username</label>
+          <input type="text" id="fk-user-input" class="input-field" autocomplete="username" placeholder="Enter username">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+          <input type="password" id="fk-pass-input" class="input-field" autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <div id="ai-settings-status" class="text-xs text-slate-400"></div>
+      </div>
+      <div class="flex gap-2 mt-5">
+        <button onclick="S.clearAICreds()" class="btn btn-red text-sm">🗑 Clear saved</button>
+        <button onclick="S.hideAISettings()" class="btn btn-ghost text-sm ml-auto">Cancel</button>
+        <button onclick="S.saveAICreds()" class="btn btn-blue text-sm">💾 Save</button>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">
+        Credentials stay in this browser's localStorage and are only sent to our Feedback Kitchen proxy, which forwards requests to the external language service. Your feedback text is not stored by us beyond the API call. Clear credentials on shared computers.
+      </p>
+      <p class="text-xs text-slate-600 mt-3 leading-relaxed border-t border-slate-200 pt-3">
+        No key yet? <a href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-semibold underline">Get access via Ko-fi</a> — a small contribution covers your usage.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Keyboard shortcuts modal (v2.5) ─────────────────────── -->
+  <div id="shortcuts-modal"
+       class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print"
+       onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Keyboard shortcuts</h3>
+        <button class="text-slate-400 hover:text-slate-600 text-xl leading-none"
+                onclick="document.getElementById('shortcuts-modal').classList.add('hidden')"
+                aria-label="Close">×</button>
+      </div>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Copy feedback</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + C</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Export student record</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + E</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Export cohort</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + X</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">New student</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Ctrl/Cmd + Shift + N</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Show this help</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">?</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4">
+          <dt class="text-slate-600">Close any modal</dt>
+          <dd><kbd class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs">Esc</kbd></dd>
+        </div>
+        <div class="flex justify-between gap-4 pt-2 border-t border-slate-100">
+          <dt class="text-slate-600">Tab</dt>
+          <dd class="text-xs text-slate-500 text-right">Native — cycles through grade dropdowns row by row</dd>
+        </div>
+      </dl>
+      <p class="text-xs text-slate-400 mt-4">
+        Tip: shortcuts also work while focused inside input fields, except <kbd class="px-1 bg-slate-100 border border-slate-200 rounded text-[10px]">?</kbd> which only opens help when no field is focused.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function showNewStudentModal() {
+      document.getElementById('new-student-modal').classList.remove('hidden');
+    }
+    function hideNewStudentModal() {
+      document.getElementById('new-student-modal').classList.add('hidden');
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        hideNewStudentModal();
+        if (S && S.hideSnippetModal) S.hideSnippetModal();
+      }
+    });
+
+    (function () {
+      const rail = document.querySelectorAll('#section-rail [data-rail]');
+      if (!rail.length) return;
+      const highlight = id => rail.forEach(a => {
+        a.classList.toggle('text-blue-700', a.getAttribute('href') === '#' + id);
+        a.classList.toggle('text-slate-400', a.getAttribute('href') !== '#' + id);
+      });
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      ['sec-student','sec-rubric','sec-adjust','sec-feedback',
+       'sec-notes','sec-ai','sec-export','sec-cohort']
+        .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
+    })();
+
+    // Scroll-to-top on back-navigation from index.html (avoids landing at #sec-cohort exposing JS source)
+    (function () {
+      try {
+        const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        const isBackForward = (nav && nav.type === 'back_forward')
+          || (performance.navigation && performance.navigation.type === 2);
+        const ref = document.referrer || '';
+        const cameFromIndex = /\/index\.html(\?|#|$)|\/$/.test(ref);
+        if (isBackForward && cameFromIndex) {
+          // Strip stale hash and scroll to top
+          if (location.hash) {
+            history.replaceState(null, '', location.pathname + location.search);
+          }
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
+
+  <!-- Utility meta-bar: secondary actions moved out of topbar -->
+  <div class="no-print bg-slate-50 border-t border-slate-200 text-sm py-2 px-4">
+    <div class="max-w-5xl mx-auto flex items-center gap-3 text-slate-500">
+      <a href="index.html" class="hover:text-slate-700 transition-colors" id="footer-edit-link" title="Edit this scorer in the builder">⚙ Manage</a>
+      <span class="text-slate-300" aria-hidden="true">·</span>
+      <button class="hover:text-slate-700 transition-colors"
+              onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
+              title="Keyboard shortcuts (press ?)">⌨ Keyboard shortcuts</button>
+      <span class="text-slate-300" aria-hidden="true">·</span>
+      <button class="hover:text-slate-700 transition-colors"
+              onclick="document.getElementById('scorer-settings-modal').classList.remove('hidden')"
+              title="Scorer settings">⚙ Settings</button>
+    </div>
+  </div>
+
+  <!-- Scorer settings modal (toggles for advanced features) -->
+  <div id="scorer-settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+         onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+      <h3 class="font-bold text-slate-800 text-lg mb-3">Scorer settings</h3>
+      <label class="flex items-start gap-3 cursor-pointer mb-4">
+        <input type="checkbox" id="setting-show-advanced-wording"
+               class="mt-1"
+               onchange="S.setShowAdvancedWordingTools(this.checked)">
+        <span class="text-sm text-slate-700">
+          <strong>Show advanced wording tools</strong>
+          <span class="block text-xs text-slate-500 mt-1">Enables manual fallback, prompt builder, and the local run log inside the wording assistant. Off by default.</span>
+        </span>
+      </label>
+      <div class="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-2">
+        <p>Settings are saved on this device only.</p>
+        <p>
+          <a href="?view=local-stats"
+             class="text-blue-600 hover:underline"
+             title="Local feature counters stored in this browser only. Useful for support — never transmitted.">Feature use (this device) →</a>
+        </p>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button class="btn btn-ghost text-sm"
+                onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+  <script src="/js/footer.js"></script>
+</body>
+</html>
+ex justify-end mt-4">
+        <button class="btn btn-ghost text-sm"
+                onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+  <script src="/js/footer.js"></script>
+</body>
+</html>
+</html>
+>
