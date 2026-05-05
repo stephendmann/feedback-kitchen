@@ -12,11 +12,11 @@
 
 .site-footer__utility-title {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94a3b8;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: #64748b;
 }
 
 .site-footer__kofi-link {
@@ -175,24 +175,4 @@
 
 @media (min-width: 1100px) {
   .site-footer__inner:not(:has(.site-footer__brand--utility)) {
-    grid-template-columns: minmax(240px, 320px) 1fr;
-    align-items: start;
-  }
-
-  .site-footer__inner:not(:has(.site-footer__brand--utility)) .site-footer__brand {
-    grid-column: 1 / 2;
-  }
-
-  .site-footer__inner:not(:has(.site-footer__brand--utility)) .site-footer__grid {
-    grid-column: 2 / 3;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .site-footer__inner:has(.site-footer__brand--utility) .site-footer__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .site-footer__acknowledgement {
-    grid-column: 1 / -1;
-  }
-}
+   

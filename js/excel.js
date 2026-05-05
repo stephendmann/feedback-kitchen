@@ -251,6 +251,7 @@
     headerRow.push('Override?');
     headerRow.push('Weighted /100 (pre-override)');
     headerRow.push('Pre-override Grade');
+    headerRow.push('Criteria reviewed %');
     MTX.push(headerRow);
 
     cohort.students.forEach(s => {
@@ -278,6 +279,13 @@
       row.push(ov && typeof ov.originalTotal === 'number'
         ? parseFloat(SA.formatScore(ov.originalTotal, rounding)) : '');
       row.push(ov ? (ov.originalGrade || '') : '');
+      // criteria_reviewed_pct: share of graded criteria the marker reviewed
+      // (rows where bulk-fill auto chip has been cleared, or rows graded directly).
+      const rowGrades = Array.isArray(s.grades) ? s.grades : [];
+      const totalGraded = rowGrades.filter(g => g && g.grade).length;
+      const stillBulk   = rowGrades.filter(g => g && g.grade && g.autoFilled).length;
+      const reviewedPct = totalGraded ? Math.round(((totalGraded - stillBulk) / totalGraded) * 100) : '';
+      row.push(reviewedPct === '' ? '' : reviewedPct + '%');
       MTX.push(row);
     });
 
@@ -295,24 +303,28 @@
     avgRow.push('');
     avgRow.push(parseFloat(SA.formatScore(avg(penalised), rounding)));
     avgRow.push('');
-    // Pad for new override columns (Override?, Weighted pre-override, Pre-override Grade)
-    avgRow.push('', '', '');
+    // Pad for new override columns (Override?, Weighted pre-override, Pre-override Grade) + reviewed%
+    avgRow.push('', '', '', '');
     MTX.push([]);
     MTX.push(avgRow);
 
     const wsMtx = XLSX.utils.aoa_to_sheet(MTX);
     const mtxCols = [{ wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 14 }];
     criteria.forEach(() => { mtxCols.push({ wch: 10 }); mtxCols.push({ wch: 14 }); });
-    mtxCols.push({ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 16 }, { wch: 22 }, { wch: 18 });
+    mtxCols.push({ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 18 });
     wsMtx['!cols'] = mtxCols;
     // (appended later — new tab order is Student Feedback → Grade Matrix → Cohort Summary)
 
     /* ── Sheet 3: Student Feedback (one row per student) ─── */
     const FB = [];
     FB.push(['Student Name', 'Student ID', 'Tutor', 'Date', 'Suggested Grade',
-             'Final Score /100', 'Cooked Feedback', "Marker's Notes"]);
+             'Final Score /100', 'Criteria reviewed %', 'Cooked Feedback', "Marker's Notes"]);
     cohort.students.forEach(s => {
       const sr = s.scoreResult || {};
+      const fbGrades = Array.isArray(s.grades) ? s.grades : [];
+      const fbTotalGraded = fbGrades.filter(g => g && g.grade).length;
+      const fbStillBulk   = fbGrades.filter(g => g && g.grade && g.autoFilled).length;
+      const fbReviewedPct = fbTotalGraded ? Math.round(((fbTotalGraded - fbStillBulk) / fbTotalGraded) * 100) : '';
       FB.push([
         s.name || '',
         s.studentId || '',
@@ -320,6 +332,7 @@
         s.date || '',
         sr.suggestedGrade || '',
         sr.penalisedScore != null ? parseFloat(SA.formatScore(sr.penalisedScore, rounding)) : '',
+        fbReviewedPct === '' ? '' : fbReviewedPct + '%',
         s.feedbackText || '',
         s.markerNotes || ''
       ]);
@@ -327,7 +340,7 @@
     const wsFB = XLSX.utils.aoa_to_sheet(FB);
     wsFB['!cols'] = [
       { wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 14 },
-      { wch: 10 }, { wch: 14 }, { wch: 80 }, { wch: 40 }
+      { wch: 10 }, { wch: 14 }, { wch: 18 }, { wch: 80 }, { wch: 40 }
     ];
     // Append sheets in requested tab order: Student Feedback → Grade Matrix → Cohort Summary
     XLSX.utils.book_append_sheet(wb, wsFB,  'Student Feedback');
