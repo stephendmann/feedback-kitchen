@@ -29,3 +29,6 @@ _todelete/
 # One-off timestamped backup files (use git history instead)
 scorer.backup.*.html
 *.backup.*.html
+
+# Recovery artefacts from Claude Code restore operations
+*.restored
