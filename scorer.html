@@ -1767,8 +1767,13 @@
         showCohortToast('Enter a student name or ID before saving to the cohort.', 'amber');
         return;
       }
+      // Silent auto-save (Copy / Download): if the marker dismissed cohort setup
+      // this session and no cohort exists yet, skip rather than re-popping the modal.
+      if (opts.silent && !SA.getCohort(config.id) && _cohortSetupDismissedThisSession) {
+        return;
+      }
       ensureCohortInitialised(function (cohort) {
-        if (!cohort) return;
+        if (!cohort) return;  // dismissed during silent save — no-op
         // Persist the overridden scoreResult so Excel exports reflect the marker bump.
         const overrideRaw = normaliseGradeInput(el('grade-override').value);
         const effectiveForSave = SA.applyGradeOverride(config, scoreResult, overrideRaw);
@@ -2015,32 +2020,40 @@
     }
 
     /* ── Cohort setup modal (first-use prompt) ───────────── */
+    // Session-level dismiss flag so Cancel/backdrop click doesn't re-pop on every silent
+    // auto-save (Copy / Download). Resets on page reload or successful Start cohort.
+    let _cohortSetupDismissedThisSession = false;
+
     function showCohortSetupModal(onConfirm) {
       const modal = el('cohort-setup-modal');
       if (!modal) { onConfirm && onConfirm('Cohort', false); return; }
-      // Pre-fill suggested label
-      const suggested = (config.assessmentTitle || config.name || 'Cohort') + ' — ' + SA.formatDate();
+      const suggested = (config.assessmentTitle || config.name || 'Cohort') + ' \u2014 ' + SA.formatDate();
       const labelInput = el('cohort-setup-label');
       if (labelInput) labelInput.value = suggested;
       modal.classList.remove('hidden');
-      // Wire confirm button
       const confirmBtn = el('cohort-setup-confirm');
       confirmBtn.onclick = function () {
         const multi = el('cohort-setup-multi-yes').checked;
-        let label = (labelInput.value || '').trim() || suggested;
+        // Null-safe: label input is optional in the modal HTML.
+        let label = (labelInput && (labelInput.value || '').trim()) || suggested;
         if (multi) {
-          // Marker name included by convention — if marker's tutor name is present, prepend
           const tutor = (el('student-tutor').value || '').trim();
           if (tutor && label.toLowerCase().indexOf(tutor.toLowerCase()) === -1) {
-            label = tutor + ' — ' + label;
+            label = tutor + ' \u2014 ' + label;
           }
         }
         modal.classList.add('hidden');
+        _cohortSetupDismissedThisSession = false;
         onConfirm && onConfirm(label, multi);
       };
     }
 
-    function hideCohortSetupModal() { const m = el('cohort-setup-modal'); if (m) m.classList.add('hidden'); }
+    function hideCohortSetupModal() {
+      const m = el('cohort-setup-modal');
+      if (m) m.classList.add('hidden');
+      // Treat Cancel / backdrop click as a session-level dismiss.
+      _cohortSetupDismissedThisSession = true;
+    }
 
     function showPostExportWipeModal(count, filename) {
       const modal = el('cohort-wipe-modal');
