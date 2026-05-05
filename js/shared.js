@@ -404,7 +404,7 @@
     const entry = config.gradeFeedback.find(gf => gf.grade === prepenaltyGrade);
 
     // Phase 4: per-scorer intro/outro overrides with {name}/{group}/{grade}/{course} substitution.
-    const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
+    const audienceMode = (opts.audienceMode === 'group' || opts.audienceMode === 'group-named') ? 'group' : 'individual';
     const subs = {
       name:   (opts.studentName || '').trim(),
       group:  (opts.groupName || '').trim() || (audienceMode === 'group' ? 'your group' : ''),
@@ -625,14 +625,26 @@
     // Length mode — Brief enforces hard cap; Standard allows two sentences.
     const lengthMode = (opts.lengthMode === 'standard') ? 'standard' : 'brief';
     const lengthRule = (lengthMode === 'brief')
-      ? '\n\nLENGTH RULE: Brief mode — each criterion MUST be exactly 2 sentences and 30 words or fewer.'
-      : '\n\nLENGTH RULE: Standard mode — each criterion MUST be exactly 2 sentences and 50 words or fewer.';
+      ? '\n\nLENGTH RULE (CRITICAL): Brief mode. Each criterion MUST be exactly 2 sentences and 30 words or fewer combined. After drafting each criterion, count the words. If a criterion exceeds 30 words, REWRITE it more tersely before moving on. Do not output a criterion that exceeds the cap.'
+      : '\n\nLENGTH RULE (CRITICAL): Standard mode. Each criterion MUST be exactly 2 sentences and 50 words or fewer combined. After drafting each criterion, count the words. If a criterion exceeds 50 words, REWRITE it more tersely before moving on.';
 
-    // Audience mode — singular vs group voice.
-    const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
-    const audienceRule = (audienceMode === 'group')
-      ? '\n\nAUDIENCE RULE: Group submission. Use "your group" / "your group has". Do NOT use "you" or "your response".'
-      : '\n\nAUDIENCE RULE: Individual submission. Address the student as "you" / "your".';
+    // Audience mode — singular, generic group, or named group.
+    // 'group-named' = first reference uses the typed group name once (in the
+    // first criterion's first sentence if natural), every reference after
+    // reverts to "your group" to avoid repetition.
+    const groupName = (opts.groupName || '').trim();
+    const audienceMode = (opts.audienceMode === 'group' || opts.audienceMode === 'group-named')
+      ? opts.audienceMode
+      : 'individual';
+
+    let audienceRule;
+    if (audienceMode === 'group-named' && groupName) {
+      audienceRule = '\n\nAUDIENCE RULE: Group submission with named group "' + groupName + '". Use "' + groupName + '" exactly ONCE in the first criterion (where natural), then use "your group" / "your group has" for every subsequent reference. Do NOT use "you" or "your response". Do NOT repeat the group name across multiple criteria.';
+    } else if (audienceMode === 'group' || audienceMode === 'group-named') {
+      audienceRule = '\n\nAUDIENCE RULE: Group submission. Use "your group" / "your group has". Do NOT use "you" or "your response".';
+    } else {
+      audienceRule = '\n\nAUDIENCE RULE: Individual submission. Address the student as "you" / "your".';
+    }
 
     const extras = {
       // Single unified mode. Old "draft" / "improve" / "shorten" all route here.
@@ -646,10 +658,11 @@
         '\n    • "Clarify [specific concept/claim] by [specific method]."' +
         '\n    • "Compare [X] to [Y] using [evidence type]."' +
         '\n    • "Link [concept] to [course framework/example]."' +
+        '\n    • "Proofread [section] for [specific issue]."' +
         '\n    • "Replace [vague element] with [specific element]."' +
         '\n    • "Restructure [section] so that [specific outcome]."' +
         '\n    • "Support [claim] with [specific evidence type]."' +
-        '\n  Sentence 2 MUST start with: Add, Clarify, Compare, Link, Replace, Restructure, or Support. No other openings are allowed.' +
+        '\n  Sentence 2 MUST start with: Add, Clarify, Compare, Link, Proofread, Replace, Restructure, or Support. No other openings are allowed. Words like "Focus", "Strengthen", "Deepen", "Improve", "Work on", "Greater", "Please" are NOT allowed.' +
         '\n  Even for high-scoring criteria (e.g. 10/10), give one forward-looking action from the list above (e.g. "Add one sentence that..." or "Compare this to...").' +
         '\n  State the action only. Do NOT explain why it matters.' +
 
@@ -697,7 +710,7 @@
   function assembleFinalFeedback(config, scoreResult, aiBody, opts) {
     opts = opts || {};
     const studentName = (opts.studentName || '').trim();
-    const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
+    const audienceMode = (opts.audienceMode === 'group' || opts.audienceMode === 'group-named') ? 'group' : 'individual';
     const groupName = (opts.groupName || '').trim();
     const useCustomScale = Array.isArray(config.gradeScale) && config.gradeScale.length > 0;
     const { weightedTotal, penalisedScore, latePenalty, deduction, isFail } = scoreResult;
@@ -726,10 +739,9 @@
     const rounding = config.scoreRounding || 'none';
 
     let processedBody = postProcessAIBody(String(aiBody || '').trim(), config);
-    // Validation: only annotate inline if opts.validate is explicitly true.
-    // Default behaviour returns the validation result alongside but does NOT
-    // mutate the body, so existing call sites remain unchanged.
-    if (opts.validate) {
+    // Validation: default ON for the unified flow. Set opts.validate === false
+    // to suppress (e.g. legacy export paths that don't expect inline flags).
+    if (opts.validate !== false) {
       const validation = validateAIBody(processedBody, { lengthMode: opts.lengthMode });
       processedBody = annotateAIBodyWithValidation(processedBody, validation);
     }
@@ -919,7 +931,7 @@
      and a summary the UI can display. Also returns metadata for
      telemetry / future analysis.
   ─────────────────────────────────────────────────────────────── */
-  const VALID_ACTION_VERBS = ['Add', 'Clarify', 'Compare', 'Link', 'Replace', 'Restructure', 'Support'];
+  const VALID_ACTION_VERBS = ['Add', 'Clarify', 'Compare', 'Link', 'Proofread', 'Replace', 'Restructure', 'Support'];
 
   function _splitSentences(text) {
     if (!text) return [];

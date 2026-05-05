@@ -91,6 +91,14 @@ describe('postProcessSingle (AU/NZ locale)', () => {
   });
 });
 
+describe('VALID_ACTION_VERBS', () => {
+  test('includes Proofread', () => {
+    setLocale('en-NZ');
+    const SA = loadShared();
+    expect(SA.VALID_ACTION_VERBS).toContain('Proofread');
+  });
+});
+
 describe('validateAIBody', () => {
   test('passes a fully conformant body', () => {
     setLocale('en-NZ');
@@ -148,6 +156,42 @@ describe('validateAIBody', () => {
     const validation = SA.validateAIBody(body, { lengthMode: 'standard' });
     const annotated = SA.annotateAIBodyWithValidation(body, validation);
     expect(annotated).toMatch(/\[VALIDATION:/);
+  });
+
+  test('accepts Proofread as a valid sentence-2 verb', () => {
+    const SA = loadShared();
+    const body = 'Writing – 11 / 20\nYour writing has frequent typos and inconsistent APA formatting. Proofread the document for spelling errors and citation format.';
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe('audience mode group-named', () => {
+  test('group-named with groupName produces named-group rule', () => {
+    setLocale('en-NZ');
+    const SA = loadShared();
+    const config = { gradeFeedback: [], criteria: [], gradeScale: null };
+    const scoreResult = { rows: [], weightedTotal: 80 };
+    const prompt = SA.buildAIAssistPrompt('improve_criterion_body', config, scoreResult, {
+      audienceMode: 'group-named',
+      groupName: 'Group 1A',
+      lengthMode: 'brief'
+    });
+    expect(prompt).toMatch(/Group 1A.*exactly ONCE/);
+    expect(prompt).toMatch(/your group.*every subsequent reference/);
+  });
+
+  test('group-named without groupName falls back to generic group rule', () => {
+    const SA = loadShared();
+    const config = { gradeFeedback: [], criteria: [], gradeScale: null };
+    const scoreResult = { rows: [], weightedTotal: 80 };
+    const prompt = SA.buildAIAssistPrompt('improve_criterion_body', config, scoreResult, {
+      audienceMode: 'group-named',
+      groupName: '',
+      lengthMode: 'brief'
+    });
+    expect(prompt).toMatch(/Group submission. Use "your group"/);
+    expect(prompt).not.toMatch(/exactly ONCE/);
   });
 });
 

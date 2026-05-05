@@ -534,9 +534,10 @@
                   <select id="audience-mode"
                           class="input-field text-xs py-1 px-2 bg-white border-slate-300"
                           onchange="S.setAudienceMode(this.value)"
-                          title="Individual: 'you'/'your response'. Group: 'your group'.">
+                          title="Individual: 'you'/'your response'. Group: 'your group'. Group (named): typed group name once in intro, then 'your group'.">
                     <option value="individual">Individual ("you")</option>
                     <option value="group">Group ("your group")</option>
+                    <option value="group-named">Group (named — uses Group name field once)</option>
                   </select>
                 </div>
                 <div class="flex items-center gap-2">
@@ -2579,6 +2580,7 @@
         snippets:     snippets,
         existingBody: existingBody,
         audienceMode: getAudienceMode(),
+        groupName:    getGroupName(),
         lengthMode:   getLengthMode()
       });
       // Belt-and-braces: re-scrub whole prompt before sending, in case any
@@ -2624,9 +2626,17 @@
           audienceMode:  getAudienceMode(),
           groupName:     getGroupName(),
           introOverride: getIntroOverride(),
-          outroOverride: getOutroOverride()
+          outroOverride: getOutroOverride(),
+          lengthMode:    getLengthMode()
         });
         el('ai-suggestion').value = final;
+
+        // Telemetry: track validation failures so we can monitor prompt
+        // compliance over time without surfacing it to the marker.
+        if (typeof SA.validateAIBody === 'function') {
+          const v = SA.validateAIBody(body, { lengthMode: getLengthMode() });
+          if (!v.ok) usageTrack('validation_flagged');
+        }
 
         const editCount = approxLineEdits(el('feedback-text').value, final);
         setAIState('applied', editCount);
@@ -3017,6 +3027,7 @@
       'wording_panel_opened',
       'used_improve_feedback',
       'used_mechanical_cleanup',
+      'validation_flagged',
       // Legacy counters retained for historical data; new events route to the two above.
       'used_clarity_tone',
       'used_concise',
@@ -3167,13 +3178,16 @@
 
     function getAudienceMode() {
       const v = localStorage.getItem(AUDIENCE_KEY);
-      return (v === 'group') ? 'group' : 'individual';
+      if (v === 'group' || v === 'group-named') return v;
+      return 'individual';
     }
     function setAudienceMode(mode) {
-      const m = (mode === 'group') ? 'group' : 'individual';
+      const m = (mode === 'group' || mode === 'group-named') ? mode : 'individual';
       localStorage.setItem(AUDIENCE_KEY, m);
       const wrap = el('group-name-wrap');
-      if (wrap) wrap.classList.toggle('hidden', m !== 'group');
+      // Group name input visible for both group modes; only used by 'group-named'.
+      const showGroupField = (m === 'group' || m === 'group-named');
+      if (wrap) wrap.classList.toggle('hidden', !showGroupField);
       // Re-render so audience swaps take effect immediately
       try { regenerateFeedback(); } catch (e) {}
     }
