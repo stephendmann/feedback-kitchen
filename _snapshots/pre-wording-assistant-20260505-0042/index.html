@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <title>Feedback Kitchen — Build Custom Assessment Feedback Tools</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQSJNBBPKZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LQSJNBBPKZ', {
+      anonymize_ip: true
+    });
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-hero { background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%); }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+    .step-number { width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;
+                   border-radius: 50%; font-weight: 700; font-size: 1.1rem; }
+    .feature-icon { width: 3rem; height: 3rem; border-radius: 0.75rem; display: flex;
+                    align-items: center; justify-content: center; font-size: 1.5rem; }
+  </style>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <link rel="stylesheet" href="/css/shared.css">
+</head>
+<body class="bg-slate-50">
+
+  <!-- ── Nav ──────────────────────────────────────────────── -->
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-xl text-blue-700">
+        <img src="/icon-192.png" alt="" width="40" height="40"> Feedback Kitchen
+      </a>
+      <div class="flex items-center gap-3" id="nav-actions">
+        <!-- Populated by JS if scorers exist -->
+        <a href="upload.html" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors"
+           title="Load a scorer that was shared with you — a colleague can export their scorer as a .json file and send it to you. Click here to upload that file and add it to your scorers.">
+          <span class="text-base">⬆</span> Upload
+        </a>
+        <a href="builder.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+          + Create Scorer
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── First-run banner (shown to new users with no scorers) ── -->
+  <section id="first-run-banner" class="bg-blue-50 border-b border-blue-100 py-6 px-4">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-start gap-4">
+        <span class="text-2xl mt-0.5 shrink-0">👋</span>
+        <div class="flex-1">
+          <h3 class="font-bold text-slate-800 mb-2">Welcome to Feedback Kitchen</h3>
+          <p class="text-sm text-slate-600 mb-3">Build a custom marking rubric once, then generate consistent, criterion-level feedback for every student in seconds. Start by clicking <strong>Build a New Scorer</strong> below — the wizard takes around 10–20 minutes for a new assessment.</p>
+          <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-3">
+            <span class="text-amber-500 shrink-0 mt-0.5">🔒</span>
+            <p class="text-xs text-amber-800"><strong>Your Scorers are saved in your browser's local storage</strong> — private to this device and browser. Use <strong>Export JSON</strong> inside the builder to back up your work or share a Scorer with a colleague. Note: JSON exports contain the Scorer configuration only — your personal feedback snippets stay private to your browser.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-4">
+            <a href="https://github.com/stephendmann/feedback-kitchen#readme" target="_blank" class="text-xs text-blue-600 hover:underline font-medium">Read the full guide →</a>
+            <button type="button" onclick="tryDemoScorer()" class="text-xs text-blue-700 hover:underline font-semibold">Or try the demo scorer →</button>
+          </div>
+        </div>
+        <button onclick="dismissFirstRunBanner()" class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5" title="Dismiss">&times;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Hero ─────────────────────────────────────────────── -->
+  <section class="gradient-hero text-white py-20 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-white/20 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+        <span>✨</span> Not an autograder — you choose the grades, the tool drafts the feedback.
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold mb-6 leading-tight">
+        Your rubric. Your judgement.<br>Done in clicks.
+      </h1>
+      <p class="text-xl text-blue-50 mb-10 max-w-2xl mx-auto">
+        Rubric-based marking and feedback assembly for university educators.
+        Build a scorer once, grade criterion by criterion, and generate editable feedback drafts — without sending student data to a server.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="builder.html" class="bg-amber-400 text-slate-900 font-bold px-8 py-4 rounded-xl text-lg hover:bg-amber-300 transition-colors shadow-lg">
+          🛠 Build a New Scorer
+        </a>
+        <button type="button" onclick="tryDemoScorer()" class="bg-white text-blue-700 font-bold px-8 py-4 rounded-xl text-lg hover:bg-blue-50 transition-colors shadow-lg">
+          ▶ Try the Demo Scorer
+        </button>
+        <a href="#how-it-works" class="bg-white/20 text-white font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/30 transition-colors">
+          See How It Works ↓
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Origins / Credibility Strip ──────────────────────── -->
+  <section class="bg-white py-10 px-4 border-b border-slate-200">
+    <div class="max-w-4xl mx-auto text-center">
+      <p class="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Built on peer-reviewed research into AI-assisted grading<sup><a href="#acknowledgements" class="text-blue-500 hover:text-blue-700 transition-colors font-semibold">¹</a></sup></p>
+      <p class="text-xs text-slate-400 mb-6">Wetzler et al. 2025 · Flodén 2025 · EDUCAUSE 2025 · HEPI/Kortext 2025 · Birmingham/Graide 2025</p>
+      <p class="text-sm font-semibold text-slate-500 mb-5 uppercase tracking-wider">Used by educators at</p>
+      <div class="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-80">
+        <img src="strath_main.jpg" alt="University of Strathclyde" class="h-12 sm:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+        <img src="University_of_Waikato_logo_2.svg.png" alt="University of Waikato" class="h-12 sm:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+      </div>
+      <p class="text-xs text-slate-500 mt-5 max-w-2xl mx-auto">Ongoing development is informed by research at the <strong>University of Waikato</strong> based on educator feedback. Suggestions and improvement ideas are welcome — please send them via <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline font-semibold">Ko-fi</a>.</p>
+    </div>
+  </section>
+
+  <!-- ── Why Feedback Kitchen ─────────────────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-16 pb-4">
+    <h2 class="text-3xl font-bold text-center text-slate-800 mb-8">Why use Feedback Kitchen?</h2>
+    <div class="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Consistent rubric-based feedback</strong> across tutors and markers.</p>
+      </div>
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Editable drafts, not automated grading.</strong> You stay in control.</p>
+      </div>
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Browser-only workflow</strong> with no login or database.</p>
+      </div>
+      <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+        <span class="text-blue-600 text-xl shrink-0">✓</span>
+        <p class="text-slate-700 text-sm"><strong>Wording assistant</strong> available with a <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Ko-fi</a>-issued key — improves phrasing only, identifiers stripped first.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── What Feedback Kitchen does NOT do ────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-12">
+    <div class="bg-slate-900 text-white rounded-2xl p-8 shadow-lg">
+      <h2 class="text-2xl font-bold text-center mb-2">What Feedback Kitchen <em>doesn't</em> do</h2>
+      <p class="text-center text-slate-300 text-sm mb-6">The boundaries are the point.</p>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not decide grades.</strong> You select every grade.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not invent comments.</strong> Only assembles sentences you wrote.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not upload student work</strong> to any server.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not require a login</strong> or institutional account.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not replace your LMS.</strong> Paste into Moodle, Canvas, or Turnitin as usual.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Wording assistant never sees identifiers</strong> — names and IDs are stripped first.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Privacy / institutional adoption ─────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-8">
+      <h2 class="text-2xl font-bold text-center text-emerald-900 mb-3">Adopt without waiting for IT approval</h2>
+      <p class="text-center text-emerald-900 text-base leading-relaxed max-w-2xl mx-auto">
+        Because no personal information is disclosed to a third-party processor, the institutional review trigger under the <strong>NZ Privacy Act 2020</strong> and <strong>AU Privacy Act 1988</strong> is not pulled.
+      </p>
+      <div class="flex flex-wrap justify-center gap-3 mt-5">
+        <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No DPIA</span>
+        <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No vendor review</span>
+        <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No IT approval queue</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Coordinator / departmental angle ─────────────────── -->
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+    <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+      <div class="flex items-start gap-4">
+        <div class="feature-icon bg-indigo-100 shrink-0">👥</div>
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 mb-2">For course coordinators and tutor teams</h2>
+          <p class="text-slate-600 mb-3">Build the rubric logic, weights, and feedback language <strong>once</strong>, then export the Scorer as JSON and distribute it to your tutor team. Every marker uses the same descriptors, the same intros, and the same closing paragraphs — directly addressing the inter-rater reliability problem on large cohorts.</p>
+          <p class="text-slate-600 text-sm">No vendor procurement. No new institutional system. No movement of student data. Revise and reissue each semester to build a departmental library of vetted rubrics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Productivity stat strip ──────────────────────────── -->
+  <section class="bg-blue-50 border-y border-blue-100 py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl font-bold text-center text-slate-800 mb-2">Built for the productivity envelope of AI-assisted grading</h2>
+      <p class="text-center text-slate-600 text-sm mb-8 max-w-2xl mx-auto">Comparable to peer-reviewed benchmarks (e.g. Birmingham/Graide 2025: 74% time reduction, 7× feedback length) — without the autograder bias risks.</p>
+      <div class="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">~20 min</p>
+          <p class="text-xs text-slate-600 mt-1">Scorer setup, once per assessment</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">20–60 sec</p>
+          <p class="text-xs text-slate-600 mt-1">Per script after setup</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">3–4 scripts</p>
+          <p class="text-xs text-slate-600 mt-1">To pay back setup on a typical cohort</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ─────────────────────────────────────────── -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+    <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">Everything You Need</h2>
+    <p class="text-center text-slate-500 mb-12 text-lg">Built for lecturers, course coordinators, and tutors who want speed, consistency, and quality feedback.<sup><a href="#acknowledgements" class="text-blue-500 hover:text-blue-700 transition-colors font-semibold">¹</a></sup></p>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
+        <div class="feature-icon bg-blue-100 mb-4">📋</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Custom Rubrics</h3>
+        <p class="text-slate-500 text-sm">Define your own criteria and weight them however you like. Add rubric descriptors for all four tiers — Excellent, Proficient, Developing, and Unsatisfactory.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
+        <div class="feature-icon bg-amber-100 mb-4">⚖️</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Weighted Scoring</h3>
+        <p class="text-slate-500 text-sm">Set percentage weights per criterion. The tool automatically calculates weighted scores, applies late penalties, and suggests an overall grade.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
+        <div class="feature-icon bg-green-100 mb-4">💬</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Editable Feedback Draft</h3>
+        <p class="text-slate-500 text-sm">Each student gets a fully assembled feedback draft — intro, per-criterion commentary, score, late penalty notice, and a grade-tailored closing paragraph. Edit any of it before you send.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
+        <div class="feature-icon bg-purple-100 mb-4">📤</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">One-Click Export</h3>
+        <p class="text-slate-500 text-sm">Copy feedback to your clipboard, download a formatted Excel workbook with results, rubric, and feedback templates, or print directly to PDF.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
+        <div class="feature-icon bg-rose-100 mb-4">✏️</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Fully Customisable</h3>
+        <p class="text-slate-500 text-sm">Edit every intro and outro paragraph per grade level. Override any score manually. Add personalised comments alongside the auto-generated text.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover">
+        <div class="feature-icon bg-teal-100 mb-4">💾</div>
+        <h3 class="font-bold text-slate-800 text-lg mb-2">Multiple Scorers</h3>
+        <p class="text-slate-500 text-sm">Build a separate scorer for each course or assessment. Save and switch between them. Export your config as JSON to share with colleagues.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ─────────────────────────────────────── -->
+  <section id="how-it-works" class="bg-white border-y border-slate-100 py-16 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">How It Works</h2>
+      <p class="text-center text-slate-500 mb-12 text-lg">From rubric to ready-to-paste feedback in three steps.</p>
+
+      <div class="space-y-8">
+        <div class="flex gap-6 items-start">
+          <div class="step-number bg-blue-600 text-white flex-shrink-0">1</div>
+          <div>
+            <h3 class="font-bold text-lg text-slate-800 mb-1">Build Your Scorer</h3>
+            <p class="text-slate-500">Use the guided wizard to set up your assessment details, define your criteria and weightings, write rubric descriptors for each tier, and customise the grade feedback text. Takes about 10–20 minutes for a new assessment.</p>
+          </div>
+        </div>
+        <div class="flex gap-6 items-start">
+          <div class="step-number bg-blue-600 text-white flex-shrink-0">2</div>
+          <div>
+            <h3 class="font-bold text-lg text-slate-800 mb-1">Grade a Student</h3>
+            <p class="text-slate-500">Enter the student's details, select a grade for each criterion from the dropdown, optionally override any score, choose a late penalty if applicable, and watch the overall score and feedback assemble in real time.</p>
+          </div>
+        </div>
+        <div class="flex gap-6 items-start">
+          <div class="step-number bg-blue-600 text-white flex-shrink-0">3</div>
+          <div>
+            <h3 class="font-bold text-lg text-slate-800 mb-1">Export & Move On</h3>
+            <p class="text-slate-500">Copy the feedback to your clipboard and paste it into Moodle, Turnitin, or your institution's grading system. Download an Excel record of the grading, or print to PDF. Hit "New Student" and repeat.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA footer ────────────────────────────────────────── -->
+  <section class="py-16 px-4 text-center">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl font-bold text-slate-800 mb-4">Ready to build your scorer?</h2>
+      <p class="text-slate-500 mb-8 text-lg">Free. No sign-up. 100% local processing — student data never leaves your device.</p>
+      <a href="builder.html" class="inline-block bg-blue-600 text-white font-bold px-10 py-4 rounded-xl text-lg hover:bg-blue-700 transition-colors shadow-md">
+        🛠 Build a Scorer →
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Example Kitchens (shown if any exist) ───────────── -->
+  <section class="bg-white border-t border-slate-100 py-16 px-4" id="saved-scorers-section" style="display:none">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-center text-slate-800 mb-3">Your Kitchens</h2>
+      <p class="text-center text-slate-500 mb-6 text-lg">Your saved scorers, ready to use.</p>
+      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 max-w-2xl mx-auto mb-10 text-left">
+        <span class="text-amber-500 text-xl mt-0.5">🔒</span>
+        <p class="text-sm text-amber-800"><strong>Your Kitchens are private to this device.</strong> They're saved in your browser's local storage — no one else can see them, and they won't appear on another device or browser. To back them up or share with a colleague, use the <strong>Export JSON</strong> option inside the builder.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="saved-scorers-grid"></div>
+    </div>
+  </section>
+
+  <div id="site-footer"></div>
+  <script src="/js/footer.js"></script>
+
+  <script src="js/shared.js"></script>
+  <script>
+
+    /* ── Bundled demo scorer (seeded on first click of "Try demo scorer") ──
+       Uses a stable reserved id so the seed check is unambiguous and the
+       scorer URL is shareable. Treated as a normal editable scorer once
+       seeded — users can rename, edit, duplicate, or delete it. */
+    const DEMO_SCORER_ID = 'demo-written-response-v2';
+    const DEMO_SCORER = {
+      id: DEMO_SCORER_ID,
+      created: '2026-04-20T02:49:35.006Z',
+      name: 'Demo Scorer — Written Response',
+      assessmentTitle: 'Short Written Response',
+      courseName: 'DEMO101 / 2026',
+      universityName: 'Feedback Kitchen Demo',
+      assignmentInfo: '',
+      version: '1.0',
+      appVersion: '2.5.1',
+      gradeScale: [
+        { grade: 'A', midpoint: 92.5, bandLow: 85, bandHigh: 100, tier: 'excellent' },
+        { grade: 'B', midpoint: 79.5, bandLow: 75, bandHigh: 84,  tier: 'proficient' },
+        { grade: 'C', midpoint: 69.5, bandLow: 65, bandHigh: 74,  tier: 'developing' },
+        { grade: 'D', midpoint: 57,   bandLow: 50, bandHigh: 64,  tier: 'satisfactory' },
+        { grade: 'F', midpoint: 24.5, bandLow: 0,  bandHigh: 49,  tier: 'unsatisfactory' }
+      ],
+      tierLabels: {
+        excellent: 'Excellent',
+        proficient: 'Very good',
+        developing: 'Good',
+        satisfactory: 'Satisfactory',
+        unsatisfactory: 'Needs Work'
+      },
+      criteria: [
+        { id: 'demo-c1', name: 'Understanding of the topic', weight: 25,
+          rubric: {
+            excellent: 'Shows clear, accurate, and confident understanding of the topic.',
+            proficient: 'Shows strong understanding with only minor gaps.',
+            developing: 'Shows sound understanding of the main ideas.',
+            satisfactory: 'Shows partial understanding of the topic, with some ideas unclear or underdeveloped.',
+            unsatisfactory: 'Shows limited or inaccurate understanding.'
+          } },
+        { id: 'demo-c2', name: 'Use of evidence or examples', weight: 20,
+          rubric: {
+            excellent: 'Uses relevant examples or evidence effectively to support points.',
+            proficient: 'Uses good supporting evidence with minor weaknesses.',
+            developing: 'Uses some relevant evidence, though support may be uneven.',
+            satisfactory: 'Provides limited evidence or examples, and support for points is often thin.',
+            unsatisfactory: 'Provides little or no effective support.'
+          } },
+        { id: 'demo-c3', name: 'Organisation and structure', weight: 20,
+          rubric: {
+            excellent: 'Response is well structured, logical, and easy to follow.',
+            proficient: 'Structure is clear with only small lapses.',
+            developing: 'Organisation is generally clear.',
+            satisfactory: 'Organisation is uneven; the response is followable but the structure is not consistently clear.',
+            unsatisfactory: 'Response lacks clear organisation.'
+          } },
+        { id: 'demo-c4', name: 'Critical thinking or insight', weight: 20,
+          rubric: {
+            excellent: 'Shows thoughtful analysis and some original insight.',
+            proficient: 'Shows clear analysis and relevant interpretation.',
+            developing: 'Includes some analysis, though mostly descriptive.',
+            satisfactory: 'Analysis is limited; the response is mostly descriptive with only brief attempts at interpretation.',
+            unsatisfactory: 'Little or no analysis is evident.'
+          } },
+        { id: 'demo-c5', name: 'Writing style and mechanics', weight: 15,
+          rubric: {
+            excellent: 'Writing is clear, fluent, and virtually error free.',
+            proficient: 'Writing is clear with few errors.',
+            developing: 'Writing is mostly clear; some errors do not impede meaning.',
+            satisfactory: 'Writing is understandable but contains noticeable errors that occasionally affect clarity.',
+            unsatisfactory: 'Errors or unclear expression significantly affect readability.'
+          } }
+      ],
+      gradeFeedback: [
+        { grade: 'A',
+          intro: 'This is a very strong submission that meets the task requirements at an excellent standard. Your work shows clear understanding of the topic and uses structure, evidence, and writing quality to communicate your ideas effectively. The comments below highlight the key strengths of your response and identify small areas where you can push your thinking even further.',
+          outro: 'Overall, this is an excellent piece of work that is well‑structured, well‑supported, and thoughtfully argued. You should feel confident about the quality of this response. Keep building on these strengths and look for opportunities to extend your analysis even more in future tasks. Outstanding effort — well done.' },
+        { grade: 'B',
+          intro: 'This is a strong submission that meets the main expectations of the task at a very good standard. Your response demonstrates solid understanding of the topic and generally clear organisation, with effective use of evidence in many places. The comments below point out what is working well and where targeted improvements could lift your work into the highest band.',
+          outro: 'Overall, this is a very good piece of work that shows clear strengths in several areas. With some focused refinement — especially in the areas noted above — you are well positioned to reach an excellent level next time. Keep using the strategies that worked well here and use this feedback to plan your next steps.' },
+        { grade: 'C',
+          intro: 'This submission meets the core requirements of the task at a good, developing level. You show a basic understanding of the topic and some effective ideas, though aspects of evidence, organisation, or depth of analysis could be strengthened. The feedback below explains what you are already doing well and highlights the most important areas to focus on next.',
+          outro: 'Overall, this is a solid starting point with clear potential to improve. Concentrating on the specific suggestions above — for example, strengthening your use of evidence and sharpening your structure — will make a noticeable difference to your next piece of work. Keep building on what you can already do and use this feedback as a guide for your next attempt.' },
+        { grade: 'D',
+          intro: 'This submission meets some of the basic requirements of the task at a satisfactory level. You show partial understanding of the topic and have made an effort to respond, but important aspects such as clarity, support, or organisation need further development. The comments below outline the key strengths to keep and the main areas that require attention.',
+          outro: 'Overall, this work demonstrates that you are on the way, but there is significant room for improvement. Focusing first on the priority areas identified above will help you lift your performance into a higher band. Use this feedback to plan one or two specific changes for your next task, and reach out if you would like to discuss what those changes could look like.' },
+        { grade: 'F',
+          intro: 'This submission currently sits below the expected standard for this task. Some elements of 
