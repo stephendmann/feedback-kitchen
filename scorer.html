@@ -494,20 +494,15 @@
 
             <div id="refine-wording-panel" class="hidden mt-3 panel panel-light border border-slate-200 rounded-xl p-3 space-y-3">
               <div class="flex flex-wrap items-start gap-2">
+                <button class="btn btn-green text-sm"
+                        onclick="S.refineAction('draft')"
+                        title="Add concrete improvement strategies tied to the rubric. Requires at least one score.">
+                  Add improvement strategies
+                </button>
                 <button class="btn btn-blue btn-secondary-step text-sm"
                         onclick="S.refineAction('improve')"
                         title="Polish the wording of your existing draft. Preserves your edits.">
-                  Improve clarity &amp; tone
-                </button>
-                <button class="btn btn-utility text-sm"
-                        onclick="S.refineAction('shorten')"
-                        title="Shorten the feedback for systems with character limits.">
-                  Make concise
-                </button>
-                <button class="btn btn-green text-sm"
-                        onclick="S.refineAction('draft')"
-                        title="Create a first draft from the rubric. Requires at least one score.">
-                  Draft from rubric
+                  Polish commentary
                 </button>
                 <button class="btn btn-utility text-sm ml-auto"
                         onclick="S.aiResetPanel()"
@@ -665,35 +660,28 @@
             </summary>
             <div class="mt-2">
               <ol class="text-xs text-slate-700 list-decimal pl-5 space-y-1">
-                <li>Enter at least one score, then click <strong>Draft from rubric</strong> to create a first-pass set of comments.</li>
-                <li>Optionally click <strong>Improve clarity &amp; tone</strong> to tidy the wording.</li>
+                <li>Enter at least one score, then click <strong>Add improvement strategies</strong> to enrich your comments with rubric-aligned guidance.</li>
+                <li>Optionally click <strong>Polish commentary</strong> to tidy the wording.</li>
                 <li>Read and edit the suggestion, then click <strong>Replace draft</strong> when you are happy.</li>
               </ol>
             </div>
           </details>
 
-          <!-- Primary action buttons (stepwise: 1 Draft → 2 Improve → 3 Make concise) -->
+          <!-- Primary action buttons (stepwise: 1 Add improvement strategies → 2 Polish commentary) -->
           <div class="flex flex-wrap items-start gap-2">
             <button id="ai-draft-from-rubric"
                     class="btn btn-green btn-primary-step text-sm"
                     onclick="S.aiAssist('draft')"
-                    title="Create a first draft of your feedback from the rubric. Requires at least one score.">
-              <span class="step-num">1.</span> Draft from rubric
+                    title="Add concrete improvement strategies tied to the rubric. Requires at least one score.">
+              <span class="step-num">1.</span> Add improvement strategies
               <span class="btn-help">Start here. Requires at least one score.</span>
             </button>
             <button id="ai-improve-clarity"
                     class="btn btn-blue btn-secondary-step text-sm"
                     onclick="S.aiAssist('improve')"
                     title="Polish the wording of your existing draft.">
-              <span class="step-num">2.</span> Improve clarity &amp; tone
+              <span class="step-num">2.</span> Polish commentary
               <span class="btn-help">Polish the wording of your existing draft.</span>
-            </button>
-            <button id="ai-shorten-for-lms"
-                    class="btn btn-utility text-sm"
-                    onclick="S.aiAssist('shorten')"
-                    title="Shorten the feedback for systems with character limits.">
-              <span class="step-num">3.</span> Make concise
-              <span class="btn-help">Optional &mdash; shorten for systems with character limits.</span>
             </button>
             <button id="ai-reset"
                     class="btn btn-utility text-sm ml-auto"
@@ -2360,6 +2348,10 @@
       const aiOut = el('ai-suggestion');
       if (aiIn) { aiIn.value = ''; aiIn.dispatchEvent(new Event('input')); }
       if (aiOut) { aiOut.value = ''; aiOut.dispatchEvent(new Event('input')); }
+
+      // Also clear the visible refine panel mirror textarea (bug fix: Clear suggestion was unresponsive)
+      const aiMirror = el('refine-suggestion-mirror');
+      if (aiMirror) { aiMirror.value = ''; aiMirror.dispatchEvent(new Event('input')); }
 
       const aiDiff = el('ai-diff-box');
       if (aiDiff) { aiDiff.innerHTML = ''; aiDiff.classList.add('hidden'); }
