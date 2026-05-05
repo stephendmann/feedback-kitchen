@@ -99,53 +99,53 @@
   const DEFAULT_GRADE_FEEDBACK = [
     {
       grade: 'A+',
-      intro: "This is genuinely outstanding work. Your submission demonstrates exceptional analytical thinking, a sophisticated command of the relevant frameworks, and the kind of polished, professional presentation that sets the benchmark for this assessment. The originality and rigour you've brought to every section are truly impressive.",
-      outro: "This is the standard to aspire to. Your work is exemplary in its depth, structure, and communication. Continue to challenge yourself and push the boundaries of your thinking. Outstanding effort — you should be very proud of this work."
+      intro: "This is genuinely outstanding work. Your submission shows exceptional analytical thinking, sophisticated command of the relevant frameworks, and the kind of polished, professional presentation that sets the benchmark for this assessment. The originality and rigour you have brought to every section are remarkable.",
+      outro: "This is the standard to aspire to. Your work is exemplary in depth, structure, and communication. The next step is to test this thinking against external audiences (industry, publication, conference) where your analysis will hold its own."
     },
     {
       grade: 'A',
-      intro: "This is excellent work. Your submission is well-structured, analytically strong, and demonstrates a confident grasp of the frameworks and their application. The depth and clarity of your work reflects a high level of engagement with the material and a genuine understanding of the key concepts.",
-      outro: "Overall, this is an excellent submission that is well-structured, well-argued, and well-written. You should feel confident about the quality of this work. Keep building on these strengths and continue pushing your analysis to the next level. Excellent effort — keep it up!"
+      intro: "This is excellent work. Your submission is well-structured, analytically strong, and demonstrates a confident grasp of the frameworks and their application. The depth and clarity of your work reflect a high level of engagement with the material.",
+      outro: "Overall, this is an excellent submission: well-structured, well-argued, and well-written. The gap between this and an A+ is narrow and lies in originality and the precision of your evidence. You are clearly operating at a high standard."
     },
     {
       grade: 'A-',
-      intro: "This is a very strong piece of work. Your submission shows clear analytical ability and a good command of the relevant frameworks. There are areas of genuine excellence here, and with a little more depth or supporting evidence in places, this could move into the highest band.",
-      outro: "This is a very strong submission with several areas of genuine quality. The gap to the top band is narrow, so focus on the specific feedback above to sharpen your analysis and strengthen your evidence base. You're clearly capable of top-tier work — keep refining your approach."
+      intro: "This is a very strong piece of work. Your submission shows clear analytical ability and a good command of the relevant frameworks. There are areas of genuine excellence here, though the work does not yet reach the consistency or depth of the higher A bands.",
+      outro: "The gap to the top band is narrow and specific. Focus on the criterion-level feedback above to sharpen your sharpest sections and lift the weaker ones to match. Top-tier work is well within your reach."
     },
     {
       grade: 'B+',
-      intro: "Thank you for your submission. This is a solid and well-considered piece of work that demonstrates a good understanding of the key concepts and frameworks. You've engaged meaningfully with the material and there are clear strengths here. With some targeted refinement, you are well-placed to achieve even higher marks.",
-      outro: "You've produced a good piece of work with real strengths. To move into the A range, focus on deepening your analysis, supporting claims with stronger evidence, and ensuring consistency across all sections. You're not far off — keep pushing and the next step up is very achievable."
+      intro: "Thank you for your submission. This is a solid and well-considered piece of work that shows a good understanding of the key concepts and frameworks. You have engaged meaningfully with the material and there are clear strengths here, particularly where your argument is most concrete.",
+      outro: "You have produced a good piece of work with real strengths. To move into the A range, the priority is depth: deeper analysis of fewer points, supported by stronger evidence, will lift this further than broader coverage. The next band up is achievable."
     },
     {
       grade: 'B',
-      intro: "Thank you for your submission. This is a competent piece of work that shows a sound understanding of the core concepts. Your work is generally clear and well-organised, though deeper analysis or stronger evidence would lift the quality further.",
-      outro: "Overall, this is a competent and well-considered submission. You've shown a good grasp of the key frameworks and made a genuine effort throughout. Focus on the areas flagged above to strengthen the depth and rigour of your analysis. Good work — keep pushing forward and you'll continue to improve."
+      intro: "Thank you for your submission. This is a competent piece of work that shows a sound grasp of the core concepts. Your work is generally clear and well-organised, and the foundations of strong analysis are visible in places.",
+      outro: "Overall, this is a competent and well-considered submission. To move toward a B+ or higher, focus on the criterion-level actions above, particularly around analytical depth and use of evidence. You are tracking in the right direction."
     },
     {
       grade: 'B-',
-      intro: "Thank you for your submission. Your work demonstrates a reasonable understanding of the frameworks, though some sections would benefit from greater depth and more consistent application. The foundations are here — with more focused analytical effort, stronger results are within reach.",
-      outro: "The building blocks are here and you're heading in the right direction. Focus on depth of analysis, use of evidence, and clarity of argument. With focused effort, a B or higher is well within your reach next time."
+      intro: "Thank you for your submission. Your work shows a reasonable understanding of the frameworks, though several sections lack the depth and consistency of higher bands. The foundations are present, but the analysis does not yet land with the precision the rubric expects.",
+      outro: "You have the building blocks in place. The criterion feedback above identifies the specific gaps; closing two or three of those gaps would lift this work into a clear B. Focused effort on depth, evidence, and clarity of argument will pay off."
     },
     {
       grade: 'C+',
-      intro: "Thank you for your submission. Your work shows a developing understanding of the key concepts, with some sections handled better than others. There are promising elements here, and the feedback below is intended to help you see where a little more effort would make a real difference.",
-      outro: "There are promising elements in your work, and with more focused effort you can definitely move up. Pay close attention to the feedback above, particularly around analytical depth and use of evidence. Review the course materials and seek support where needed to strengthen your approach."
+      intro: "Thank you for your submission. Your work shows a developing understanding of the key concepts, with some sections handled noticeably better than others. There are promising elements here that the criterion feedback below builds on directly.",
+      outro: "There are real footholds in your work to build from. Two priorities: revisit the rubric descriptors at the proficient tier to see what the next step looks like, and re-engage with the course materials for the criteria flagged above. Booking a follow-up to discuss this would be worthwhile."
     },
     {
       grade: 'C',
-      intro: "Thank you for your submission. Your work shows a basic understanding of the key concepts, and I can see the effort you have put in. There are some foundations here to build on, and the feedback below will help you focus your energy for future assessments.",
-      outro: "There is clear potential in your work. Use this feedback as a roadmap for improvement — focus on deeper analysis, critical engagement, and clear structure. Don't hesitate to reach out if you'd like to discuss any of the feedback — keep working at it."
+      intro: "Thank you for your submission. Your work shows a basic understanding of the key concepts and the effort you have put in is visible. There are foundations here to build on, but the analysis is not yet consistent enough across criteria to move into the proficient range.",
+      outro: "Use this feedback as a roadmap. The single highest-leverage step is to re-read the rubric descriptors for each criterion and identify the one specific gap between your work and the proficient tier. Office hours are a good place to talk through that diagnosis."
     },
     {
       grade: 'C-',
-      intro: "Thank you for your submission. Your work touches on several required areas but lacks the depth and consistency needed to demonstrate a secure understanding of the key concepts. I'd encourage you to read the feedback below carefully as a guide for where to focus your efforts going forward.",
-      outro: "Please don't be discouraged. Use the feedback above to identify specific areas to work on, and take advantage of available support — office hours, academic support services, and course materials. Improvement is very achievable with the right focus."
+      intro: "Thank you for your submission. Your work touches on several required areas but lacks the depth and consistency needed to demonstrate a secure grasp of the key concepts. Read the criterion feedback below carefully; it identifies specific, addressable gaps rather than general weakness.",
+      outro: "Please do not be discouraged. The improvement path here is concrete: pick the two criteria with the lowest scores, re-read their rubric descriptors, and rebuild those sections using the actions above. Office hours and academic support services exist for exactly this stage and will accelerate your progress."
     },
     {
       grade: 'D',
-      intro: "Thank you for submitting your work. While I appreciate that you made a submission, the work does not yet meet the expected standard for this assessment. The feedback below outlines the key areas that need significant development, and I encourage you to engage with this carefully and seek support if you are unsure how to move forward.",
-      outro: "I would strongly encourage you to review the assessment brief and marking rubric carefully, and to make use of available support — whether that is visiting office hours, working with the academic support team, or engaging with the course materials more deeply. Please don't give up — with focused effort and the right support, improvement is absolutely achievable."
+      intro: "Thank you for submitting your work. The submission does not yet meet the expected standard for this assessment, and the criterion feedback below sets out the gaps clearly. This is an important moment to engage with that feedback closely rather than move on.",
+      outro: "The most useful next steps are practical: re-read the assessment brief and rubric alongside this feedback, book a meeting at office hours to discuss the gaps, and engage the academic support team early. Improvement from this point is achievable, but it requires deliberate, supported effort starting now."
     }
   ];
 
@@ -258,7 +258,8 @@
       gradeFeedback:      JSON.parse(JSON.stringify(DEFAULT_GRADE_FEEDBACK)),
       latePenalties:      JSON.parse(JSON.stringify(DEFAULT_LATE_PENALTIES)),
       enableLatePenalties: true,
-      scoreRounding:      'none'   // 'none' | 'half' | 'whole'
+      scoreRounding:      'none',  // 'none' | 'half' | 'whole'
+      spellingLocale:     'auto'   // 'auto' | 'au-nz' | 'us' — controls AU/NZ post-processor
     };
   }
 
@@ -621,29 +622,56 @@
     const base = buildAIGarnishPrompt(config, scoreResult, opts);
     const existingBody = scrubPII((opts.existingBody || '').trim(), opts);
 
-    // Phase 5: length mode — Brief enforces ~30 words/criterion; Standard keeps prior behaviour.
+    // Length mode — Brief enforces hard cap; Standard allows two sentences.
     const lengthMode = (opts.lengthMode === 'standard') ? 'standard' : 'brief';
     const lengthRule = (lengthMode === 'brief')
-      ? '\n\nLENGTH RULE: Brief mode — keep each criterion comment to 30 words or fewer. Prefer cutting filler over adding qualifiers. Students skim long feedback.'
-      : '\n\nLENGTH RULE: Standard length — 1-2 short paragraphs per criterion is fine, but cut any filler.';
+      ? '\n\nLENGTH RULE: Brief mode — each criterion MUST be exactly 2 sentences and 30 words or fewer.'
+      : '\n\nLENGTH RULE: Standard mode — each criterion MUST be exactly 2 sentences and 50 words or fewer.';
 
-    // Phase 3: audience mode — Group rewrites second-person "you" as "your group".
+    // Audience mode — singular vs group voice.
     const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
     const audienceRule = (audienceMode === 'group')
-      ? '\n\nAUDIENCE RULE: This feedback is for a group submission. Address the recipients as "your group" (e.g. "Your group has demonstrated...", "Your group could strengthen..."). Do NOT use second-person singular ("you", "your response"). The student name in the greeting is handled separately, but body commentary refers to the group.'
-      : '\n\nAUDIENCE RULE: Individual submission — address the student in the second person ("you", "your response").';
+      ? '\n\nAUDIENCE RULE: Group submission. Use "your group" / "your group has". Do NOT use "you" or "your response".'
+      : '\n\nAUDIENCE RULE: Individual submission. Address the student as "you" / "your".';
 
     const extras = {
-      draft:
-        '\n\nMODE: ADD_IMPROVEMENT_STRATEGIES — produce a fresh criterion-by-criterion body. For each criterion, give a brief evaluative comment grounded in the rubric, then ONE concrete improvement strategy the student/group can act on. No filler.',
-      improve:
-        '\n\nMODE: POLISH_COMMENTARY — you are given an EXISTING criterion body below. Preserve every substantive claim. Rewrite for clarity, tone, and consistency. Do NOT expand or pad — your output should be the same length or shorter than the input.' +
-        '\n\nEXISTING BODY TO POLISH:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)'),
-      shorten:
-        '\n\nMODE: SHORTEN_FOR_LMS — you are given an EXISTING criterion body below. Preserve every substantive claim. Compress to under 1800 characters total. Keep the per-criterion structure.' +
-        '\n\nEXISTING BODY TO SHORTEN:\n' + (existingBody || '(none supplied — fall back to DRAFT mode)')
+      // Single unified mode. Old "draft" / "improve" / "shorten" all route here.
+      improve_criterion_body:
+        '\n\nMODE: IMPROVE_CRITERION_BODY — produce a fresh criterion-by-criterion body using the strict 2-sentence pattern below. If an EXISTING BODY is supplied, treat it as additional marker insight; preserve any substantive claim it contains, but rewrite cleanly to the pattern. Do NOT carry across phrasing, padding, or hedges from the existing body.' +
+
+        '\n\nFOR EACH CRITERION, OUTPUT EXACTLY 2 SENTENCES:' +
+        '\n  Sentence 1 (Evaluation): Rubric-grounded comment naming 1–2 specific strengths and/or weaknesses you observed in the work. Reference what the student/group actually did, not generic categories.' +
+        '\n  Sentence 2 (Action): Begin with an imperative verb. Must follow ONE of these patterns and ONLY these patterns:' +
+        '\n    • "Add [specific element] to [specific section/argument]."' +
+        '\n    • "Clarify [specific concept/claim] by [specific method]."' +
+        '\n    • "Compare [X] to [Y] using [evidence type]."' +
+        '\n    • "Link [concept] to [course framework/example]."' +
+        '\n    • "Replace [vague element] with [specific element]."' +
+        '\n    • "Restructure [section] so that [specific outcome]."' +
+        '\n    • "Support [claim] with [specific evidence type]."' +
+        '\n  State the action only. Do NOT explain why it matters.' +
+
+        '\n\nBANNED PHRASES (do not use unless immediately followed by a specific named change):' +
+        '\n  "could be improved", "would benefit from", "more rigour", "deeper analysis",' +
+        '\n  "stronger argument", "clearer structure", "better evidence", "more detail",' +
+        '\n  "needs work", "lacks depth".' +
+
+        '\n\nADDITIONAL RULES:' +
+        '\n  • Do NOT reuse the same imperative verb across more than two criteria.' +
+        '\n  • Do NOT invent claims unsupported by the rubric descriptor or marker notes.' +
+        '\n  • Do NOT use em dashes, en dashes, ellipses, or exclamation marks.' +
+        '\n  • Use spelling consistent with the user locale (post-processor will normalise).' +
+
+        '\n\nEXISTING BODY (treat as supplementary marker insight, not as text to keep):' +
+        '\n' + (existingBody || '(none — generate fresh from rubric and notes)')
     };
-    return base + lengthRule + audienceRule + (extras[mode] || extras.draft);
+
+    // Map legacy modes to the unified mode for back-compat with existing callers.
+    const resolved = (mode === 'draft' || mode === 'improve' || mode === 'shorten')
+      ? 'improve_criterion_body'
+      : (mode || 'improve_criterion_body');
+
+    return base + lengthRule + audienceRule + (extras[resolved] || extras.improve_criterion_body);
   }
 
   // Substitute {name}, {group}, {grade}, {course} placeholders in custom intro/outro templates.
@@ -695,7 +723,7 @@
 
     const rounding = config.scoreRounding || 'none';
 
-    parts.push(String(aiBody || '').trim());
+    parts.push(postProcessAIBody(String(aiBody || '').trim(), config));
     parts.push('');
     parts.push('TOTAL SCORE: ' + formatScore(weightedTotal, rounding) + ' / 100');
 
@@ -729,6 +757,145 @@
       }
     }
     return parts.join('\n');
+  }
+
+  /* ── Post-processor (non-LLM) ────────────────────────────────
+     Mechanical cleanup applied to the AI-generated criterion
+     body before it is stitched into the final feedback. Strips
+     forbidden punctuation, normalises spacing and decimals,
+     enforces AU/NZ spelling (locale-gated), and flags duplicated
+     hedge phrases across criteria for marker review.
+  ─────────────────────────────────────────────────────────────── */
+
+  // Banned hedge phrases that should never appear unless followed by
+  // a concrete fix. Duplicates across criteria are flagged, not removed.
+  const POSTPROC_FLAG_PHRASES = [
+    'more rigour', 'deeper analysis', 'stronger argument',
+    'clearer structure', 'better evidence', 'more detail',
+    'needs work', 'lacks depth'
+  ];
+
+  // AU/NZ spelling normalisations. Conservative list, extend as needed.
+  // Only applied when the user's locale is AU or NZ (or config opt-in).
+  const POSTPROC_SPELLING = [
+    [/\borganiz(e|ed|es|ing|ation|ational)\b/gi, 'organis$1'],
+    [/\banalyz(e|ed|es|ing)\b/gi,                'analys$1'],
+    [/\bbehavior(s|al|ally)?\b/gi,               'behaviour$1'],
+    [/\bcolor(s|ed|ing|ful)?\b/gi,               'colour$1'],
+    [/\bfavor(s|ed|ing|able|ably|ite)?\b/gi,     'favour$1'],
+    [/\bcenter(s|ed|ing)?\b/gi,                  'centre$1'],
+    [/\bemphasize\b/gi,   'emphasise'],
+    [/\bemphasized\b/gi,  'emphasised'],
+    [/\bemphasizes\b/gi,  'emphasises'],
+    [/\bemphasizing\b/gi, 'emphasising'],
+    [/\brecognize\b/gi,   'recognise'],
+    [/\brecognized\b/gi,  'recognised'],
+    [/\brecognizes\b/gi,  'recognises'],
+    [/\brecognizing\b/gi, 'recognising'],
+    [/\bcriticize\b/gi,   'criticise'],
+    [/\bcriticized\b/gi,  'criticised'],
+    [/\bcriticizes\b/gi,  'criticises'],
+    [/\bcriticizing\b/gi, 'criticising'],
+    [/\bjudgment\b/gi,                           'judgement']
+  ];
+
+  // Locale gate. Resolution order:
+  //   1. Explicit override via config.spellingLocale ('au-nz' | 'us' | 'auto')
+  //   2. Resolved browser/Intl locale region (AU, NZ)
+  //   3. Default: do NOT apply AU/NZ spelling
+  function shouldApplyAuNzSpelling(config) {
+    const override = config && config.spellingLocale;
+    if (override === 'au-nz') return true;
+    if (override === 'us')    return false;
+    // override is 'auto', undefined, or null — fall through to detection.
+    try {
+      const region = (typeof Intl !== 'undefined' && Intl.DateTimeFormat)
+        ? (Intl.DateTimeFormat().resolvedOptions().locale || '')
+        : (typeof navigator !== 'undefined' ? (navigator.language || '') : '');
+      // Match e.g. "en-NZ", "en-AU", "mi-NZ".
+      return /-(NZ|AU)\b/i.test(region);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function postProcessSingle(text, config) {
+    if (!text) return text;
+    let out = String(text);
+
+    // Decimal normalisation FIRST so space-stripping rules below don't see
+    // a bare ".5" as "space + punctuation".
+    out = out.replace(/(^|[^\d])\.(\d)/g, '$10.$2');
+
+    // Punctuation normalisation
+    out = out
+      .replace(/—/g, ', ')                              // em dash → comma
+      .replace(/–/g, '-')                               // en dash → hyphen (header dash restored separately)
+      .replace(/\.{3,}/g, '.')                          // ellipsis → full stop
+      .replace(/!+/g, '.')                              // exclamation → full stop
+      .replace(/\s{2,}/g, ' ')                          // collapse whitespace
+      .replace(/\s+([,;:])|\s+\.(?!\d)/g, function (m) {// no space before , ; : or non-decimal .
+        return m.replace(/\s+/, '');
+      })
+      .replace(/([,;:])(?=[A-Za-z])/g, '$1 ')           // single space after , ; :
+      .replace(/\.(?=[A-Za-z])/g, '. ');                // single space after .
+
+    // AU/NZ spelling — locale-gated.
+    if (shouldApplyAuNzSpelling(config)) {
+      POSTPROC_SPELLING.forEach(function (pair) {
+        out = out.replace(pair[0], pair[1]);
+      });
+    }
+
+    return out.trim();
+  }
+
+  // Restores the criterion header line's en dash separator (Name – ws / weight)
+  // because postProcessSingle converts en dashes to hyphens globally.
+  function restoreCriterionHeaderDash(line) {
+    return line.replace(/^(.+?)\s-\s(\d[\d.]*\s\/\s\d+)\s*$/, '$1 – $2');
+  }
+
+  // Cross-criterion duplicate-phrase flagger. Returns the body unchanged
+  // unless a banned hedge appears in 2+ criteria, in which case the
+  // second+ occurrences are wrapped with a [REVIEW: duplicate phrase] tag
+  // visible to the marker but easy to grep and remove.
+  function flagDuplicateHedges(criterionBlocks) {
+    const counts = {};
+    POSTPROC_FLAG_PHRASES.forEach(function (p) { counts[p] = 0; });
+
+    return criterionBlocks.map(function (block) {
+      let out = block;
+      POSTPROC_FLAG_PHRASES.forEach(function (p) {
+        const re = new RegExp('\\b' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+        const occursHere = re.test(block);
+        if (occursHere) {
+          if (counts[p] >= 1) {
+            out = out.replace(re, '$& [REVIEW: duplicate phrase]');
+          }
+          counts[p] += 1;
+        }
+      });
+      return out;
+    });
+  }
+
+  // Splits AI body into per-criterion blocks (separated by blank line),
+  // runs postProcessSingle on each, restores the header dash, then runs
+  // cross-criterion dedupe flagging, and rejoins.
+  function postProcessAIBody(aiBody, config) {
+    if (!aiBody) return aiBody;
+    const blocks = String(aiBody).split(/\n\s*\n/).map(function (b) { return b.trim(); }).filter(Boolean);
+    const cleaned = blocks.map(function (block) {
+      const lines = block.split('\n');
+      const processed = lines.map(function (line, idx) {
+        const cleanedLine = postProcessSingle(line, config);
+        return idx === 0 ? restoreCriterionHeaderDash(cleanedLine) : cleanedLine;
+      });
+      return processed.join('\n');
+    });
+    const flagged = flagDuplicateHedges(cleaned);
+    return flagged.join('\n\n');
   }
 
   function logAssistantRun(entry) {
@@ -866,6 +1033,7 @@
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
+    postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
     loadSnippets, logAssistantRun, clearAssistantLog,
     // Deprecated aliases
     logAIGarnish, clearAIGarnishLog,

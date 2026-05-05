@@ -146,6 +146,16 @@
             </select>
             <p class="text-xs text-amber-600 mt-1">Sets how calculated scores appear — can also be toggled live on the scoring page.</p>
           </div>
+          <div>
+            <label class="label" title="Controls AU/NZ spelling normalisation in the AI feedback post-processor. Auto detects from your browser locale.">Spelling</label>
+            <select id="s1-spelling-locale" class="input-field"
+                    title="Auto-detect uses your browser locale. AU/NZ forces British spelling (organise, behaviour, judgement). US forces American spelling (organize, behavior, judgment).">
+              <option value="auto">Auto-detect from browser</option>
+              <option value="au-nz">AU/NZ (organise, behaviour, judgement)</option>
+              <option value="us">US (organize, behavior, judgment)</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Applied by the AI feedback post-processor only.</p>
+          </div>
           <div class="sm:col-span-2">
             <label class="label" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
             <input type="text" id="s1-assignmentInfo" class="input-field" placeholder="e.g. Progress Report 1  |  Weighting: 15% of final grade"
@@ -537,6 +547,7 @@
       config.version         = v('s1-version') || '1.0';
       config.assignmentInfo  = v('s1-assignmentInfo');
       config.scoreRounding   = v('s1-rounding') || 'none';
+      config.spellingLocale  = v('s1-spelling-locale') || 'auto';
     }
 
     function syncCriteria() {
@@ -854,6 +865,7 @@
       setV('s1-version',         config.version || '1.0');
       setV('s1-assignmentInfo',  config.assignmentInfo);
       setV('s1-rounding',        config.scoreRounding || 'none');
+      setV('s1-spelling-locale', config.spellingLocale || 'auto');
     }
 
     /* ── Step 3 populate ─────────────────────────────────── */
