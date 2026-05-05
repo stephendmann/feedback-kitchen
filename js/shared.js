@@ -625,12 +625,12 @@
     const lengthMode = (opts.lengthMode === 'standard') ? 'standard' : 'brief';
     const lengthRule = (lengthMode === 'brief')
       ? '\n\nLENGTH RULE: Brief mode — keep each criterion comment to 30 words or fewer. Prefer cutting filler over adding qualifiers. Students skim long feedback.'
-      : '\n\nLENGTH RULE: Standard length — 1–2 short paragraphs per criterion is fine, but cut any filler.';
+      : '\n\nLENGTH RULE: Standard length — 1-2 short paragraphs per criterion is fine, but cut any filler.';
 
     // Phase 3: audience mode — Group rewrites second-person "you" as "your group".
     const audienceMode = (opts.audienceMode === 'group') ? 'group' : 'individual';
     const audienceRule = (audienceMode === 'group')
-      ? '\n\nAUDIENCE RULE: This feedback is for a group submission. Address the recipients as "your group" (e.g. "Your group has demonstrated…", "Your group could strengthen…"). Do NOT use second-person singular ("you", "your response"). The student\'s name is still used in the greeting (handled separately) but body commentary refers to the group.'
+      ? '\n\nAUDIENCE RULE: This feedback is for a group submission. Address the recipients as "your group" (e.g. "Your group has demonstrated...", "Your group could strengthen..."). Do NOT use second-person singular ("you", "your response"). The student name in the greeting is handled separately, but body commentary refers to the group.'
       : '\n\nAUDIENCE RULE: Individual submission — address the student in the second person ("you", "your response").';
 
     const extras = {
@@ -650,19 +650,20 @@
   function substituteFeedbackVars(template, vars) {
     if (!template) return template;
     return String(template)
-      .replace(/\{name\}/g, vars.name || '')
-      .replace(/\{group\}/g, vars.group || '')
-      .replace(/\{grade\}/g, vars.grade || '')
+      .replace(/\{name\}/g,   vars.name   || '')
+      .replace(/\{group\}/g,  vars.group  || '')
+      .replace(/\{grade\}/g,  vars.grade  || '')
       .replace(/\{course\}/g, vars.course || '');
   }
 
   // Stitches: [student header] + intro + AI body + TOTAL SCORE + outro + late-penalty.
   // aiBody is the raw paste-back from the LLM (just the criteria rewrite).
   // opts:
-  //   studentName  — student's name for greeting
-  //   audienceMode — 'individual' (default) or 'group'
-  //   groupName    — optional group label, used when audienceMode === 'group'
-  //   introOverride / outroOverride — per-scorer custom templates with {name}/{group}/{grade}/{course} vars
+  //   studentName    — student's name for greeting
+  //   audienceMode   — 'individual' (default) or 'group'
+  //   groupName      — optional group label, used when audienceMode === 'group'
+  //   introOverride  — per-scorer custom intro template (with {name}/{group}/{grade}/{course})
+  //   outroOverride  — per-scorer custom outro template (same vars)
   function assembleFinalFeedback(config, scoreResult, aiBody, opts) {
     opts = opts || {};
     const studentName = (opts.studentName || '').trim();
@@ -675,14 +676,12 @@
       : scoreToGrade(weightedTotal);
     const entry = config.gradeFeedback.find(function (gf) { return gf.grade === prepenaltyGrade; });
 
-    // Variable substitution map for custom intro/outro templates.
     const subs = {
       name:   studentName,
       group:  groupName || (audienceMode === 'group' ? 'your group' : ''),
       grade:  prepenaltyGrade,
       course: config.courseName || ''
     };
-
     const introText = (typeof opts.introOverride === 'string' && opts.introOverride.trim())
       ? substituteFeedbackVars(opts.introOverride, subs)
       : (entry && entry.intro);
@@ -705,10 +704,11 @@
       const o = scoreResult.override;
       parts.push('');
       const subjPossessive = (audienceMode === 'group') ? "Your group's" : 'Your';
+      const yourTok = (audienceMode === 'group') ? "your group's" : 'your';
       parts.push(
         'Note: ' + subjPossessive + ' weighted criterion scores total ' + formatScore(o.originalTotal, rounding) + '/100. ' +
         'I have rounded this up to ' + formatScore(o.newTotal, rounding) + '/100 (' + o.newGrade + ') ' +
-        'in recognition of ' + (audienceMode === 'group' ? "your group's" : 'your') + ' overall performance.'
+        'in recognition of ' + yourTok + ' overall performance.'
       );
     }
 
@@ -879,106 +879,6 @@
     document.querySelectorAll('a[href*="ko-fi.com/smann"]').forEach(el => {
       el.addEventListener('click', () => {
         if (typeof gtag === 'function') {
-          gtag('event', 'kofi_click', {
-            event_category: 'engagement',
-            event_label: 'footer_support_button',
-            transport_type: 'beacon'
-          });
-        }
-      });
-    });
-  });
-})();
-udentRecord) {
-    let cohort = getCohort(scorerId);
-    if (!cohort) {
-      // No cohort yet — caller must prompt first. Initialise as unlabelled fallback
-      // so we don't lose data, but this path should rarely be hit.
-      cohort = initCohort(scorerId, 'Untitled cohort', false);
-    }
-    const key = studentMatchKey(studentRecord);
-    if (!key) {
-      // No ID and no name — refuse to save
-      return { saved: false, reason: 'no-identifier' };
-    }
-    studentRecord.key     = key;
-    studentRecord.savedAt = new Date().toISOString();
-    if (!studentRecord.id) studentRecord.id = uid();
-
-    const existingIdx = cohort.students.findIndex(s => s.key === key);
-    let replaced = false;
-    if (existingIdx >= 0) {
-      studentRecord.id        = cohort.students[existingIdx].id;
-      studentRecord.createdAt = cohort.students[existingIdx].createdAt || cohort.students[existingIdx].savedAt;
-      cohort.students[existingIdx] = studentRecord;
-      replaced = true;
-    } else {
-      studentRecord.createdAt = studentRecord.savedAt;
-      cohort.students.push(studentRecord);
-    }
-    saveCohort(cohort);
-    return { saved: true, replaced: replaced, count: cohort.students.length };
-  }
-
-  function removeFromCohort(scorerId, studentKey) {
-    const cohort = getCohort(scorerId);
-    if (!cohort) return false;
-    cohort.students = cohort.students.filter(s => s.key !== studentKey);
-    saveCohort(cohort);
-    return true;
-  }
-
-  function clearCohort(scorerId) {
-    localStorage.removeItem(cohortKey(scorerId));
-  }
-
-  function cohortAgeDays(cohort) {
-    if (!cohort || !cohort.createdAt) return 0;
-    const ms = Date.now() - new Date(cohort.createdAt).getTime();
-    return Math.floor(ms / (1000 * 60 * 60 * 24));
-  }
-
-  /* ── Score formatting helper ──────────────────────────────── */
-  function formatScore(value, rounding) {
-    const n = parseFloat(value);
-    if (isNaN(n)) return value;
-    if (rounding === 'whole') return String(Math.round(n));
-    if (rounding === 'half')  return (Math.round(n * 2) / 2).toFixed(1);
-    return n.toFixed(1);
-  }
-
-  /* ── Export to global ─────────────────────────────────────── */
-  window.SA = {
-    GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_LABELS_SHORT, TIER_BADGE_COLOURS, TIER_ORDER,
-    getTierLabel, migrateConfig,
-    GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
-    uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig,
-    loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
-    getActiveId, setActiveId, loadActiveConfig,
-    computeScores, generateFeedbackText, formatScore,
-    buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
-    loadSnippets, logAssistantRun, clearAssistantLog,
-    logAIGarnish, clearAIGarnishLog,
-    getCohort, initCohort, saveCohort, addToCohort,
-    removeFromCohort, clearCohort, cohortAgeDays, studentMatchKey
-  };
-
-  /* ── Analytics ────────────────────────────────────────────── */
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('a[href*="ko-fi.com/smann"]').forEach(el => {
-      el.addEventListener('click', () => {
-        if (typeof gtag === 'function') {
-          gtag('event', 'kofi_click', {
-            event_category: 'engagement',
-            event_label: 'footer_support_button',
-            transport_type: 'beacon'
-          });
-        }
-      });
-    });
-  });
-})();
-of gtag === 'function') {
           gtag('event', 'kofi_click', {
             event_category: 'engagement',
             event_label: 'footer_support_button',
