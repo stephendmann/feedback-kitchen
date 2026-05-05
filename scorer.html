@@ -336,8 +336,8 @@
         <div class="section-body compact">
           <p class="step-sub mb-4" style="margin-left:2.15rem">Pick a grade per criterion. Override lets you enter a specific score instead of the midpoint.</p>
 
-          <!-- Bulk-fill ungraded criteria -->
-          <div id="bulk-fill-bar" class="flex flex-wrap items-center gap-2 mb-3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+          <!-- Bulk-fill ungraded criteria — hidden by default; revealed via ?bulk=on URL param (per-browser, persisted) -->
+          <div id="bulk-fill-bar" class="hidden flex-wrap items-center gap-2 mb-3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                title="Quickly set a starting grade across remaining criteria, then revise row by row. Only fills criteria that haven't been graded yet — graded rows are preserved.">
             <span class="font-semibold text-slate-600">Bulk-fill ungraded:</span>
             <select id="bulk-fill-grade" class="grade-select" style="padding:2px 6px; font-size:12px;">
@@ -1032,6 +1032,7 @@
       restoreExplainerState();
       updateAILoginBadge();
       applyAudienceLengthIntroOutroToUI();
+      applyBulkFillVisibility();
       refreshCohortUI();
 
       // Warn user if they try to leave with unsaved cohort data (not yet exported)
@@ -3194,6 +3195,33 @@
       const io = readIntroOutro();
       const i = el('intro-override'); if (i) i.value = io.intro || '';
       const o = el('outro-override'); if (o) o.value = io.outro || '';
+    }
+
+    /* ── Bulk-fill visibility (hidden by default; reveal via ?bulk=on) ───
+       Default off — too tempting to skip detailed grading. Enable per-browser via:
+         ?bulk=on   → persistently shows the bulk-fill bar
+         ?bulk=off  → hides it again
+       Flag is persisted in localStorage under SA_BULK_FILL_VISIBLE.
+    */
+    const BULK_FILL_VISIBLE_KEY = 'SA_BULK_FILL_VISIBLE';
+    function applyBulkFillVisibility() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const flag = params.get('bulk');
+        if (flag === 'on')  localStorage.setItem(BULK_FILL_VISIBLE_KEY, '1');
+        if (flag === 'off') localStorage.removeItem(BULK_FILL_VISIBLE_KEY);
+      } catch (e) {}
+      const visible = localStorage.getItem(BULK_FILL_VISIBLE_KEY) === '1';
+      const bar = el('bulk-fill-bar');
+      if (!bar) return;
+      if (visible) {
+        // Restore the original Tailwind 'flex' display the bar was designed with
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+      } else {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+      }
     }
 
     /* ── Local stats page (?view=local-stats; legacy ?diag=usage) ── */
