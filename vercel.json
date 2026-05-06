@@ -1,5 +1,7 @@
 {
+  "installCommand": "npm install",
   "buildCommand": "npm run build:css",
+  "outputDirectory": ".",
   "functions": {
     "api/garnish.js": {
       "maxDuration": 30
