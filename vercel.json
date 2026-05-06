@@ -1,4 +1,5 @@
 {
+  "buildCommand": "npm run build:css",
   "functions": {
     "api/garnish.js": {
       "maxDuration": 30
