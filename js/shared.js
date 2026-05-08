@@ -263,6 +263,13 @@
     };
   }
 
+  /* ── FK app version (for export provenance) ──────────────── */
+  // Single source of truth for "which FK shipped this artefact".
+  // Mirrors the appVersion baked into newConfig() above; used by the
+  // moderation export opt-in record and the workbook 90_manifest sheet.
+  const FK_VERSION = '2.5.1';
+  function getFKVersion() { return FK_VERSION; }
+
   /* ── Persistence ─────────────────────────────────────────── */
   function loadAllConfigs() {
     try { return JSON.parse(localStorage.getItem(CONFIGS_KEY) || '[]'); }
@@ -1191,7 +1198,7 @@
     GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_LABELS_SHORT, TIER_BADGE_COLOURS, TIER_ORDER,
     getTierLabel, migrateConfig,
     GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
-    uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig,
+    uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,
