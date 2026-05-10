@@ -1,5 +1,5 @@
 /* ============================================================
-   Feedback Kitchen — Moderation Export Engine
+   Feedback Kitchen — Moderation Export Workbook Builder
    (moderation-export.js)
 
    Entry point: buildAndDownloadModExport({ config, cohort, optInRecord })
@@ -239,7 +239,7 @@
       tOtherPresent     ? 'TUTOR_LT_5_COLLAPSED applied'                                 : '',
       suppressedBands.length ? 'GRADE_BAND_LT_5_SUPPRESSED: ' + suppressedBands.join(', ') : '',
       extremeCount          ? 'EXTREME_ROW_FLAGGED: ' + extremeCount + ' row(s)'           : ''
-    ].filter(Boolean).join('; ') || 'none';
+    ].filter(Boolean).join('; ') || '';
 
     const MAN_KV = [
       ['key',                  'value'],

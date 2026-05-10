@@ -55,11 +55,12 @@
     R.push(['• Verbatim snippet wording']);
     R.push(['• Exact timestamps (all rounded or bucketed)']);
     R.push(['• Reversible lookup keys']);
-    R.push(['• Composite tutor-quality scores (none computed)']);
+    R.push(['• Any aggregate tutor performance scores (none computed)']);
     R.push(['• Longitudinal student tracking fields']);
     R.push([]);
 
     R.push(['PRIVACY NOTE — Privacy Act 2020']);
+    R.push(['No direct identifiers (names, IDs, or email addresses) are included in this file.']);
     R.push(['This file is privacy-reduced, not fully anonymised. Re-identification may still be']);
     R.push(['possible in small cohorts or where the score distribution is distinctive.']);
     R.push(['The export is blocked for cohorts with fewer than 15 students.']);
@@ -73,7 +74,7 @@
     R.push(['• Retain only for the duration of the moderation cycle; delete when no longer needed.']);
     R.push(['• Do not use this file to rank, evaluate, or score-card individual tutors.']);
     R.push(['• Do not distribute this file to students, student representatives, or external parties.']);
-    R.push(['• Disable Moderation Export in the Feedback Kitchen scorer UI when moderation is complete.']);
+    R.push(['• Disable Moderation Export for this paper in the scorer UI once this moderation cycle is complete.']);
     R.push([]);
 
     R.push(['SUPPRESSION CODES']);
