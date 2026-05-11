@@ -175,6 +175,50 @@
       box-shadow: 0 0 0 2px #94a3b8;
       border-radius: 4px;
     }
+    /* ── Cohort Insights panel styles ────────────────────────── */
+    .ci-pbadge  { display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.74rem; margin:2px 3px 2px 0; border:1px solid transparent; white-space:nowrap; }
+    .ci-amber   { background:#fdf1d6; color:#6b4d00; border-color:#ecd28a; }
+    .ci-teal    { background:#e3f0ef; color:#115e59; border-color:#b9d8d4; }
+    .ci-purple  { background:#f3eef7; color:#5b3d75; border-color:#d4c4dd; }
+    .ci-mixed-strip { background:#f3eef7; border:1px solid #d4c4dd; color:#4a2f63; border-left:4px solid #8b6fb0; padding:10px 14px; border-radius:4px; margin:12px 0; font-size:0.92rem; }
+    .ci-mixed-strip strong { color:#3c2553; }
+    .ci-qualifier { display:inline-block; margin-left:6px; font-size:0.74rem; color:#6b4d00; font-weight:400; background:#fbf9f3; border:1px solid #ead9b8; padding:1px 7px; border-radius:4px; white-space:nowrap; }
+    .ci-small-n { color:#777; font-size:0.85rem; font-weight:400; }
+    .ci-dist-icon { display:inline-block; width:18px; text-align:center; color:#888; font-size:0.95rem; vertical-align:middle; margin-right:4px; }
+    .ci-suppressed-note { font-size:0.86rem; color:#666; background:#f4f4f4; border:1px solid #e0e0e0; border-radius:4px; padding:10px 14px; margin:8px 0 0; }
+    .ci-pointer { display:block; margin-top:4px; color:#1a3a6b; font-size:0.84rem; }
+    .ci-subset-banner { font-size:0.86rem; color:#555; margin:0 0 10px; padding:6px 10px; background:#eef1f5; border-left:3px solid #4a7fc1; border-radius:3px; }
+    .ci-summary-block { background:#fbf9f3; border:1px solid #ead9b8; border-left:4px solid #b48a3d; border-radius:6px; padding:12px 16px; margin:16px 0; }
+    .ci-summary-h3 { margin:0 0 6px; font-size:0.78rem; color:#6b4d00; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; }
+    .ci-summary-ul { margin:4px 0 0; padding-left:18px; }
+    .ci-summary-ul li { margin:4px 0; font-size:0.92rem; }
+    .ci-section { border:1px solid #dcdcdc; border-radius:8px; padding:18px 22px; margin:16px 0; background:#fafafa; }
+    .ci-header { margin:0 0 8px; }
+    .ci-h1 { margin:0; font-size:1.4rem; line-height:1.25; color:#1e293b; }
+    .ci-subtitle { margin:6px 0 0; color:#555; font-size:0.92rem; }
+    .ci-h2 { font-size:1.05rem; margin:0 0 12px; color:#333; font-weight:700; }
+    .ci-h3 { font-size:0.82rem; margin:14px 0 6px; color:#666; text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
+    .ci-h3:first-of-type { margin-top:4px; }
+    .ci-grid { display:grid; grid-template-columns:200px 1fr; gap:6px 20px; align-items:baseline; }
+    .ci-k { color:#666; font-size:0.92rem; }
+    .ci-v { font-weight:600; font-size:0.92rem; }
+    .ci-bar-row { display:grid; grid-template-columns:130px 1fr 28px; gap:8px; align-items:center; margin:3px 0; }
+    .ci-bar-track { background:#e8ecf0; border-radius:3px; overflow:hidden; min-width:60px; }
+    .ci-bar { background:#4a7fc1; height:10px; border-radius:3px; }
+    .ci-bar-label { font-size:0.88rem; color:#444; }
+    .ci-bar-count { font-size:0.88rem; color:#666; text-align:right; }
+    .ci-prompts-ul { padding-left:18px; margin:8px 0 0; }
+    .ci-prompts-ul li { margin:8px 0; font-size:0.92rem; }
+    .ci-panel-note { font-size:0.82rem; color:#666; margin:8px 0 0; font-style:italic; }
+    .ci-disclaimer { font-size:0.82rem; color:#6b4d00; background:#fbf9f3; border:1px dashed #ead9b8; padding:8px 12px; border-radius:4px; margin:10px 0 0; }
+    .ci-footer { color:#777; font-size:0.82rem; margin-top:24px; border-top:1px solid #e8ecf0; padding-top:12px; }
+    .ci-tip { color:#2563eb; cursor:help; border-bottom:1px dotted #2563eb; }
+    .ci-note { font-size:0.88rem; color:#888; }
+    @media (max-width:600px) {
+      .ci-grid { grid-template-columns:1fr; gap:2px; }
+      .ci-k { color:#888; font-size:0.85rem; }
+      .ci-bar-row { grid-template-columns:100px 1fr 24px; }
+    }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
@@ -926,10 +970,22 @@
             Export the cohort to Excel to save permanently — local data will be lost if you clear browser storage.
           </div>
 
+          <!-- Moderation Export — tutor notice banner (visible when lecturer has opted this paper in) -->
+          <div id="modexport-tutor-banner"
+               class="hidden border border-indigo-300 bg-indigo-50 text-indigo-800 text-xs rounded-xl px-4 py-3 mt-3">
+            🛡️ <strong>Moderation Export is enabled for this paper.</strong>
+            Exports omit student and tutor names.
+          </div>
+
           <div class="flex flex-wrap gap-3 mt-4">
             <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to one Excel workbook: Student Feedback, Grade Matrix, Cohort Summary, Rubric and Grade Feedback reference.">📥 Export cohort (Excel)</button>
+            <button id="btn-insights" class="btn btn-ghost hidden" onclick="S.showCohortInsights()" title="View cohort analytics: grade distribution, marking patterns, distribution shape, and formative prompts.">📊 Cohort Insights <span id="btn-insights-new" class="hidden ml-1 text-[10px] bg-teal-100 text-teal-700 border border-teal-300 px-1.5 py-0.5 rounded font-semibold">NEW</span></button>
             <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">👥 View list</button>
             <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">✏️ Rename</button>
+            <!-- Moderation Export controls -->
+            <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Lecturer/coordinator opt-in for the privacy-reduced Moderation Export. Hidden by default.">🛡️ Moderation Export…</button>
+            <button id="btn-modexport-run" class="btn btn-ghost hidden" onclick="S.runModExport()" title="Generate the privacy-reduced Moderation Export workbook (no student/tutor names).">📤 Export for Moderation</button>
+            <button id="btn-modexport-disable" class="btn btn-ghost hidden text-slate-500" onclick="S.disableModExport()" title="Disable the Moderation Export for this paper. Existing files are unaffected.">Disable mod-export</button>
             <button class="btn btn-ghost text-red-600" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer.">🗑 Clear Cohort</button>
           </div>
         </div>
@@ -959,6 +1015,13 @@
 
   <script src="js/shared.js?v=2.9.0"></script>
   <script src="js/excel.js?v=2.9.0"></script>
+  <script src="js/cohort-insights.js?v=1.0.0"></script>
+  <!-- Moderation Export (privacy-reduced) — schema, opt-in, suppression, readme, engine -->
+  <script src="js/moderation-schema.js?v=1.0.0"></script>
+  <script src="js/moderation-optin.js?v=1.0.0"></script>
+  <script src="js/moderation-suppression.js?v=1.0.0"></script>
+  <script src="js/moderation-readme.js?v=1.0.0"></script>
+  <script src="js/moderation-export.js?v=1.0.0"></script>
   <script>/* scorer ui: v2.9.0 */</script>
   <script>
   'use strict';
@@ -1949,6 +2012,8 @@
       setText('cohort-banner-count', String(count));
       const banner = el('cohort-privacy-banner');
       if (banner) banner.classList.toggle('hidden', count === 0);
+      // Keep moderation-export visibility in lockstep with cohort changes.
+      try { refreshModExportUI(); } catch (e) { /* module may not be loaded in tests */ }
       refreshStatusChips();
     }
 
@@ -2020,6 +2085,15 @@
       const hSec = document.getElementById('sec-cohort');
       if (hSec && cohortCount > 0 && !hSec.dataset.userToggled && !hSec.open) {
         hSec.open = true;
+      }
+      // Insights button: show when cohort has ≥ 1 student; update NEW pill from open count
+      const insightsBtn = el('btn-insights');
+      if (insightsBtn) insightsBtn.classList.toggle('hidden', cohortCount === 0);
+      const newPillBtn = el('btn-insights-new');
+      if (newPillBtn) {
+        const opensKey = CI_OPENS_PREFIX + (config ? config.id : '');
+        const opens    = parseInt(localStorage.getItem(opensKey) || '0', 10);
+        newPillBtn.classList.toggle('hidden', cohortCount === 0 || opens >= 3);
       }
       refreshStickySummary();
       refreshAIInputChips();
@@ -2101,6 +2175,238 @@
       refreshCohortUI();
       hideCohortWipeModal();
       showCohortToast('Cohort saved to Excel and cleared locally.', 'green');
+    }
+
+    /* ── Moderation Export — opt-in & gating (issue #2) ────────
+       The export engine itself ships in issue #3. This block only
+       handles the lecturer/coordinator opt-in record, the gated
+       button visibility, the tutor notice banner, and the n<15
+       blocking dialog. No network calls, no XHR. */
+
+    function _modSlug(s) {
+      return String(s == null ? '' : s).trim()
+        .replace(/[^A-Za-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toUpperCase();
+    }
+
+    // Best-effort prefill values for the modal. The user can edit
+    // any of these before confirming. We never persist the prefill
+    // by itself — only the confirmed values are written.
+    function _modPrefill() {
+      const cohort = SA.getCohort(config && config.id);
+      const cohortLabel = (cohort && cohort.label) || '';
+      return {
+        paper_code:     _modSlug(config && config.courseName) || '',
+        cohort_id:      _modSlug(cohortLabel) || '',
+        assessment_id:  _modSlug(config && config.assessmentTitle) || '',
+        lecturer_name:  (config && config.name) || ''
+      };
+    }
+
+    // The active opt-in identifiers come from the most recently
+    // saved opt-in record for this cohort.label/courseName/assessmentTitle
+    // tuple. If the user changes any of those, no opt-in matches
+    // and the moderation UI returns to its hidden default.
+    function _activeOptInRecord() {
+      if (!window.FKModOptIn) return null;
+      const all = window.FKModOptIn.getAllModerationOptIns();
+      const pf = _modPrefill();
+      // First try an exact match against the prefill.
+      const tryGet = window.FKModOptIn.getModerationOptIn(
+        pf.paper_code, pf.cohort_id, pf.assessment_id);
+      if (tryGet && tryGet.enabled && tryGet.opt_in_recorded) return tryGet;
+
+      // Fall back to any enabled record whose cohort_id matches the
+      // current cohort label slug — this handles the case where the
+      // lecturer typed slightly different paper/assessment codes.
+      for (const k in all) {
+        if (!Object.prototype.hasOwnProperty.call(all, k)) continue;
+        const r = all[k];
+        if (r && r.enabled === true && r.opt_in_recorded === true
+            && r.cohort_id === pf.cohort_id && pf.cohort_id) {
+          return r;
+        }
+      }
+      return null;
+    }
+
+    function refreshModExportUI() {
+      const banner   = el('modexport-tutor-banner');
+      const runBtn   = el('btn-modexport-run');
+      const optBtn   = el('btn-modexport-optin');
+      const offBtn   = el('btn-modexport-disable');
+      const rec      = _activeOptInRecord();
+      const enabled  = !!rec;
+
+      if (banner) banner.classList.toggle('hidden', !enabled);
+      if (runBtn) runBtn.classList.toggle('hidden', !enabled);
+      if (offBtn) offBtn.classList.toggle('hidden', !enabled);
+      // Opt-in entry button is always visible — lecturer can re-open
+      // it to view current state or update identifiers.
+      if (optBtn) optBtn.textContent = enabled
+        ? '🛡️ Moderation Export settings…'
+        : '🛡️ Moderation Export…';
+    }
+
+    function showModExportOptIn() {
+      const modal = el('modexport-optin-modal');
+      if (!modal) return;
+      const pf = _modPrefill();
+      const existing = _activeOptInRecord();
+
+      const setVal = (id, v) => { const x = el(id); if (x) x.value = v || ''; };
+      setVal('modexport-paper-code',     (existing && existing.paper_code)    || pf.paper_code);
+      setVal('modexport-cohort-id',      (existing && existing.cohort_id)     || pf.cohort_id);
+      setVal('modexport-assessment-id',  (existing && existing.assessment_id) || pf.assessment_id);
+      setVal('modexport-lecturer-name',  (existing && existing.lecturer_name) || pf.lecturer_name);
+      setVal('modexport-lecturer-role',  (existing && existing.lecturer_role) || '');
+
+      const cb = el('modexport-confirm-checkbox');
+      if (cb) cb.checked = false;
+      const err = el('modexport-optin-error');
+      if (err) { err.classList.add('hidden'); err.textContent = ''; }
+
+      modal.classList.remove('hidden');
+    }
+
+    function hideModExportOptIn() {
+      const m = el('modexport-optin-modal');
+      if (m) m.classList.add('hidden');
+    }
+
+    function _modShowOptInError(msg) {
+      const err = el('modexport-optin-error');
+      if (!err) return;
+      err.textContent = msg || 'Please complete the required fields.';
+      err.classList.remove('hidden');
+    }
+
+    function confirmModExportOptIn() {
+      if (!window.FKModOptIn) {
+        _modShowOptInError('Moderation Export module not loaded.');
+        return;
+      }
+      const valOf = (id) => { const x = el(id); return x ? (x.value || '').trim() : ''; };
+      const cb = el('modexport-confirm-checkbox');
+
+      const input = {
+        paper_code:      valOf('modexport-paper-code'),
+        cohort_id:       valOf('modexport-cohort-id'),
+        assessment_id:   valOf('modexport-assessment-id'),
+        lecturer_name:   valOf('modexport-lecturer-name'),
+        lecturer_role:   valOf('modexport-lecturer-role'),
+        opt_in_recorded: !!(cb && cb.checked)
+      };
+
+      if (!input.paper_code || !input.cohort_id || !input.assessment_id) {
+        _modShowOptInError('Paper code, Cohort ID and Assessment ID are all required.');
+        return;
+      }
+      if (!input.lecturer_name) {
+        _modShowOptInError('Please enter the lecturer / coordinator name.');
+        return;
+      }
+      if (!input.opt_in_recorded) {
+        _modShowOptInError('Please tick the confirmation checkbox to continue.');
+        return;
+      }
+
+      const result = window.FKModOptIn.setModerationOptIn(input);
+      if (!result || !result.ok) {
+        _modShowOptInError('Could not save opt-in: ' + ((result && result.reason) || 'unknown error'));
+        return;
+      }
+
+      hideModExportOptIn();
+      refreshModExportUI();
+      showCohortToast('Moderation Export enabled for this paper.', 'green');
+    }
+
+    function disableModExport() {
+      const rec = _activeOptInRecord();
+      if (!rec) { refreshModExportUI(); return; }
+      if (!confirm('Disable Moderation Export for ' + rec.paper_code + ' / ' + rec.cohort_id + ' / ' + rec.assessment_id + '?\n\nFuture exports will be blocked. Files you have already generated are unaffected.')) return;
+      if (window.FKModOptIn) {
+        window.FKModOptIn.clearModerationOptIn(rec.paper_code, rec.cohort_id, rec.assessment_id);
+      }
+      refreshModExportUI();
+      showCohortToast('Moderation Export disabled for this paper.', 'slate');
+    }
+
+    function showModExportBlock(n) {
+      const m = el('modexport-block-modal');
+      if (!m) return;
+      setText('modexport-block-count', String(n || 0));
+      m.classList.remove('hidden');
+    }
+    function hideModExportBlock() {
+      const m = el('modexport-block-modal');
+      if (m) m.classList.add('hidden');
+    }
+
+    function runModExport() {
+      const rec = _activeOptInRecord();
+      if (!rec) {
+        showCohortToast('Moderation Export is not enabled for this paper.', 'amber');
+        refreshModExportUI();
+        return;
+      }
+      const cohort = SA.getCohort(config && config.id);
+      const n = (cohort && cohort.students) ? cohort.students.length : 0;
+      const minN = (window.FKModSchema && window.FKModSchema.COHORT_MIN_N) || 15;
+      if (n < minN) {
+        showModExportBlock(n);
+        return;  // No file produced.
+      }
+      if (!window.FKModExport) {
+        showCohortToast('Moderation Export module not loaded. Please refresh and try again.', 'amber');
+        return;
+      }
+      const filename = window.FKModExport.buildAndDownloadModExport({ config: config, cohort: cohort, optInRecord: rec });
+      if (filename) showCohortToast('Moderation Export downloaded: ' + filename, 'green');
+    }
+
+    /* ── Cohort Insights panel ───────────────────────────── */
+    const CI_OPENS_PREFIX = 'SA_CI_OPENS_';
+
+    function showCohortInsights() {
+      const modal  = el('cohort-insights-modal');
+      if (!modal) return;
+      const cohort = SA.getCohort(config && config.id);
+      if (!cohort || !cohort.students.length) {
+        showCohortToast('Add students to the cohort first.', 'amber');
+        return;
+      }
+      modal.classList.remove('hidden');
+      modal.scrollTop = 0;
+
+      // NEW pill: increment open count; hide after 3 opens
+      const opensKey = CI_OPENS_PREFIX + (config ? config.id : '');
+      const opens    = parseInt(localStorage.getItem(opensKey) || '0', 10) + 1;
+      localStorage.setItem(opensKey, String(opens));
+      const newPillBtn = el('btn-insights-new');
+      if (newPillBtn) newPillBtn.classList.toggle('hidden', opens >= 3);
+
+      _renderCohortInsights(cohort);
+    }
+
+    function _renderCohortInsights(cohort) {
+      const body = el('cohort-insights-body');
+      if (!body || !cohort) return;
+      if (typeof CohortInsights !== 'undefined') {
+        CohortInsights.renderInsights(body, config, cohort, '');
+      } else {
+        body.innerHTML = '<p class="ci-note text-red-600">Cohort Insights module not loaded.</p>';
+      }
+    }
+
+    function hideCohortInsights() {
+      const modal = el('cohort-insights-modal');
+      if (modal) modal.classList.add('hidden');
+      const trigger = el('btn-insights');
+      if (trigger) trigger.focus();
     }
 
     /* ── New student ─────────────────────────────────────── */
@@ -2915,7 +3221,7 @@
       }
 
       function closeAnyOpenModal() {
-        ['cohort-list-modal', 'cohort-setup-modal', 'cohort-wipe-modal', 'ai-settings-modal', 'shortcuts-modal']
+        ['cohort-list-modal', 'cohort-setup-modal', 'cohort-wipe-modal', 'ai-settings-modal', 'shortcuts-modal', 'cohort-insights-modal']
           .forEach(function (id) {
             const m = document.getElementById(id);
             if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
@@ -3439,6 +3745,13 @@
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
+             // Moderation Export — opt-in & gating (issue #2)
+             showModExportOptIn, hideModExportOptIn, confirmModExportOptIn,
+             disableModExport, runModExport,
+             showModExportBlock, hideModExportBlock,
+             refreshModExportUI,
+             // Cohort Insights (Phase 1)
+             showCohortInsights, hideCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
              aiToggleAllExplainers };
   })();
@@ -3534,6 +3847,132 @@
           class="flex-1 bg-red-600 text-white font-semibold py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
           Yes, clear local copy
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Moderation Export — lecturer/coordinator opt-in modal ─── -->
+  <div id="modexport-optin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideModExportOptIn()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div class="text-3xl mb-3 text-center">🛡️</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-1 text-center">Enable Moderation Export</h3>
+      <p class="text-slate-500 text-xs mb-4 text-center">Privacy-reduced workbook for cross-tutor moderation meetings.</p>
+
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-700 mb-4 space-y-3">
+        <div>
+          <div class="font-semibold text-slate-800 mb-1">Purpose</div>
+          A privacy-reduced export to support lecturer-led, pooled, cross-tutor moderation conversations. Not for performance management of tutors and not for student-level disclosure.
+        </div>
+        <div>
+          <div class="font-semibold text-slate-800 mb-1">What it includes</div>
+          Shuffled rubric scores, totals, grade band, anonymous tutor labels (collapsed when n&lt;5), suppression flags, cohort/paper/assessment identifiers, FK version, hour-rounded export timestamp.
+        </div>
+        <div>
+          <div class="font-semibold text-slate-800 mb-1">What it excludes</div>
+          Student names, IDs / NSNs, emails, tutor names, marker notes, feedback text, verbatim snippets, exact timestamps, reversible lookup keys, composite tutor-quality scores.
+        </div>
+        <div class="border-l-4 border-amber-400 bg-amber-50 px-3 py-2 rounded">
+          <div class="font-semibold text-amber-900 mb-1">Privacy-reduced, not anonymised</div>
+          Re-identification may still be possible in small cohorts. The export is blocked if n&lt;15. You remain responsible for how the file is shared and stored.
+        </div>
+        <div>
+          <div class="font-semibold text-slate-800 mb-1">Lecturer / coordinator responsibilities</div>
+          Only enable this if you are the responsible paper coordinator for this assessment. Inform tutors that the export is enabled; they will see a notice banner. Disable it again when moderation is complete.
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1" for="modexport-paper-code">Paper code <span class="text-red-500">*</span></label>
+          <input id="modexport-paper-code" type="text" placeholder="e.g. MGMT231"
+            class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1" for="modexport-cohort-id">Cohort ID <span class="text-red-500">*</span></label>
+          <input id="modexport-cohort-id" type="text" placeholder="e.g. 2026-A"
+            class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1" for="modexport-assessment-id">Assessment ID <span class="text-red-500">*</span></label>
+          <input id="modexport-assessment-id" type="text" placeholder="e.g. A2"
+            class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1" for="modexport-lecturer-name">Lecturer / coordinator name <span class="text-red-500">*</span></label>
+          <input id="modexport-lecturer-name" type="text" placeholder="Your name"
+            class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1" for="modexport-lecturer-role">Role (optional)</label>
+          <input id="modexport-lecturer-role" type="text" placeholder="e.g. Paper Coordinator"
+            class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+        </div>
+      </div>
+
+      <label class="flex items-start gap-2 text-sm text-slate-700 mb-4 cursor-pointer">
+        <input type="checkbox" id="modexport-confirm-checkbox" class="mt-1">
+        <span>I confirm I am the responsible paper coordinator for this assessment and I take responsibility for how this Moderation Export is used and stored.</span>
+      </label>
+
+      <div id="modexport-optin-error" class="hidden text-xs text-red-600 mb-3"></div>
+
+      <div class="flex gap-3">
+        <button onclick="S.hideModExportOptIn()"
+          class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
+          Cancel
+        </button>
+        <button id="modexport-confirm-btn" onclick="S.confirmModExportOptIn()"
+          class="flex-1 bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition-colors text-sm">
+          Enable Moderation Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Moderation Export — n<15 blocking dialog ─────────────── -->
+  <div id="modexport-block-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideModExportBlock()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
+      <div class="text-3xl mb-3">🚫</div>
+      <h3 class="font-bold text-slate-800 text-lg mb-2">Moderation Export blocked</h3>
+      <p class="text-sm text-slate-600 mb-2">
+        The cohort has only <strong><span id="modexport-block-count">0</span></strong> student record(s).
+      </p>
+      <p class="text-sm text-slate-600 mb-6">
+        Moderation Export requires at least <strong>15</strong> students to reduce re-identification risk. No file has been produced.
+      </p>
+      <button onclick="S.hideModExportBlock()"
+        class="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition-colors text-sm">
+        OK
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Cohort Insights panel ─────────────────────────── -->
+  <!-- z-[60] sits above all other modals (z-50). Scroll happens on the outer
+       div so the whole white card is reachable on short viewports. -->
+  <div id="cohort-insights-modal" class="no-print fixed inset-0 z-[60] overflow-y-auto hidden">
+    <div class="flex items-start justify-center min-h-full p-4 pb-8" style="padding-top:8rem">
+      <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortInsights()"></div>
+      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col">
+
+        <!-- Panel header ------------------------------------------- -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 rounded-t-2xl">
+          <h2 class="font-semibold text-slate-700 text-base">📊 Cohort Insights</h2>
+          <button onclick="S.hideCohortInsights()"
+                  class="text-sm font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 py-2 transition-colors"
+                  aria-label="Close Cohort Insights">Close</button>
+        </div>
+
+        <!-- Insights content body ---------------------------------- -->
+        <div id="cohort-insights-body" class="p-6">
+          <p class="ci-note text-slate-400">Loading…</p>
+        </div>
+
       </div>
     </div>
   </div>
