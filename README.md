@@ -23,8 +23,9 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 - [Exporting Your Work](#exporting-your-work)
 - [Sharing Scorers with Colleagues](#sharing-scorers-with-colleagues)
 - [Technical Architecture](#technical-architecture)
-- [Privacy & Data Storage](#privacy--data-storage)
+- [Privacy & Data Handling Disclosure](#privacy--data-handling-disclosure)
 - [Deployment](#deployment)
+- [How I use Pull Requests for FK](#how-i-use-pull-requests-for-fk)
 - [Acknowledgements](#acknowledgements)
 
 ---
@@ -244,7 +245,7 @@ Each Scorer configuration object contains: assessment details, grade scale defin
 
 ## Privacy & Data Handling Disclosure
 
-No data leaves your device. Feedback Kitchen runs entirely in the browser — there is no server, no account, and no telemetry. All Scorer configurations and personal snippets are stored in your browser's localStorage and remain on your machine. If the Feedback Wording Assistant is used, the assembled feedback text is sent to an external AI provider with all student names and IDs automatically stripped before transmission. No student-identifiable data leaves your device.
+No data leaves your device. Feedback Kitchen runs entirely in the browser — there is no server, no account, and no telemetry. All Scorer configurations and personal snippets are stored in your browser's localStorage and remain on your machine. If the Feedback Wording Assistant is used, only the assembled feedback text is sent to the external AI provider, with all student names and IDs automatically stripped before transmission.
 
 Student data (names, IDs, grades, scores, and assembled feedback) is held only in memory during a marking session and is never written to localStorage or transmitted anywhere.
 
@@ -271,9 +272,39 @@ There are no environment variables, server-side processes, or database connectio
 
 ---
 
+## How I use Pull Requests for FK
+
+For this project I use **one pull request per feature**. A pull request is just a page on GitHub where I review a set of changes before they become the new “official” version of the app.
+
+### When I open a pull request
+
+I open a pull request when I finish a coherent piece of work, for example:
+
+- Moderation export opt‑in UI
+- Cohort Insights Phase 1
+- Refine Wording / AI assist changes
+
+These changes live on their own branch (for example `feat/modexport-optin-ui`) until I’m happy with them.
+
+### My pull request steps
+
+Each feature follows the same simple pattern:
+
+1. Create a new branch from `main`.
+2. Make and commit changes on that branch, and test locally.
+3. Push the branch to GitHub.
+4. On GitHub, click **Compare & pull request**, check that `base` is `main` and `compare` is my feature branch.
+5. Add a short title and a brief description of what changed and why (including any privacy/marking notes).
+6. Skim the Files tab to confirm the changes match my intent.
+7. Click **Merge pull request** when I’m satisfied, then delete the feature branch.
+
+This gives me a small “decision point” for each feature and a written record I can come back to later, without needing a complex team workflow.
+
+---
+
 ## Acknowledgements
 
-Feedback Kitchen is adapted from the original *Feedback Kitchen* Excel marking tool developed and generously shared by **Dr Michael Harker, University of Strathclyde** (michael.harker@strath.ac.uk). Redesigned as a browser-based application for use at the **University of Waikato**, reflecting NZ grading policy but adaptable to any institutional grade scale, course structure, or assessment context. Free to use for all educators.
+Feedback Kitchen is adapted from the original *Feedback Kitchen* Excel marking tool developed and generously shared by **Dr Michael Harker, University of Strathclyde** (michael.harker@strath.ac.uk). Redesigned as a browser-based application for use at the **University of Waikato** (contact Dr Harker directly for a copy), reflecting NZ grading policy but adaptable to any institutional grade scale, course structure, or assessment context. Free to use for all educators.
 
 Site built with AI coding assistance (Claude / Anthropic · Perplexity · Microsoft Copilot · Qwen / Ollama · Google Gemini).
 
