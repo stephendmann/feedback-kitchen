@@ -304,7 +304,7 @@ This gives me a small “decision point” for each feature and a written record
 
 ## Acknowledgements
 
-Feedback Kitchen is adapted from the original *Feedback Kitchen* Excel marking tool developed and generously shared by **Dr Michael Harker, University of Strathclyde** (michael.harker@strath.ac.uk). Redesigned as a browser-based application for use at the **University of Waikato** (contact Dr Harker directly for a copy), reflecting NZ grading policy but adaptable to any institutional grade scale, course structure, or assessment context. Free to use for all educators.
+Feedback Kitchen is adapted from the original *Feedback Kitchen* Excel marking tool developed and generously shared by **Dr Michael Harker, University of Strathclyde** (contact Dr Harker directly for a copy or regarding his research at michael.harker@strath.ac.uk). Initially redesigned as a browser-based application for use at the **University of Waikato**, reflecting NZ grading policy but now more broadly adaptable to any institutional grade scale, course structure, or assessment context. Free to use for all educators.
 
 Site built with AI coding assistance (Claude / Anthropic · Perplexity · Microsoft Copilot · Qwen / Ollama · Google Gemini).
 
