@@ -301,28 +301,21 @@
     }
     b.push(s1 + '.');
 
-    if (state === 'A') {
-      if (m.scale_use_ratio < TH.scale_compressed) {
-        b.push('In this cohort, scale use sits at ' + pct(m.scale_use_ratio) + ' of the available range — anchor papers can help check whether top and bottom work is spread enough.');
-      } else if (m.scale_use_ratio > TH.scale_wide) {
-        b.push('In this cohort, scale use is wide (' + pct(m.scale_use_ratio) + '); worth confirming extremes are clearly evidenced in your Notes.');
-      } else if (m.within_student_sd_pct < TH.within_sd_flat_pct) {
-        b.push('Within-script differentiation is flat in this cohort (' + fmt(m.within_student_sd_pct, 1) + '%); worth a brief check on whether one criterion is anchoring the others.');
-      } else {
-        b.push('Marking spread looks balanced in this cohort — both across the scale and across criteria within each script.');
-      }
-      if (m.notes_completion_rate === 1) {
-        b.push("Marker's Notes completed on every script — strong audit trail if any grade is queried.");
-      } else if (m.notes_completion_rate === 0) {
-        b.push("Marker's Notes were not used; even short notes per script make later moderation conversations easier.");
-      } else {
-        b.push("Marker's Notes recorded on " + pct(m.notes_completion_rate) + ' of scripts.');
-      }
+    if (m.scale_use_ratio < TH.scale_compressed) {
+      b.push('In this cohort, scale use sits at ' + pct(m.scale_use_ratio) + ' of the available range — anchor papers can help check whether top and bottom work is spread enough.');
+    } else if (m.scale_use_ratio > TH.scale_wide) {
+      b.push('In this cohort, scale use is wide (' + pct(m.scale_use_ratio) + '); worth confirming extremes are clearly evidenced in your Notes.');
+    } else if (m.within_student_sd_pct < TH.within_sd_flat_pct) {
+      b.push('Within-script differentiation is flat in this cohort (' + fmt(m.within_student_sd_pct, 1) + '%); worth a brief check on whether one criterion is anchoring the others.');
     } else {
-      /* States B and C: drop personal-practice bullets from the cohort-level summary.
-         Those observations reflect multiple markers collectively and should not be
-         attributed to any individual's practice. */
-      b.push('Marking spread and documentation figures are shown in the marking-patterns section below, not at cohort level in a mixed-marker cohort.');
+      b.push('Marking spread looks balanced in this cohort — both across the scale and across criteria within each script.');
+    }
+    if (m.notes_completion_rate === 1) {
+      b.push("Marker's Notes completed on every script — strong audit trail if any grade is queried.");
+    } else if (m.notes_completion_rate === 0) {
+      b.push("Marker's Notes were not used; even short notes per script make later moderation conversations easier.");
+    } else {
+      b.push("Marker's Notes recorded on " + pct(m.notes_completion_rate) + ' of scripts.');
     }
 
     var isVerySmall = m.n < 12;
@@ -413,12 +406,6 @@
       return;
     }
 
-    /* State B subset metrics (for marking-patterns section and prompts) */
-    var subsetM = null;
-    if (ctx.state === 'B' && ctx.subset_students && ctx.subset_students.length >= 1) {
-      subsetM = cohortMetrics(config, ctx.subset_students);
-    }
-
     var isSmall     = m.n < TH.SMALL_N;
     var isVerySmall = m.n < TH.VERY_SMALL_N;
 
@@ -431,7 +418,7 @@
       : '<span class="ci-qualifier">this cohort only · multiple markers · not a tutor metric</span>';
 
     /* α tooltip — prepend mixed-marker note in States B and C */
-    var alphaTipBase = 'Cronbach’s α for this cohort only — a description of how the criterion marks moved together across these scripts. It is not a tutor performance metric. Some coupling is expected when criteria build on each other. FK is fully human-marked. A pooled, cross-cohort version sits in the Coordinator Dashboard, where pooling makes the interpretation reliable.';
+    var alphaTipBase = "Cronbach's α for this cohort only — a description of how the criterion marks moved together across these scripts. It is not a tutor performance metric. Some coupling is expected when criteria build on each other. FK is fully human-marked. A pooled, cross-cohort version sits in the Coordinator Dashboard, where pooling makes the interpretation reliable.";
     var alphaTip = (ctx.state === 'B' || ctx.state === 'C')
       ? 'This cohort was marked by more than one person, so this α describes how the criteria moved together across all scripts collectively — not how any single marker behaved. ' + alphaTipBase
       : alphaTipBase;
@@ -495,64 +482,42 @@
     /* ── Section: mixed-marker context strip ── */
     var mixedStripHtml = '';
     if (ctx.state === 'B') {
-      var subsetNote = subsetM
-        ? 'Marker-pattern figures are computed on the ' + ctx.subset_n + ' scripts <em>you</em> personally marked.'
-        : 'Enter your name in the prompt above to see your marking subset.';
-      mixedStripHtml = '<div class="ci-mixed-strip"><strong>Mixed-marker cohort.</strong> This cohort includes scripts marked by more than one person. Cohort-overview figures below describe the whole cohort. ' + subsetNote + '</div>';
+      mixedStripHtml = '<div class="ci-mixed-strip"><strong>Mixed-marker cohort.</strong> This assessment is configured for multiple markers. Figures below describe all scripts in this cohort.</div>';
     } else if (ctx.state === 'C') {
-      mixedStripHtml = '<div class="ci-mixed-strip"><strong>Mixed-marker cohort.</strong> This cohort includes scripts marked by more than one person, but per-marker information is not available in the export. Marker-pattern figures cannot be shown for this cohort.</div>';
+      mixedStripHtml = '<div class="ci-mixed-strip"><strong>Mixed-marker cohort.</strong> This assessment is configured for multiple markers. Figures below describe all scripts in your local export.</div>';
     }
 
-    /* ── Section: marking behaviour ──
-       Visibility matrix (canonical, from inside_fk_vs_outside_fk.md):
-         State A   → full marking-patterns section, cohort-wide metrics
-         State B   → heading = "Your marking subset", subset metrics only
-         State C   → heading = "Marking patterns", suppression note shown
-    */
-    var bm = (ctx.state === 'B' && subsetM) ? subsetM : m;
-    var behaviourHeading = ctx.state === 'A' ? 'Marking patterns in this cohort'
-      : ctx.state === 'B' ? 'Your marking subset'
-      : 'Marking patterns';
+    /* ── Section: marking behaviour ── */
+    var behaviourHeading = 'Marking patterns in this cohort';
 
-    var scaleBadge  = bm.scale_use_ratio < TH.scale_compressed ? pbadge('amber', 'Compressed')
-      : bm.scale_use_ratio > TH.scale_wide                     ? pbadge('amber', 'Wide')
-      :                                                           pbadge('teal',  'Balanced');
-    var withinBadge = bm.within_student_sd_pct < TH.within_sd_flat_pct ? pbadge('amber', 'Flat')
-      :                                                                    pbadge('teal',  'Differentiated');
-    var lateBadgeHtml = bm.late_penalty_count > 0
-      ? bm.late_penalty_count + ' ' + pbadge('purple', 'administrative') : '0';
-    var overBadge   = bm.override_rate > TH.override_soft_flag ? ' ' + pbadge('amber', 'High override rate') : '';
-    var overHtml    = bm.override_count + ' (' + pct(bm.override_rate) + ')' + overBadge;
-    var notesBadge  = bm.notes_completion_rate === 1 ? ' ' + pbadge('teal', 'Full notes')
-      : bm.notes_completion_rate === 0               ? ' ' + pbadge('amber', 'No notes') : '';
-    var notesHtml   = pct(bm.notes_completion_rate) + notesBadge;
+    var scaleBadge  = m.scale_use_ratio < TH.scale_compressed ? pbadge('amber', 'Compressed')
+      : m.scale_use_ratio > TH.scale_wide                     ? pbadge('amber', 'Wide')
+      :                                                          pbadge('teal',  'Balanced');
+    var withinBadge = m.within_student_sd_pct < TH.within_sd_flat_pct ? pbadge('amber', 'Flat')
+      :                                                                   pbadge('teal',  'Differentiated');
+    var lateBadgeHtml = m.late_penalty_count > 0
+      ? m.late_penalty_count + ' ' + pbadge('purple', 'administrative') : '0';
+    var overBadge   = m.override_rate > TH.override_soft_flag ? ' ' + pbadge('amber', 'High override rate') : '';
+    var overHtml    = m.override_count + ' (' + pct(m.override_rate) + ')' + overBadge;
+    var notesBadge  = m.notes_completion_rate === 1 ? ' ' + pbadge('teal', 'Full notes')
+      : m.notes_completion_rate === 0               ? ' ' + pbadge('amber', 'No notes') : '';
+    var notesHtml   = pct(m.notes_completion_rate) + notesBadge;
 
-    var basisLabel = ctx.state === 'B' && subsetM
-      ? 'Based on the ' + ctx.subset_n + ' scripts you marked in this mixed-marker cohort of ' + ctx.total_n + '.'
-      : '';
+    var scaleUseTip   = "How much of the available scoring range you used. Compressed marking (&lt;60%) can quietly squash differences between strong and average work; anchor papers help. Wide marking (&gt;95%) is fine when the extremes are well-evidenced.";
+    var withinSdTip   = "How much each student's criterion marks vary from each other on average. If this is very low (&lt;3%), it can mean the rubric is functioning more like one overall judgement than independent criteria. Worth checking whether you're seeing genuine across-the-board strength/weakness or whether one criterion is anchoring the others.";
 
-    var scaleUseTip   = 'How much of the available scoring range you used. Compressed marking (&lt;60%) can quietly squash differences between strong and average work; anchor papers help. Wide marking (&gt;95%) is fine when the extremes are well-evidenced.';
-    var withinSdTip   = 'How much each student’s criterion marks vary from each other on average. If this is very low (&lt;3%), it can mean the rubric is functioning more like one overall judgement than independent criteria. Worth checking whether you’re seeing genuine across-the-board strength/weakness or whether one criterion is anchoring the others.';
-
-    var behaviourBodyHtml;
-    if (ctx.state === 'C') {
-      behaviourBodyHtml = '<div class="ci-suppressed-note">This cohort was marked by more than one person and per-marker information is not available in the export. Marker-specific insights cannot be shown.<span class="ci-pointer">For per-marker comparison, use the Coordinator Dashboard with multiple cohorts.</span></div>';
-    } else if (ctx.state === 'B' && !subsetM) {
-      behaviourBodyHtml = '<div class="ci-suppressed-note">Marker-pattern figures will appear once you enter your name in the prompt above — they are computed on the scripts you personally marked.</div>';
-    } else {
-      behaviourBodyHtml =
-        (basisLabel ? '<div class="ci-subset-banner">' + escHtml(basisLabel) + '</div>' : '') +
+    var behaviourBodyHtml =
         '<h3 class="ci-h3">Spread across the scale</h3>' +
         '<div class="ci-grid">' +
-          '<div class="ci-k">Total-score SD</div><div class="ci-v">' + fmt(bm.total_score_sd, 2) + '</div>' +
-          '<div class="ci-k">Range used</div><div class="ci-v">' + fmt(bm.total_score_range, 1) + ' pts</div>' +
+          '<div class="ci-k">Total-score SD</div><div class="ci-v">' + fmt(m.total_score_sd, 2) + '</div>' +
+          '<div class="ci-k">Range used</div><div class="ci-v">' + fmt(m.total_score_range, 1) + ' pts</div>' +
           '<div class="ci-k"><span class="ci-tip" title="' + scaleUseTip + '">Scale-use ratio</span></div>' +
-          '<div class="ci-v">' + pct(bm.scale_use_ratio) + ' ' + scaleBadge + '</div>' +
+          '<div class="ci-v">' + pct(m.scale_use_ratio) + ' ' + scaleBadge + '</div>' +
         '</div>' +
         '<h3 class="ci-h3">Within-script differentiation</h3>' +
         '<div class="ci-grid">' +
           '<div class="ci-k"><span class="ci-tip" title="' + withinSdTip + '">Within-student SD across criteria</span></div>' +
-          '<div class="ci-v">' + fmt(bm.within_student_sd_pct, 1) + '% ' + withinBadge + '</div>' +
+          '<div class="ci-v">' + fmt(m.within_student_sd_pct, 1) + '% ' + withinBadge + '</div>' +
         '</div>' +
         '<h3 class="ci-h3">Marking decisions</h3>' +
         '<div class="ci-grid">' +
@@ -562,16 +527,12 @@
         '<h3 class="ci-h3">Documentation</h3>' +
         '<div class="ci-grid">' +
           '<div class="ci-k">Marker\'s Notes completion</div><div class="ci-v">' + notesHtml + '</div>' +
-          '<div class="ci-k">Feedback length (mean ± SD)</div><div class="ci-v">' + bm.feedback_word_count_mean + ' ± ' + bm.feedback_word_count_sd + ' words</div>' +
+          '<div class="ci-k">Feedback length (mean ± SD)</div><div class="ci-v">' + m.feedback_word_count_mean + ' ± ' + m.feedback_word_count_sd + ' words</div>' +
         '</div>';
-    }
 
     /* ── Summary and formative prompts ── */
     var summaryBullets = buildSummary(m, ctx.state);
-
-    /* Prompts use subset metrics for State B, cohort metrics for State A */
-    var promptMetrics = (ctx.state === 'B' && subsetM) ? subsetM : m;
-    var prompts = ctx.state !== 'C' ? buildFormativePrompts(promptMetrics) : [];
+    var prompts = buildFormativePrompts(m);
 
     /* ── Assemble full panel HTML ── */
     panel.innerHTML =
@@ -621,17 +582,22 @@
         '<p class="ci-disclaimer">All figures on this page describe <strong>this cohort only</strong>. With a single cohort it is not possible to tell whether any pattern is typical or unusual, rubric-driven or marker-driven. Cross-cohort comparison and rubric-level role labels (unique / moderate / amplifier) live in the Coordinator Dashboard, where pooled data makes that interpretation reliable. Treat anything here as an observation, not a verdict.</p>' +
       '</section>' +
 
-      (ctx.state !== 'C'
-        ? '<section class="ci-section">' +
-            '<h2 class="ci-h2">Formative prompts</h2>' +
-            (prompts.length
-              ? '<ul class="ci-prompts-ul">' + prompts.map(function (p) { return '<li>' + escHtml(p) + '</li>'; }).join('') + '</ul>'
-              : '<p class="ci-note">No specific prompts for this cohort — marking patterns all look balanced.</p>') +
-            '<p class="ci-panel-note">Prompts are starting points for your own reflection — not rankings, scores, or judgements about your marking.</p>' +
-          '</section>'
-        : '') +
+      '<section class="ci-section">' +
+        '<h2 class="ci-h2">Formative prompts</h2>' +
+        (prompts.length
+          ? '<ul class="ci-prompts-ul">' + prompts.map(function (p) { return '<li>' + escHtml(p) + '</li>'; }).join('') + '</ul>'
+          : '<p class="ci-note">No specific prompts for this cohort — marking patterns all look balanced.</p>') +
+        '<p class="ci-panel-note">Prompts are starting points for your own reflection — not rankings, scores, or judgements about your marking.</p>' +
+      '</section>' +
 
-      '<footer class="ci-footer">Feedback Kitchen is a human-marked, comment-compilation tool. There is no AI grading. This view describes your cohort only and is intended as formative reflection — not a performance review and not a comparison with other tutors.</footer>';
+      '<footer class="ci-footer">Feedback Kitchen is a human-marked, comment-compilation tool. There is no AI grading. This view describes your cohort only and is intended as formative reflection — not a performance review and not a comparison with other tutors.</footer>' +
+
+      '<div class="mt-5 mb-2 flex justify-center">' +
+        '<button onclick="S && S.hideCohortInsights && S.hideCohortInsights()" ' +
+                'class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-2.5 rounded-xl text-sm transition-colors">' +
+          '← Back to marking' +
+        '</button>' +
+      '</div>';
   }
 
   /* ── Public API ─────────────────────────────────────────────── */

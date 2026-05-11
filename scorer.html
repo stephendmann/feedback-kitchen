@@ -2370,7 +2370,6 @@
 
     /* ── Cohort Insights panel ───────────────────────────── */
     const CI_OPENS_PREFIX = 'SA_CI_OPENS_';
-    let _ciCurrentTutor = '';
 
     function showCohortInsights() {
       const modal  = el('cohort-insights-modal');
@@ -2390,29 +2389,14 @@
       const newPillBtn = el('btn-insights-new');
       if (newPillBtn) newPillBtn.classList.toggle('hidden', opens >= 3);
 
-      // Pre-fill tutor name from the Tutor input field
-      const tutorInput = el('student-tutor');
-      _ciCurrentTutor  = tutorInput ? tutorInput.value.trim() : '';
-
       _renderCohortInsights(cohort);
     }
 
     function _renderCohortInsights(cohort) {
       const body = el('cohort-insights-body');
       if (!body || !cohort) return;
-
-      // Show tutor-name prompt for mixed-marker cohorts where tutor is unknown
-      const tutorPrompt = el('ci-tutor-prompt');
-      const tutorInp    = el('ci-tutor-input');
-      if (tutorPrompt) {
-        const needPrompt = !!cohort.multiMarker && !_ciCurrentTutor;
-        tutorPrompt.classList.toggle('hidden', !needPrompt);
-        if (tutorInp && needPrompt && !tutorInp.value) tutorInp.value = '';
-      }
-
-      // Delegate all rendering to the CohortInsights module
       if (typeof CohortInsights !== 'undefined') {
-        CohortInsights.renderInsights(body, config, cohort, _ciCurrentTutor);
+        CohortInsights.renderInsights(body, config, cohort, '');
       } else {
         body.innerHTML = '<p class="ci-note text-red-600">Cohort Insights module not loaded.</p>';
       }
@@ -2421,18 +2405,8 @@
     function hideCohortInsights() {
       const modal = el('cohort-insights-modal');
       if (modal) modal.classList.add('hidden');
-    }
-
-    // Called when the user submits a tutor name in the State-B prompt
-    function ciApplyTutor() {
-      const inp = el('ci-tutor-input');
-      if (!inp) return;
-      _ciCurrentTutor = inp.value.trim();
-      // Mirror name into the main Tutor field if it was blank
-      const tutorEl = el('student-tutor');
-      if (tutorEl && !tutorEl.value.trim()) tutorEl.value = _ciCurrentTutor;
-      const cohort = SA.getCohort(config && config.id);
-      _renderCohortInsights(cohort);
+      const trigger = el('btn-insights');
+      if (trigger) trigger.focus();
     }
 
     /* ── New student ─────────────────────────────────────── */
@@ -3777,7 +3751,7 @@
              showModExportBlock, hideModExportBlock,
              refreshModExportUI,
              // Cohort Insights (Phase 1)
-             showCohortInsights, hideCohortInsights, ciApplyTutor,
+             showCohortInsights, hideCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
              aiToggleAllExplainers };
   })();
@@ -3982,41 +3956,16 @@
   <!-- z-[60] sits above all other modals (z-50). Scroll happens on the outer
        div so the whole white card is reachable on short viewports. -->
   <div id="cohort-insights-modal" class="no-print fixed inset-0 z-[60] overflow-y-auto hidden">
-    <div class="flex items-start justify-center min-h-full p-4 py-8">
+    <div class="flex items-start justify-center min-h-full p-4 pb-8" style="padding-top:8rem">
       <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortInsights()"></div>
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col">
 
-        <!-- Tab bar ------------------------------------------------ -->
-        <div class="sticky top-0 bg-white z-10 flex items-center gap-0.5 px-3 pt-3 border-b border-slate-100 rounded-t-2xl flex-wrap">
-          <button onclick="S.hideCohortInsights(); document.getElementById('sec-student').scrollIntoView({behavior:'smooth'})"
-                  class="px-3 py-2 text-sm text-slate-500 hover:text-blue-700 font-medium whitespace-nowrap border-b-2 border-transparent hover:border-slate-300 transition-colors"
-                  title="Back to marking sections">← Marking</button>
-          <button onclick="S.hideCohortInsights(); document.getElementById('sec-feedback').scrollIntoView({behavior:'smooth'})"
-                  class="px-3 py-2 text-sm text-slate-500 hover:text-blue-700 font-medium whitespace-nowrap border-b-2 border-transparent hover:border-slate-300 transition-colors"
-                  title="Back to feedback section">← Feedback</button>
-          <button class="px-3 py-2 text-sm text-blue-700 font-semibold whitespace-nowrap border-b-2 border-blue-600 cursor-default">
-            📊 Cohort Insights
-          </button>
-          <button onclick="S.hideCohortInsights(); document.getElementById('sec-export').scrollIntoView({behavior:'smooth'})"
-                  class="px-3 py-2 text-sm text-slate-500 hover:text-blue-700 font-medium whitespace-nowrap border-b-2 border-transparent hover:border-slate-300 transition-colors"
-                  title="Back to export section">← Export</button>
-          <div class="flex-1"></div>
+        <!-- Panel header ------------------------------------------- -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 rounded-t-2xl">
+          <h2 class="font-semibold text-slate-700 text-base">📊 Cohort Insights</h2>
           <button onclick="S.hideCohortInsights()"
-                  class="px-2 pb-1 text-slate-400 hover:text-slate-700 text-2xl leading-none self-center"
-                  aria-label="Close Cohort Insights">&times;</button>
-        </div>
-
-        <!-- Tutor name prompt (State B, no tutor known) ----------- -->
-        <div id="ci-tutor-prompt" class="hidden mx-4 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
-          <strong class="text-amber-800">Mixed-marker cohort:</strong>
-          <span class="text-amber-700"> Enter your tutor name to see your marking subset (must match the Tutor field in your student records).</span>
-          <div class="flex gap-2 mt-2">
-            <input type="text" id="ci-tutor-input"
-                   class="input-field text-sm flex-1"
-                   placeholder="e.g. SM"
-                   onkeydown="if(event.key==='Enter') S.ciApplyTutor()">
-            <button onclick="S.ciApplyTutor()" class="btn btn-blue text-sm px-4">Apply</button>
-          </div>
+                  class="text-sm font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 py-2 transition-colors"
+                  aria-label="Close Cohort Insights">Close</button>
         </div>
 
         <!-- Insights content body ---------------------------------- -->
