@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBP v0.1 Audit Triage — Scope Boundary</title>
+<style>
+  :root, [data-theme="light"] {
+    --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9;
+    --color-surface-offset: #f3f0ec; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+    --color-text: #28251d; --color-text-muted: #7a7974; --color-text-faint: #bab9b4;
+    --color-primary: #01696f; --color-primary-hover: #0c4e54;
+    --color-primary-highlight: #cedcd8;
+    --color-success: #437a22; --color-success-highlight: #d4dfcc;
+    --color-warning: #964219; --color-warning-highlight: #ddcfc6;
+    --color-error: #a12c7b; --color-error-highlight: #e0ced7;
+    --color-orange: #da7101; --color-orange-highlight: #e7d7c4;
+    --color-gold: #d19900;
+    --color-blue: #006494; --color-blue-highlight: #c6d8e4;
+    --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06);
+    --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
+    --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
+    --radius-xl: 1rem; --radius-full: 9999px;
+    --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+    --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+    --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+    --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+    --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+    --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+  }
+  [data-theme="dark"] {
+    --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d;
+    --color-surface-offset: #1d1c1a; --color-border: #393836; --color-divider: #262523;
+    --color-text: #cdccca; --color-text-muted: #797876; --color-text-faint: #5a5957;
+    --color-primary: #4f98a3; --color-primary-hover: #227f8b;
+    --color-primary-highlight: #313b3b;
+    --color-success: #6daa45; --color-success-highlight: #3a4435;
+    --color-warning: #bb653b; --color-warning-highlight: #564942;
+    --color-error: #d163a7; --color-error-highlight: #4c3d46;
+    --color-orange: #fdab43; --color-orange-highlight: #564b3e;
+    --color-gold: #e8af34;
+    --color-blue: #5591c7; --color-blue-highlight: #3a4550;
+    --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+    --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body {
+    min-height: 100dvh; font-family: 'Inter', system-ui, sans-serif;
+    font-size: var(--text-base); color: var(--color-text);
+    background: var(--color-bg); line-height: 1.6;
+  }
+  h1,h2,h3,h4 { line-height: 1.2; text-wrap: balance; }
+  p, li { text-wrap: pretty; max-width: 72ch; }
+  .container { max-width: 900px; margin-inline: auto; padding: var(--space-8) var(--space-6); }
+
+  /* Header */
+  .header {
+    background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+    padding: var(--space-5) var(--space-6); position: sticky; top: 0; z-index: 10;
+    box-shadow: var(--shadow-sm);
+  }
+  .header-inner {
+    max-width: 900px; margin-inline: auto;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  }
+  .header-meta { display: flex; align-items: center; gap: var(--space-3); }
+  .tag {
+    font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+  }
+  .tag-version { background: var(--color-primary-highlight); color: var(--color-primary); }
+  .tag-scope { background: var(--color-warning-highlight); color: var(--color-warning); }
+  .header-title {
+    font-size: var(--text-base); font-weight: 600; color: var(--color-text);
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    background: none; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    padding: var(--space-2); cursor: pointer; color: var(--color-text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 160ms, color 160ms;
+  }
+  .theme-toggle:hover { background: var(--color-surface-offset); color: var(--color-text); }
+
+  /* Page title block */
+  .page-hero {
+    padding: var(--space-10) 0 var(--space-8);
+    border-bottom: 1px solid var(--color-divider);
+    margin-bottom: var(--space-8);
+  }
+  .page-hero h1 { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-3); }
+  .page-hero p { font-size: var(--text-base); color: var(--color-text-muted); max-width: 60ch; }
+
+  /* Alert callout */
+  .callout {
+    border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6);
+    margin-bottom: var(--space-8); border: 1px solid;
+  }
+  .callout-warning { background: var(--color-warning-highlight); border-color: var(--color-warning); }
+  .callout-title {
+    font-size: var(--text-sm); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: var(--space-2);
+    color: var(--color-warning);
+  }
+  .callout-warning p { color: var(--color-text); font-size: var(--text-sm); }
+
+  /* Section headings */
+  .section { margin-bottom: var(--space-10); }
+  .section-heading {
+    font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-5);
+    padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-divider);
+    display: flex; align-items: center; gap: var(--space-3);
+  }
+  .section-badge {
+    font-size: var(--text-xs); font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 2px var(--space-2); border-radius: var(--radius-sm);
+  }
+  .badge-action { background: var(--color-success-highlight); color: var(--color-success); }
+  .badge-defer { background: var(--color-orange-highlight); color: var(--color-orange); }
+  .badge-scope { background: var(--color-blue-highlight); color: var(--color-blue); }
+
+  /* Ownership table */
+  .table-wrap { overflow-x: auto; margin-bottom: var(--space-6); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  thead { background: var(--color-surface-offset); }
+  th {
+    text-align: left; font-weight: 600; font-size: var(--text-xs);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--color-text-muted); padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+  td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-divider); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { background: var(--color-surface); }
+  tbody tr:nth-child(even) { background: var(--color-surface-2); }
+  .rule-name { font-family: 'Courier New', monospace; font-weight: 600; color: var(--color-text); font-size: var(--text-xs); }
+
+  /* Owner chips */
+  .owner-chip {
+    display: inline-block; font-size: var(--text-xs); font-weight: 600;
+    padding: 2px var(--space-2); border-radius: var(--radius-sm);
+  }
+  .chip-p2 { background: var(--color-blue-highlight); color: var(--color-blue); }
+  .chip-d12 { background: var(--color-orange-highlight); color: var(--color-orange); }
+  .chip-d8 { background: var(--color-error-highlight); color: var(--color-error); }
+  .chip-bbp { background: var(--color-success-highlight); color: var(--color-success); }
+  .chip-unknown { background: var(--color-surface-offset); color: var(--color-text-muted); }
+
+  /* Recommendation chips */
+  .rec-fix { font-size: var(--text-xs); color: var(--color-success); font-weight: 600; }
+  .rec-defer { font-size: var(--text-xs); color: var(--color-orange); font-weight: 600; }
+  .rec-investigate { font-size: var(--text-xs); color: var(--color-warning); font-weight: 600; }
+  .rec-note { font-size: var(--text-xs); color: var(--color-text-muted); display: block; margin-top: var(--space-1); font-weight: 400; line-height: 1.4; }
+
+  /* Fix cards */
+  .fix-grid { display: grid; gap: var(--space-4); }
+  .fix-card {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6);
+    box-shadow: var(--shadow-sm); display: grid; grid-template-columns: auto 1fr; gap: var(--space-4);
+    align-items: start;
+  }
+  .fix-number {
+    width: 28px; height: 28px; border-radius: var(--radius-full);
+    background: var(--color-primary-highlight); color: var(--color-primary);
+    font-size: var(--text-xs); font-weight: 700; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .fix-title { font-weight: 700; font-size: var(--text-sm); margin-bottom: var(--space-2); }
+  .fix-file {
+    font-family: 'Courier New', monospace; font-size: var(--text-xs);
+    background: var(--color-surface-offset); padding: 2px var(--space-2);
+    border-radius: var(--radius-sm); color: var(--color-text-muted);
+    display: inline-block; margin-bottom: var(--space-2);
+  }
+  .fix-desc { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; }
+
+  /* Surface items (log to CD) */
+  .surface-list { display: flex; flex-direction: column; gap: var(--space-3); }
+  .surface-item {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+    display: flex; align-items: flex-start; gap: var(--space-4);
+  }
+  .surface-icon {
+    width: 8px; height: 8px; border-radius: var(--radius-full);
+    background: var(--color-orange); flex-shrink: 0; margin-top: 6px;
+  }
+  .surface-rule { font-family: 'Courier New', monospace; font-weight: 600; font-size: var(--text-xs); color: var(--color-text); }
+  .surface-note { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1); line-height: 1.4; }
+
+  /* Decision panel */
+  .decision-panel {
+    background: var(--color-primary-highlight); border: 1px solid var(--color-primary);
+    border-radius: var(--radius-xl); padding: var(--space-8);
+    margin-bottom: var(--space-8);
+  }
+  .decision-panel h3 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-5); color: var(--color-text); }
+  .decision-options { display: flex; flex-direction: column; gap: var(--space-3); }
+  .decision-option {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+    display: flex; align-items: flex-start; gap: var(--space-4);
+  }
+  .decision-option.selected {
+    background: var(--color-success-highlight); border-color: var(--color-success);
+  }
+  .option-label {
+    font-size: var(--text-sm); font-weight: 700; min-width: 24px;
+    color: var(--color-primary);
+  }
+  .decision-option.selected .option-label { color: var(--color-success); }
+  .option-desc { font-size: var(--text-sm); color: var(--color-text); line-height: 1.5; }
+  .option-sub { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: var(--space-1); }
+
+  /* Audit delta */
+  .delta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+  @media (max-width: 500px) { .delta-grid { grid-template-columns: 1fr; } }
+  .delta-card {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); padding: var(--space-5); text-align: center;
+  }
+  .delta-num {
+    font-size: var(--text-xl); font-weight: 800; display: block; margin-bottom: var(--space-1);
+  }
+  .delta-label { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .num-before { color: var(--color-error); }
+  .num-after { color: var(--color-success); }
+
+  /* Open question */
+  .open-question {
+    background: var(--color-warning-highlight); border: 1px solid var(--color-warning);
+    border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+  .open-question h4 { color: var(--color-warning); font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
+  .open-question p { font-size: var(--text-sm); color: var(--color-text); }
+  .open-question code {
+    font-family: 'Courier New', monospace; font-size: var(--text-xs);
+    background: oklch(from var(--color-warning) l c h / 0.15);
+    padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: var(--space-12); padding-top: var(--space-8);
+    border-top: 1px solid var(--color-divider);
+    font-size: var(--text-xs); color: var(--color-text-faint);
+    display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap;
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: var(--space-6) var(--space-4); }
+    .fix-card { grid-template-columns: 1fr; }
+    .fix-number { display: none; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-meta">
+      <span class="tag tag-version">BBP v0.1</span>
+      <span class="tag tag-scope">Scope Boundary</span>
+      <span class="header-title">Audit Triage</span>
+    </div>
+    <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="page-hero">
+    <h1>Audit Triage — BBP v0.1 vs. Phase 2 Scope Boundary</h1>
+    <p>Before fixing: most findings are pre-existing accessibility debt that BBP v0.1 copy edits surfaced but did not cause.</p>
+    <p style="font-size:var(--text-xs);color:var(--color-text-faint);margin-top:var(--space-3);font-style:italic">Non-canonical reference doc. Authored by Perplexity, May 2026. Canonical record: D15 audit-follow-up in <code>fk-decisions.md</code>.</p>
+  </div>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">⚠ Why this matters</div>
+    <p>Phase 2 (A11y hardening) is the canonical owner of <code>landmark-one-main</code>, <code>region</code>, <code>page-has-heading-one</code>, and <code>color-contrast</code> per <strong>fk-project-overview.md</strong> and the D12 (Cycle 2C) contrast remediation work in the CD mirror. Fixing them here risks colliding with Phase 2 deliverables already in flight or specified.</p>
+  </div>
+
+  <!-- Ownership Table -->
+  <div class="section">
+    <h2 class="section-heading">
+      Issue-by-Issue Ownership
+      <span class="section-badge badge-scope">8 items</span>
+    </h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rule</th>
+            <th>Pre-existing or BBP?</th>
+            <th>Correct Owner</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rule-name">color-contrast</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">all 3 pages</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-d12">Phase 2 / D12</span></td>
+            <td><span class="rec-defer">Don't fix here</span><span class="rec-note">D12 already remediated 5 token pairs in the CD mirror. Leftover scope or remerge work — surface to CD.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">label-title-only</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">#s1-name, #s1-assessmentTitle</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-p2">Phase 2</span></td>
+            <td><span class="rec-fix">✓ Fix now</span><span class="rec-note">Only two inputs — no design coordination needed. Low risk. Added <code>for=</code> attributes to existing labels.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">link-in-text-block</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">Home</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-p2">Phase 2</span></td>
+            <td><span class="rec-fix">✓ Fix now (if single underline)</span><span class="rec-note">Single-page underline-style change. Log to Phase 2 backlog if more complex.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">landmark-one-main</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">Home, Scorer</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-p2">Phase 2</span></td>
+            <td><span class="rec-fix">✓ Fix now</span><span class="rec-note">Mechanical — wrapping content in <code>&lt;main&gt;</code>. No design impact. Scorer already had <code>&lt;main&gt;</code>; index.html wrapped.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">page-has-heading-one</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">Builder, Scorer</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-p2">Phase 2</span></td>
+            <td><span class="rec-fix">✓ Fix now</span><span class="rec-note">Visually-hidden <code>&lt;h1&gt;</code> acceptable. Exact wording to coordinate with brand-voice-canon.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">region</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">all 3 pages</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-d8">Phase 2 / D8</span></td>
+            <td><span class="rec-defer">Don't fix here</span><span class="rec-note">D8 ("region axe carry: full-surface restructure") is canonical Phase 6 P2 owner. Surface to CD.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">results.html 404</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">bbp-a11y-report.json</span></td>
+            <td>New / unknown</td>
+            <td><span class="owner-chip chip-unknown">Unknown</span></td>
+            <td><span class="rec-investigate">⚑ Investigate first</span><span class="rec-note">Removed page or never-built? Test config expects it. Decision needed before proceeding.</span></td>
+          </tr>
+          <tr>
+            <td><span class="rule-name">Keyboard: Enter/Escape</span><br><span style="font-size:var(--text-xs);color:var(--color-text-muted)">Home drop focus to body</span></td>
+            <td>Pre-existing</td>
+            <td><span class="owner-chip chip-p2">Phase 2 (probably fine)</span></td>
+            <td><span class="rec-defer">Defer</span><span class="rec-note">Likely a no-op without modals. Document and move on — investigate when first modal lands on Home.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fixes Applied -->
+  <div class="section">
+    <h2 class="section-heading">
+      Fixes Applied — BBP v0.1 Finalisation
+      <span class="section-badge badge-action">3 mechanical</span>
+    </h2>
+    <div class="fix-grid">
+      <div class="fix-card">
+        <div class="fix-number">1</div>
+        <div>
+          <div class="fix-title">label-title-only</div>
+          <span class="fix-file">builder.html</span>
+          <p class="fix-desc">Added <code>for="s1-name"</code> and <code>for="s1-assessmentTitle"</code> to existing <code>&lt;label&gt;</code> elements. The elements existed but lacked the <code>for</code> attribute connecting them to the input <code>id</code>, causing axe to fall back to the <code>title</code> attribute for the accessible name.</p>
+        </div>
+      </div>
+      <div class="fix-card">
+        <div class="fix-number">2</div>
+        <div>
+          <div class="fix-title">landmark-one-main</div>
+          <span class="fix-file">index.html</span>
+          <p class="fix-desc">Wrapped hero → saved-scorers section in <code>&lt;main id="main"&gt;</code>. Builder already had <code>&lt;main&gt;</code>; scorer.html confirmed one <code>&lt;main&gt;</code> present. First-run-banner sits outside <code>&lt;main&gt;</code> (notification pattern — correct).</p>
+        </div>
+      </div>
+      <div class="fix-card">
+        <div class="fix-number">3</div>
+        <div>
+          <div class="fix-title">page-has-heading-one</div>
+          <span class="fix-file">builder.html &amp; scorer.html</span>
+          <p class="fix-desc">Added visually-hidden <code>&lt;h1 class="sr-only"&gt;</code> to both files. <strong>builder.html:</strong> "Build a scorer" — <strong>scorer.html:</strong> "Mark a student". Uses existing <code>sr-only</code> (Tailwind) class already present in project CSS.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surface to CD -->
+  <div class="section">
+    <h2 class="section-heading">
+      Surface to CD — Log Against Phase 2
+      <span class="section-badge badge-defer">4 items + 1 open</span>
+    </h2>
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-5)">Stub recorded in D15 audit-follow-up with explicit ownership. These items belong to canonical owners outside BBP scope.</p>
+    <div class="surface-list">
+      <div class="surface-item">
+        <div class="surface-icon" style="background:var(--color-orange)"></div>
+        <div>
+          <div class="surface-rule">color-contrast <span style="color:var(--color-text-faint)">→ D12</span></div>
+          <div class="surface-note">Leftover after D12 sweep (5 token pairs remediated in CD mirror). Needs re-audit against current axe-core baseline. Do not fix in BBP scope.</div>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-icon" style="background:var(--color-error)"></div>
+        <div>
+          <div class="surface-rule">region <span style="color:var(--color-text-faint)">→ D8</span></div>
+          <div class="surface-note">D8 is canonical owner per fk-handover-phase6.md: "D8 open — scheduled Pass 2 bundle". Full-surface restructure, not yet started.</div>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-icon" style="background:var(--color-blue)"></div>
+        <div>
+          <div class="surface-rule">link-in-text-block (Home) <span style="color:var(--color-text-faint)">→ Phase 2 backlog</span></div>
+          <div class="surface-note">Single-page, low priority. Bundle with Phase 2 backlog if underline fix is more than trivial.</div>
+        </div>
+      </div>
+      <div class="surface-item">
+        <div class="surface-icon" style="background:var(--color-primary)"></div>
+        <div>
+          <div class="surface-rule">Home keyboard focus drop <span style="color:var(--color-text-faint)">→ Phase 2</span></div>
+          <div class="surface-note">Enter/Escape drop focus to body — investigate when first modal lands on Home. Probably a no-op without modals in place.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open Question -->
+  <div class="open-question">
+    <h4>⚑ Open Question — Decision Needed</h4>
+    <p>What is the status of <code>results.html</code>? The <code>bbp-a11y-report.json</code> references it, implying the test config expects the page to exist. Choose one:</p>
+    <ul style="font-size:var(--text-sm);color:var(--color-text);margin-top:var(--space-3);padding-left:var(--space-5);display:flex;flex-direction:column;gap:var(--space-2)">
+      <li><strong>Page exists</strong> — build it or restore it to the project.</li>
+      <li><strong>Page never planned</strong> — drop the reference from the test config.</li>
+      <li><strong>Page was removed</strong> — confirm intent and update the test config to match.</li>
+    </ul>
+  </div>
+
+  <!-- Decision -->
+  <div class="section">
+    <h2 class="section-heading">Decision Recorded</h2>
+    <div class="decision-panel">
+      <h3>Option Selected: A</h3>
+      <div class="decision-options">
+        <div class="decision-option selected">
+          <div class="option-label">A ✓</div>
+          <div>
+            <div class="option-desc"><strong>Fix the 3 mechanical items now</strong> — label, main, h1.</div>
+            <div class="option-sub">BBP v0.1 closes cleanly with a local audit pass. All remaining issues correctly scoped to Phase 2 / D8 / D12. No scope collision.</div>
+          </div>
+        </div>
+        <div class="decision-option">
+          <div class="option-label">B</div>
+          <div>
+            <div class="option-desc">Fix everything now.</div>
+            <div class="option-sub">Faster — but risks scope creep into Phase 2 territory and possible rework when CD's Phase 2 deliverables land.</div>
+          </div>
+        </div>
+        <div class="decision-option">
+          <div class="option-label">C</div>
+          <div>
+            <div class="option-desc">Fix nothing yet — pure scoping pass.</div>
+            <div class="option-sub">Sends the full list to CD as a Phase 2 / D8 / D12 audit input. No local cleanup.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expected audit delta -->
+  <div class="section">
+    <h2 class="section-heading">Expected Post-Fix Audit Delta</h2>
+    <div class="delta-grid" style="margin-bottom:var(--space-6)">
+      <div class="delta-card">
+        <span class="delta-num num-before">12</span>
+        <span class="delta-label">Violations before</span>
+      </div>
+      <div class="delta-card">
+        <span class="delta-num num-after">8</span>
+        <span class="delta-label">Target after (all owned)</span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Rule</th><th>Expected Status</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="rule-name">color-contrast</span></td><td><span style="color:var(--color-orange);font-size:var(--text-xs);font-weight:600">Still flagged</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">D12 territory — leave it</td></tr>
+          <tr><td><span class="rule-name">label-title-only</span></td><td><span style="color:var(--color-success);font-size:var(--text-xs);font-weight:600">✓ Cleared</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">for= attributes added</td></tr>
+          <tr><td><span class="rule-name">link-in-text-block</span></td><td><span style="color:var(--color-orange);font-size:var(--text-xs);font-weight:600">Still flagged</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">Phase 2 backlog</td></tr>
+          <tr><td><span class="rule-name">landmark-one-main</span></td><td><span style="color:var(--color-success);font-size:var(--text-xs);font-weight:600">✓ Cleared (Home)</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">Scorer already has &lt;main&gt; at line 357 — if still flagged, it's a false positive; Phase 2 to verify on next sweep</td></tr>
+          <tr><td><span class="rule-name">page-has-heading-one</span></td><td><span style="color:var(--color-success);font-size:var(--text-xs);font-weight:600">✓ Cleared (both)</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">sr-only h1 on builder + scorer</td></tr>
+          <tr><td><span class="rule-name">region</span></td><td><span style="color:var(--color-orange);font-size:var(--text-xs);font-weight:600">Still flagged</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">D8 territory — leave it</td></tr>
+          <tr><td><span class="rule-name">results.html 404</span></td><td><span style="color:var(--color-warning);font-size:var(--text-xs);font-weight:600">Unchanged</span></td><td style="font-size:var(--text-xs);color:var(--color-text-muted)">Needs decision: build or drop from test config</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted)">Net target: <strong>12 → 8 violations</strong>. If the re-audit shows this delta, all 8 remaining belong to canonical owners outside BBP scope — BBP v0.1 closes cleanly.</p>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div>Feedback Kitchen · BBP v0.1 Audit Triage</div>
+      <div style="margin-top:var(--space-1)">D15 stub logged · Phase 2 / D8 / D12 owners confirmed</div>
+    </div>
+    <div style="text-align:right">
+      <div>Canonical: <a href="fk-decisions.md" style="color:var(--color-primary)">fk-decisions.md § D15</a></div>
+      <div style="margin-top:var(--space-1)">Track: <a href="ROADMAP.md" style="color:var(--color-primary)">ROADMAP.md § BBP</a></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const t=document.querySelector('[data-theme-toggle]');
+  const r=document.documentElement;
+  let d=r.getAttribute('data-theme')||'dark';
+  function setIcon(m){
+    t.innerHTML=m==='dark'
+      ?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      :'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  setIcon(d);
+  t&&t.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+    setIcon(d);
+  });
+})();
+</script>
+</body>
+</html>

@@ -183,3 +183,77 @@ The Marker's Notes panel below the feedback is a private scratchpad. Notes are n
 ## Expand
 Click to expand vs click to **expand and contract** (marking.sdm version is **"click to collapse"**
 
+---
+
+## Builder & Brand Pass (BBP)
+
+**Owner:** Stephen Mann (brand voice + Product), CD (technical implementation)
+**Source:** Tutorial-video mockup audit, May 2026 (D15)
+**Gating:** BBP v1.0 blocked until Phase 6 and Marking Roadmap v3.0 stable
+**Priority:** Lower than Marking Roadmap v3.0 (marking-loop UX is higher user impact)
+
+**Rationale:** Builder is used once per rubric; marking view is used hundreds of times per rubric. Prioritise high-frequency surfaces first.
+
+**Reorder trigger:** If tutorial video drives significant inbound builder traffic, promote BBP v1.0 above v3.0.
+
+---
+
+### BBP v0.1 — Copy & Messaging Quick Wins
+
+Pure copy edits. No new decisions, no technical risk. Ship between cycles (Steve owns approval).
+
+**Status:** Shipped 2026-05-21. See `bbp-v0.1-audit-triage.html` for visual audit briefing; canonical record in `fk-decisions.md` § D15.
+
+**Scope:**
+- Calm override-banner wording (`scorer.html` #override-audit)
+- "Not an autograder — you choose the grades, the tool drafts the feedback." sub-headline (homepage hero, builder/scorer top)
+- Footer privacy/sharing micro-copy: "Everything stays in this browser. You can export the scorer as JSON to share with your team." (`builder.html` persistent footer)
+- Simplified wizard helper copy (`builder.html` Steps 3–6 subtitles)
+- Rule-of-three brand voice pattern codified ("Your X. Your X. Your X." sentence structure)
+
+**Acceptance:** All five strings live in production; pattern documented in `brand-voice-canon.md`.
+
+---
+
+### BBP v1.0 — Wizard UX
+
+Needs design brief + Figma + real UX iteration. Estimated effort: 1–2 weeks.
+
+**Scope:**
+- Left-sidebar wizard navigation (replace top progress bar)
+- Step 6 tabular summary (replace text-list `populateReviewSummary`)
+- Inline weight bars for criteria (replace bare numeric inputs)
+
+**Acceptance:** New wizard navigation passes Phase 2 a11y checks; Step 6 summary uses cross-scene math (4 criteria · 16 descriptors etc.); weight bars match calculated totals visually.
+
+---
+
+### BBP v1.1 — Builder Polish
+
+Batch with v1.0 or follow-up pass.
+
+**Scope:**
+- Token-pill highlighting in feedback templates
+- 2-letter country pills (NZ/AU/GB/US) replacing flag emojis
+- Per-tier feedback template tab strip
+- Default starter snippets seed
+- "6 steps · ~10 min" expectation badge
+- Discrete "Course code" + "Tutor" fields in Step 1
+- Custom dropdown for "Insert snippet"
+- Avatar colour-coding for shared scorers
+
+---
+
+### Cross-Track Integrations
+
+These mockup items don't live in BBP — they attach to other streams:
+
+**Autosave signalling (mockup #13)** → Marking Roadmap v3.0
+Harmonise "Untitled draft" / "Saved · 14:32" pattern across builder AND marking headers; same component.
+
+**Toast pattern (mockup #20)** → new Global Notification System pass
+One design for success/error/info toasts across MV, RE, builder. Replaces ad-hoc `showCohortToast` variations.
+
+**In-UI privacy reassurance (mockup #10)** → UX + Legal/Comms cross-surface item
+The privacy *behaviour* is signed off (Addendum B); the privacy *visibility* in the UI is not. Lock-icon + "Names and IDs are stripped before anything is sent" message should appear wherever data leaves the browser (wording assistant in `scorer.html`; any future surfaces).
+
