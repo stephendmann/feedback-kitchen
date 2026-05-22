@@ -142,22 +142,22 @@
             <div class="error-msg" id="err-s1-title">Please enter the assessment title.</div>
           </div>
           <div>
-            <label class="label" title="The course or paper code and year this assessment belongs to (e.g. 'MRKTG101 2026'). Appears alongside the assessment title in the scorer header.">Course / Paper Code / Year</label>
+            <label class="label" for="s1-courseName" title="The course or paper code and year this assessment belongs to (e.g. 'MRKTG101 2026'). Appears alongside the assessment title in the scorer header.">Course / Paper Code / Year</label>
             <input type="text" id="s1-courseName" class="input-field" placeholder="e.g. MRKTG101 2026"
                    title="The course or paper code and year this assessment belongs to. Appears alongside the assessment title in the scorer header.">
           </div>
           <div>
-            <label class="label" title="Your university or institution name. Recorded in exports — useful if you share scorers across institutions.">University / Institution</label>
+            <label class="label" for="s1-universityName" title="Your university or institution name. Recorded in exports — useful if you share scorers across institutions.">University / Institution</label>
             <input type="text" id="s1-universityName" class="input-field" placeholder="e.g. University of Waikato"
                    title="Your university or institution name. Recorded in exports — useful if you share scorers across institutions.">
           </div>
           <div>
-            <label class="label" title="Track changes to this rubric over time. Increment when you update criteria or grade bands so markers know which version they're using (e.g. '1.0', '1.1', '2.0').">Version</label>
+            <label class="label" for="s1-version" title="Track changes to this rubric over time. Increment when you update criteria or grade bands so markers know which version they're using (e.g. '1.0', '1.1', '2.0').">Version</label>
             <input type="text" id="s1-version" class="input-field" placeholder="e.g. 1.0" value="1.0"
                    title="Track changes to this rubric over time. Increment when you update criteria or grade bands so markers know which version they're using.">
           </div>
           <div>
-            <label class="label text-amber-600 font-semibold" title="Controls how scores are displayed throughout the scoring page. You can also override this on-the-fly from the scorer nav bar.">⚠ Score Display</label>
+            <label class="label text-amber-600 font-semibold" for="s1-rounding" title="Controls how scores are displayed throughout the scoring page. You can also override this on-the-fly from the scorer nav bar.">⚠ Score Display</label>
             <select id="s1-rounding" class="input-field input-yellow"
                     title="Full precision shows one decimal place (73.3). Half point rounds to the nearest 0.5 (73.5). Whole number rounds to the nearest integer (73). This can also be changed live on the scorer page.">
               <option value="none">Full precision (e.g. 73.3)</option>
@@ -167,7 +167,7 @@
             <p class="text-xs text-amber-600 mt-1">Sets how calculated scores appear — can also be toggled live on the scoring page.</p>
           </div>
           <div>
-            <label class="label" title="Controls AU/NZ spelling normalisation in the AI feedback post-processor. Auto detects from your browser locale.">Spelling</label>
+            <label class="label" for="s1-spelling-locale" title="Controls AU/NZ spelling normalisation in the AI feedback post-processor. Auto detects from your browser locale.">Spelling</label>
             <select id="s1-spelling-locale" class="input-field"
                     title="Auto-detect uses your browser locale. AU/NZ forces British spelling (organise, behaviour, judgement). US forces American spelling (organize, behavior, judgment).">
               <option value="auto">Auto-detect from browser</option>
@@ -177,7 +177,7 @@
             <p class="text-xs text-gray-500 mt-1">Applied by the AI feedback post-processor only.</p>
           </div>
           <div class="sm:col-span-2">
-            <label class="label" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
+            <label class="label" for="s1-assignmentInfo" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
             <input type="text" id="s1-assignmentInfo" class="input-field" placeholder="e.g. Progress Report 1  |  Weighting: 15% of final grade"
                    title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">
           </div>
@@ -265,23 +265,23 @@
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-3">
             <div id="tier-label-wrap-excellent">
-              <label class="block text-[11px] font-semibold uppercase tracking-wide text-green-700 mb-1">Top</label>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-green-700 mb-1" for="tier-label-excellent">Top</label>
               <input type="text" id="tier-label-excellent" class="input-field w-full" placeholder="Excellent" maxlength="40" oninput="B.onTierLabelChange()">
             </div>
             <div id="tier-label-wrap-proficient">
-              <label class="block text-[11px] font-semibold uppercase tracking-wide text-blue-700 mb-1">Upper</label>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-blue-700 mb-1" for="tier-label-proficient">Upper</label>
               <input type="text" id="tier-label-proficient" class="input-field w-full" placeholder="Proficient" maxlength="40" oninput="B.onTierLabelChange()">
             </div>
             <div id="tier-label-wrap-developing">
-              <label class="block text-[11px] font-semibold uppercase tracking-wide text-yellow-700 mb-1">Middle</label>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-yellow-700 mb-1" for="tier-label-developing">Middle</label>
               <input type="text" id="tier-label-developing" class="input-field w-full" placeholder="Developing" maxlength="40" oninput="B.onTierLabelChange()">
             </div>
             <div id="tier-label-wrap-satisfactory">
-              <label class="block text-[11px] font-semibold uppercase tracking-wide text-orange-700 mb-1">Lower</label>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-orange-700 mb-1" for="tier-label-satisfactory">Lower</label>
               <input type="text" id="tier-label-satisfactory" class="input-field w-full" placeholder="Satisfactory" maxlength="40" oninput="B.onTierLabelChange()">
             </div>
             <div id="tier-label-wrap-unsatisfactory">
-              <label class="block text-[11px] font-semibold uppercase tracking-wide text-red-700 mb-1">Bottom</label>
+              <label class="block text-[11px] font-semibold uppercase tracking-wide text-red-700 mb-1" for="tier-label-unsatisfactory">Bottom</label>
               <input type="text" id="tier-label-unsatisfactory" class="input-field w-full" placeholder="Unsatisfactory" maxlength="40" oninput="B.onTierLabelChange()">
             </div>
           </div>
@@ -297,7 +297,7 @@
     <div id="step-3" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Criteria &amp; Weights</h2>
-        <p class="text-slate-500 mb-2 text-sm">List what you're actually marking. Weights sum to 100%.</p>
+        <p class="text-slate-500 mb-2 text-sm">List the criteria you're marking. Weights sum to 100%.</p>
 
         <div class="flex items-center gap-3 mb-6 p-3 rounded-xl border-2" id="weight-check-banner">
           <span id="weight-check-icon" class="text-xl">⚠️</span>
@@ -351,7 +351,7 @@
     <div id="step-6" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Settings &amp; Save</h2>
-        <p class="text-slate-500 mb-6 text-sm">Have a look. If it reads right, save and you're ready to mark.</p>
+        <p class="text-slate-500 mb-6 text-sm">Review the settings. Save when you're ready to start marking.</p>
 
         <!-- Late penalties toggle -->
         <div class="flex items-center justify-between mb-4">
@@ -418,11 +418,6 @@
       </div>
     </div>
 
-    <!-- ── Persistent privacy / sharing micro-copy (BBP v0.1) ── -->
-    <p class="mt-6 text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-      💡 Everything stays in this browser. You can export the scorer as JSON to share with your team.
-    </p>
-
     <!-- ── Navigation ───────────────────────────────────────── -->
     <div class="flex items-center justify-between mt-4">
       <button class="btn-secondary" id="btn-back" onclick="B.prevStep()" style="display:none">← Back</button>
@@ -430,6 +425,14 @@
         <button class="btn-primary" id="btn-next" onclick="B.nextStep()">Next Step →</button>
       </div>
     </div>
+
+    <!-- ── Persistent privacy / sharing micro-copy (BBP v0.1) ──
+         Sits OUTSIDE the step-panels so it renders on every step,
+         not just Step 6 where it was originally nested. (PR review
+         follow-up 2026-05-24.) -->
+    <p class="mt-6 text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+      💡 Everything stays in this browser. You can export the scorer as JSON to share with your team.
+    </p>
   </main>
 
 
@@ -778,23 +781,28 @@
         tr.innerHTML = `
           <td class="p-2">
             <input type="text" class="gs-grade input-field input-yellow text-center font-bold w-16"
-                   value="${escHtml(g.grade)}" placeholder="e.g. B+" maxlength="4">
+                   value="${escHtml(g.grade)}" placeholder="e.g. B+" maxlength="4"
+                   aria-label="Grade band ${i + 1} label">
           </td>
           <td class="p-2 text-center">
             <input type="number" class="gs-midpoint input-field text-center w-20"
-                   value="${g.midpoint}" min="0" max="100" step="1">
+                   value="${g.midpoint}" min="0" max="100" step="1"
+                   aria-label="Grade band ${i + 1} midpoint">
           </td>
           <td class="p-2">
             <div class="flex items-center gap-1 justify-center">
               <input type="number" class="gs-low input-field text-center w-20"
-                     value="${g.bandLow}" min="0" max="100" step="1" placeholder="Lo">
+                     value="${g.bandLow}" min="0" max="100" step="1" placeholder="Lo"
+                     aria-label="Grade band ${i + 1} low value">
               <span class="text-slate-400 text-xs">–</span>
               <input type="number" class="gs-high input-field text-center w-20"
-                     value="${g.bandHigh}" min="0" max="100" step="1" placeholder="Hi">
+                     value="${g.bandHigh}" min="0" max="100" step="1" placeholder="Hi"
+                     aria-label="Grade band ${i + 1} high value">
             </div>
           </td>
           <td class="p-2 text-center">
             <select class="gs-tier input-field text-xs px-2 py-1.5 w-36"
+                    aria-label="Grade band ${i + 1} tier"
                     style="${tierOptions.find(t=>t.key===g.tier)?.style || ''}">
               ${tierOptions.map(t =>
                 `<option value="${t.key}" ${g.tier===t.key?'selected':''} style="${t.style}">${t.label}</option>`
@@ -908,10 +916,12 @@
           <span class="text-slate-400 font-bold text-sm w-5 shrink-0">${idx + 1}</span>
           <input type="text" id="crit-name-${c.id}" value="${escHtml(c.name)}"
                  class="input-field input-yellow flex-1" placeholder="Criterion name"
+                 aria-label="Criterion ${idx + 1} name"
                  oninput="B.syncAndUpdateWeight()">
           <div class="flex items-center gap-1 shrink-0">
             <input type="number" id="crit-weight-${c.id}" value="${c.weight}"
                    min="0" max="100" class="input-field input-yellow w-20 text-center"
+                   aria-label="Criterion ${idx + 1} weight (percent)"
                    oninput="B.syncAndUpdateWeight()">
             <span class="text-slate-500 text-sm font-medium">%</span>
           </div>
@@ -994,7 +1004,7 @@
           <div id="rubric-acc-${c.id}" class="hidden p-4 grid sm:grid-cols-2 gap-4 bg-white">
             ${tiers.map(t => `
               <div>
-                <label class="label">
+                <label class="label" for="rubric-${c.id}-${t.key}">
                   <span class="inline-flex items-center gap-1">
                     <span class="weight-badge ${t.bg} ${t.text}">${t.label}</span>
                     <span class="text-slate-400 font-normal">${t.range}</span>
@@ -1002,6 +1012,7 @@
                 </label>
                 <textarea id="rubric-${c.id}-${t.key}" class="input-field"
                           placeholder="Describe what a ${t.label.toLowerCase()} submission looks like for this criterion..."
+                          aria-label="${escHtml(c.name)} — ${t.label} descriptor"
                 >${escHtml(c.rubric[t.key] || '')}</textarea>
               </div>
             `).join('')}
@@ -1043,12 +1054,12 @@
           </div>
           <div id="gf-acc-${gf.grade}" class="hidden p-4 space-y-4 bg-white">
             <div>
-              <label class="label">Intro Paragraph <span class="text-slate-400 font-normal">(shown at the top of the student's feedback)</span></label>
-              <textarea id="gf-intro-${gf.grade}" class="input-field" rows="4" placeholder="Write an opening paragraph for ${gf.grade} grade feedback…">${escHtml(gf.intro)}</textarea>
+              <label class="label" for="gf-intro-${gf.grade}">Intro Paragraph <span class="text-slate-400 font-normal">(shown at the top of the student's feedback)</span></label>
+              <textarea id="gf-intro-${gf.grade}" class="input-field" rows="4" placeholder="Write an opening paragraph for ${gf.grade} grade feedback…" aria-label="${gf.grade} grade intro paragraph">${escHtml(gf.intro)}</textarea>
             </div>
             <div>
-              <label class="label">Outro Paragraph <span class="text-slate-400 font-normal">(shown at the bottom, after the criterion breakdown)</span></label>
-              <textarea id="gf-outro-${gf.grade}" class="input-field" rows="4" placeholder="Write a closing paragraph for ${gf.grade} grade feedback…">${escHtml(gf.outro)}</textarea>
+              <label class="label" for="gf-outro-${gf.grade}">Outro Paragraph <span class="text-slate-400 font-normal">(shown at the bottom, after the criterion breakdown)</span></label>
+              <textarea id="gf-outro-${gf.grade}" class="input-field" rows="4" placeholder="Write a closing paragraph for ${gf.grade} grade feedback…" aria-label="${gf.grade} grade outro paragraph">${escHtml(gf.outro)}</textarea>
             </div>
           </div>
         `;
@@ -1093,10 +1104,11 @@
         const isFirst = i === 0;
         row.innerHTML = `
           <input type="text" class="penalty-label input-field flex-1" value="${escHtml(lp.label)}"
-                 placeholder="Label" ${isFirst ? 'readonly' : ''}>
+                 placeholder="Label" aria-label="Late penalty band ${i + 1} label" ${isFirst ? 'readonly' : ''}>
           <div class="flex items-center gap-1 shrink-0">
             <input type="number" class="penalty-deduction input-field w-16 text-center"
                    value="${lp.deduction}" min="0" max="100"
+                   aria-label="Late penalty band ${i + 1} deduction (percent)"
                    ${isFirst ? 'readonly disabled' : (lp.fail ? 'disabled' : '')}>
             <span class="text-slate-500 text-sm">%</span>
           </div>

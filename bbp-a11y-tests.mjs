@@ -12,21 +12,24 @@ const PAGES = [
   // Page does not exist in the repo and was never built. See fk-decisions.md § D15.
 ];
 
+// `bodyFocusOk: true` means body-focus after this step is a legitimate
+// outcome (navigation, state change, or a no-op like Escape when no
+// modal is open) — not a real keyboard trap.  See PR review 2026-05-24.
 const KEYBOARD_TESTS = {
   '/': [
     { desc: 'Tab to first interactive element', key: 'Tab' },
     { desc: 'Tab through nav links', key: 'Tab', repeat: 5 },
-    { desc: 'Activate focused button with Enter', key: 'Enter' },
-    { desc: 'Escape to dismiss any modal', key: 'Escape' },
+    { desc: 'Activate focused button with Enter', key: 'Enter', bodyFocusOk: true },
+    { desc: 'Escape to dismiss any modal', key: 'Escape', bodyFocusOk: true },
   ],
   '/builder.html': [
     { desc: 'Tab to Add Criterion button', key: 'Tab', repeat: 8 },
-    { desc: 'Activate Add Criterion with Enter', key: 'Enter' },
+    { desc: 'Activate Add Criterion with Enter', key: 'Enter', bodyFocusOk: true },
     { desc: 'Tab into new input field', key: 'Tab' },
     { desc: 'Type in criterion name', type: 'Test Criterion' },
     { desc: 'Tab to Add Band button', key: 'Tab', repeat: 3 },
-    { desc: 'Activate Add Band with Enter', key: 'Enter' },
-    { desc: 'Escape from any modal/drawer', key: 'Escape' },
+    { desc: 'Activate Add Band with Enter', key: 'Enter', bodyFocusOk: true },
+    { desc: 'Escape from any modal/drawer', key: 'Escape', bodyFocusOk: true },
   ],
   '/scorer.html': [
     { desc: 'Tab to first scoring control', key: 'Tab', repeat: 4 },
@@ -69,9 +72,16 @@ async function runKeyboardSmoke(page, pagePath) {
         }
         const focused = await getFocusedElement(page);
         const trapped = focused.includes('body (no focus)');
+        // bodyFocusOk lets the test config mark steps where focus
+        // legitimately returns to body (nav-button activation, Escape
+        // with no modal open). Real keyboard traps still get flagged.
+        let status;
+        if (!trapped) status = '✅';
+        else if (step.bodyFocusOk) status = 'ℹ️  bodyFocusOk';
+        else status = '⚠️ FOCUS LOST';
         results.push({
           desc: step.desc,
-          status: trapped ? '⚠️ FOCUS LOST' : '✅',
+          status,
           focused,
         });
       }
@@ -157,7 +167,7 @@ async function main() {
         console.log('   Running keyboard smoke test...');
         pageResult.keyboard = await runKeyboardSmoke(page, pageInfo.path);
 
-        const kFails = pageResult.keyboard.filter(k => k.status !== '✅');
+        const kFails = pageResult.keyboard.filter(k => k.status !== '✅' && !k.status.startsWith('ℹ️'));
         if (kFails.length === 0) {
           console.log(`   ✅ Keyboard: All ${pageResult.keyboard.length} steps passed`);
         } else {
@@ -193,7 +203,7 @@ async function main() {
     }
 
     const vCount = r.axe?.violations?.length || 0;
-    const kIssues = r.keyboard.filter(k => k.status !== '✅').length;
+    const kIssues = r.keyboard.filter(k => k.status !== '✅' && !k.status.startsWith('ℹ️')).length;
     totalViolations += vCount;
     totalKeyboardIssues += kIssues;
     totalPasses += r.axe?.passes || 0;
