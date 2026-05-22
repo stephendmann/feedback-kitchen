@@ -102,8 +102,7 @@
         Your rubric. Your judgement.<br>Done in clicks.
       </h1>
       <p class="text-xl text-blue-50 mb-10 max-w-2xl mx-auto">
-        Rubric-based marking and feedback assembly for university educators.
-        Build a scorer once, grade criterion by criterion, and generate editable feedback drafts — without sending student data to a server.
+        Build a scorer once. Grade criterion by criterion. Generate editable, ready-to-paste feedback drafts for busy university educators — entirely in your browser, no student data ever leaves your device.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="builder.html" class="bg-amber-400 text-slate-900 font-bold px-8 py-4 rounded-xl text-lg hover:bg-amber-300 transition-colors shadow-lg">
@@ -112,8 +111,10 @@
         <button type="button" onclick="tryDemoScorer()" class="bg-white text-blue-700 font-bold px-8 py-4 rounded-xl text-lg hover:bg-blue-50 transition-colors shadow-lg">
           ▶ Try the Demo Scorer
         </button>
-        <a href="#how-it-works" class="bg-white/20 text-white font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/30 transition-colors">
-          See How It Works ↓
+        <a href="/how-to-feedback-kitchen.html" target="_blank" rel="noopener"
+          class="bg-white/20 text-white font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/30 transition-colors"
+          aria-label="Watch the 2-minute demo in a new tab">
+          Watch a 2-min Demo
         </a>
       </div>
     </div>
@@ -133,13 +134,35 @@
     </div>
   </section>
 
+  <!-- ── Productivity stat strip ──────────────────────────── -->
+  <section class="bg-blue-50 border-y border-blue-100 py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl font-bold text-center text-slate-800 mb-2">Grading at AI speed — without the autograder risks</h2>
+      <p class="text-center text-slate-600 text-sm mb-8 max-w-2xl mx-auto">Comparable to peer-reviewed benchmarks (e.g. Birmingham/Graide 2025: 74% time reduction, 7× feedback length) — without the autograder bias risks.</p>
+      <div class="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">~20 min</p>
+          <p class="text-xs text-slate-600 mt-1">Scorer setup, once per assessment</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">20–60 sec</p>
+          <p class="text-xs text-slate-600 mt-1">Per script after setup</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
+          <p class="text-3xl font-extrabold text-blue-700">3–4 scripts</p>
+          <p class="text-xs text-slate-600 mt-1">To pay back setup on a typical cohort</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ── Why Feedback Kitchen ─────────────────────────────── -->
   <section class="max-w-4xl mx-auto px-4 sm:px-6 pt-16 pb-4">
     <h2 class="text-3xl font-bold text-center text-slate-800 mb-8">Why use Feedback Kitchen?</h2>
     <div class="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
       <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
         <span class="text-blue-600 text-xl shrink-0">✓</span>
-        <p class="text-slate-700 text-sm"><strong>Consistent rubric-based feedback</strong> across tutors and markers.</p>
+        <p class="text-slate-700 text-sm"><strong>Consistent feedback</strong> across your whole marking team.</p>
       </div>
       <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
         <span class="text-blue-600 text-xl shrink-0">✓</span>
@@ -147,11 +170,11 @@
       </div>
       <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
         <span class="text-blue-600 text-xl shrink-0">✓</span>
-        <p class="text-slate-700 text-sm"><strong>Browser-only workflow</strong> with no login or database.</p>
+        <p class="text-slate-700 text-sm"><strong>Runs entirely in your browser</strong> — no login, no account, nothing stored on a server.</p>
       </div>
       <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
         <span class="text-blue-600 text-xl shrink-0">✓</span>
-        <p class="text-slate-700 text-sm"><strong>Wording assistant</strong> available with a <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Ko-fi</a>-issued key — improves phrasing only, identifiers stripped first.</p>
+        <p class="text-slate-700 text-sm"><strong>Optional wording assistant</strong> (<a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Ko-fi</a> key required) — refines phrasing only, with names and IDs removed before any text leaves your browser.</p>
       </div>
     </div>
   </section>
@@ -166,7 +189,7 @@
         <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not invent comments.</strong> Only assembles sentences you wrote.</p></div>
         <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not upload student work</strong> to any server.</p></div>
         <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not require a login</strong> or institutional account.</p></div>
-        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not replace your LMS.</strong> Paste into Moodle, Canvas, or Turnitin as usual.</p></div>
+        <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Does not replace your LMS.</strong> Paste into Moodle, Canvas, Turnitin, or any other system as usual.</p></div>
         <div class="flex items-start gap-3"><span class="text-rose-400 text-lg shrink-0">✕</span><p class="text-sm text-slate-200"><strong>Wording assistant never sees identifiers</strong> — names and IDs are stripped first.</p></div>
       </div>
     </div>
@@ -177,7 +200,7 @@
     <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-8">
       <h2 class="text-2xl font-bold text-center text-emerald-900 mb-3">Adopt without waiting for IT approval</h2>
       <p class="text-center text-emerald-900 text-base leading-relaxed max-w-2xl mx-auto">
-        Because no personal information is disclosed to a third-party processor, the institutional review trigger under the <strong>NZ Privacy Act 2020</strong> and <strong>AU Privacy Act 1988</strong> is not pulled.
+        Because no personal data is shared with a third-party processor, Feedback Kitchen sits outside the institutional review threshold under the <strong>NZ Privacy Act 2020</strong> and <strong>AU Privacy Act 1988</strong>.
       </p>
       <div class="flex flex-wrap justify-center gap-3 mt-5">
         <span class="bg-white text-emerald-800 text-sm font-semibold px-3 py-1 rounded-full border border-emerald-200">No DPIA</span>
@@ -195,29 +218,7 @@
         <div>
           <h2 class="text-2xl font-bold text-slate-800 mb-2">For course coordinators and tutor teams</h2>
           <p class="text-slate-600 mb-3">Build the rubric logic, weights, and feedback language <strong>once</strong>, then export the Scorer as JSON and distribute it to your tutor team. Every marker uses the same descriptors, the same intros, and the same closing paragraphs — directly addressing the inter-rater reliability problem on large cohorts.</p>
-          <p class="text-slate-600 text-sm">No vendor procurement. No new institutional system. No movement of student data. Revise and reissue each semester to build a departmental library of vetted rubrics.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── Productivity stat strip ──────────────────────────── -->
-  <section class="bg-blue-50 border-y border-blue-100 py-12 px-4">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-2xl font-bold text-center text-slate-800 mb-2">Built for the productivity envelope of AI-assisted grading</h2>
-      <p class="text-center text-slate-600 text-sm mb-8 max-w-2xl mx-auto">Comparable to peer-reviewed benchmarks (e.g. Birmingham/Graide 2025: 74% time reduction, 7× feedback length) — without the autograder bias risks.</p>
-      <div class="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
-          <p class="text-3xl font-extrabold text-blue-700">~20 min</p>
-          <p class="text-xs text-slate-600 mt-1">Scorer setup, once per assessment</p>
-        </div>
-        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
-          <p class="text-3xl font-extrabold text-blue-700">20–60 sec</p>
-          <p class="text-xs text-slate-600 mt-1">Per script after setup</p>
-        </div>
-        <div class="bg-white rounded-xl p-5 text-center border border-blue-100">
-          <p class="text-3xl font-extrabold text-blue-700">3–4 scripts</p>
-          <p class="text-xs text-slate-600 mt-1">To pay back setup on a typical cohort</p>
+          <p class="text-slate-600 text-sm">No vendor procurement. No new institutional system. No movement of student data. Revise each semester and build a departmental library of vetted, reusable rubrics.</p>
         </div>
       </div>
     </div>
@@ -265,7 +266,13 @@
   <!-- ── How it works ─────────────────────────────────────── -->
   <section id="how-it-works" class="bg-white border-y border-slate-100 py-16 px-4">
     <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">How It Works</h2>
+      <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">
+        <a href="/how-to-feedback-kitchen.html" target="_blank" rel="noopener"
+          class="text-slate-800 hover:text-blue-700 underline decoration-blue-300 decoration-2 underline-offset-8 hover:decoration-blue-600 transition-colors"
+          aria-label="How It Works — watch the 2-minute demo in a new tab">
+          How It Works
+        </a>
+      </h2>
       <p class="text-center text-slate-500 mb-12 text-lg">From rubric to ready-to-paste feedback in three steps.</p>
 
       <div class="space-y-8">
@@ -558,7 +565,6 @@
       document.getElementById('first-run-banner').classList.add('hidden');
       localStorage.setItem('SA_WELCOME_DISMISSED', '1');
     }
-    // Close on Escape key
     document.addEventListener('keydown', e => { if (e.key === 'Escape') hideDeleteModal(); });
   </script>
 </body>
