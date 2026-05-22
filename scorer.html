@@ -316,6 +316,13 @@
       </div>
     </nav>
 
+    <!-- Brand-voice sub-headline (BBP v0.1) -->
+    <p class="no-print max-w-5xl mx-auto px-4 pt-2 text-xs text-slate-500 italic">
+      Not an autograder — you choose the grades, the tool drafts the feedback.
+    </p>
+
+    <h1 class="sr-only">Mark a student</h1>
+
     <!-- Section rail (v2.2) -->
     <div id="section-rail"
          class="no-print sticky top-[88px] md:top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
@@ -1623,15 +1630,16 @@
       const auditText = el('override-audit-text');
       if (effective.override && effective.override.snapped) {
         const o = effective.override;
-        auditText.textContent = 'Bumped from ' + SA.formatScore(o.originalTotal, _displayRounding)
-          + ' (' + o.originalGrade + ') to ' + SA.formatScore(o.newTotal, _displayRounding)
-          + ' (' + o.newGrade + ') by marker override';
+        auditText.textContent = 'You set the grade to ' + o.newGrade
+          + ' (was ' + o.originalGrade + ' at ' + SA.formatScore(o.originalTotal, _displayRounding) + '). '
+          + 'Feedback Kitchen lifted the score to ' + SA.formatScore(o.newTotal, _displayRounding)
+          + ' — the band minimum for ' + o.newGrade + '. Just letting you know.';
         auditBox.classList.remove('hidden');
       } else if (effective.override) {
         // Letter-only override (already at or above band min — no snap needed)
         const o = effective.override;
-        auditText.textContent = 'Marker override: grade set to ' + o.newGrade
-          + ' (was ' + o.originalGrade + ')';
+        auditText.textContent = 'You set the grade to ' + o.newGrade
+          + ' (was ' + o.originalGrade + '). Feedback Kitchen kept your score — just letting you know.';
         auditBox.classList.remove('hidden');
       } else {
         auditBox.classList.add('hidden');

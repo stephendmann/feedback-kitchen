@@ -41,7 +41,7 @@ document.getElementById('site-footer').innerHTML = `
         Adapted from the original <em>Feedback Kitchen</em> Excel workbook by
         <strong>Dr Michael Harker, University of Strathclyde</strong>; redesigned as a browser-based application for the
         <strong>University of Waikato</strong>.
-        <span class="site-footer__muted">Built with AI coding assistance (Claude / Anthropic &middot; Perplexity &middot; Microsoft Copilot).</span>
+        <span class="site-footer__muted">Built with AI coding assistance (Claude / Anthropic &middot; Perplexity &middot; Microsoft Copilot). The tool itself runs in your browser &mdash; the AI listed here assisted with development only.</span>
       </p>
     </section>
   </div>

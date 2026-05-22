@@ -1,0 +1,3954 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>How to use Feedback Kitchen — tutorial</title>
+  <meta name="description" content="A 1 min 45 sec walkthrough of Feedback Kitchen for university lecturers and tutors. Build a scorer, mark a student, share with your team.">
+  <link rel="canonical" href="https://marking.stephendmann.com/how-to.html">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="How to use Feedback Kitchen — tutorial">
+  <meta property="og:description" content="A 1 min 45 sec walkthrough of Feedback Kitchen for university lecturers and tutors.">
+  <meta property="og:url" content="https://marking.stephendmann.com/how-to.html">
+  <meta property="og:type" content="video.other">
+
+  <!-- Fonts: Inter (UI) + JetBrains Mono (timecode / file artifact) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── colors_and_type.css (inlined) ─────────────────────── */
+/* ============================================================
+   Stephen Mann Design System — Foundation Tokens
+   Distilled from stephendmann.com (Next.js / Tailwind / Swiss-grid)
+   ============================================================ */
+
+/* ─── 1. WEBFONTS ───────────────────────────────────────────
+   Inter is the only typeface. It carries the wordmark, every
+   heading, body, UI label, and quote.
+   The previous Merriweather (serif italic) path has been
+   removed — do not reintroduce a second family. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ─── 2. BASE TOKENS (light theme = default) ──────────────── */
+:root {
+  /* Brand palette — raw hex from tailwind.config.js / globals.css */
+  --color-teal:      #005577;   /* primary — buttons, accents, headlines */
+  --color-mist:      #E6F0FA;   /* light bg surface, credential badges */
+  --color-steel:     #778DA9;   /* secondary text, muted, "Digital" accent */
+  --color-charcoal:  #1B263B;   /* body text on light bg */
+  --color-offwhite:  #F5F6F5;   /* light-mode page bg */
+  --color-midnight:  #0D1B2A;   /* dark-mode page bg */
+
+  /* Service accents (only used on Services cards) */
+  --color-accent-consulting: #005577;
+  --color-accent-digital:    #778DA9;
+  --color-accent-students:   #2E8B74;
+
+  /* Dark-mode teal — AA-compliant on midnight */
+  --color-teal-dark: #4DA8CF;
+
+  /* Headline gradient (hero only) */
+  --gradient-headline: linear-gradient(135deg, #00bbee 0%, #0099cc 35%, #55c8e0 65%, #d0f0ff 100%);
+
+  /* Hero scrim — sits over /assets/imagery/* hero backgrounds */
+  --gradient-hero-scrim: linear-gradient(
+    to bottom,
+    rgba(13,27,42,0.75) 0%,
+    rgba(13,27,42,0.55) 15%,
+    rgba(13,27,42,0.20) 40%,
+    rgba(13,27,42,0.30) 65%,
+    rgba(13,27,42,0.60) 100%
+  );
+
+  /* ── Semantic surfaces ── */
+  --bg:       var(--color-offwhite);
+  --fg:       var(--color-charcoal);
+  --fg-muted: var(--color-steel);
+  --accent:   var(--color-teal);
+  --surface:  #ffffff;
+  --border:   rgba(0,85,119,0.12);     /* teal @ 12% — every border on the site */
+  --border-strong: rgba(0,85,119,0.30);
+
+  /* ── Status (semantic) — derived for forms / banners ── */
+  --status-success: #2E8B74;
+  --status-info:    #005577;
+  --status-warn:    #C28F2C;
+  --status-danger:  #B83A3A;
+
+  /* ─── 3. TYPOGRAPHY ─────────────────────────────────────── */
+  --font-sans:  'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:  ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* --font-serif: DEPRECATED — Inter only. Quotes use italic Inter at .sds-quote. */
+
+  /* Type scale — clamp() responsive sizes from tailwind.config.js */
+  /* Hero lockup (one-use): keeps the older display token */
+  --fs-display: clamp(3rem, 8vw, 7rem);
+  --lh-display: 0.95;
+  --ls-display: -0.03em;
+
+  /* Reusable scale — Inter only, more compact */
+  --fs-h1:      clamp(2.2rem, 3vw, 3rem);
+  --fs-h2:      clamp(1.7rem, 2.4vw, 2.2rem);
+  --fs-h3:      1.5rem;
+  --fs-body:    1rem;
+  --fs-small:   0.875rem;
+  --fs-eyebrow: 0.95rem;
+  --fs-nav:     0.95rem;
+
+  --lh-h1:      1.08;
+  --lh-h2:      1.18;
+  --lh-h3:      1.3;
+  --lh-body:    1.65;
+  --lh-small:   1.5;
+
+  --fw-h1: 700;
+  --fw-h2: 600;
+  --fw-h3: 600;
+
+  --ls-h1:      -0.02em;
+  --ls-h2:      -0.015em;
+  --ls-h3:      -0.01em;
+  --ls-wordmark: -0.04em;
+  --ls-eyebrow: 0.18em;
+  --ls-nav:     0.12em;
+  --ls-button:  0.04em;
+
+  /* ─── 4. SPACING — Swiss grid scale ────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-section-sm: 4rem;
+  --space-section:    clamp(4rem, 8vw, 8rem);
+
+  --container-max:    1400px;
+  --container-wide:   1100px;
+  --container-narrow: 760px;
+  --container-pad:    clamp(1.5rem, 5vw, 5rem);
+  --max-prose:        72ch;
+
+  /* ─── 5. RADII — Swiss = sharp ──────────────────────────── */
+  --radius:    0rem;                  /* default everywhere */
+  --radius-sm: 0rem;
+  --radius-md: 0rem;
+  --radius-lg: 0rem;
+  --radius-pill: 999px;               /* only avatars, share buttons, dark-mode toggle */
+
+  /* ─── 6. SHADOW SYSTEM ──────────────────────────────────── */
+  --shadow-card:        0 16px 40px rgba(0,0,0,0.08);   /* card hover lift */
+  --shadow-card-dark:   0 16px 40px rgba(0,0,0,0.35);
+  --shadow-nav-scroll:  0 1px 0 rgba(0,0,0,0.04);
+  --shadow-text-on-hero: 0 1px 4px rgba(0,0,0,0.6);
+  --shadow-drop-hero:    drop-shadow(0 2px 14px rgba(0,0,0,0.55));
+
+  /* ─── 7. MOTION ─────────────────────────────────────────── */
+  --ease-out:  cubic-bezier(.16,.84,.44,1);
+  --ease-std:  ease;
+  --dur-1: 0.15s;
+  --dur-2: 0.2s;
+  --dur-3: 0.3s;
+  --dur-4: 0.6s;
+  --dur-5: 0.7s;
+}
+
+/* ─── 8. DARK THEME ──────────────────────────────────────── */
+.dark, [data-theme="dark"] {
+  --bg:       var(--color-midnight);
+  --fg:       var(--color-mist);
+  --fg-muted: var(--color-steel);
+  --accent:   var(--color-teal-dark);
+  --surface:  #0F2335;
+  --border:        rgba(230,240,250,0.10);
+  --border-strong: rgba(230,240,250,0.24);
+}
+
+/* ─── 9. SEMANTIC ELEMENT DEFAULTS ───────────────────────── */
+html, body { background: var(--bg); color: var(--fg); }
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-sans); font-weight: 700; color: var(--fg); }
+
+.sds-display, h1.sds-display {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  font-weight: 800;
+}
+h1, .sds-h1 {
+  font-size: var(--fs-h1);
+  line-height: var(--lh-h1);
+  letter-spacing: var(--ls-h1);
+  font-weight: var(--fw-h1);
+}
+h2, .sds-h2 {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--ls-h2);
+  font-weight: var(--fw-h2);
+}
+h3, .sds-h3 {
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+  letter-spacing: var(--ls-h3);
+  font-weight: var(--fw-h3);
+}
+
+/* ── Wordmark — the brand's bold uppercase signature */
+.sds-wordmark {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: var(--ls-wordmark);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--color-teal);
+  text-transform: uppercase;
+}
+
+/* ── Eyebrow / section label — appears above EVERY section */
+.sds-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-teal);
+}
+
+/* ── Tagline / pull-quote — italic Inter, no serif fallback */
+.sds-tagline, blockquote.sds-quote p {
+  font-family: var(--font-sans);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--fg);
+}
+
+/* ── Headline gradient — hero "Leadership Intelligence" moment */
+.sds-headline-gradient {
+  background: var(--gradient-headline);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Body small + nav link */
+small, .sds-small { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--fg-muted); }
+.sds-nav-link {
+  font-size: var(--fs-nav);
+  font-weight: 600;
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+
+/* ── Code / mono — used for "01 —", "02 —" section numbers */
+code, .sds-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+}
+
+    /* ── fk-tokens.css (inlined) ───────────────────────────── */
+/* Feedback Kitchen — design tokens (CSS mirror of fk-tokens.js v1.0)
+ * ─────────────────────────────────────────────────────────────────────
+ * Single source of truth for CSS-consuming FK surfaces. Mirrors
+ * `fkTokens.asCssVars()` from fk-tokens.js — values are kept in lockstep
+ * by the token-drift script (any divergence is a build failure).
+ *
+ * Scope is intentionally narrow:
+ *   focus   — Phase 1 axe focus-ring contract (.fk-focus-ring utility)
+ *   hero    — 3-stop hero gradient (replaces 2-stop drift hex pair)
+ *   status  — success / warn / danger / info / muted fg+bg pairs
+ *   slate   — slate.100 only; rest of slate ramp stays inlined per
+ *             Phase 1 promotion-threshold rule
+ *
+ * NOT in scope: typography, spacing, radii, motion durations — those
+ * live in colors_and_type.css under `--color-*`, `--fs-*`, `--space-*`,
+ * `--dur-*`. The `--fk-` prefix avoids collision with brand tokens.
+ *
+ * Phase 1 cleared values (canon — Phase 0 D1 hero, D3 focus ring, etc.)
+ */
+
+:root {
+  /* ── Focus ring ─────────────────────────────────────────────────── */
+  --fk-focus-ring:      #005577;
+  --fk-focus-halo:      rgba(0, 85, 119, 0.20);
+  --fk-focus-width:     3px;
+  --fk-focus-shadow:    0 0 0 3px rgba(0, 85, 119, 0.20), 0 0 0 1px #005577;
+
+  /* ── Hero gradient (3-stop, mid stop 40% per Phase 0 D1) ────────── */
+  --fk-hero:            linear-gradient(135deg, #1E3A8A 0%, #1E40AF 40%, #2563EB 100%);
+  --fk-hero-lightest:   #2563EB;
+
+  /* ── Status pairs (≥4.5:1 contrast locked) ──────────────────────── */
+  --fk-status-success-fg: #047857;
+  --fk-status-success-bg: #D1FAE5;
+  --fk-status-warn-fg:    #92400E;
+  --fk-status-warn-bg:    #FEF3C7;
+  --fk-status-danger-fg:  #B91C1C;
+  --fk-status-danger-bg:  #FEE2E2;
+  --fk-status-info-fg:    #1D4ED8;
+  --fk-status-info-bg:    #EFF6FF;
+  --fk-status-muted-fg:   #475569;
+  --fk-status-muted-bg:   #E2E8F0;
+
+  /* ── Slate (only .100 promoted in Phase 1) ──────────────────────── */
+  --fk-slate-100:       #F1F5F9;
+
+  /* ── Card-lift shadow (paired with -1px hover translate, Phase 1) ── */
+  --fk-card-lift:       0 10px 24px rgba(15, 23, 42, 0.08);
+
+  /* ── Button-lift shadow (D1 hero CTA, Phase 5) ──────────────────────
+   * Paired with the existing 0 1px 2px rgba(0,0,0,.08) rest shadow on
+   * .fk-btn-primary. The hover state ramps to this stronger shadow over
+   * .25s ease. No background inversion — the lift signal is the shadow,
+   * not a colour flip. */
+  --fk-btn-lift:        0 8px 20px rgba(15, 23, 42, 0.14);
+}
+
+/* ── Focus-ring utility ──────────────────────────────────────────────
+ * Applied via `:focus-visible` so mouse users don't see the halo.
+ * Pairs with `outline: 2px solid transparent` for high-contrast-mode
+ * fallback.
+ */
+.fk-focus-ring:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  box-shadow: var(--fk-focus-shadow);
+}
+
+/* ── Card-lift utility (Phase 5 F1 lock) ─────────────────────────────
+ * Opt-in hover treatment that bundles the -1px translate + soft shadow
+ * + transition. Any surface that wants the canonical "card lift" effect
+ * applies this class as a co-class. Surfaces that already had the
+ * effect baked in (.fk-card on the FK landing) keep their bespoke rule
+ * for backward compatibility — the utility is the new path forward.
+ *
+ * Token contract: shadow value is --fk-card-lift; translate is -1px;
+ * transition is .25s ease (matches the F2 status/tag cadence so the
+ * whole motion system reads coherently). prefers-reduced-motion below
+ * cancels the transform but leaves the shadow swap.
+ */
+.fk-card-lift {
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.fk-card-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--fk-card-lift);
+}
+
+/* ── System-wide reduced-motion (Phase 1) ────────────────────────────
+ * Honours OS preference by reducing transitions/animations to a 1ms
+ * tick. Deliberately leaves colour transitions alone — they carry state
+ * change information, not motion. Only translates and animations are
+ * suppressed.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .fk-card:hover,
+  .fk-card-lift:hover,
+  .fk-row:hover,
+  .fk-btn-primary:hover { transform: none !important; }
+
+  /* CF-1 row 10 · v0 keyframe-coverage gap.
+   * The 1ms ceiling above already neutralises animations, but spec § M2.2
+   * row 10 codifies `animation: none` for the four named keyframe carriers
+   * (fkfade — modal overlay; fkslide — firstload + shortcut sheet; fkspin —
+   * save-dot). Belt-and-braces against any future surface that bypasses the
+   * 1ms duration with a longer inline override. The save-dot's animated
+   * spinner gains a static amber fallback so the saving state stays
+   * legible without rotation. */
+  .fk-modal-overlay, .fk-modal-card,
+  .firstload-card, .shortcuts-card,
+  .save-dot { animation: none !important; }
+  .save-dot.is-saving { background: var(--fk-amber); }   /* static fallback */
+}
+
+/* ── Skip-link utility (CF-1 row 6 · Q10) ────────────────────────────
+ * Visually hidden until focus; jumps from off-screen into the page when
+ * keyboard-focused as the first Tab stop on the marking view. Anchor
+ * target is `#rubric-scoring` (CF-3 change D) — the skip-link only ships
+ * in the same bundle as that id.
+ */
+.fk-skip-link {
+  position: absolute; top: 0; left: 0;
+  padding: 8px 14px;
+  background: var(--fk-status-info-fg, #2563EB); color: #fff;
+  font-weight: 600; text-decoration: none;
+  transform: translateY(-110%); transition: transform .2s ease;
+  z-index: 2000;
+}
+.fk-skip-link:focus,
+.fk-skip-link:focus-visible {
+  transform: translateY(0);
+  box-shadow: var(--fk-focus-shadow);
+}
+
+    /* ── Page-host styles ──────────────────────────────────── */
+    /* Body background is #F8FAFC (slate-50) — matches Scene 1's painted bg
+       and makes axe contrast checks pass against the ancestor chain. The
+       dark scenes (4, 7) paint their own canvas bg on top, so visual
+       composition is unaffected. */
+    html, body { margin: 0; padding: 0; height: 100%; background: #F8FAFC; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
+    #root { position: fixed; inset: 0; }
+    @keyframes fk-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.3); opacity: 0.4; }
+    }
+    @keyframes fk-click-ping {
+      0%   { transform: scale(0.4); opacity: 0.9; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+  </style>
+
+  <!-- React 18.3.1 + ReactDOM 18.3.1 (production builds, SRI-pinned)
+       + Babel Standalone 7.29.0 (SRI-pinned).
+
+       Production React reduces page weight but does NOT suppress the
+       "in-browser Babel transformer" console warning — that warning is
+       emitted by @babel/standalone itself when it runtime-transpiles JSX,
+       independent of React's build mode. Keeping Babel Standalone here is
+       a deliberate trade-off: matches the Hero Film at ?story=B, no build
+       step, ~1s first-load parse cost. Bundle status: deployment-usable
+       (not fully production-clean — Babel warning will remain in devtools).
+
+       SRI hashes for production React/ReactDOM computed from live CDN
+       2026-05-21. If versions are bumped, regenerate via:
+         openssl dgst -sha384 -binary <file> | openssl base64 -A
+  -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <main id="main-content" aria-label="Feedback Kitchen tutorial video">
+    <div id="root"></div>
+  </main>
+
+  <!-- ─────────────────────────────────────────────────────────
+       BUNDLED SCRIPTS — concatenated in dependency order:
+       1. animations.jsx (engine)
+       2. ui.jsx (shared components)
+       3. scenes-intro.jsx (Scenes 1, 2, 7)
+       4. scene3-wizard.jsx (Scene 3)
+       5. scene4-marking.jsx (Scene 4)
+       6. scenes-share.jsx (Scenes 5, 6)
+       7. Inline timeline + ReactDOM.render
+       ─────────────────────────────────────────────────────── -->
+
+  <!-- 1. animations.jsx -->
+  <script type="text/babel" data-presets="react">
+
+// animations.jsx
+// Reusable animation starter: Stage, Timeline, Sprite, easing helpers.
+// Usage (in an HTML file that loads React + Babel):
+//
+//   <Stage width={1280} height={720} duration={10} background="#f6f4ef">
+//     <MyScene />
+//   </Stage>
+//
+// Inside <Stage>, any child can call useTime() to read the current
+// playhead (seconds). Or wrap content in <Sprite start={1} end={4}>...</Sprite>
+// to only render during that window -- children receive a `localTime` and
+// `progress` via the useSprite() hook.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Easing functions (hand-rolled, Popmotion-style) ─────────────────────────
+// All easings take t ∈ [0,1] and return eased t ∈ [0,1] (may overshoot for back/elastic).
+const Easing = {
+  linear: (t) => t,
+
+  // Quad
+  easeInQuad:    (t) => t * t,
+  easeOutQuad:   (t) => t * (2 - t),
+  easeInOutQuad: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+
+  // Cubic
+  easeInCubic:    (t) => t * t * t,
+  easeOutCubic:   (t) => (--t) * t * t + 1,
+  easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+
+  // Quart
+  easeInQuart:    (t) => t * t * t * t,
+  easeOutQuart:   (t) => 1 - (--t) * t * t * t,
+  easeInOutQuart: (t) => (t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t),
+
+  // Expo
+  easeInExpo:  (t) => (t === 0 ? 0 : Math.pow(2, 10 * (t - 1))),
+  easeOutExpo: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+  easeInOutExpo: (t) => {
+    if (t === 0) return 0;
+    if (t === 1) return 1;
+    if (t < 0.5) return 0.5 * Math.pow(2, 20 * t - 10);
+    return 1 - 0.5 * Math.pow(2, -20 * t + 10);
+  },
+
+  // Sine
+  easeInSine:    (t) => 1 - Math.cos((t * Math.PI) / 2),
+  easeOutSine:   (t) => Math.sin((t * Math.PI) / 2),
+  easeInOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
+
+  // Back (overshoot)
+  easeOutBack: (t) => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  },
+  easeInBack: (t) => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return c3 * t * t * t - c1 * t * t;
+  },
+  easeInOutBack: (t) => {
+    const c1 = 1.70158, c2 = c1 * 1.525;
+    return t < 0.5
+      ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+      : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+  },
+
+  // Elastic
+  easeOutElastic: (t) => {
+    const c4 = (2 * Math.PI) / 3;
+    if (t === 0) return 0;
+    if (t === 1) return 1;
+    return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  },
+};
+
+// ── Core interpolation helpers ──────────────────────────────────────────────
+
+// Clamp a value to [min, max]
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+// interpolate([0, 0.5, 1], [0, 100, 50], ease?) -> fn(t)
+// Popmotion-style: linearly maps t across input keyframes to output values,
+// with optional easing per segment (single fn or array of fns).
+function interpolate(input, output, ease = Easing.linear) {
+  return (t) => {
+    if (t <= input[0]) return output[0];
+    if (t >= input[input.length - 1]) return output[output.length - 1];
+    for (let i = 0; i < input.length - 1; i++) {
+      if (t >= input[i] && t <= input[i + 1]) {
+        const span = input[i + 1] - input[i];
+        const local = span === 0 ? 0 : (t - input[i]) / span;
+        const easeFn = Array.isArray(ease) ? (ease[i] || Easing.linear) : ease;
+        const eased = easeFn(local);
+        return output[i] + (output[i + 1] - output[i]) * eased;
+      }
+    }
+    return output[output.length - 1];
+  };
+}
+
+// animate({from, to, start, end, ease})(t) — simpler single-segment tween.
+// Returns `from` before `start`, `to` after `end`.
+function animate({ from = 0, to = 1, start = 0, end = 1, ease = Easing.easeInOutCubic }) {
+  return (t) => {
+    if (t <= start) return from;
+    if (t >= end) return to;
+    const local = (t - start) / (end - start);
+    return from + (to - from) * ease(local);
+  };
+}
+
+// ── Timeline context ────────────────────────────────────────────────────────
+
+const TimelineContext = React.createContext({ time: 0, duration: 10, playing: false });
+
+const useTime = () => React.useContext(TimelineContext).time;
+const useTimeline = () => React.useContext(TimelineContext);
+
+// ── Sprite ──────────────────────────────────────────────────────────────────
+// Renders children only when the playhead is inside [start, end]. Provides
+// a sub-context with `localTime` (seconds since start) and `progress` (0..1).
+//
+//   <Sprite start={2} end={5}>
+//     {({ localTime, progress }) => <Thing x={progress * 100} />}
+//   </Sprite>
+//
+// Or as a plain wrapper — children can call useSprite() themselves.
+
+const SpriteContext = React.createContext({ localTime: 0, progress: 0, duration: 0 });
+const useSprite = () => React.useContext(SpriteContext);
+
+function Sprite({ start = 0, end = Infinity, children, keepMounted = false }) {
+  const { time } = useTimeline();
+  const visible = time >= start && time <= end;
+  if (!visible && !keepMounted) return null;
+
+  const duration = end - start;
+  const localTime = Math.max(0, time - start);
+  const progress = duration > 0 && isFinite(duration)
+    ? clamp(localTime / duration, 0, 1)
+    : 0;
+
+  const value = { localTime, progress, duration, visible };
+
+  return (
+    <SpriteContext.Provider value={value}>
+      {typeof children === 'function' ? children(value) : children}
+    </SpriteContext.Provider>
+  );
+}
+
+// ── Sample sprite components ────────────────────────────────────────────────
+
+// TextSprite: fades/slides text in on entry, holds, then fades out on exit.
+// Props: text, x, y, size, color, font, entryDur, exitDur, align
+function TextSprite({
+  text,
+  x = 0, y = 0,
+  size = 48,
+  color = '#111',
+  font = 'Inter, system-ui, sans-serif',
+  weight = 600,
+  entryDur = 0.45,
+  exitDur = 0.35,
+  entryEase = Easing.easeOutBack,
+  exitEase = Easing.easeInCubic,
+  align = 'left',
+  letterSpacing = '-0.01em',
+}) {
+  const { localTime, duration } = useSprite();
+  const exitStart = Math.max(0, duration - exitDur);
+
+  let opacity = 1;
+  let ty = 0;
+
+  if (localTime < entryDur) {
+    const t = entryEase(clamp(localTime / entryDur, 0, 1));
+    opacity = t;
+    ty = (1 - t) * 16;
+  } else if (localTime > exitStart) {
+    const t = exitEase(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t;
+    ty = -t * 8;
+  }
+
+  const translateX = align === 'center' ? '-50%' : align === 'right' ? '-100%' : '0';
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      transform: `translate(${translateX}, ${ty}px)`,
+      opacity,
+      fontFamily: font,
+      fontSize: size,
+      fontWeight: weight,
+      color,
+      letterSpacing,
+      whiteSpace: 'pre',
+      lineHeight: 1.1,
+      willChange: 'transform, opacity',
+    }}>
+      {text}
+    </div>
+  );
+}
+
+// ImageSprite: scales + fades in; optional Ken Burns drift during hold.
+function ImageSprite({
+  src,
+  x = 0, y = 0,
+  width = 400, height = 300,
+  entryDur = 0.6,
+  exitDur = 0.4,
+  kenBurns = false,
+  kenBurnsScale = 1.08,
+  radius = 12,
+  fit = 'cover',
+  placeholder = null, // {label: string} for striped placeholder
+}) {
+  const { localTime, duration } = useSprite();
+  const exitStart = Math.max(0, duration - exitDur);
+
+  let opacity = 1;
+  let scale = 1;
+
+  if (localTime < entryDur) {
+    const t = Easing.easeOutCubic(clamp(localTime / entryDur, 0, 1));
+    opacity = t;
+    scale = 0.96 + 0.04 * t;
+  } else if (localTime > exitStart) {
+    const t = Easing.easeInCubic(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t;
+    scale = (kenBurns ? kenBurnsScale : 1) + 0.02 * t;
+  } else if (kenBurns) {
+    const holdSpan = exitStart - entryDur;
+    const holdT = holdSpan > 0 ? (localTime - entryDur) / holdSpan : 0;
+    scale = 1 + (kenBurnsScale - 1) * holdT;
+  }
+
+  const content = placeholder ? (
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'repeating-linear-gradient(135deg, #e9e6df 0 10px, #dcd8cf 10px 20px)',
+      color: '#6b6458',
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      fontSize: 13,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+    }}>
+      {placeholder.label || 'image'}
+    </div>
+  ) : (
+    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: fit, display: 'block' }} />
+  );
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      width, height,
+      opacity,
+      transform: `scale(${scale})`,
+      transformOrigin: 'center',
+      borderRadius: radius,
+      overflow: 'hidden',
+      willChange: 'transform, opacity',
+    }}>
+      {content}
+    </div>
+  );
+}
+
+// RectSprite: simple rectangle that animates position/size/color via props.
+// Useful demo primitive — takes a `render` fn for per-frame customization.
+function RectSprite({
+  x = 0, y = 0,
+  width = 100, height = 100,
+  color = '#111',
+  radius = 8,
+  entryDur = 0.4,
+  exitDur = 0.3,
+  render, // optional: (ctx) => style overrides
+}) {
+  const spriteCtx = useSprite();
+  const { localTime, duration } = spriteCtx;
+  const exitStart = Math.max(0, duration - exitDur);
+
+  let opacity = 1;
+  let scale = 1;
+
+  if (localTime < entryDur) {
+    const t = Easing.easeOutBack(clamp(localTime / entryDur, 0, 1));
+    opacity = clamp(localTime / entryDur, 0, 1);
+    scale = 0.4 + 0.6 * t;
+  } else if (localTime > exitStart) {
+    const t = Easing.easeInQuad(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t;
+    scale = 1 - 0.15 * t;
+  }
+
+  const overrides = render ? render(spriteCtx) : {};
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      width, height,
+      background: color,
+      borderRadius: radius,
+      opacity,
+      transform: `scale(${scale})`,
+      transformOrigin: 'center',
+      willChange: 'transform, opacity',
+      ...overrides,
+    }} />
+  );
+}
+
+
+function Stage({
+  width = 1280,
+  height = 720,
+  duration = 10,
+  background = '#f6f4ef',
+  fps = 60,
+  loop = true,
+  autoplay = true,
+  persistKey = 'animstage',
+  children,
+}) {
+  const [time, setTime] = React.useState(() => {
+    try {
+      const v = parseFloat(localStorage.getItem(persistKey + ':t') || '0');
+      return isFinite(v) ? clamp(v, 0, duration) : 0;
+    } catch { return 0; }
+  });
+  const [playing, setPlaying] = React.useState(autoplay);
+  const [hoverTime, setHoverTime] = React.useState(null);
+  const [scale, setScale] = React.useState(1);
+
+  const stageRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+  const rafRef = React.useRef(null);
+  const lastTsRef = React.useRef(null);
+
+  // Persist playhead
+  React.useEffect(() => {
+    try { localStorage.setItem(persistKey + ':t', String(time)); } catch {}
+  }, [time, persistKey]);
+
+  // Auto-scale to fit viewport
+  React.useEffect(() => {
+    if (!stageRef.current) return;
+    const el = stageRef.current;
+    const measure = () => {
+      const barH = 44; // playback bar height
+      const s = Math.min(
+        el.clientWidth / width,
+        (el.clientHeight - barH) / height
+      );
+      setScale(Math.max(0.05, s));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [width, height]);
+
+  // Animation loop
+  React.useEffect(() => {
+    if (!playing) {
+      lastTsRef.current = null;
+      return;
+    }
+    const step = (ts) => {
+      if (lastTsRef.current == null) lastTsRef.current = ts;
+      const dt = (ts - lastTsRef.current) / 1000;
+      lastTsRef.current = ts;
+      setTime((t) => {
+        let next = t + dt;
+        if (next >= duration) {
+          if (loop) next = next % duration;
+          else { next = duration; setPlaying(false); }
+        }
+        return next;
+      });
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      lastTsRef.current = null;
+    };
+  }, [playing, duration, loop]);
+
+  // Expose seek/play API on window for external scripting (PPTX export, etc.)
+  React.useEffect(() => {
+    window.__videoSeek = (t) => {
+      setTime(clamp(t, 0, duration));
+      setPlaying(false);
+    };
+    window.__videoPlay = () => setPlaying(true);
+    window.__videoPause = () => setPlaying(false);
+    return () => {
+      delete window.__videoSeek;
+      delete window.__videoPlay;
+      delete window.__videoPause;
+    };
+  }, [duration]);
+
+  // Keyboard: space = play/pause, ← → = seek
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setPlaying(p => !p);
+      } else if (e.code === 'ArrowLeft') {
+        setTime(t => clamp(t - (e.shiftKey ? 1 : 0.1), 0, duration));
+      } else if (e.code === 'ArrowRight') {
+        setTime(t => clamp(t + (e.shiftKey ? 1 : 0.1), 0, duration));
+      } else if (e.key === '0' || e.code === 'Home') {
+        setTime(0);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [duration]);
+
+  const displayTime = hoverTime != null ? hoverTime : time;
+
+  const ctxValue = React.useMemo(
+    () => ({ time: displayTime, duration, playing, setTime, setPlaying }),
+    [displayTime, duration, playing]
+  );
+
+  return (
+    <div
+      ref={stageRef}
+      style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center',
+        background: '#F8FAFC',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}
+    >
+      {/* Canvas area — vertically centered in remaining space */}
+      <div style={{
+        flex: 1,
+        width: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
+        minHeight: 0,
+      }}>
+        <div
+          ref={canvasRef}
+          style={{
+            width, height,
+            background,
+            position: 'relative',
+            transform: `scale(${scale})`,
+            transformOrigin: 'center',
+            flexShrink: 0,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+            overflow: 'hidden',
+          }}
+        >
+          <TimelineContext.Provider value={ctxValue}>
+            {children}
+          </TimelineContext.Provider>
+        </div>
+      </div>
+
+      {/* Playback bar — stacked below canvas, never overlapping */}
+      <div data-capture-hide="1" style={{ display: 'contents' }}>
+      <PlaybackBar
+        time={displayTime}
+        actualTime={time}
+        duration={duration}
+        playing={playing}
+        onPlayPause={() => setPlaying(p => !p)}
+        onReset={() => { setTime(0); }}
+        onSeek={(t) => setTime(t)}
+        onHover={(t) => setHoverTime(t)}
+      />
+      </div>
+    </div>
+  );
+}
+
+// ── Playback bar ────────────────────────────────────────────────────────────
+// Play/pause, return-to-begin, scrub track, time display.
+// Uses fixed-width time fields so layout doesn't thrash.
+
+function PlaybackBar({ time, duration, playing, onPlayPause, onReset, onSeek, onHover }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+
+  const timeFromEvent = React.useCallback((e) => {
+    const rect = trackRef.current.getBoundingClientRect();
+    const x = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+    return x * duration;
+  }, [duration]);
+
+  const onTrackMove = (e) => {
+    if (!trackRef.current) return;
+    const t = timeFromEvent(e);
+    if (dragging) {
+      onSeek(t);
+    } else {
+      onHover(t);
+    }
+  };
+
+  const onTrackLeave = () => {
+    if (!dragging) onHover(null);
+  };
+
+  const onTrackDown = (e) => {
+    setDragging(true);
+    const t = timeFromEvent(e);
+    onSeek(t);
+    onHover(null);
+  };
+
+  React.useEffect(() => {
+    if (!dragging) return;
+    const onUp = () => setDragging(false);
+    const onMove = (e) => {
+      if (!trackRef.current) return;
+      const t = timeFromEvent(e);
+      onSeek(t);
+    };
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mousemove', onMove);
+    return () => {
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mousemove', onMove);
+    };
+  }, [dragging, timeFromEvent, onSeek]);
+
+  const pct = duration > 0 ? (time / duration) * 100 : 0;
+  const fmt = (t) => {
+    const total = Math.max(0, t);
+    const m = Math.floor(total / 60);
+    const s = Math.floor(total % 60);
+    const cs = Math.floor((total * 100) % 100);
+    return `${String(m).padStart(1, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
+  };
+
+  const mono = 'JetBrains Mono, ui-monospace, SFMono-Regular, monospace';
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '8px 16px',
+      background: 'rgba(20,20,20,0.92)',
+      borderTop: '1px solid rgba(255,255,255,0.08)',
+      width: '100%',
+      maxWidth: 680,
+      alignSelf: 'center',
+
+      borderRadius: 8,
+      color: '#f6f4ef',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      userSelect: 'none',
+      flexShrink: 0,
+    }}>
+      <IconButton onClick={onReset} title="Return to start (0)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 2v10M12 2L5 7l7 5V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+        </svg>
+      </IconButton>
+      <IconButton onClick={onPlayPause} title="Play/pause (space)">
+        {playing ? (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="3" y="2" width="3" height="10" fill="currentColor"/>
+            <rect x="8" y="2" width="3" height="10" fill="currentColor"/>
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 2l9 5-9 5V2z" fill="currentColor"/>
+          </svg>
+        )}
+      </IconButton>
+
+      {/* Current time: fixed width so it doesn't thrash */}
+      <div style={{
+        fontFamily: mono,
+        fontSize: 12,
+        fontVariantNumeric: 'tabular-nums',
+        width: 64, textAlign: 'right',
+        color: '#f6f4ef',
+      }}>
+        {fmt(time)}
+      </div>
+
+      {/* Scrub track */}
+      <div
+        ref={trackRef}
+        onMouseMove={onTrackMove}
+        onMouseLeave={onTrackLeave}
+        onMouseDown={onTrackDown}
+        style={{
+          flex: 1,
+          height: 22,
+          position: 'relative',
+          cursor: 'pointer',
+          display: 'flex', alignItems: 'center',
+        }}
+      >
+        <div style={{
+          position: 'absolute',
+          left: 0, right: 0, height: 4,
+          background: 'rgba(255,255,255,0.12)',
+          borderRadius: 2,
+        }}/>
+        <div style={{
+          position: 'absolute',
+          left: 0, width: `${pct}%`, height: 4,
+          background: 'oklch(72% 0.12 250)',
+          borderRadius: 2,
+        }}/>
+        <div style={{
+          position: 'absolute',
+          left: `${pct}%`, top: '50%',
+          width: 12, height: 12,
+          marginLeft: -6, marginTop: -6,
+          background: '#fff',
+          borderRadius: 6,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+        }}/>
+      </div>
+
+      {/* Duration: fixed width */}
+      <div style={{
+        fontFamily: mono,
+        fontSize: 12,
+        fontVariantNumeric: 'tabular-nums',
+        width: 64, textAlign: 'left',
+        color: 'rgba(246,244,239,0.55)',
+      }}>
+        {fmt(duration)}
+      </div>
+    </div>
+  );
+}
+
+function IconButton({ children, onClick, title }) {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width: 28, height: 28,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: hover ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 6,
+        color: '#f6f4ef',
+        cursor: 'pointer',
+        padding: 0,
+        transition: 'background 120ms',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+
+Object.assign(window, {
+  Easing, interpolate, animate, clamp,
+  TimelineContext, useTime, useTimeline,
+  Sprite, SpriteContext, useSprite,
+  TextSprite, ImageSprite, RectSprite,
+  Stage, PlaybackBar,
+});
+
+  </script>
+
+  <!-- 2. ui.jsx -->
+  <script type="text/babel" data-presets="react">
+// Feedback Kitchen — reusable UI primitives for the tutorial video.
+// Mocks of the real FK product surfaces. Pure CSS-in-JS so they
+// compose cleanly inside <Sprite> wrappers without leaking styles.
+
+// ── Tokens (mirrored from fk-tokens.css for in-JS use) ──────────────
+const FK = {
+  blue:      '#2563EB',
+  blueDark:  '#1E40AF',
+  blue900:   '#1E3A8A',
+  blueInfoFg:'#1D4ED8',
+  blueInfoBg:'#EFF6FF',
+  ink:       '#0F172A',
+  inkMute:   '#475569',
+  inkSoft:   '#64748B',
+  slate200:  '#E2E8F0',
+  slate100:  '#F1F5F9',
+  slate50:   '#F8FAFC',
+  white:     '#FFFFFF',
+  successFg: '#047857',
+  successBg: '#D1FAE5',
+  warnFg:    '#92400E',
+  warnBg:    '#FEF3C7',
+  dangerFg:  '#B91C1C',
+  dangerBg:  '#FEE2E2',
+  amber:     '#F59E0B',
+  hero:      'linear-gradient(135deg, #1E3A8A 0%, #1E40AF 40%, #2563EB 100%)',
+};
+
+// ── Browser chrome — frames the FK app as a webapp ──────────────────
+function BrowserChrome({ url = 'marking.stephendmann.com', width = 1480, height = 880, children, style }) {
+  return (
+    <div style={{
+      width, height,
+      background: FK.white,
+      borderRadius: 18,
+      boxShadow: '0 30px 80px rgba(15,23,42,0.22), 0 4px 14px rgba(15,23,42,0.08)',
+      overflow: 'hidden',
+      border: `1px solid ${FK.slate200}`,
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      color: FK.ink,
+      ...style,
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 16px',
+        background: '#F1F5F9',
+        borderBottom: `1px solid ${FK.slate200}`,
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <span style={{ width: 12, height: 12, borderRadius: 6, background: '#FF5F57' }} />
+          <span style={{ width: 12, height: 12, borderRadius: 6, background: '#FEBC2E' }} />
+          <span style={{ width: 12, height: 12, borderRadius: 6, background: '#28C840' }} />
+        </div>
+        <div style={{
+          flex: 1,
+          maxWidth: 520,
+          margin: '0 auto',
+          background: FK.white,
+          border: `1px solid ${FK.slate200}`,
+          borderRadius: 8,
+          padding: '6px 14px',
+          fontSize: 13,
+          color: FK.inkSoft,
+          fontWeight: 500,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <span style={{ fontSize: 12 }}>🔒</span>
+          {url}
+        </div>
+        <div style={{ width: 60 }} />
+      </div>
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: FK.slate50 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ── App nav — sits inside the chrome ────────────────────────────────
+function AppNav({ title = 'BIOL 240 — Lab Report', subtitle = '37 students · rubric v2' }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '14px 28px',
+      background: FK.white,
+      borderBottom: `1px solid ${FK.slate200}`,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 8,
+          background: `url('/icon-192.png') center/contain no-repeat`,
+        }} />
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.01em' }}>Feedback Kitchen</div>
+          <div style={{ fontSize: 11, color: FK.inkSoft, marginTop: 1 }}>{title} · {subtitle}</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexShrink: 0 }}>
+        <span style={{ fontSize: 12, color: FK.inkSoft, fontWeight: 600, whiteSpace: 'nowrap' }}>🔒 Privacy</span>
+        <span style={{ fontSize: 12, color: FK.inkSoft, fontWeight: 600, whiteSpace: 'nowrap' }}>About</span>
+        <button style={{
+          padding: '8px 14px', borderRadius: 10,
+          background: FK.blue, color: FK.white,
+          fontWeight: 600, fontSize: 13, border: 'none',
+          fontFamily: 'inherit', whiteSpace: 'nowrap',
+          cursor: 'pointer',
+        }}>🛠 New scorer</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Fake mouse cursor used to point at things ───────────────────────
+function Cursor({ x, y, clicking = false }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x, top: y,
+      width: 26, height: 26,
+      transform: 'translate(-4px, -2px)',
+      pointerEvents: 'none',
+      transition: 'left 0.45s cubic-bezier(.4,0,.2,1), top 0.45s cubic-bezier(.4,0,.2,1)',
+      zIndex: 50,
+    }}>
+      <svg viewBox="0 0 24 24" width="26" height="26" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>
+        <path d="M3 2 L3 17 L7.5 13 L10 19 L13 17.5 L10.5 11.5 L17 11 Z"
+              fill="#FFFFFF" stroke="#0F172A" strokeWidth="1.4" strokeLinejoin="round"/>
+      </svg>
+      {clicking && (
+        <div style={{
+          position: 'absolute', left: 4, top: 4,
+          width: 38, height: 38, marginLeft: -19, marginTop: -19,
+          borderRadius: '50%',
+          border: `2px solid ${FK.blue}`,
+          opacity: 0.7,
+          animation: 'fk-click-ping 0.5s ease-out',
+        }} />
+      )}
+    </div>
+  );
+}
+
+// ── Step pill (numbered chip) ───────────────────────────────────────
+function StepPill({ n, label, active = false, done = false }) {
+  const bg = active ? FK.blue : done ? FK.successBg : FK.white;
+  const fg = active ? FK.white : done ? FK.successFg : FK.inkMute;
+  const border = active ? FK.blue : done ? FK.successBg : FK.slate200;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 14px', borderRadius: 10,
+      background: bg, color: fg,
+      border: `1px solid ${border}`,
+      fontSize: 13, fontWeight: 600,
+      transition: 'all 0.3s ease',
+    }}>
+      <span style={{
+        width: 22, height: 22, borderRadius: 11,
+        background: active ? 'rgba(255,255,255,0.25)' : done ? FK.successFg : FK.slate100,
+        color: active ? FK.white : done ? FK.white : FK.inkMute,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 11, fontWeight: 700,
+      }}>{done ? '✓' : n}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+// ── Progress bar ────────────────────────────────────────────────────
+function ProgressBar({ pct, height = 6 }) {
+  return (
+    <div style={{
+      width: '100%', height,
+      background: FK.slate100, borderRadius: height / 2,
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        width: `${pct * 100}%`, height: '100%',
+        background: FK.blue,
+        transition: 'width 0.4s cubic-bezier(.4,0,.2,1)',
+      }} />
+    </div>
+  );
+}
+
+// ── Section label inside wizard ─────────────────────────────────────
+function FieldLabel({ children }) {
+  return (
+    <div style={{
+      fontSize: 11, fontWeight: 700,
+      letterSpacing: '0.08em', textTransform: 'uppercase',
+      color: FK.inkSoft, marginBottom: 8,
+    }}>{children}</div>
+  );
+}
+
+// ── Form input (visual only) ────────────────────────────────────────
+function FormField({ label, value, hint, focused = false, width = '100%' }) {
+  return (
+    <div style={{ width }}>
+      <FieldLabel>{label}</FieldLabel>
+      <div style={{
+        background: FK.white,
+        border: `1px solid ${focused ? FK.blue : FK.slate200}`,
+        boxShadow: focused ? `0 0 0 3px rgba(37,99,235,0.18)` : 'none',
+        borderRadius: 10,
+        padding: '12px 14px',
+        fontSize: 15, fontWeight: 500,
+        color: value ? FK.ink : FK.inkSoft,
+        transition: 'all 0.25s ease',
+        minHeight: 22,
+      }}>{value || <span style={{ color: '#475569' }}>{hint}</span>}</div>
+    </div>
+  );
+}
+
+// ── Dropdown (visual only) ──────────────────────────────────────────
+function Dropdown({ value, hint, focused = false, width = '100%', tone = 'default' }) {
+  const tones = {
+    default:  { fg: FK.ink, bg: FK.white, border: FK.slate200 },
+    warn:     { fg: FK.warnFg, bg: FK.warnBg, border: FK.warnFg },
+    success:  { fg: FK.successFg, bg: FK.successBg, border: FK.successBg },
+  };
+  const t = tones[tone] || tones.default;
+  return (
+    <div style={{
+      width,
+      background: t.bg,
+      border: `1px solid ${focused ? FK.blue : t.border}`,
+      boxShadow: focused ? `0 0 0 3px rgba(37,99,235,0.18)` : 'none',
+      borderRadius: 10,
+      padding: '11px 14px',
+      fontSize: 14, fontWeight: 600,
+      color: value ? t.fg : FK.inkSoft,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      transition: 'all 0.25s ease',
+    }}>
+      <span>{value || hint}</span>
+      <span style={{ fontSize: 12, opacity: 0.6 }}>▾</span>
+    </div>
+  );
+}
+
+// ── FK button (visual only) ─────────────────────────────────────────
+function FKBtn({ children, variant = 'primary', size = 'md', pressed = false, style }) {
+  const sizes = {
+    sm: { fs: 12, pad: '7px 12px' },
+    md: { fs: 13, pad: '10px 16px' },
+    lg: { fs: 14, pad: '12px 22px' },
+  }[size];
+  const variants = {
+    primary: { bg: FK.blue, fg: FK.white, br: 'none' },
+    ghost:   { bg: 'transparent', fg: FK.inkMute, br: `1px solid ${FK.slate200}` },
+    light:   { bg: FK.white, fg: FK.ink, br: `1px solid ${FK.slate200}` },
+    danger:  { bg: FK.dangerBg, fg: FK.dangerFg, br: 'none' },
+    success: { bg: FK.successBg, fg: FK.successFg, br: 'none' },
+  }[variant];
+  return (
+    <button style={{
+      padding: sizes.pad, fontSize: sizes.fs, fontWeight: 600,
+      background: variants.bg, color: variants.fg, border: variants.br,
+      borderRadius: 10,
+      transform: pressed ? 'translateY(1px)' : 'translateY(0)',
+      cursor: 'pointer',
+      fontFamily: 'inherit',
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      transition: 'all 0.2s ease',
+      whiteSpace: 'nowrap',
+      ...style,
+    }}>{children}</button>
+  );
+}
+
+// ── Status pill ─────────────────────────────────────────────────────
+function StatusPill({ children, tone = 'success' }) {
+  const tones = {
+    success: { bg: FK.successBg, fg: FK.successFg },
+    warn:    { bg: FK.warnBg, fg: FK.warnFg },
+    info:    { bg: FK.blueInfoBg, fg: FK.blueInfoFg },
+    muted:   { bg: FK.slate200, fg: FK.inkMute },
+  }[tone];
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '3px 9px', borderRadius: 9999,
+      fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+      background: tones.bg, color: tones.fg,
+    }}>{children}</span>
+  );
+}
+
+// ── Wordmark for title card ─────────────────────────────────────────
+function FKWordmark({ size = 1 }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 18 * size }}>
+      <div style={{
+        width: 76 * size, height: 76 * size, borderRadius: 16 * size,
+        background: `url('/icon-192.png') center/contain no-repeat`,
+        boxShadow: '0 8px 24px rgba(30,58,138,0.25)',
+      }} />
+      <div>
+        <div style={{
+          fontSize: 56 * size, fontWeight: 800,
+          letterSpacing: '-0.025em', lineHeight: 1, color: FK.ink,
+        }}>Feedback Kitchen</div>
+        <div style={{
+          fontSize: 17 * size, color: FK.inkSoft, marginTop: 8 * size,
+          fontWeight: 500, letterSpacing: '-0.005em',
+        }}>marking, made simpler</div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {
+  FK, BrowserChrome, AppNav, Cursor,
+  StepPill, ProgressBar, FieldLabel,
+  FormField, Dropdown, FKBtn, StatusPill, FKWordmark,
+});
+  </script>
+
+  <!-- 3. scenes-intro.jsx (Scenes 1, 2, 7) -->
+  <script type="text/babel" data-presets="react">
+// Scenes 1, 2, 7 — title card, three-step overview, privacy close.
+// Lighter motion-graphics scenes that bookend the tutorial.
+
+// ── Scene 1 — Title card (0 → 5s) ───────────────────────────────────
+function Scene1Title() {
+  const { localTime, duration, progress } = useSprite();
+  // Motion sequence (per Scene-1 brief):
+  //   0.0–1.0  logo + wordmark fade up
+  //   0.6–1.2  eyebrow pill
+  //   2.0–3.5  italic tagline slides up
+  //   3.5–4.5  subtitle fades in
+  //   4.5–5.0  hold, then exit
+  const wordmarkT = clamp(localTime / 1.0, 0, 1);
+  const wordmarkE = Easing.easeOutCubic(wordmarkT);
+  const wordmarkY = (1 - wordmarkE) * 36;
+  const eyebrowT = clamp((localTime - 0.6) / 0.6, 0, 1);
+  const taglineT = clamp((localTime - 2.0) / 0.9, 0, 1);
+  const taglineE = Easing.easeOutCubic(taglineT);
+  const subT     = clamp((localTime - 3.5) / 0.7, 0, 1);
+  // Scene-out handled by the Sprite wrapper's cross-fade.
+  // No parent opacity here — readable text must not blend through to
+  // the body background mid-fade.
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.slate50,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* Faint rubric-grid motif — seeds the visual language used later */}
+      <svg
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.5, pointerEvents: 'none' }}
+        preserveAspectRatio="none"
+        viewBox="0 0 192 108"
+      >
+        <defs>
+          <pattern id="fk-rubric-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#94A3B8" strokeWidth="0.1" strokeDasharray="0.6 0.6" />
+          </pattern>
+          <linearGradient id="fk-grid-mask" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0"   stopColor="#fff" stopOpacity="0.0"/>
+            <stop offset="0.5" stopColor="#fff" stopOpacity="0.7"/>
+            <stop offset="1"   stopColor="#fff" stopOpacity="0.0"/>
+          </linearGradient>
+          <mask id="fk-grid-band">
+            <rect width="192" height="108" fill="url(#fk-grid-mask)" />
+          </mask>
+        </defs>
+        <rect width="192" height="108" fill="url(#fk-rubric-grid)" mask="url(#fk-grid-band)" />
+      </svg>
+
+      {/* Decorative big gradient orb */}
+      <div style={{
+        position: 'absolute',
+        top: -200, right: -200,
+        width: 700, height: 700, borderRadius: '50%',
+        background: 'radial-gradient(circle at 30% 30%, rgba(37,99,235,0.18), rgba(37,99,235,0) 70%)',
+        opacity: progress < 0.9 ? 1 : (1 - (progress - 0.9) / 0.1),
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: -250, left: -150,
+        width: 600, height: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle at 50% 50%, rgba(30,58,138,0.12), rgba(30,58,138,0) 70%)',
+      }} />
+
+      {/* Eyebrow — visibility + transform (no opacity on readable text). */}
+      <div style={{
+        visibility: localTime >= 0.6 ? 'visible' : 'hidden',
+        transform: `translateY(${(1 - eyebrowT) * 20}px)`,
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        padding: '8px 16px', borderRadius: 9999,
+        background: FK.blueInfoBg, color: FK.blueInfoFg,
+        fontSize: 13, fontWeight: 700,
+        letterSpacing: '0.12em', textTransform: 'uppercase',
+        marginBottom: 40,
+      }}>
+        <span style={{ width: 6, height: 6, borderRadius: 3, background: FK.blue }} />
+        Tutorial · ~2 min walkthrough
+      </div>
+
+      {/* Wordmark — kept opacity since it's a graphic, not readable text. */}
+      <div style={{
+        opacity: wordmarkE,
+        transform: `translateY(${wordmarkY}px)`,
+        marginBottom: 56,
+      }}>
+        <FKWordmark size={1.1} />
+      </div>
+
+      {/* Tagline */}
+      <div style={{
+        visibility: localTime >= 2.0 ? 'visible' : 'hidden',
+        transform: `translateY(${(1 - taglineE) * 18}px)`,
+        fontSize: 38, fontWeight: 500, fontStyle: 'italic',
+        color: FK.ink, letterSpacing: '-0.015em',
+        textAlign: 'center', maxWidth: 1100,
+      }}>Rubric-based marking. Feedback in seconds.</div>
+
+      {/* Subtitle — solid FK.inkMute (#475569) for 6.8:1 on slate-50. */}
+      <div style={{
+        visibility: localTime >= 3.5 ? 'visible' : 'hidden',
+        transform: `translateY(${(1 - subT) * 12}px)`,
+        marginTop: 32,
+        fontSize: 18, color: FK.inkMute, fontWeight: 600,
+        letterSpacing: '-0.005em',
+      }}>How to use Feedback Kitchen — a tour for tutors</div>
+    </div>
+  );
+}
+
+// ── Scene 2 — Three-step overview (5 → 21s, 16s total) ──────────────
+function Scene2Overview() {
+  const { localTime, duration } = useSprite();
+
+  // Heading appears 0–0.6
+  const headT = clamp(localTime / 0.7, 0, 1);
+  // Cards appear at 1.0, 4.5, 8.0 (with their own emphasis)
+  const cardStarts = [1.0, 4.5, 8.0];
+  const arrowStarts = [4.0, 7.5];
+
+  // `tone` drives the decorative numeral (opacity 0.08 — aria-hidden, not
+  // contrast-checked). `textTone` is a darker variant used for the eyebrow
+  // text where 4.5:1 contrast applies (eyebrow is 11px bold).
+  const cards = [
+    {
+      ico: '🛠',
+      n: '01',
+      title: 'Build your scorer',
+      body: 'A six-step wizard sets up your rubric — assessment details, grade scale, criteria, descriptors, feedback templates, save.',
+      tone: FK.blue,
+      textTone: '#1D4ED8',  // blue-700, 6.4:1 on white
+    },
+    {
+      ico: '✓',
+      n: '02',
+      title: 'Grade a student',
+      body: 'Select a grade per criterion. The weighted score calculates. The feedback draft assembles in real time below.',
+      tone: '#10B981',
+      textTone: '#047857',  // emerald-700, 5.4:1 on white
+    },
+    {
+      ico: '📋',
+      n: '03',
+      title: 'Export & move on',
+      body: 'Copy the feedback to your clipboard, paste into Moodle or Turnitin. Done.',
+      tone: '#7C3AED',
+      textTone: '#6D28D9',  // violet-700, 6.1:1 on white
+    },
+  ];
+
+  // Scene fade handled by Sprite cross-fade; no parent opacity here.
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.slate50,
+      padding: '80px 100px',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Section header */}
+      <div style={{
+        opacity: headT,
+        transform: `translateY(${(1 - headT) * 20}px)`,
+        marginBottom: 56,
+      }}>
+        <div style={{
+          fontSize: 13, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: FK.blueInfoFg, marginBottom: 14,
+        }}>The whole loop in three moves</div>
+        <div style={{
+          fontSize: 56, fontWeight: 800, letterSpacing: '-0.025em',
+          lineHeight: 1.05, color: FK.ink,
+          maxWidth: 1200,
+        }}>Build · Mark · Export.</div>
+        <div style={{
+          fontSize: 22, color: FK.inkSoft, marginTop: 16, fontWeight: 500,
+          maxWidth: 900, lineHeight: 1.4,
+        }}>Three steps, one tab, no logins. Your rubric, your judgement, faster.</div>
+      </div>
+
+      {/* Cards row */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: 28, flex: 1, alignItems: 'stretch',
+      }}>
+        {cards.map((c, i) => {
+          const t = clamp((localTime - cardStarts[i]) / 0.6, 0, 1);
+          const e = Easing.easeOutBack(t);
+          const ny = (1 - e) * 30;
+          return (
+            <div key={i} style={{
+              opacity: t,
+              transform: `translateY(${ny}px) scale(${0.96 + 0.04 * e})`,
+              background: FK.white,
+              borderRadius: 24,
+              border: `1px solid ${FK.slate200}`,
+              padding: '36px 32px 32px',
+              position: 'relative',
+              boxShadow: '0 8px 28px rgba(15,23,42,0.06)',
+              display: 'flex', flexDirection: 'column',
+            }}>
+              {/* Decorative card "watermark" — rendered as a tinted disc instead
+                  of a giant numeral so axe-core doesn't text-contrast-check it.
+                  The card's step number is still communicated via the "Step 0X"
+                  eyebrow below; the disc is pure visual rhythm. */}
+              <div aria-hidden="true" style={{
+                position: 'absolute',
+                top: -20, right: -20,
+                width: 140, height: 140,
+                borderRadius: '50%',
+                background: c.tone + '12',
+                pointerEvents: 'none',
+              }} />
+
+              {/* Icon — decorative emoji, hidden from a11y */}
+              <div aria-hidden="true" style={{
+                width: 64, height: 64,
+                borderRadius: 16,
+                background: c.tone + '15',
+                color: c.tone,
+                fontSize: 32, fontWeight: 800,
+                display: 'grid', placeItems: 'center',
+                marginBottom: 24,
+                lineHeight: 1,
+              }}>{c.ico}</div>
+
+              {/* Step label — uses textTone (darker variant) for 4.5:1 AA */}
+              <div style={{
+                fontSize: 11, fontWeight: 700,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: c.textTone, marginBottom: 12,
+              }}>Step {c.n}</div>
+
+              <div style={{
+                fontSize: 30, fontWeight: 700,
+                letterSpacing: '-0.02em', lineHeight: 1.15,
+                color: FK.ink, marginBottom: 16,
+              }}>{c.title}</div>
+
+              <div style={{
+                fontSize: 17, lineHeight: 1.55,
+                color: FK.inkMute, fontWeight: 400,
+              }}>{c.body}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Connecting arrows that draw between cards.
+         Both arrows resolve together at 8.6s so the row reads as a
+         single completed sequence rather than a fading queue. */}
+      {arrowStarts.map((s, i) => {
+        const t = clamp((localTime - s) / 0.4, 0, 1);
+        return (
+          <div key={i} style={{
+            position: 'absolute',
+            top: '52%',
+            left: `${33.5 + i * 33}%`,
+            transform: `translate(-50%, -50%) scale(${0.6 + 0.4 * t})`,
+            opacity: t,
+            zIndex: 5,
+          }}>
+            <div style={{
+              width: 40, height: 40,
+              borderRadius: 20,
+              background: FK.white,
+              border: `1.5px solid ${FK.slate200}`,
+              display: 'grid', placeItems: 'center',
+              boxShadow: '0 6px 16px rgba(15,23,42,0.08)',
+              color: FK.ink, fontSize: 20, fontWeight: 700,
+              lineHeight: 1,
+            }}>→</div>
+          </div>
+        );
+      })}
+
+      {/* Tagline at bottom appears 11.5s */}
+      <div style={{
+        marginTop: 40, textAlign: 'center',
+        opacity: clamp((localTime - 11.5) / 0.6, 0, 1),
+        fontSize: 24, color: FK.ink, fontStyle: 'italic',
+        fontWeight: 500, letterSpacing: '-0.005em',
+      }}>Not an autograder — you choose the grades, the tool drafts the feedback.</div>
+    </div>
+  );
+}
+
+// ── Scene 7 — Privacy close (last 10s) ──────────────────────────────
+function Scene7Privacy() {
+  const { localTime, duration } = useSprite();
+  const lines = [
+    { ico: '🔒', text: 'Runs entirely in your browser — no server, no login.' },
+    { ico: '🧠', text: 'Student data stays in memory and is never uploaded.' },
+    { ico: '✅', text: 'No DPIA. No vendor review. No IT approval queue.' },
+  ];
+  const starts = [0.6, 2.2, 3.8];
+
+  // URL block at 5.6s
+  const urlT = clamp((localTime - 5.6) / 0.8, 0, 1);
+  const urlE = Easing.easeOutBack(urlT);
+  // Gentle URL pulse — slow breathing once visible, signals "click here"
+  const pulse = urlT >= 1 ? (1 + 0.012 * Math.sin((localTime - 6.5) * 2.2)) : 1;
+
+  // Eyebrow up front
+  const eyeT = clamp(localTime / 0.5, 0, 1);
+
+  // Scene exits via the Sprite wrapper's own cross-fade — no parent
+  // opacity here, since that would blend all foreground text against
+  // the body background and cause Axe contrast false-positives during
+  // the fade window.
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.ink, color: FK.white,
+      padding: '80px 100px',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden',
+      textAlign: 'center',
+      // Force this scene above the previous one during the 0.5s overlap.
+      // Without parent opacity, both scenes paint at full strength while
+      // both are mounted; this guarantees Scene 7 covers Scene 6.
+      zIndex: 10,
+      isolation: 'isolate',
+    }}>
+      {/* Solid dark base — fills the canvas edge-to-edge with no
+          transparency. Sits behind everything else in this scene and
+          guarantees a dark backdrop even during scene overlaps. */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0,
+        background: FK.ink,
+        zIndex: 0,
+      }} />
+
+      {/* Soft blue glow — top right, mirrors Scene 1 orb placement */}
+      <div aria-hidden="true" style={{
+        position: 'absolute',
+        top: -200, right: -200,
+        width: 700, height: 700, borderRadius: '50%',
+        background: 'radial-gradient(circle at 30% 30%, rgba(37,99,235,0.28), rgba(37,99,235,0) 70%)',
+        zIndex: 1,
+      }} />
+      <div aria-hidden="true" style={{
+        position: 'absolute',
+        bottom: -250, left: -150,
+        width: 600, height: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle at 50% 50%, rgba(16,185,129,0.14), rgba(16,185,129,0) 70%)',
+        zIndex: 1,
+      }} />
+
+      {/* Heading backing panel — a deep navy band that guarantees the
+          eyebrow + heading sit on a fully opaque dark surface even if
+          anything below leaks through during scene transitions.
+          (Steve note 2026-05-23.) */}
+      <div aria-hidden="true" style={{
+        position: 'absolute',
+        left: 0, right: 0, top: 0,
+        height: '52%',
+        background: 'linear-gradient(180deg, #0F172A 0%, #0F172A 80%, rgba(15,23,42,0.92) 100%)',
+        zIndex: 2,
+      }} />
+
+      {/* Eyebrow — visibility instead of opacity so Axe doesn't blend
+          the bright foreground against the dark parent. */}
+      <div style={{
+        visibility: localTime >= 0 ? 'visible' : 'hidden',
+        transform: `translateY(${(1 - eyeT) * 6}px)`,
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        padding: '8px 16px', borderRadius: 9999,
+        background: '#1E3A8A',
+        border: '1px solid #3B82F6',
+        fontSize: 13, fontWeight: 700,
+        letterSpacing: '0.18em', textTransform: 'uppercase',
+        color: '#BFDBFE', marginBottom: 32,
+        position: 'relative', zIndex: 3,
+      }}>
+        <span style={{ width: 6, height: 6, borderRadius: 3, background: '#BFDBFE' }} />
+        Built for educators · Privacy by design
+      </div>
+
+      {/* Heading */}
+      <div style={{
+        visibility: localTime >= 0 ? 'visible' : 'hidden',
+        transform: `translateY(${(1 - eyeT) * 8}px)`,
+        fontSize: 64, fontWeight: 800,
+        letterSpacing: '-0.025em', lineHeight: 1.05,
+        marginBottom: 48,
+        maxWidth: 1280,
+        color: FK.white,
+        position: 'relative', zIndex: 3,
+      }}>Student data never leaves the room.</div>
+
+      {/* Three statements — centred stack */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 20,
+        alignItems: 'stretch', maxWidth: 820, width: '100%',
+        marginBottom: 56,
+        position: 'relative', zIndex: 3,
+      }}>
+        {lines.map((l, i) => {
+          const t = clamp((localTime - starts[i]) / 0.5, 0, 1);
+          const e = Easing.easeOutCubic(t);
+          // Use visibility + transform for entry, not opacity — keeps Axe
+          // from blending the bright foreground colour against the dark
+          // parent and reporting false-positive contrast failures.
+          const shown = localTime >= starts[i];
+          return (
+            <div key={i} style={{
+              visibility: shown ? 'visible' : 'hidden',
+              transform: `translateY(${(1 - e) * 16}px)`,
+              display: 'flex', alignItems: 'center', gap: 22,
+              fontSize: 26, fontWeight: 500,
+              letterSpacing: '-0.01em',
+              color: '#F1F5F9',
+              textAlign: 'left',
+            }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 14,
+                background: '#1E3A8A',
+                border: '1px solid #3B82F6',
+                display: 'grid', placeItems: 'center',
+                fontSize: 24, flexShrink: 0,
+              }}>{l.ico}</div>
+              <span>{l.text}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Wordmark — compositional bookend to Scene 1.
+          visibility (not opacity) so Axe doesn't blend "Feedback Kitchen"
+          white text against the body bg during the urlT fade-in. */}
+      <div style={{
+        visibility: urlT > 0 ? 'visible' : 'hidden',
+        display: 'flex', alignItems: 'center', gap: 14,
+        marginBottom: 18,
+        position: 'relative', zIndex: 3,
+      }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 9,
+          background: `url('/icon-192.png') center/contain no-repeat`,
+        }} />
+        <div style={{
+          fontSize: 22, fontWeight: 800,
+          letterSpacing: '-0.015em',
+          color: FK.white,
+        }}>Feedback Kitchen</div>
+      </div>
+
+      {/* URL block — uses visibility + scale (not opacity) so Axe doesn't
+          blend foreground colours against the body background mid-fade. */}
+      <div style={{
+        visibility: urlT > 0 ? 'visible' : 'hidden',
+        transform: `scale(${(0.94 + 0.06 * urlE) * pulse})`,
+        textAlign: 'center',
+        position: 'relative', zIndex: 3,
+      }}>
+        <div style={{
+          fontSize: 12, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: '#CBD5E1', marginBottom: 12,
+        }}>Free · No sign-up · No install</div>
+        <div style={{
+          fontSize: 52, fontWeight: 700, letterSpacing: '-0.02em',
+          color: FK.white,
+          display: 'inline-flex', alignItems: 'center', gap: 14,
+        }}>
+          <span style={{
+            width: 6, height: 56, borderRadius: 3,
+            background: FK.blue,
+          }} />
+          marking.stephendmann.com
+          <span style={{
+            width: 6, height: 56, borderRadius: 3,
+            background: FK.blue,
+          }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { Scene1Title, Scene2Overview, Scene7Privacy });
+  </script>
+
+  <!-- 4. scene3-wizard.jsx (Scene 3) -->
+  <script type="text/babel" data-presets="react">
+// Scene 3 — Build-your-scorer wizard (6 steps, ~22s).
+// Shows a browser-chrome'd FK app with a modal wizard advancing
+// through the 6 setup steps. Left rail tracks progress; right pane
+// shows the form content for the active step.
+
+const WIZARD_STEPS = [
+  { n: '1', label: 'Assessment details',  short: 'Details' },
+  { n: '2', label: 'Grade scale',         short: 'Scale' },
+  { n: '3', label: 'Criteria',            short: 'Criteria' },
+  { n: '4', label: 'Rubric descriptors',  short: 'Rubric' },
+  { n: '5', label: 'Feedback templates',  short: 'Templates' },
+  { n: '6', label: 'Review & save',       short: 'Review' },
+];
+
+function Scene3Wizard() {
+  const { localTime, duration } = useSprite();
+  // Step durations
+  const stepBounds = [
+    [0.2,  3.6],   // 1
+    [3.6,  6.8],   // 2
+    [6.8, 10.4],   // 3
+    [10.4, 14.2],  // 4
+    [14.2, 17.6],  // 5
+    [17.6, 21.4],  // 6
+  ];
+  // Find active step
+  let activeIdx = 0;
+  for (let i = 0; i < stepBounds.length; i++) {
+    if (localTime >= stepBounds[i][0]) activeIdx = i;
+  }
+  const progressPct = (activeIdx + 1) / WIZARD_STEPS.length;
+
+  // Whole scene fade in/out
+  const inT  = clamp(localTime / 0.4, 0, 1);
+  const out  = clamp(1 - (localTime - (duration - 0.8)) / 0.8, 0, 1);
+
+  // Per-step transition: ~250ms crossfade rather than a slow wipe.
+  const stepStart = stepBounds[activeIdx][0];
+  const stepLocal = localTime - stepStart;
+  const enterT = clamp(stepLocal / 0.25, 0, 1);
+  const enterE = Easing.easeOutCubic(enterT);
+
+  // Narrator cursor: hovers the active step in the left rail, then drifts
+  // to the Next button (or Save on step 6) as the step is about to advance.
+  // Coords are within the BrowserChrome content area (below the 60px header).
+  const stepDur = stepBounds[activeIdx][1] - stepBounds[activeIdx][0];
+  // Pill centres: sidebar header + stack-stride math (~50px per pill).
+  const railX = 230;
+  const railY = 263 + activeIdx * 50;
+  // Footer button (Next / Save scorer)
+  const btnX  = 1340;
+  const btnY  = 724;
+  const driftStart = stepDur - 0.8;
+  const drift = clamp((stepLocal - driftStart) / 0.6, 0, 1);
+  const driftE = Easing.easeInOutCubic(drift);
+  const cursorX = railX + (btnX - railX) * driftE;
+  const cursorY = railY + (btnY - railY) * driftE;
+  // Click ping when the step advances (or, on step 6, when the user 'saves')
+  const stepEnd = stepBounds[activeIdx][1];
+  const clicking = localTime >= stepEnd - 0.15 && localTime < stepEnd + 0.15;
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.slate100,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      // Scene fade handled by Sprite cross-fade; no parent opacity here
+      // because Axe blends foreground text against the body background
+      // mid-fade and reports contrast failures on otherwise AA text.
+    }}>
+      <BrowserChrome url="marking.stephendmann.com/scorers/new" width={1520} height={900}>
+        <AppNav title="New scorer" subtitle="Untitled draft" />
+
+        {/* Dimmed app behind */}
+        <div style={{
+          position: 'absolute', inset: 0, top: 60,
+          background: 'rgba(15,23,42,0.4)',
+        }} />
+
+        {/* Wizard modal */}
+        <div style={{
+          position: 'absolute',
+          top: 80, left: 60, right: 60, bottom: 60,
+          background: FK.white,
+          borderRadius: 18,
+          boxShadow: '0 30px 80px rgba(15,23,42,0.25)',
+          display: 'flex',
+          overflow: 'hidden',
+          transform: `scale(${0.97 + 0.03 * inT})`,
+          transformOrigin: 'center',
+        }}>
+          {/* Left rail */}
+          <div style={{
+            width: 320,
+            background: FK.slate50,
+            borderRight: `1px solid ${FK.slate200}`,
+            padding: '32px 24px',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700,
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: FK.inkMute, marginBottom: 6,
+            }}>Build a scorer</div>
+            <div style={{
+              fontSize: 20, fontWeight: 700,
+              letterSpacing: '-0.015em',
+              color: FK.ink, marginBottom: 6,
+              lineHeight: 1.2,
+            }}>Six steps. One rubric.</div>
+            <div style={{
+              fontSize: 20, fontWeight: 700,
+              letterSpacing: '-0.015em',
+              color: FK.blue, marginBottom: 24,
+              lineHeight: 1.2,
+            }}>Reuse forever.</div>
+
+            <ProgressBar pct={progressPct} height={6} />
+            <div style={{
+              marginTop: 10, marginBottom: 24,
+              fontSize: 12, color: FK.inkSoft, fontWeight: 600,
+            }}>{activeIdx + 1} of {WIZARD_STEPS.length} complete</div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {WIZARD_STEPS.map((s, i) => (
+                <StepPill
+                  key={i}
+                  n={s.n}
+                  label={s.label}
+                  active={i === activeIdx}
+                  done={i < activeIdx}
+                />
+              ))}
+            </div>
+
+            <div style={{ marginTop: 'auto', paddingTop: 18 }}>
+              <div style={{
+                padding: 12, borderRadius: 10,
+                background: FK.blueInfoBg,
+                fontSize: 12, color: FK.blueInfoFg,
+                fontWeight: 500, lineHeight: 1.5,
+              }}>
+                💡 Everything stays in this browser. You can export the scorer as JSON to share with your team.
+              </div>
+            </div>
+          </div>
+
+          {/* Right pane — content per step */}
+          <div style={{
+            flex: 1,
+            padding: '40px 56px',
+            overflow: 'hidden',
+            position: 'relative',
+            opacity: enterE,
+            transform: `translateY(${(1 - enterE) * 14}px)`,
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700,
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: FK.blueInfoFg, marginBottom: 10,
+            }}>Step {WIZARD_STEPS[activeIdx].n} of 6</div>
+            <div style={{
+              fontSize: 36, fontWeight: 700,
+              letterSpacing: '-0.02em', color: FK.ink,
+              marginBottom: 8,
+            }}>{WIZARD_STEPS[activeIdx].label}</div>
+            {/* Subtitle per step */}
+            <div style={{
+              fontSize: 16, color: FK.inkSoft,
+              fontWeight: 500, marginBottom: 32,
+              maxWidth: 680, lineHeight: 1.5,
+            }}>{wizardSubtitles[activeIdx]}</div>
+
+            {/* Step content */}
+            <div style={{ flex: 1 }}>
+              {activeIdx === 0 && <WizStep1 t={stepLocal} />}
+              {activeIdx === 1 && <WizStep2 t={stepLocal} />}
+              {activeIdx === 2 && <WizStep3 t={stepLocal} />}
+              {activeIdx === 3 && <WizStep4 t={stepLocal} />}
+              {activeIdx === 4 && <WizStep5 t={stepLocal} />}
+              {activeIdx === 5 && <WizStep6 t={stepLocal} />}
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              position: 'absolute',
+              left: 56, right: 56, bottom: 28,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              paddingTop: 16,
+              borderTop: `1px solid ${FK.slate200}`,
+            }}>
+              <FKBtn variant="ghost">← Back</FKBtn>
+              <FKBtn variant="primary" size="lg">
+                {activeIdx === 5 ? '✓ Save scorer' : 'Next →'}
+              </FKBtn>
+            </div>
+          </div>
+        </div>
+
+        {/* Narrator cursor — inside the chrome content area */}
+        <Cursor x={cursorX} y={cursorY} clicking={clicking} />
+      </BrowserChrome>
+    </div>
+  );
+}
+
+const wizardSubtitles = [
+  'Name your assessment so it shows up in the right course context.',
+  'Pick the grade scale your faculty uses. Custom scales are welcome.',
+  'List what you\'re actually marking. Weights sum to 100%.',
+  'Write the descriptor for each grade band, for each criterion.',
+  'Intro and outro paragraphs that wrap every piece of feedback.',
+  'Have a look. If it reads right, save and you\'re ready to mark.',
+];
+
+// ── Step 1: Assessment details ──────────────────────────────────────
+function WizStep1({ t }) {
+  // Type-on for name field
+  const nameFull = 'BIOL 240 — Lab Report 2';
+  const name = nameFull.slice(0, clamp(Math.floor((t - 0.4) / 0.04), 0, nameFull.length));
+  const codeFull = 'BIOL 240';
+  const code = codeFull.slice(0, clamp(Math.floor((t - 2.1) / 0.05), 0, codeFull.length));
+  const tutorFull = 'Dr. S. Mann';
+  const tutor = tutorFull.slice(0, clamp(Math.floor((t - 2.8) / 0.05), 0, tutorFull.length));
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 760 }}>
+      <div style={{ gridColumn: '1 / 3' }}>
+        <FormField label="Assessment name" value={name + (name.length < nameFull.length ? '▎' : '')} hint="e.g. BIOL 240 — Lab Report 2" focused={t > 0.3 && t < 2.0} />
+      </div>
+      <FormField label="Course code" value={code} hint="e.g. BIOL 240" focused={t > 2.0 && t < 2.7} />
+      <FormField label="Tutor" value={tutor} hint="Your name" focused={t > 2.7 && t < 3.4} />
+      <div style={{ gridColumn: '1 / 3', marginTop: 4 }}>
+        <FieldLabel>Notes (optional)</FieldLabel>
+        <div style={{
+          background: FK.slate50,
+          border: `1px solid ${FK.slate200}`,
+          borderRadius: 10,
+          padding: '14px 16px',
+          fontSize: 14, color: FK.inkSoft,
+          minHeight: 76, fontStyle: 'italic',
+        }}>Semester 2 · 37 students enrolled · due 12 Sep</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 2: Grade scale ─────────────────────────────────────────────
+function WizStep2({ t }) {
+  const scales = [
+    { id: 'nz', label: 'NZ University',     sub: 'A+ → D · 10 grades', pill: 'NZ' },
+    { id: 'au', label: 'Australian Honours', sub: 'HD → F · 5 grades',   pill: 'AU' },
+    { id: 'uk', label: 'UK Classification',  sub: '1st · 2:1 · 2:2 · 3rd · F', pill: 'GB' },
+    { id: 'us', label: 'US Letter',          sub: 'A → F · 5 grades',    pill: 'US' },
+    { id: 'cu', label: 'Custom',             sub: 'Define your own',          pill: '⊕'  },
+  ];
+  // Hover sweep then commit
+  const hoverIdx = Math.floor(clamp((t - 0.3) / 0.3, 0, 3.99));
+  const committed = t > 2.0;
+  const selectedIdx = 0;
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, maxWidth: 680 }}>
+      {scales.map((s, i) => {
+        const isActive = committed ? i === selectedIdx : i === hoverIdx;
+        const isHover = !committed && i === hoverIdx;
+        return (
+          <div key={s.id} style={{
+            padding: '16px 18px',
+            background: isActive ? FK.blueInfoBg : FK.white,
+            border: `2px solid ${isActive ? FK.blue : FK.slate200}`,
+            borderRadius: 14,
+            display: 'flex', alignItems: 'center', gap: 14,
+            transition: 'all 0.2s ease',
+            transform: isHover ? 'translateY(-2px)' : 'translateY(0)',
+            boxShadow: isHover ? '0 6px 18px rgba(15,23,42,0.08)' : 'none',
+          }}>
+            <span style={{
+              minWidth: 44, height: 32, padding: '0 10px',
+              borderRadius: 8,
+              background: isActive ? FK.blue : FK.slate100,
+              color: isActive ? FK.white : FK.inkMute,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, fontWeight: 800,
+              letterSpacing: '0.04em',
+              fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+              transition: 'background 0.2s ease, color 0.2s ease',
+            }}>{s.pill}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: FK.ink }}>{s.label}</div>
+              {/* Contrast: was FK.inkSoft (#64748B) on FK.blueInfoBg (#EFF6FF) = 4.37:1 (fails AA).
+                  Switched to FK.inkMute (#475569) for 6.8:1 — still reads as secondary copy. */}
+              <div style={{ fontSize: 12, color: FK.inkMute, marginTop: 2 }}>{s.sub}</div>
+            </div>
+            <div style={{
+              width: 22, height: 22, borderRadius: 11,
+              border: `2px solid ${isActive ? FK.blue : FK.slate200}`,
+              background: isActive ? FK.blue : FK.white,
+              display: 'grid', placeItems: 'center',
+              color: FK.white, fontSize: 12,
+            }}>{isActive ? '✓' : ''}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Step 3: Criteria (4 rows, weights animate) ──────────────────────
+function WizStep3({ t }) {
+  const criteria = [
+    { name: 'Hypothesis & design',    w: 25 },
+    { name: 'Data & analysis',        w: 35 },
+    { name: 'Interpretation',         w: 25 },
+    { name: 'Writing & referencing',  w: 15 },
+  ];
+  // Rows appear at staggered times
+  const starts = [0.3, 0.8, 1.4, 2.0];
+  // Running total ticks up as each row settles — viewer sees the banner
+  // climb from amber to green at exactly 100%.
+  let running = 0;
+  criteria.forEach((c, i) => {
+    const settle = clamp((t - starts[i]) / 0.4, 0, 1);
+    running += c.w * settle;
+  });
+  const total = Math.round(running);
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {criteria.map((c, i) => {
+          const ct = clamp((t - starts[i]) / 0.4, 0, 1);
+          const ce = Easing.easeOutCubic(ct);
+          return (
+            <div key={c.name} style={{
+              opacity: ce,
+              transform: `translateX(${(1 - ce) * 12}px)`,
+              display: 'grid', gridTemplateColumns: '1fr 110px 120px',
+              gap: 12, alignItems: 'center',
+              padding: '14px 16px',
+              background: FK.white,
+              border: `1px solid ${FK.slate200}`,
+              borderRadius: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{
+                  width: 26, height: 26, borderRadius: 6,
+                  background: FK.slate100, color: FK.inkMute,
+                  display: 'grid', placeItems: 'center',
+                  fontSize: 12, fontWeight: 700,
+                }}>{i + 1}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: FK.ink }}>{c.name}</span>
+              </div>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                color: FK.inkMute,
+              }}>
+                <div style={{
+                  flex: 1, height: 6,
+                  background: FK.slate100,
+                  borderRadius: 3, overflow: 'hidden',
+                }}>
+                  <div style={{
+                    width: `${(c.w / 50) * 100}%`,
+                    height: '100%', background: FK.blue,
+                    transition: 'width 0.4s ease',
+                  }} />
+                </div>
+              </div>
+              <div style={{
+                fontSize: 18, fontWeight: 700, color: FK.ink,
+                fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                textAlign: 'right',
+              }}>{c.w}%</div>
+            </div>
+          );
+        })}
+      </div>
+      {/* + Add criterion */}
+      <div style={{
+        marginTop: 12,
+        padding: '12px 16px',
+        border: `2px dashed ${FK.slate200}`,
+        borderRadius: 12,
+        color: FK.inkSoft,
+        fontWeight: 600, fontSize: 14,
+        textAlign: 'center',
+      }}>+ Add criterion</div>
+      {/* Total bar */}
+      <div style={{
+        marginTop: 18,
+        padding: '12px 18px',
+        background: total === 100 ? FK.successBg : FK.warnBg,
+        color: total === 100 ? FK.successFg : FK.warnFg,
+        borderRadius: 10,
+        fontWeight: 700, fontSize: 14,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <span>Total weighting</span>
+        <span>{total} % {total === 100 && '✓'}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 4: Rubric descriptors (matrix) ─────────────────────────────
+function WizStep4({ t }) {
+  const grades = [
+    { k: 'Excellent',     bg: '#D1FAE5', fg: '#047857' },
+    { k: 'Proficient',    bg: '#DBEAFE', fg: '#1D4ED8' },
+    { k: 'Developing',    bg: '#FEF3C7', fg: '#92400E' },
+    { k: 'Unsatisfactory',bg: '#FEE2E2', fg: '#B91C1C' },
+  ];
+  const descriptors = [
+    'Hypothesis is clearly stated and well-justified by prior literature.',
+    'Hypothesis is stated; some justification.',
+    'Hypothesis present but underdeveloped or weakly linked.',
+    'No clear hypothesis, or hypothesis untestable.',
+  ];
+  // Filling appears progressively. Tighter stagger so the still frame
+  // never catches more than one row mid-typing.
+  const starts = [0.2, 1.2, 2.0, 2.9];
+  const speed  = 0.014;  // seconds per char
+  // Containers fade in earlier than their text starts, so all 4 boxes
+  // are visible from the beginning while the text fills in turn.
+  const boxStarts = [0.0, 0.2, 0.5, 0.8];
+  return (
+    <div style={{
+      maxWidth: 760,
+      display: 'flex', flexDirection: 'column', gap: 10,
+    }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: FK.inkMute, marginBottom: 4 }}>
+        Hypothesis &amp; design <span style={{ fontWeight: 500, color: FK.inkSoft }}>· 25% weighting</span>
+      </div>
+      {grades.map((g, i) => {
+        const ct = clamp((t - boxStarts[i]) / 0.3, 0, 1);
+        const ce = Easing.easeOutCubic(ct);
+        const charCount = Math.floor(clamp((t - starts[i]) / speed, 0, descriptors[i].length));
+        const text = descriptors[i].slice(0, charCount);
+        const typing = charCount > 0 && charCount < descriptors[i].length;
+        return (
+          <div key={g.k} style={{
+            opacity: ce,
+            display: 'grid', gridTemplateColumns: '180px 1fr', gap: 14,
+            alignItems: 'stretch',
+            padding: '12px 14px',
+            background: FK.white,
+            border: `1px solid ${typing ? FK.blue : FK.slate200}`,
+            boxShadow: typing ? `0 0 0 3px rgba(37,99,235,0.12)` : 'none',
+            borderRadius: 10,
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '4px 12px', borderRadius: 8,
+              background: g.bg, color: g.fg,
+              fontSize: 13, fontWeight: 700,
+            }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: 3,
+                background: g.fg,
+              }} />
+              {g.k}
+            </div>
+            <div style={{
+              fontSize: 14, color: charCount === 0 ? FK.inkSoft : FK.inkMute,
+              lineHeight: 1.5,
+              alignSelf: 'center',
+              fontStyle: charCount === 0 ? 'italic' : 'normal',
+            }}>
+              {charCount === 0 ? 'Write descriptor…' : text}
+              {typing && <span style={{ opacity: 0.6 }}>▎</span>}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* "1 of 4 criteria" affordance — signals this is per-criterion */}
+      <div style={{
+        marginTop: 6,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 4px',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 12, fontWeight: 600, color: FK.inkSoft,
+        }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: FK.blue }} />
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: FK.slate200 }} />
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: FK.slate200 }} />
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: FK.slate200 }} />
+          </span>
+          Criterion 1 of 4 · Hypothesis &amp; design
+        </div>
+        <div style={{
+          fontSize: 12, fontWeight: 600, color: FK.blueInfoFg,
+        }}>Next criterion: Data &amp; analysis →</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 5: Feedback templates ──────────────────────────────────────
+function WizStep5({ t }) {
+  const intro = 'Kia ora ${first_name}, thanks for submitting your ${assessment_name}. Below are my comments grouped by criterion.';
+  const outro = 'Overall this work sits at ${grade}. ${closing_note} If you\'d like to talk this through, my office hours are listed on Moodle.';
+  // Sequential typing — intro types first, then outro. At any moment
+  // exactly one caret is visible so the still frame never reads as
+  // two-simultaneous-edits.
+  const introStart = 0.3;
+  const introSpeed = 0.012;
+  const introDur   = intro.length * introSpeed;          // ~1.39s
+  const outroStart = introStart + introDur + 0.2;        // ~1.9s
+  const outroSpeed = 0.012;
+  const charsI = Math.floor(clamp((t - introStart) / introSpeed, 0, intro.length));
+  const charsO = Math.floor(clamp((t - outroStart) / outroSpeed, 0, outro.length));
+  const i1 = intro.slice(0, charsI);
+  const i2 = outro.slice(0, charsO);
+  const introTyping = charsI > 0 && charsI < intro.length;
+  const outroTyping = charsO > 0 && charsO < outro.length;
+  const tokens = ['${first_name}', '${assessment_name}', '${grade}', '${closing_note}'];
+
+  function Highlighted({ text, caret }) {
+    let html = text;
+    tokens.forEach(tok => {
+      html = html.replaceAll(tok, `__BEGIN__${tok}__END__`);
+    });
+    const parts = html.split(/(__BEGIN__|__END__)/);
+    let inside = false;
+    return (
+      <span>
+        {parts.map((p, k) => {
+          if (p === '__BEGIN__') { inside = true; return null; }
+          if (p === '__END__')   { inside = false; return null; }
+          return inside
+            ? <span key={k} style={{ background: FK.blueInfoBg, color: FK.blueInfoFg, padding: '1px 5px', borderRadius: 4, fontWeight: 600, fontSize: 13 }}>{p}</span>
+            : <span key={k}>{p}</span>;
+        })}
+        {caret && <span style={{ opacity: 0.6 }}>▎</span>}
+      </span>
+    );
+  }
+
+  // Tier tabs — Excellent active, other three muted.
+  const tiers = [
+    { k: 'Excellent',     bg: '#D1FAE5', fg: '#047857' },
+    { k: 'Proficient',    bg: '#DBEAFE', fg: '#1D4ED8' },
+    { k: 'Developing',    bg: '#FEF3C7', fg: '#92400E' },
+    { k: 'Unsatisfactory',bg: '#FEE2E2', fg: '#B91C1C' },
+  ];
+  const activeTier = 0;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 760 }}>
+      {/* Grade-tier tab strip */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '6px', background: FK.slate50,
+        border: `1px solid ${FK.slate200}`,
+        borderRadius: 12,
+      }}>
+        {tiers.map((tier, idx) => {
+          const isActive = idx === activeTier;
+          return (
+            <div key={tier.k} style={{
+              flex: 1,
+              padding: '8px 10px',
+              borderRadius: 8,
+              background: isActive ? FK.white : 'transparent',
+              border: isActive ? `1px solid ${FK.slate200}` : '1px solid transparent',
+              boxShadow: isActive ? '0 1px 2px rgba(15,23,42,0.06)' : 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 8,
+              fontSize: 13, fontWeight: 600,
+              color: isActive ? tier.fg : FK.inkSoft,
+              transition: 'all 0.2s ease',
+            }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: 4,
+                background: isActive ? tier.fg : FK.slate200,
+              }} />
+              {tier.k}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{
+        fontSize: 11, color: FK.inkSoft, fontWeight: 500,
+        marginTop: -8, marginLeft: 8,
+      }}>One intro &amp; closing pair per tier · same token syntax everywhere</div>
+
+      <div>
+        <FieldLabel>Intro paragraph · Excellent</FieldLabel>
+        <div style={{
+          background: FK.white,
+          border: `1px solid ${introTyping ? FK.blue : FK.slate200}`,
+          boxShadow: introTyping ? `0 0 0 3px rgba(37,99,235,0.14)` : 'none',
+          borderRadius: 10, padding: 16,
+          fontSize: 14, color: FK.ink, lineHeight: 1.6, minHeight: 78,
+          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        }}>
+          <Highlighted text={i1} caret={introTyping} />
+        </div>
+      </div>
+      <div>
+        <FieldLabel>Closing paragraph · Excellent</FieldLabel>
+        <div style={{
+          background: FK.white,
+          border: `1px solid ${outroTyping ? FK.blue : FK.slate200}`,
+          boxShadow: outroTyping ? `0 0 0 3px rgba(37,99,235,0.14)` : 'none',
+          borderRadius: 10, padding: 16,
+          fontSize: 14, color: FK.ink, lineHeight: 1.6, minHeight: 78,
+          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        }}>
+          <Highlighted text={i2} caret={outroTyping} />
+        </div>
+      </div>
+      <div style={{
+        fontSize: 12, color: FK.inkSoft, fontStyle: 'italic',
+      }}>Tokens like <code style={{ background: FK.blueInfoBg, color: FK.blueInfoFg, padding: '1px 6px', borderRadius: 4, fontStyle: 'normal' }}>{'${first_name}'}</code> are replaced automatically per student.</div>
+    </div>
+  );
+}
+
+// ── Step 6: Review & save ───────────────────────────────────────────
+function WizStep6({ t }) {
+  const rows = [
+    ['Assessment',     'BIOL 240 — Lab Report 2'],
+    ['Grade scale',    'NZ University · A+ → D · 10 grades'],
+    ['Criteria',       '4 criteria, weights sum to 100%'],
+    ['Rubric',         '16 descriptors written (4 × 4 tiers)'],
+    ['Templates',      '8 templates · intro + closing per tier'],
+    ['Late policy',    'Standard 5%/day · max 7 days'],
+  ];
+  const ct = clamp(t / 1.0, 0, 1);
+
+  return (
+    <div style={{ maxWidth: 720 }}>
+      <div style={{
+        background: FK.white, border: `1px solid ${FK.slate200}`,
+        borderRadius: 14, overflow: 'hidden',
+      }}>
+        {rows.map((r, i) => {
+          const it = clamp((t - 0.2 - i * 0.18) / 0.3, 0, 1);
+          // Sequential pulse on the check ticks for narrative cadence.
+          const pulseStart = 1.6 + i * 0.16;
+          const pulse = clamp((t - pulseStart) / 0.4, 0, 1);
+          const pulseScale = pulse > 0 && pulse < 1 ? (1 + 0.3 * Math.sin(pulse * Math.PI)) : 1;
+          return (
+            <div key={r[0]} style={{
+              opacity: it,
+              transform: `translateX(${(1 - it) * 8}px)`,
+              display: 'grid', gridTemplateColumns: '220px 1fr 40px',
+              alignItems: 'center', gap: 12,
+              padding: '14px 18px',
+              borderTop: i ? `1px solid ${FK.slate200}` : 'none',
+            }}>
+              <div style={{
+                fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+                textTransform: 'uppercase', color: FK.inkSoft,
+              }}>{r[0]}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: FK.ink }}>{r[1]}</div>
+              <div style={{
+                color: FK.successFg, fontSize: 18, textAlign: 'right',
+                transform: `scale(${pulseScale})`,
+                transformOrigin: 'center',
+              }}>✓</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Big success callout */}
+      {t > 1.8 && (
+        <div style={{
+          marginTop: 20,
+          padding: '20px 22px',
+          background: FK.successBg, color: FK.successFg,
+          borderRadius: 14,
+          display: 'flex', alignItems: 'center', gap: 16,
+          opacity: clamp((t - 1.8) / 0.5, 0, 1),
+        }}>
+          <span style={{ fontSize: 32 }}>🎉</span>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 2 }}>Ready to mark</div>
+            <div style={{ fontSize: 13, fontWeight: 500 }}>Save scorer as JSON · Ready for next semester · Share with your team</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+Object.assign(window, { Scene3Wizard });
+  </script>
+
+  <!-- 5. scene4-marking.jsx (Scene 4) -->
+  <script type="text/babel" data-presets="react">
+// Scene 4 — Marking core loop (~22s).
+// Left: rubric scoring panel with 4 criteria. Right: feedback draft
+// assembles in real time as grades are selected. Override on criterion
+// 3 triggers the amber out-of-band warning.
+
+function Scene4Marking() {
+  const { localTime, duration } = useSprite();
+
+  // Cursor choreography — moves to whatever the narrator is talking about.
+  // Defined as (time, x, y) keypoints over the 1520×900 chrome area.
+  // x/y are within the BrowserChrome viewport (top-left of the chrome).
+  //
+  // 2026-05-22: cursor now LEAVES the criteria column after the override
+  // resolves (~9.5s) and travels into the feedback panel area, so the
+  // end-of-scene focus is on the assembled feedback + Copy click, not on
+  // criterion 3 still highlighted. Cursor lands on Copy by 16.8, presses
+  // visibly at 17.4, then exits the stage so the toast/paste-hint can
+  // breathe without a stale pointer hovering.
+  function cursorPos(t) {
+    // 2026-05-24: timings re-anchored to match feedback-alongside-grades
+    // model. Cursor moves through criteria, settles on feedback panel as
+    // the last block lands, then strikes Copy at 11.5.
+    const path = [
+      [0.0,   880, 700],
+      [1.8,   420, 280],   // student banner
+      [2.4,   650, 320],   // crit1 dropdown
+      [4.0,   650, 380],   // crit2 dropdown
+      [5.6,   650, 440],   // crit3 dropdown
+      [6.6,   650, 440],   // override fires — pause on row
+      [8.4,   650, 500],   // crit4 dropdown
+      [9.6,   1080, 500],  // glide into feedback panel as closing block lands
+      [10.8,  1330, 230],  // arrive over Copy button
+      [11.4,  1330, 240],  // press dip (visible click cue)
+      [11.6,  1330, 230],  // release
+      [12.6,  1700, 100],  // exit stage upper-right after click
+    ];
+    for (let i = path.length - 1; i >= 0; i--) {
+      if (t >= path[i][0]) {
+        const cur = path[i];
+        const next = path[i + 1];
+        if (!next) return { x: cur[1], y: cur[2] };
+        const span = next[0] - cur[0];
+        const local = clamp((t - cur[0]) / span, 0, 1);
+        const e = Easing.easeInOutCubic(local);
+        return {
+          x: cur[1] + (next[1] - cur[1]) * e,
+          y: cur[2] + (next[2] - cur[2]) * e,
+        };
+      }
+    }
+    return { x: path[0][1], y: path[0][2] };
+  }
+
+  // Timing checkpoints
+  //
+  // 2026-05-22: tightened. Draft blocks now BLOCK-FADE (not type) so they
+  // can land closer together without feeling rushed. Copy click moved to
+  // 17.5 (was 19.0); toast at 18.0; scene-out at duration-3 so the toast
+  // and "paste into Moodle" hint get a clean 2.5–3s read before fading.
+  const stageTimes = {
+    studentIn:   0.4,
+    crit1:       2.2,   // Excellent
+    crit2:       3.8,   // Proficient
+    crit3:       5.4,   // Developing
+    crit3Override: 6.6, // override triggers amber
+    crit4:       8.2,   // Proficient
+    totalAnim:   9.4,
+    // 2026-05-24 (Steve note): feedback now appears ALONGSIDE each grade
+    // selection — reads as system-generated, not manual assembly. Intro
+    // fires with the first pick; per-criterion blocks land 0.2s after
+    // their grade pick; closing block lands shortly after crit4.
+    draftBegin: 2.2,    // intro appears the moment the first grade is selected
+    draftCrit1: 2.4,    // crit1 feedback follows immediately
+    draftCrit2: 4.0,    // crit2 feedback follows crit2 grade
+    draftCrit3: 5.6,    // crit3 feedback follows crit3 grade
+    draftCrit4: 8.4,    // crit4 feedback follows crit4 grade
+    draftClose: 9.6,    // closing paragraph after total settles
+    rubricDim:  10.4,   // dim rubric once feedback fully assembled
+    copy:       11.5,
+    toast:      12.0,
+    pasteHint:  13.0,   // "→ paste into Moodle" tail caption
+  };
+
+  const inT = clamp(localTime / 0.4, 0, 1);
+  const out = clamp(1 - (localTime - (duration - 0.8)) / 0.8, 0, 1);
+  // After feedback fully assembles, direct the eye to the feedback panel.
+  // 2026-05-23: opacity-based dim was triggering 23 false-positive Axe
+  // contrast failures (rgba/opacity stacks aren't traced past the body
+  // background in Axe 4.11). Replaced with a scale + saturation+blur
+  // effect that keeps all foreground colours unchanged (so Axe is happy)
+  // while still pulling visual focus away from the rubric.
+  const rubricDimT = clamp((localTime - stageTimes.rubricDim) / 0.6, 0, 1);
+  const rubricFilter = rubricDimT > 0
+    ? `saturate(${1 - rubricDimT * 0.7}) blur(${rubricDimT * 1.2}px)`
+    : 'none';
+  const rubricScale = 1 - rubricDimT * 0.02;
+
+  // Criteria + per-step grade selection
+  const criteria = [
+    { name: 'Hypothesis & design',   w: 25, grade: 'Excellent',     band: [85, 100], score: 92, tone: 'success', stage: 'crit1' },
+    { name: 'Data & analysis',       w: 35, grade: 'Proficient',    band: [70, 84],  score: 78, tone: 'info',    stage: 'crit2' },
+    { name: 'Interpretation',        w: 25, grade: 'Developing',    band: [55, 69],  score: 78, tone: 'warn',    stage: 'crit3' },
+    { name: 'Writing & referencing', w: 15, grade: 'Proficient',    band: [70, 84],  score: 76, tone: 'info',    stage: 'crit4' },
+  ];
+
+  // Weighted score
+  function calcScore(picked) {
+    let s = 0, w = 0;
+    criteria.forEach((c, i) => {
+      if (picked[i]) { s += c.score * c.w; w += c.w; }
+    });
+    return w === 0 ? 0 : Math.round(s / w);
+  }
+  const picked = [
+    localTime >= stageTimes.crit1,
+    localTime >= stageTimes.crit2,
+    localTime >= stageTimes.crit3,
+    localTime >= stageTimes.crit4,
+  ];
+  const total = calcScore(picked);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.slate100,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      // Scene fade handled by Sprite cross-fade; no parent opacity here
+      // because Axe blends foreground text against the body background
+      // mid-fade and reports contrast failures on otherwise AA text.
+    }}>
+      <BrowserChrome url="marking.stephendmann.com/mark" width={1520} height={900}>
+        <AppNav title="BIOL 240 · Lab Report" subtitle="Marking" />
+
+        {/* Submission strip */}
+        <div style={{
+          padding: '20px 32px 16px',
+          background: FK.white,
+          borderBottom: `1px solid ${FK.slate200}`,
+          display: 'flex', alignItems: 'center', gap: 24,
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 22,
+            background: FK.blueInfoBg,
+            display: 'grid', placeItems: 'center',
+            color: FK.blueInfoFg, fontWeight: 700, fontSize: 16,
+          }}>MR</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: FK.ink }}>Maia Ropata</div>
+            <div style={{ fontSize: 12, color: FK.inkSoft, marginTop: 2 }}>Student ID 21338712 · submitted 2 Sep</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <FKBtn variant="ghost" size="md">↺ New student</FKBtn>
+          </div>
+        </div>
+
+        {/* Body: 60/40 split */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: 144, bottom: 0,
+          display: 'grid', gridTemplateColumns: '1fr 540px',
+        }}>
+          {/* Left: rubric scoring.
+              Dim treatment uses filter + transform (no opacity) so Axe
+              doesn't walk through transparency to the body background. */}
+          <div style={{
+            padding: '24px 32px',
+            overflow: 'hidden',
+            display: 'flex', flexDirection: 'column',
+            gap: 12,
+            filter: rubricFilter,
+            transform: `scale(${rubricScale})`,
+            transformOrigin: 'top left',
+            transition: 'filter 0.4s ease, transform 0.4s ease',
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+              textTransform: 'uppercase', color: FK.inkMute, marginBottom: 2,
+            }}>Rubric scoring</div>
+            <div style={{
+              fontSize: 13, color: FK.ink, fontWeight: 600,
+              marginBottom: 10,
+            }}>Grade criterion by criterion. Watch the feedback write itself.</div>
+
+            {criteria.map((c, i) => {
+              const stageT = stageTimes[c.stage];
+              const isPicked = localTime >= stageT;
+              const justPicked = localTime >= stageT && localTime < stageT + 0.5;
+              // Override on criterion 3 changes tone to warn after stageTimes.crit3Override
+              const overrideActive = c.name === 'Interpretation' && localTime >= stageTimes.crit3Override;
+              const tone = overrideActive ? 'warn' : (isPicked ? c.tone : 'default');
+              const gradeLabel = isPicked ? c.grade : 'Select grade…';
+
+              return (
+                <div key={c.name} style={{
+                  background: FK.white,
+                  border: `1px solid ${overrideActive ? FK.amber : FK.slate200}`,
+                  boxShadow: overrideActive ? `0 0 0 3px rgba(245,158,11,0.18)` : (justPicked ? `0 0 0 3px rgba(37,99,235,0.18)` : 'none'),
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  display: 'grid', gridTemplateColumns: '1fr 200px 90px',
+                  alignItems: 'center', gap: 14,
+                  transition: 'all 0.3s ease',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: FK.ink }}>{c.name}</div>
+                    <div style={{ fontSize: 11, color: FK.inkSoft, marginTop: 2, fontWeight: 500 }}>Weight {c.w}% · band {c.band[0]}–{c.band[1]}</div>
+                  </div>
+                  <Dropdown
+                    value={isPicked ? c.grade : null}
+                    hint={gradeLabel}
+                    tone={tone}
+                  />
+                  <div style={{
+                    fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                    fontWeight: 700, fontSize: 18,
+                    color: isPicked ? FK.ink : FK.inkSoft,
+                    textAlign: 'right',
+                  }}>{isPicked ? c.score : '—'}</div>
+                </div>
+              );
+            })}
+
+            {/* Override notice when amber appears */}
+            {localTime >= stageTimes.crit3Override && (
+              <div style={{
+                opacity: clamp((localTime - stageTimes.crit3Override) / 0.5, 0, 1),
+                padding: '10px 14px',
+                background: FK.warnBg, color: FK.warnFg,
+                borderRadius: 10,
+                fontSize: 12, fontWeight: 500,
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <span style={{ fontSize: 16 }}>⚠</span>
+                <span><b style={{ fontWeight: 700 }}>Override flagged.</b> Score 78 sits in the Proficient band (70–84) but you graded Developing. Feedback Kitchen kept your grade — just letting you know.</span>
+              </div>
+            )}
+
+            {/* Total */}
+            <div style={{
+              marginTop: 8,
+              padding: '16px 18px',
+              background: FK.ink, color: FK.white,
+              borderRadius: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div>
+                {/* Axe 4.11 walks through rgba/opacity to the body bg and
+                    reports false-positive contrast failures. Solid hex
+                    colours below give the same visual mute against the dark
+                    pill (FK.ink #0F172A) while passing AA cleanly. */}
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#CBD5E1' }}>Weighted total</div>
+                <div style={{ fontSize: 11, marginTop: 4, color: '#E2E8F0', fontWeight: 500 }}>updates live as you grade</div>
+              </div>
+              <div style={{
+                fontSize: 44, fontWeight: 800,
+                fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                letterSpacing: '-0.02em',
+                transform: localTime >= stageTimes.totalAnim && localTime < stageTimes.totalAnim + 0.4 ? 'scale(1.05)' : 'scale(1)',
+                transition: 'transform 0.3s ease',
+              }}>{total}<span style={{ fontSize: 22, color: '#94A3B8' }}>/100</span></div>
+            </div>
+          </div>
+
+          {/* Right: feedback draft */}
+          <div style={{
+            background: FK.white,
+            borderLeft: `1px solid ${FK.slate200}`,
+            padding: '24px 28px',
+            display: 'flex', flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: 14,
+            }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: FK.inkMute }}>Feedback draft</div>
+                <div style={{ fontSize: 13, color: FK.inkMute, marginTop: 2, fontWeight: 500 }}>Assembles below — editable before you copy</div>
+              </div>
+              {/* Disabled-state used opacity:0.4 which Axe blended with body
+                  bg into a 1.81:1 fail. Replaced with a solid muted bg +
+                  visible label so the disabled affordance is still clear
+                  and AA-clean. */}
+              <FKBtn
+                variant="primary"
+                size="md"
+                pressed={localTime >= stageTimes.copy - 0.1 && localTime < stageTimes.copy + 0.35}
+                style={{
+                  background: localTime > stageTimes.draftClose ? FK.blue : '#475569',
+                  color: '#FFFFFF',
+                  pointerEvents: localTime > stageTimes.draftClose ? 'auto' : 'none',
+                  transform: (localTime >= stageTimes.copy - 0.1 && localTime < stageTimes.copy + 0.35)
+                    ? 'scale(0.96)' : 'scale(1)',
+                  transition: 'transform 0.12s ease, background 0.3s ease',
+                }}
+              >📋 Copy</FKBtn>
+            </div>
+
+            <div style={{
+              flex: 1,
+              background: FK.slate50,
+              border: `1px solid ${FK.slate200}`,
+              borderRadius: 12,
+              padding: '20px 22px',
+              overflow: 'hidden',
+              fontSize: 14, color: FK.ink, lineHeight: 1.7,
+              fontWeight: 400,
+            }}>
+              {/* Intro */}
+              <FeedbackBlock
+                show={localTime >= stageTimes.draftBegin}
+                start={stageTimes.draftBegin}
+                localTime={localTime}
+                text="Kia ora Maia, thanks for submitting your Lab Report 2. My comments are grouped by criterion below."
+              />
+              {/* Per criterion */}
+              <FeedbackBlock
+                show={localTime >= stageTimes.draftCrit1}
+                start={stageTimes.draftCrit1}
+                localTime={localTime}
+                label="Hypothesis & design — Excellent"
+                tone="success"
+                text="Your hypothesis is sharply stated and well-grounded in prior literature. Nice link back to Tinbergen."
+              />
+              <FeedbackBlock
+                show={localTime >= stageTimes.draftCrit2}
+                start={stageTimes.draftCrit2}
+                localTime={localTime}
+                label="Data & analysis — Proficient"
+                tone="info"
+                text="Methods read clearly and your figures are clean. Tighten Figure 3's caption."
+              />
+              <FeedbackBlock
+                show={localTime >= stageTimes.draftCrit3}
+                start={stageTimes.draftCrit3}
+                localTime={localTime}
+                label="Interpretation — Developing"
+                tone="warn"
+                text="Discussion currently sits below the standard for this task — ground each claim in your own data, not the literature."
+              />
+              <FeedbackBlock
+                show={localTime >= stageTimes.draftCrit4}
+                start={stageTimes.draftCrit4}
+                localTime={localTime}
+                label="Writing & referencing — Proficient"
+                tone="info"
+                text="Prose is mostly clean. Two missing in-text citations on p. 4 — noted in the margin."
+              />
+              {/* Closing */}
+              <FeedbackBlock
+                show={localTime >= stageTimes.draftClose}
+                start={stageTimes.draftClose}
+                localTime={localTime}
+                text={`Overall this sits at ${total}/100 — Proficient. If you'd like to talk through the discussion section, my office hours are listed on Moodle.`}
+              />
+            </div>
+
+            {/* Toast on copy — fades in at copy moment and holds through
+                end of scene. (Steve note 2026-05-22: the tail used to die
+                here; now the toast stays on screen as the intentional
+                end-state.) */}
+            {localTime >= stageTimes.toast && (
+              <div style={{
+                position: 'absolute',
+                left: 28, right: 28, bottom: 24,
+                opacity: clamp((localTime - stageTimes.toast) / 0.3, 0, 1),
+                transform: `translateY(${(1 - clamp((localTime - stageTimes.toast) / 0.3, 0, 1)) * 16}px)`,
+                background: FK.ink, color: FK.white,
+                padding: '14px 18px', borderRadius: 12,
+                display: 'flex', alignItems: 'center', gap: 12,
+                boxShadow: '0 10px 28px rgba(15,23,42,0.25)',
+              }}>
+                <span style={{
+                  width: 28, height: 28, borderRadius: 14,
+                  background: FK.successBg, color: FK.successFg,
+                  display: 'grid', placeItems: 'center',
+                  fontSize: 14, fontWeight: 700,
+                }}>✓</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>Feedback copied</div>
+                  <div style={{ fontSize: 12, color: '#E2E8F0' }}>Paste it into Moodle or Turnitin.</div>
+                </div>
+                {/* "→ Moodle" chip that slides in after the toast, giving
+                    the scene an active close instead of dead air. */}
+                {localTime >= stageTimes.pasteHint && (
+                  <div style={{
+                    opacity: clamp((localTime - stageTimes.pasteHint) / 0.4, 0, 1),
+                    transform: `translateX(${(1 - clamp((localTime - stageTimes.pasteHint) / 0.4, 0, 1)) * 12}px)`,
+                    background: '#1E293B',
+                    color: '#F8FAFC',
+                    padding: '6px 12px', borderRadius: 999,
+                    fontSize: 12, fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                  }}>→ Moodle</div>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Narrator cursor — fades out after it exits stage upper-right
+              post-click, so the toast + paste-hint read cleanly. */}
+          {(() => {
+            const p = cursorPos(localTime);
+            const clicking = (localTime >= stageTimes.copy - 0.15 && localTime < stageTimes.copy + 0.25);
+            const cursorOpacity = clamp(1 - (localTime - 18.4) / 0.4, 0, 1);
+            if (cursorOpacity <= 0) return null;
+            return (
+              <div style={{ opacity: cursorOpacity }}>
+                <Cursor x={p.x} y={p.y} clicking={clicking} />
+              </div>
+            );
+          })()}
+        </div>
+      </BrowserChrome>
+    </div>
+  );
+}
+
+// Auto-generated feedback block.
+//
+// 2026-05-22: was a per-character "type-on" component, but that read as
+// manual typing (Steve note). Each block is the product writing the
+// feedback — so it appears as a full block with a brief fade + slight
+// upward slide, no streaming cursor, no character-by-character reveal.
+function FeedbackBlock({ show, start, localTime, label, text, tone = 'info' }) {
+  if (!show) return null;
+  // High-contrast tone colours (all ≥4.5:1 on white card bg).
+  const toneColors = {
+    success: { bg: '#D1FAE5', fg: '#065F46' },  // emerald — 9.4:1
+    info:    { bg: '#DBEAFE', fg: '#1E3A8A' },  // blue    — 10.4:1
+    warn:    { bg: '#FDE68A', fg: '#78350F' },  // amber   — 6.05:1
+  }[tone];
+  const elapsed = localTime - start;
+  // Slide in over ~0.4s using transform only — NO opacity on readable text.
+  const fade = clamp(elapsed / 0.4, 0, 1);
+  const lift = (1 - fade) * 6; // px
+  return (
+    <div style={{
+      marginBottom: 12,
+      transform: `translateY(${lift}px)`,
+      transition: 'transform 0.4s ease',
+    }}>
+      {label && (
+        <div style={{
+          display: 'inline-block',
+          padding: '3px 9px', borderRadius: 6,
+          background: toneColors.bg, color: toneColors.fg,
+          fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          marginBottom: 4,
+        }}>{label}</div>
+      )}
+      <div style={{ color: FK.ink }}>{text}</div>
+    </div>
+  );
+}
+
+Object.assign(window, { Scene4Marking });
+  </script>
+
+  <!-- 6. scenes-share.jsx (Scenes 5, 6) -->
+  <script type="text/babel" data-presets="react">
+// Scenes 5 (snippets + wording assistant, ~14s) and 6 (sharing, ~12s).
+
+// ── Scene 5 — Snippets + Wording Assistant ──────────────────────────
+function Scene5Snippets() {
+  const { localTime, duration } = useSprite();
+  const halfLen = 7.0;
+
+  const inT  = clamp(localTime / 0.4, 0, 1);
+  const out  = clamp(1 - (localTime - (duration - 0.8)) / 0.8, 0, 1);
+
+  // Narrator cursor path — covers both halves of the scene.
+  // Coords are scene-local (stage is 1920×1080, scene fills it).
+  const cursorPath = [
+    [0.0,   1500, 200],   // idle off to the right
+    [0.4,   820,  360],   // approach Insert snippet button
+    [1.2,   820,  360],   // click (menu opens)
+    [2.0,   620,  500],   // hover "Strengthen your discussion" in menu
+    [3.0,   620,  500],   // click snippet
+    [3.6,   540,  640],   // settle over inserted text
+    [6.6,   540,  640],   // hold
+    [7.4,   1740, 360],   // cross to Polish button
+    [8.2,   1740, 360],   // click Polish
+    [9.0,   1740, 360],   // hold while polishing
+    [12.0,  1300, 920],   // drift to privacy lock note
+    [15.0,  1300, 920],
+  ];
+  function cursorAt(t) {
+    for (let i = cursorPath.length - 1; i >= 0; i--) {
+      if (t >= cursorPath[i][0]) {
+        const cur = cursorPath[i];
+        const next = cursorPath[i + 1];
+        if (!next) return { x: cur[1], y: cur[2] };
+        const span = next[0] - cur[0];
+        const local = clamp((t - cur[0]) / span, 0, 1);
+        const e = Easing.easeInOutCubic(local);
+        return {
+          x: cur[1] + (next[1] - cur[1]) * e,
+          y: cur[2] + (next[2] - cur[2]) * e,
+        };
+      }
+    }
+    return { x: cursorPath[0][1], y: cursorPath[0][2] };
+  }
+  const cp = cursorAt(localTime);
+  const clicking =
+    (localTime >= 1.2 && localTime < 1.6) ||
+    (localTime >= 3.0 && localTime < 3.4) ||
+    (localTime >= 8.2 && localTime < 8.6);
+  // 2026-05-22: hide cursor in the "dwell" windows where it would be
+  // inactively hovering (the snippet read-back and the polish dwell), so
+  // it doesn't look like a stalled product action. Re-show when it has
+  // to travel to the next button.
+  let cursorVisible = 1;
+  if (localTime >= 4.0 && localTime < 7.2) cursorVisible = 0;         // dwell after snippet inserted
+  else if (localTime >= 9.4 && localTime < 11.6) cursorVisible = 0;   // dwell while Polish does its thing
+  else if (localTime >= 12.8) cursorVisible = 0;                      // privacy note tail — let the note speak
+  // Smooth the toggle so it fades rather than pops
+  const cursorOpacityS5 = cursorVisible;
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.slate100,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '60px 80px',
+      gap: 28,
+      // Scene fade handled by Sprite cross-fade; no parent opacity here
+      // because Axe blends foreground text against the body background
+      // mid-fade and reports contrast failures on otherwise AA text.
+    }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', maxWidth: 1100 }}>
+        <div style={{
+          fontSize: 13, fontWeight: 700, letterSpacing: '0.18em',
+          textTransform: 'uppercase', color: FK.blueInfoFg, marginBottom: 10,
+        }}>Step 02½ · Personalise</div>
+        <div style={{
+          fontSize: 46, fontWeight: 800, letterSpacing: '-0.022em',
+          color: FK.ink, lineHeight: 1.05,
+        }}>Your phrases. Your voice. Your judgement.</div>
+      </div>
+
+      {/* Two panels side by side */}
+      <div style={{
+        flex: 1,
+        display: 'grid', gridTemplateColumns: '1fr 1fr',
+        gap: 28, width: '100%', maxWidth: 1700,
+        minHeight: 0,
+      }}>
+        <SnippetPanel localTime={localTime} active={localTime < halfLen + 0.4} />
+        <WordingPanel localTime={localTime - halfLen} active={localTime >= halfLen - 0.4} />
+      </div>
+
+      {/* Narrator cursor — only visible during active button approaches
+          and clicks; hidden in dwell windows so it doesn't look stalled. */}
+      {cursorOpacityS5 > 0 && (
+        <div style={{ opacity: cursorOpacityS5, transition: 'opacity 0.25s ease' }}>
+          <Cursor x={cp.x} y={cp.y} clicking={clicking} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Snippet half
+function SnippetPanel({ localTime, active }) {
+  // Timeline within this half (starts at t=0)
+  const tBtn      = 0.4;   // hover insert-snippet button
+  const tOpen     = 1.2;   // menu opens
+  const tHover    = 2.0;   // hover a snippet
+  const tClick    = 3.0;   // click a snippet
+  const tInserted = 3.4;   // text appears in editor
+
+  const menuOpen = localTime >= tOpen && localTime < tClick + 0.4;
+  const inserted = localTime >= tInserted;
+
+  const snippets = [
+    { id: 'a', label: 'Strengthen your discussion',
+      text: 'Your discussion section would benefit from grounding each claim in your own data, not the wider literature.' },
+    { id: 'b', label: 'Citation reminder',
+      text: 'Two in-text citations are missing — see p. 4.' },
+    { id: 'c', label: 'Great figure caption',
+      text: 'Figure caption is clear and self-contained — nicely done.' },
+    { id: 'd', label: 'Office-hours nudge',
+      text: 'If you\'d like to talk this through, my office hours are listed on Moodle.' },
+  ];
+  const pickIdx = 0;
+
+  // 2026-05-22 (Steve note): snippet no longer "types in" character-by-
+  // character — that read as manual entry. It now drops in as a complete
+  // line into the final paragraph of the existing feedback block.
+  const insertedText = snippets[pickIdx].text;
+  const insertFade = clamp((localTime - tInserted) / 0.45, 0, 1);
+
+  return (
+    <div style={{
+      background: FK.white,
+      border: `1px solid ${FK.slate200}`,
+      borderRadius: 18,
+      boxShadow: '0 20px 50px rgba(15,23,42,0.10)',
+      padding: '24px 26px',
+      display: 'flex', flexDirection: 'column',
+      gap: 14, position: 'relative',
+      overflow: 'hidden',
+      filter: active ? 'none' : 'saturate(0.35)',
+      transition: 'filter 0.4s ease',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: FK.inkMute }}>Personal snippets</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: FK.ink, marginTop: 2, letterSpacing: '-0.01em' }}>💬 Insert saved snippets for common comments</div>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <FKBtn
+            variant="light"
+            size="md"
+            pressed={localTime >= tClick && localTime < tClick + 0.4}
+            style={{
+              borderColor: localTime >= tBtn && localTime < tOpen + 0.2 ? FK.blue : FK.slate200,
+              color: localTime >= tBtn && localTime < tOpen + 0.2 ? FK.blue : FK.ink,
+            }}
+          >💬 Insert snippet…</FKBtn>
+
+          {/* Dropdown menu */}
+          {menuOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)', right: 0,
+              width: 360,
+              background: FK.white,
+              border: `1px solid ${FK.slate200}`,
+              borderRadius: 12,
+              boxShadow: '0 16px 40px rgba(15,23,42,0.18)',
+              padding: 6,
+              zIndex: 10,
+              opacity: clamp((localTime - tOpen) / 0.3, 0, 1),
+              transform: `translateY(${(1 - clamp((localTime - tOpen) / 0.3, 0, 1)) * -4}px)`,
+            }}>
+              <div style={{
+                padding: '6px 10px',
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+                textTransform: 'uppercase', color: FK.inkSoft,
+              }}>Your snippets · 12 saved</div>
+              {snippets.map((s, i) => {
+                const isHover = localTime >= tHover && localTime < tClick + 0.3 && i === pickIdx;
+                return (
+                  <div key={s.id} style={{
+                    padding: '8px 10px',
+                    background: isHover ? FK.blueInfoBg : 'transparent',
+                    borderRadius: 8,
+                    fontSize: 13, fontWeight: 600,
+                    color: isHover ? FK.blueInfoFg : FK.ink,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}>
+                    <span style={{ fontSize: 12 }}>›</span>
+                    {s.label}
+                  </div>
+                );
+              })}
+              <div style={{
+                marginTop: 4, padding: '8px 10px',
+                borderTop: `1px solid ${FK.slate200}`,
+                fontSize: 12, color: FK.inkSoft, fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}><span>+</span> Save current selection as snippet</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Feedback editor mock — mirrors the assembled feedback in Scene 4
+          (intro + per-criterion blocks + close). Snippet drops in as an
+          additional line tacked onto the final Interpretation block. */}
+      <div style={{
+        flex: 1,
+        background: FK.slate50,
+        border: `1px solid ${FK.slate200}`,
+        borderRadius: 12,
+        padding: 18, fontSize: 13,
+        color: FK.ink, lineHeight: 1.6,
+        overflow: 'hidden',
+      }}>
+        <div style={{ marginBottom: 10, color: FK.ink }}>
+          Kia ora Maia, thanks for submitting your Lab Report 2…
+        </div>
+        <div style={{
+          display: 'inline-block',
+          padding: '3px 9px', borderRadius: 6,
+          background: '#FDE68A', color: '#78350F',
+          fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          marginBottom: 6,
+        }}>Interpretation — Developing</div>
+        <div style={{ marginBottom: 8 }}>
+          Discussion currently sits below the standard for this task — ground each claim in your own data, not the literature.
+        </div>
+        {inserted && (
+          <div style={{
+            opacity: insertFade,
+            transform: `translateY(${(1 - insertFade) * 4}px)`,
+            transition: 'opacity 0.45s ease, transform 0.45s ease',
+            background: `rgba(209,250,229,${clamp(1 - (localTime - tInserted - 0.6) / 1.4, 0, 0.9)})`,
+            color: FK.ink,
+            padding: '4px 6px',
+            borderRadius: 4,
+            margin: '0 -6px',
+          }}>{insertedText}</div>
+        )}
+      </div>
+
+      <div style={{ fontSize: 12, color: FK.inkMute, fontStyle: 'italic' }}>
+        Your phrases sit on top of the shared rubric — every marker can keep their own voice.
+      </div>
+    </div>
+  );
+}
+
+// Wording assistant half
+function WordingPanel({ localTime, active }) {
+  // Timeline within this half
+  const tBtn      = 0.4;
+  const tClick    = 1.2;
+  const tPanel    = 1.6;
+  const tWorking  = 2.0;
+  const tDone     = 4.0;
+  const tNote     = 5.0;
+
+  const panelOpen = localTime >= tPanel;
+  const working   = localTime >= tWorking && localTime < tDone;
+  const done      = localTime >= tDone;
+
+  // 2026-05-22 (Steve note): Polish now rewrites the WHOLE block rather
+  // than typing into a single line. "Polished" appears as one complete
+  // shorter version (Brief) — fade-in, no character streaming, no
+  // hovering inactive cursor while it "types".
+  const drafted = 'Your discussion currently sits below the expected standard for this task — ground each claim in your own data, not the wider literature. The argument leans on the wider literature more than on the data you collected, which makes the conclusions feel less anchored than they could be.';
+  const polished = 'Discussion needs more anchoring in your own data, not the wider literature. Ground each claim in what you measured — that lifts this section into Proficient.';
+  const polishedFade = clamp((localTime - tDone) / 0.5, 0, 1);
+
+  return (
+    <div style={{
+      background: FK.white,
+      border: `1px solid ${FK.slate200}`,
+      borderRadius: 18,
+      boxShadow: '0 20px 50px rgba(15,23,42,0.10)',
+      padding: '24px 26px',
+      display: 'flex', flexDirection: 'column',
+      gap: 14, position: 'relative',
+      overflow: 'hidden',
+      filter: active ? 'none' : 'saturate(0.35)',
+      transition: 'filter 0.4s ease',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: FK.inkMute }}>Wording assistant</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: FK.ink, marginTop: 2, letterSpacing: '-0.01em' }}>✨ Optional AI polish · Ko-fi key required</div>
+        </div>
+        <FKBtn
+          variant="primary"
+          size="md"
+          pressed={localTime >= tClick && localTime < tClick + 0.4}
+          style={{
+            background: localTime >= tBtn && localTime < tClick + 0.4 ? FK.blue : FK.ink,
+          }}
+        >✨ Polish</FKBtn>
+      </div>
+
+      {/* Editor with two states */}
+      <div style={{
+        flex: 1,
+        display: 'grid', gridTemplateRows: '1fr 1fr',
+        gap: 12,
+      }}>
+        <div>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+            textTransform: 'uppercase', color: FK.inkSoft, marginBottom: 6,
+          }}>Your draft</div>
+          <div style={{
+            background: FK.slate50,
+            border: `1px solid ${FK.slate200}`,
+            borderRadius: 10,
+            padding: 14, fontSize: 13,
+            color: FK.ink, lineHeight: 1.6,
+            height: '100%', overflow: 'hidden',
+          }}>{drafted}</div>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+            textTransform: 'uppercase', color: FK.successFg, marginBottom: 6,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            Polished
+            {working && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                color: FK.inkSoft, textTransform: 'none', letterSpacing: 0,
+                fontWeight: 500, fontSize: 11,
+              }}>
+                <span style={{
+                  width: 8, height: 8, borderRadius: 4,
+                  background: FK.amber,
+                  animation: 'fk-pulse 0.9s ease-in-out infinite',
+                }} />
+                polishing…
+              </span>
+            )}
+          </div>
+          <div style={{
+            background: done ? '#F0FDF4' : FK.slate50,
+            border: `1px solid ${done ? FK.successBg : FK.slate200}`,
+            borderRadius: 10,
+            padding: 14, fontSize: 13,
+            color: done ? FK.ink : FK.inkMute,
+            lineHeight: 1.6,
+            height: '100%', overflow: 'hidden',
+            fontStyle: done ? 'normal' : 'italic',
+            transition: 'all 0.4s ease',
+          }}>
+            {!panelOpen && '— click Polish to soften the tone —'}
+            {panelOpen && working && '— working —'}
+            {panelOpen && done && (
+              <span style={{
+                display: 'block',
+                opacity: polishedFade,
+                transform: `translateY(${(1 - polishedFade) * 4}px)`,
+                transition: 'opacity 0.5s ease, transform 0.5s ease',
+              }}>{polished}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Privacy note */}
+      {localTime >= tNote && (
+        <div style={{
+          opacity: clamp((localTime - tNote) / 0.4, 0, 1),
+          padding: '10px 14px',
+          background: FK.blueInfoBg,
+          color: FK.blueInfoFg,
+          borderRadius: 10,
+          fontSize: 12, fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{ fontSize: 16 }}>🔒</span>
+          <span>Names and IDs are removed before any text leaves your browser.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Scene 6 — Sharing scorers ───────────────────────────────────────
+function Scene6Share() {
+  const { localTime, duration } = useSprite();
+  const tExport  = 0.8;
+  const tDown    = 1.8;
+  const tFlight  = 2.4;
+  const tImports = 4.4;
+  const tSynced  = 7.4;
+  const tCaption = 8.6;
+
+  const inT = clamp(localTime / 0.4, 0, 1);
+  const out = clamp(1 - (localTime - (duration - 0.8)) / 0.8, 0, 1);
+
+  // File flying from coord card to tutor cards
+  const flightT = clamp((localTime - tFlight) / 1.6, 0, 1);
+  const flightE = Easing.easeInOutCubic(flightT);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: FK.slate100,
+      padding: '60px 80px',
+      display: 'flex', flexDirection: 'column',
+      // Scene fade handled by Sprite cross-fade; no parent opacity here
+      // because Axe blends foreground text against the body background
+      // mid-fade and reports contrast failures on otherwise AA text.
+    }}>
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{
+          fontSize: 13, fontWeight: 700, letterSpacing: '0.18em',
+          textTransform: 'uppercase', color: FK.blueInfoFg, marginBottom: 10,
+        }}>Share with your team</div>
+        <div style={{
+          fontSize: 46, fontWeight: 800, letterSpacing: '-0.022em',
+          color: FK.ink, lineHeight: 1.05, maxWidth: 1200,
+        }}>One JSON. Every marker working from the same rubric.</div>
+      </div>
+
+      {/* Layout: coord card centred top, three tutor cards bottom row,
+          dashed SVG branches connecting them. */}
+      <div style={{ position: 'relative', flex: 1 }}>
+        {/* Connecting branch lines — drawn behind the cards */}
+        <svg
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+          preserveAspectRatio="none"
+          viewBox="0 0 100 100"
+        >
+          {[16, 50, 84].map((x, i) => {
+            const importStart = tImports + i * 0.4;
+            const reached = localTime >= importStart - 0.2;
+            return (
+              <path
+                key={i}
+                d={`M 50 28 C 50 50, ${x} 50, ${x} 72`}
+                fill="none"
+                stroke={reached ? FK.successFg : FK.slate200}
+                strokeWidth="0.25"
+                strokeDasharray="0.8 0.6"
+                vectorEffect="non-scaling-stroke"
+                style={{ transition: 'stroke 0.4s ease' }}
+              />
+            );
+          })}
+        </svg>
+
+        {/* Coordinator card — centred top */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: '50%', transform: 'translateX(-50%)',
+          width: 560, height: 230,
+          background: FK.white,
+          zIndex: 2,
+          border: `1px solid ${FK.slate200}`,
+          borderRadius: 18,
+          boxShadow: '0 12px 32px rgba(15,23,42,0.08)',
+          padding: '20px 24px',
+          display: 'flex', flexDirection: 'column',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 22,
+              background: 'linear-gradient(135deg, #1E40AF, #2563EB)',
+              color: FK.white, display: 'grid', placeItems: 'center',
+              fontSize: 16, fontWeight: 700,
+            }}>SM</div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: FK.ink }}>Course coordinator</div>
+              <div style={{ fontSize: 12, color: FK.inkSoft }}>Dr. S. Mann · BIOL 240</div>
+            </div>
+          </div>
+          <div style={{
+            flex: 1,
+            background: FK.slate50,
+            border: `1px solid ${FK.slate200}`,
+            borderRadius: 10,
+            padding: 14,
+            display: 'flex', flexDirection: 'column', gap: 8,
+            color: FK.inkMute,
+          }}>
+            {/* Filename row — reads as a real file artifact */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <div style={{
+                width: 22, height: 28, position: 'relative',
+                background: FK.white,
+                border: `1.5px solid ${FK.blue}`,
+                borderRadius: 3,
+                flexShrink: 0,
+              }}>
+                <div style={{
+                  position: 'absolute', top: -1, right: -1,
+                  width: 7, height: 7,
+                  background: `linear-gradient(135deg, transparent 50%, ${FK.slate200} 50%)`,
+                }} />
+                <div style={{
+                  position: 'absolute', bottom: 2, left: 0, right: 0,
+                  textAlign: 'center',
+                  fontSize: 6, fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  color: FK.blue,
+                  fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                }}>JSON</div>
+              </div>
+              <span style={{
+                color: FK.ink, fontWeight: 700,
+                fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                fontSize: 13,
+              }}>lab-report-2-scorer.json</span>
+              <span style={{ marginLeft: 'auto' }}>
+                <StatusPill tone="success">Ready</StatusPill>
+              </span>
+            </div>
+            <div style={{
+              fontSize: 12, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+              paddingLeft: 32,
+            }}>4 criteria · 16 descriptors · NZ scale</div>
+            <div style={{
+              fontSize: 12, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+              paddingLeft: 32,
+            }}>Templates: intro + closing</div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+            <FKBtn
+              variant="primary"
+              size="md"
+              pressed={localTime >= tExport && localTime < tExport + 0.4}
+              style={{
+                borderColor: localTime >= 0.2 && localTime < tDown ? FK.blue : 'transparent',
+              }}
+            >📥 Export JSON</FKBtn>
+          </div>
+        </div>
+
+        {/* Three tutor cards */}
+        {[
+          { name: 'Tina Aldridge',   role: 'Tutor · stream A', avatarBg: '#D1FAE5', avatarFg: '#065F46', initials: 'TA' },
+          { name: 'Jordan Cole',     role: 'Tutor · stream B', avatarBg: '#FEF3C7', avatarFg: '#92400E', initials: 'JC' },
+          { name: 'Aroha Henare',    role: 'Tutor · stream C', avatarBg: '#EDE9FE', avatarFg: '#5B21B6', initials: 'AH' },
+        ].map((t, i) => {
+          const centerPct = [16, 50, 84][i];
+          const importStart = tImports + i * 0.4;
+          const imported = localTime >= importStart;
+          const justImported = localTime >= importStart && localTime < importStart + 0.5;
+          return (
+            <div key={t.name} style={{
+              position: 'absolute',
+              bottom: 0, left: `calc(${centerPct}% - 170px)`,
+              width: 340, height: 240,
+              background: FK.white,
+              border: `1px solid ${imported ? FK.successBg : FK.slate200}`,
+              boxShadow: justImported ? `0 0 0 3px rgba(4,120,87,0.18)` : '0 12px 32px rgba(15,23,42,0.08)',
+              borderRadius: 18,
+              padding: '20px 22px',
+              display: 'flex', flexDirection: 'column',
+              transition: 'all 0.3s ease',
+              zIndex: 2,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 20,
+                  background: t.avatarBg, color: t.avatarFg,
+                  display: 'grid', placeItems: 'center',
+                  fontSize: 14, fontWeight: 800,
+                }}>{t.initials}</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: FK.ink }}>{t.name}</div>
+                  <div style={{ fontSize: 11, color: FK.inkMute }}>{t.role}</div>
+                </div>
+              </div>
+              <div style={{
+                flex: 1,
+                background: imported ? FK.successBg + '70' : FK.slate50,
+                border: `1px dashed ${imported ? FK.successFg : FK.slate200}`,
+                borderRadius: 10,
+                padding: 12,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                gap: 6,
+                transition: 'all 0.4s ease',
+              }}>
+                {imported ? (
+                  <>
+                    <div style={{ fontSize: 24 }}>✓</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: FK.successFg, textAlign: 'center' }}>Lab Report 2 · loaded</div>
+                    <div style={{ fontSize: 10, color: FK.inkSoft, textAlign: 'center' }}>4 criteria · 16 descriptors</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 22 }}>⬆</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: FK.inkSoft }}>Upload scorer.json</div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Flying JSON files — one per tutor, fanning out from the coord card */}
+        {[0, 1, 2].map(i => {
+          const launchT = tFlight + i * 0.18;
+          const arriveT = tImports + i * 0.4;
+          const flightSpan = Math.max(0.2, arriveT - launchT);
+          const ft = clamp((localTime - launchT) / flightSpan, 0, 1);
+          if (ft <= 0 || ft >= 1) return null;
+          const fe = Easing.easeInOutCubic(ft);
+          const targetPct = [16, 50, 84][i];
+          const xPct = 50 + (targetPct - 50) * fe;
+          const startY = 230;
+          const targetY = 540;
+          const y = startY + (targetY - startY) * fe;
+          const tilt = (targetPct - 50) * 0.15 * (1 - fe);
+          return (
+            <div key={i} style={{
+              position: 'absolute',
+              left: `${xPct}%`,
+              top: `${y}px`,
+              transform: `translate(-50%, -50%) rotate(${tilt}deg) scale(${0.85 + 0.15 * (1 - Math.abs(fe - 0.5) * 2)})`,
+              zIndex: 5,
+              opacity: ft < 0.85 ? 1 : (1 - (ft - 0.85) / 0.15),
+            }}>
+              <FileChip />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Caption */}
+      {localTime >= tCaption && (
+        <div style={{
+          opacity: clamp((localTime - tCaption) / 0.5, 0, 1),
+          marginTop: 30, textAlign: 'center',
+        }}>
+          <div style={{
+            display: 'inline-block',
+            padding: '16px 28px',
+            background: FK.ink, color: FK.white,
+            borderRadius: 14,
+            fontSize: 19, fontWeight: 600,
+            letterSpacing: '-0.01em',
+            lineHeight: 1.4,
+            maxWidth: 920,
+          }}>
+            Everyone grades against the same rubric, same descriptors, same feedback language.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FileChip() {
+  return (
+    <div style={{
+      width: 64, height: 80, borderRadius: 8,
+      background: FK.white,
+      border: `2px solid ${FK.blue}`,
+      boxShadow: '0 10px 24px rgba(15,23,42,0.18)',
+      position: 'relative',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 4,
+    }}>
+      <div style={{
+        position: 'absolute', top: -1, right: -1,
+        width: 14, height: 14,
+        background: 'linear-gradient(135deg, transparent 50%, ' + FK.slate200 + ' 50%)',
+      }} />
+      <div style={{ fontSize: 20 }}>📄</div>
+      {/* JSON label — bumped from 8px to 11px and darkened from FK.blue
+          (#2563EB, 4.5:1) to #1E3A8A (10.4:1) for clean Axe pass. */}
+      <div style={{
+        fontSize: 11, fontWeight: 800,
+        letterSpacing: '0.08em',
+        color: '#1E3A8A',
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      }}>JSON</div>
+    </div>
+  );
+}
+
+Object.assign(window, { Scene5Snippets, Scene6Share });
+  </script>
+
+  <!-- 7. Inline timeline + ReactDOM.render -->
+  <script type="text/babel" data-presets="react">
+    // ── Scene timing config ───────────────────────────────────────────
+    // Central source of truth for scene durations and labels. Each scene
+    // overlaps its neighbour by OVERLAP seconds so the cross-fade between
+    // them is seamless.
+    //
+    // Pacing reference: Scene 5 (snippets) is the "relaxed" benchmark.
+    // Scenes 3 and 4 were bumped from the original v1 timing to match
+    // Scene 5's per-action breathing room (post-Steve review 2026-05-21).
+    // Scene 4 trimmed back to 22.0s on 2026-05-22 to cut idle dead-air
+    // after the Copy click (Steve note).
+    const OVERLAP = 0.5;
+    const SCENE_TIMING = {
+      title:    { duration:  5.6, label: '01 · Welcome' },
+      overview: { duration: 17.5, label: '02 · The whole loop' },
+      wizard:   { duration: 22.0, label: '03 · Build a scorer' },
+      marking:  { duration: 16.5, label: '04 · Mark a student' },
+      snippets: { duration: 15.5, label: '05 · Personalise' },
+      share:    { duration: 12.5, label: '06 · Share with your team' },
+      privacy:  { duration: 11.5, label: '07 · Privacy by design' },
+    };
+
+    // Build SCENES array from the config. Each scene's start is the
+    // previous scene's (end − OVERLAP); end is start + duration.
+    const SCENES = (() => {
+      const order = ['title','overview','wizard','marking','snippets','share','privacy'];
+      const renderers = {
+        title:    () => <Scene1Title />,
+        overview: () => <Scene2Overview />,
+        wizard:   () => <Scene3Wizard />,
+        marking:  () => <Scene4Marking />,
+        snippets: () => <Scene5Snippets />,
+        share:    () => <Scene6Share />,
+        privacy:  () => <Scene7Privacy />,
+      };
+      let cursor = 0;
+      return order.map((id, i) => {
+        const start = i === 0 ? 0 : cursor - OVERLAP;
+        const end   = start + SCENE_TIMING[id].duration;
+        cursor = end;
+        return { id, start, end, render: renderers[id] };
+      });
+    })();
+    const TOTAL_DURATION = SCENES[SCENES.length - 1].end;
+
+    // Small overlay that names the current scene + shows running time.
+    // Lives outside scenes so it persists across cross-fades.
+    function ChapterOverlay() {
+      const { time, duration } = useTimeline();
+      const active = [...SCENES].reverse().find(s => time >= s.start) || SCENES[0];
+      const labels = Object.fromEntries(
+        Object.entries(SCENE_TIMING).map(([id, t]) => [id, t.label])
+      );
+      // Format mm:ss with clamp + Math.round so the timer stays smooth at
+      // the tail and never jumps from 1:36 → 1:45 (Steve note, fixed).
+      const fmt = (s) => {
+        const clamped = Math.max(0, Math.min(duration, s));
+        const rounded = Math.round(clamped);
+        const m = Math.floor(rounded / 60);
+        const sec = (rounded % 60).toString().padStart(2, '0');
+        return `${m}:${sec}`;
+      };
+      const cur   = fmt(time);
+      const total = fmt(duration);
+      return (
+        <div style={{
+          position: 'absolute', top: 24, right: 32,
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '8px 14px',
+          background: 'rgba(15,23,42,0.78)',
+          backdropFilter: 'blur(8px)',
+          color: '#F1F5F9',
+          borderRadius: 999,
+          fontSize: 12, fontWeight: 600,
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          zIndex: 100, pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{
+            width: 8, height: 8, borderRadius: 4,
+            background: '#60A5FA',
+            animation: 'fk-pulse 1.6s ease-in-out infinite',
+          }} />
+          <span>{labels[active.id]}</span>
+          <span style={{
+            color: '#CBD5E1',
+            letterSpacing: 0,
+          }}>{cur} / {total}</span>
+        </div>
+      );
+    }
+
+    function Video() {
+      return (
+        <Stage
+          width={1920} height={1080}
+          duration={TOTAL_DURATION}
+          background="#0F172A"
+          loop={false}
+        >
+          {SCENES.map(s => (
+            <Sprite key={s.id} start={s.start} end={s.end}>
+              {s.render()}
+            </Sprite>
+          ))}
+          <ChapterOverlay />
+        </Stage>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<Video />);
+  </script>
+
+</body>
+</html>

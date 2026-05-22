@@ -75,6 +75,13 @@
     </div>
   </nav>
 
+  <!-- ── Brand-voice sub-headline (BBP v0.1) ──────────────── -->
+  <p class="max-w-4xl mx-auto px-4 pt-3 text-xs text-slate-500 italic">
+    Not an autograder — you choose the grades, the tool drafts the feedback.
+  </p>
+
+  <h1 class="sr-only">Build a scorer</h1>
+
   <!-- ── Step Progress ────────────────────────────────────── -->
   <div class="bg-white border-b border-slate-100 px-4 py-4">
     <div class="max-w-3xl mx-auto">
@@ -123,13 +130,13 @@
 
         <div class="grid sm:grid-cols-2 gap-5">
           <div class="sm:col-span-2">
-            <label class="label" title="Give this version of the scorer a name to differentiate it from any other you do — e.g. 'MRKTG101 5Cs Analysis Scorer'.">Name for your Rubric <span class="text-red-500">*</span></label>
+            <label class="label" for="s1-name" title="Give this version of the scorer a name to differentiate it from any other you do — e.g. 'MRKTG101 5Cs Analysis Scorer'.">Name for your Rubric <span class="text-red-500">*</span></label>
             <input type="text" id="s1-name" class="input-field input-yellow" placeholder="e.g. MRKTG101 5Cs Analysis Scorer"
                    title="Give this version of the scorer a name to differentiate it from any other you do — e.g. 'MRKTG101 5Cs Analysis Scorer'.">
             <div class="error-msg" id="err-s1-name">Please give your rubric a name.</div>
           </div>
           <div>
-            <label class="label" title="The official name of the assessment task being marked (e.g. '5Cs Analysis', 'Research Report'). Appears in the tab title and on your Excel export.">Assessment Title <span class="text-red-500">*</span></label>
+            <label class="label" for="s1-assessmentTitle" title="The official name of the assessment task being marked (e.g. '5Cs Analysis', 'Research Report'). Appears in the tab title and on your Excel export.">Assessment Title <span class="text-red-500">*</span></label>
             <input type="text" id="s1-assessmentTitle" class="input-field input-yellow" placeholder="e.g. 5Cs Analysis"
                    title="The official name of the assessment task being marked. Appears in the tab title and on your Excel export.">
             <div class="error-msg" id="err-s1-title">Please enter the assessment title.</div>
@@ -290,7 +297,7 @@
     <div id="step-3" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Criteria &amp; Weights</h2>
-        <p class="text-slate-500 mb-2 text-sm">Add each marking criterion and assign a percentage weight. Weights must total exactly 100%.</p>
+        <p class="text-slate-500 mb-2 text-sm">List what you're actually marking. Weights sum to 100%.</p>
 
         <div class="flex items-center gap-3 mb-6 p-3 rounded-xl border-2" id="weight-check-banner">
           <span id="weight-check-icon" class="text-xl">⚠️</span>
@@ -311,7 +318,7 @@
     <div id="step-4" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Rubric Descriptors</h2>
-        <p class="text-slate-500 mb-2 text-sm">For each criterion, write a short descriptor for each performance tier. These appear in the generated student feedback.</p>
+        <p class="text-slate-500 mb-2 text-sm">Write the descriptor for each grade band, for each criterion.</p>
 
         <div class="p-3 bg-amber-50 rounded-xl text-sm text-amber-800 mb-6">
           📝 The tier a student falls in (Excellent / Proficient / Developing / Unsatisfactory) is determined automatically by the grade you select when scoring. You can leave any field blank and the feedback will simply omit that descriptor.
@@ -325,7 +332,7 @@
     <div id="step-5" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Grade Feedback Templates</h2>
-        <p class="text-slate-500 mb-2 text-sm">Customise the intro and outro paragraphs shown at the top and bottom of each student's feedback. Where defaults are provided you can edit them, or write your own from scratch.</p>
+        <p class="text-slate-500 mb-2 text-sm">Intro and outro paragraphs that wrap every piece of feedback.</p>
 
         <div class="flex gap-2 flex-wrap mb-6" id="grade-tier-filters">
           <button class="tier-tab bg-slate-800 text-white" data-filter="all" onclick="B.filterFeedbackTier('all', this)">All Grades</button>
@@ -344,7 +351,7 @@
     <div id="step-6" class="step-panel hidden">
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
         <h2 class="text-2xl font-bold text-slate-800 mb-1">Settings &amp; Save</h2>
-        <p class="text-slate-500 mb-6 text-sm">Configure late penalties and then save your scorer to start grading.</p>
+        <p class="text-slate-500 mb-6 text-sm">Have a look. If it reads right, save and you're ready to mark.</p>
 
         <!-- Late penalties toggle -->
         <div class="flex items-center justify-between mb-4">
@@ -411,8 +418,13 @@
       </div>
     </div>
 
+    <!-- ── Persistent privacy / sharing micro-copy (BBP v0.1) ── -->
+    <p class="mt-6 text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+      💡 Everything stays in this browser. You can export the scorer as JSON to share with your team.
+    </p>
+
     <!-- ── Navigation ───────────────────────────────────────── -->
-    <div class="flex items-center justify-between mt-6">
+    <div class="flex items-center justify-between mt-4">
       <button class="btn-secondary" id="btn-back" onclick="B.prevStep()" style="display:none">← Back</button>
       <div class="ml-auto">
         <button class="btn-primary" id="btn-next" onclick="B.nextStep()">Next Step →</button>
