@@ -1826,7 +1826,13 @@
       }).catch(() => {
         ta.select(); document.execCommand('copy');
       });
-      // Auto-add to cohort
+      // Auto-add to cohort — check name/ID first so only one toast fires
+      const _cpName = (el('student-name').value || '').trim();
+      const _cpId   = (el('student-id').value   || '').trim();
+      if (!_cpName && !_cpId) {
+        showCohortToast('Feedback copied to clipboard — add a student name or ID to save to cohort', 'amber');
+        return;
+      }
       saveCurrentStudentToCohort({ silent: true });
       showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
     }
