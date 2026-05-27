@@ -1830,7 +1830,7 @@
       const _cpName = (el('student-name').value || '').trim();
       const _cpId   = (el('student-id').value   || '').trim();
       if (!_cpName && !_cpId) {
-        showCohortToast('Feedback copied to clipboard — add a student name or ID to save to cohort', 'amber');
+        showCohortToast('Feedback copied to clipboard · not saved to cohort — add a student name or ID', 'amber');
         return;
       }
       saveCurrentStudentToCohort({ silent: true });
