@@ -16,6 +16,19 @@ html.fk-dark body {
   color: #e2e8f0;
 }
 
+/* ── Hero secondary button ("Watch a 2-min Demo") ───────────── */
+/* bg-white on the dark hero (#0c1527) has too-similar darkness;
+   give it a perceptible outline so the button shape reads clearly */
+html.fk-dark section[style*="background:#0c1527"] a.bg-white {
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+}
+
+html.fk-dark section[style*="background:#0c1527"] a.bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
 /* ── Nav ────────────────────────────────────────────────────── */
 html.fk-dark nav.sticky {
   background-color: #141d2e;
@@ -106,6 +119,7 @@ html.fk-dark section.border-y {
 }
 
 /* ── Typography ─────────────────────────────────────────────── */
+html.fk-dark .text-slate-900 { color: #e2e8f0; } /* was missing — affects Watch Demo button */
 html.fk-dark .text-slate-800 { color: #e2e8f0; }
 html.fk-dark .text-slate-700 { color: #cbd5e1; }
 html.fk-dark .text-slate-600 { color: #94a3b8; }
