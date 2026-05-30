@@ -1,0 +1,536 @@
+/*
+ * Feedback Kitchen — Site-wide Dark Mode
+ *
+ * Activated by html.fk-dark (sun/moon toggle in nav, persisted to localStorage).
+ * Separate from html.fk-cinematic — that is a named video-production preview mode,
+ * not a user preference. These two classes are independent.
+ */
+
+html.fk-dark {
+  color-scheme: dark;
+}
+
+/* ── Page shell ─────────────────────────────────────────────── */
+html.fk-dark body {
+  background-color: #0f172a !important; /* !important prevents bg-slate-50 class from winning */
+  color: #e2e8f0;
+}
+
+/* ── Nav ────────────────────────────────────────────────────── */
+html.fk-dark nav.sticky {
+  background-color: #141d2e;
+  border-bottom-color: #1e3050;
+}
+
+html.fk-dark nav a.font-bold {
+  color: #93c5fd;
+}
+
+html.fk-dark nav .bg-slate-100 {
+  background-color: #334155;
+  color: #cbd5e1;
+}
+
+html.fk-dark nav .bg-slate-100:hover {
+  background-color: #475569;
+  color: #e2e8f0;
+}
+
+html.fk-dark nav .text-slate-700 {
+  color: #cbd5e1;
+}
+
+html.fk-dark #theme-toggle {
+  color: #94a3b8;
+  border-color: #334155;
+}
+
+html.fk-dark #theme-toggle:hover {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+/* ── First-run banner ───────────────────────────────────────── */
+html.fk-dark #first-run-banner {
+  background-color: #0c1d36;
+  border-bottom-color: #1e3050;
+}
+
+html.fk-dark #first-run-banner h3,
+html.fk-dark #first-run-banner strong {
+  color: #e2e8f0;
+}
+
+html.fk-dark #first-run-banner p {
+  color: #94a3b8;
+}
+
+html.fk-dark #first-run-banner .bg-amber-50 {
+  background-color: #1c1000;
+  border-color: #92400e;
+}
+
+html.fk-dark #first-run-banner .text-amber-800 {
+  color: #fcd34d;
+}
+
+/* ── White / light surfaces ─────────────────────────────────── */
+html.fk-dark .bg-white {
+  background-color: #1e293b;
+}
+
+html.fk-dark section.bg-white {
+  background-color: #1e293b;
+}
+
+/* Bare .bg-blue-50 catches demo-onboarding divs and other non-section surfaces;
+   section.bg-blue-50 (above) keeps its existing rule too */
+html.fk-dark .bg-blue-50,
+html.fk-dark section.bg-blue-50 {
+  background-color: #0c1d36;
+}
+
+html.fk-dark .border-slate-100,
+html.fk-dark .border-slate-200 {
+  border-color: #334155;
+}
+
+html.fk-dark .border-blue-100 {
+  border-color: #1e3050;
+}
+
+html.fk-dark section.border-b,
+html.fk-dark section.border-y {
+  border-color: #334155;
+}
+
+/* ── Typography ─────────────────────────────────────────────── */
+html.fk-dark .text-slate-800 { color: #e2e8f0; }
+html.fk-dark .text-slate-700 { color: #cbd5e1; }
+html.fk-dark .text-slate-600 { color: #94a3b8; }
+html.fk-dark .text-slate-500 { color: #7a95ad; } /* was #64748b — too dark for secondary content */
+html.fk-dark .text-slate-400 { color: #64748b; } /* was #475569 — near-invisible on dark surfaces */
+html.fk-dark .text-blue-700  { color: #93c5fd; }
+html.fk-dark .text-blue-600  { color: #60a5fa; }
+html.fk-dark .text-blue-500  { color: #60a5fa; }
+html.fk-dark .text-blue-50   { color: #bfdbfe; }
+
+/* ── Feature icon backgrounds ───────────────────────────────── */
+html.fk-dark .bg-blue-100   { background-color: #1e3a5f; }
+html.fk-dark .bg-amber-100  { background-color: #431407; }
+html.fk-dark .bg-green-100  { background-color: #052e16; }
+html.fk-dark .bg-purple-100 { background-color: #2e1065; }
+html.fk-dark .bg-rose-100   { background-color: #4c0519; }
+html.fk-dark .bg-teal-100   { background-color: #042f2e; }
+html.fk-dark .bg-indigo-100 { background-color: #1e1b4b; }
+
+/* ── Privacy / adoption section — muted, not neon ───────────── */
+html.fk-dark .bg-emerald-50 {
+  background-color: #0f1a13;
+  border-color: #243d2c;
+}
+
+html.fk-dark .text-emerald-900 { color: #a7f3d0; }
+
+html.fk-dark .bg-white.text-emerald-800 {
+  background-color: #1a2e20;
+  color: #a7f3d0;
+  border-color: #2d4a35;
+}
+
+/* ── University logos — mute in dark mode to avoid visual clash ─ */
+html.fk-dark img.grayscale {
+  opacity: 0.45;
+}
+
+/* ── Nav separator (toggle / actions divider) ────────────────── */
+html.fk-dark .fk-nav-sep {
+  background-color: #263347;
+}
+
+/* ── Scorer-specific overrides ──────────────────────────────── */
+/* Section rail (uses bg-white/90 — not caught by .bg-white) */
+html.fk-dark #section-rail {
+  background-color: rgba(9, 14, 28, 0.96);
+  border-bottom-color: #1e3050;
+}
+
+/* Scorer sub-banner (product positioning note) */
+html.fk-dark [role="note"] {
+  background-color: #1e293b;
+  border-bottom-color: #334155;
+}
+
+html.fk-dark [role="note"] .text-slate-700 { color: #94a3b8; }
+html.fk-dark [role="note"] .text-slate-500 { color: #64748b; }
+
+/* Input fields */
+html.fk-dark .input-field {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html.fk-dark .input-field:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+html.fk-dark .cell-yellow {
+  background-color: #1f1a08 !important;
+}
+
+html.fk-dark .grade-select {
+  background-color: #1c1a0d;
+  border-color: #7c5214;
+  color: #e2e8f0;
+}
+
+/* Browser-native dropdown options inherit the select bg — force it */
+html.fk-dark .grade-select option {
+  background-color: #1c1a0d;
+  color: #e2e8f0;
+}
+
+html.fk-dark .override-input {
+  background-color: #1c1a0d;
+  border-color: #7c5214;
+  color: #e2e8f0;
+}
+
+/* Out-of-band error state on override inputs */
+html.fk-dark .override-input.out-of-band {
+  background-color: #450a0a !important;
+  border-color: #991b1b !important;
+}
+
+/* Calculated score cells */
+html.fk-dark .cell-calc {
+  background-color: #1e3a5f !important;
+  color: #93c5fd !important;
+}
+
+/* Feedback textarea — !important beats inline style="background:#fff" */
+html.fk-dark .feedback-box {
+  background-color: #0c1220 !important;
+  border-color: #263347;
+  color: #e2e8f0;
+}
+
+html.fk-dark .feedback-box:focus {
+  border-color: #059669;
+}
+
+/* Table */
+html.fk-dark th {
+  background-color: #1e293b;
+  border-bottom-color: #334155;
+  color: #94a3b8;
+}
+
+html.fk-dark td {
+  border-bottom-color: #1e293b;
+}
+
+html.fk-dark tr:hover td {
+  background-color: #1a2434;
+}
+
+/* Destructive (red) buttons */
+html.fk-dark .btn-red { background: #450a0a; color: #fca5a5; }
+html.fk-dark .btn-red:hover { background: #5a0e0e; }
+
+/* Ghost and utility buttons */
+html.fk-dark .btn-ghost {
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+html.fk-dark .btn-ghost:hover {
+  background: #263347;
+  color: #e2e8f0;
+  border-color: #475569;
+}
+
+html.fk-dark .btn-utility {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+html.fk-dark .btn-utility:hover {
+  background: #263347;
+  color: #cbd5e1;
+}
+
+/* Info panels */
+html.fk-dark .panel-safe    { background: #091a0f; border-left-color: #059669; }
+html.fk-dark .panel-info    { background: #0c1d36; border-left-color: #3b82f6; }
+html.fk-dark .panel-warning { background: #1c1000; border-left-color: #d97706; }
+html.fk-dark .panel-light   { background: #1e293b; border-left-color: #475569; }
+html.fk-dark .panel-suggestion { background: #180d2e; border-left-color: #7c3aed; }
+html.fk-dark .panel-suggestion h3 { color: #c4b5fd; }
+html.fk-dark .panel-advanced { background: #1e293b; border-left-color: #475569; }
+
+/* Section summary borders */
+html.fk-dark details[open] > summary {
+  border-bottom-color: #334155;
+}
+
+/* Step badges — already emerald in light mode; keep consistent in dark */
+html.fk-dark .step-badge {
+  background: #059669;
+}
+
+/* Input placeholders */
+html.fk-dark .input-field::placeholder {
+  color: #475569;
+  opacity: 0.9;
+}
+
+html.fk-dark .feedback-box::placeholder {
+  color: #475569;
+  opacity: 0.8;
+}
+
+/* Scrollbar — borrowed from cinematic, toned down for daily use */
+html.fk-dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.fk-dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+html.fk-dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+html.fk-dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Selection */
+html.fk-dark ::selection {
+  background: rgba(5, 150, 105, 0.28);
+  color: #e2e8f0;
+}
+
+/* ── Surface hierarchy (bg-slate-* classes) ─────────────────── */
+/* bg-slate-50: secondary/sunken surface (notes card, sub-banner, bulk bar, etc.) */
+html.fk-dark .bg-slate-50  { background-color: #141d2e; }
+/* bg-slate-100: raised surface (code chips, kbd, rounding buttons) */
+html.fk-dark .bg-slate-100 { background-color: #1e2d40; }
+/* bg-slate-200: border-as-surface (status chips, dividers used as bg) */
+html.fk-dark .bg-slate-200 { background-color: #263347; }
+
+/* ── Scorer step/helper text ─────────────────────────────────── */
+html.fk-dark .step-title { color: #e2e8f0; }
+html.fk-dark .step-sub   { color: #7a95ad; }
+
+/* ── Sticky action bar ───────────────────────────────────────── */
+html.fk-dark #sticky-action-bar {
+  background-color: rgba(20, 29, 46, 0.97) !important;
+  border-top-color: #1e3050;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4);
+}
+
+html.fk-dark #sticky-summary { color: #94a3b8; }
+
+/* ── kbd shortcut chips ──────────────────────────────────────── */
+html.fk-dark kbd {
+  background: #1e2d40;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+/* ── Inline code chips (bg-slate-100 px-1 rounded) ──────────── */
+html.fk-dark code { background-color: #1e2d40; color: #94a3b8; }
+
+/* ── Emerald badge (grade display) ──────────────────────────── */
+html.fk-dark .bg-emerald-100 { background-color: #064e3b; }
+html.fk-dark .text-emerald-800 { color: #6ee7b7; }
+html.fk-dark .text-emerald-700 { color: #34d399; }
+
+/* ── Amber elements ──────────────────────────────────────────── */
+html.fk-dark .bg-amber-50  { background-color: #1c1000; }
+html.fk-dark .bg-amber-100 { background-color: #2a1800; }
+html.fk-dark .text-amber-700 { color: #fbbf24; }
+html.fk-dark .text-amber-800 { color: #fcd34d; }
+html.fk-dark .text-amber-900 { color: #fde68a; }
+html.fk-dark .border-amber-200 { border-color: #78350f; }
+html.fk-dark .border-amber-300 { border-color: #92400e; }
+
+/* "Drafting" status chip pulses — ensure readable colors during animation */
+html.fk-dark .bg-amber-100.animate-pulse  { background-color: #2a1800; }
+html.fk-dark .text-amber-800.animate-pulse { color: #fcd34d; }
+
+/* ── Indigo (moderation banner) ──────────────────────────────── */
+html.fk-dark .bg-indigo-50    { background-color: #1e1b4b; }
+html.fk-dark .text-indigo-800 { color: #a5b4fc; }
+html.fk-dark .border-indigo-300 { border-color: #4338ca; }
+
+/* ── Violet (suggestion panel heading) ───────────────────────── */
+html.fk-dark .text-violet-800 { color: #c4b5fd; }
+
+/* ── Red (destructive actions) ───────────────────────────────── */
+html.fk-dark .text-red-600 { color: #fca5a5; }
+
+/* ── Teal (new-feature chip) ─────────────────────────────────── */
+html.fk-dark .bg-teal-100    { background-color: #042f2e; }
+html.fk-dark .text-teal-700  { color: #5eead4; }
+html.fk-dark .border-teal-300 { border-color: #115e59; }
+
+/* ── Status chips (bg-slate-200 text-slate-600) ─────────────── */
+/* Covered by .bg-slate-200 override and .text-slate-600 override above */
+
+/* ── Scorer nav rounding buttons (bg-slate-100 text-slate-600) ─ */
+html.fk-dark nav .bg-slate-100 {
+  background-color: #1e2d40;
+  color: #94a3b8;
+}
+html.fk-dark nav .bg-slate-100:hover {
+  background-color: #263347;
+  color: #e2e8f0;
+}
+
+/* ── Demo onboarding panel ───────────────────────────────────── */
+html.fk-dark #demo-onboarding {
+  background-color: #141d2e;
+  border-bottom-color: #1e3050;
+}
+html.fk-dark #demo-onboarding h3 { color: #e2e8f0; }
+html.fk-dark #demo-onboarding p,
+html.fk-dark #demo-onboarding li { color: #94a3b8; }
+html.fk-dark #demo-onboarding strong { color: #e2e8f0; }
+
+/* ── Modals (bg-white rounded-2xl caught by .bg-white; extras) ─ */
+html.fk-dark .fixed.inset-0 .border-b.border-slate-100 { border-bottom-color: #334155; }
+html.fk-dark .fixed.inset-0 .border-t.border-slate-100 { border-top-color: #334155; }
+html.fk-dark .fixed.inset-0 h2,
+html.fk-dark .fixed.inset-0 h3 { color: #e2e8f0; }
+html.fk-dark .fixed.inset-0 p.text-slate-500 { color: #7a95ad; }
+
+/* ── Dispatch toast ──────────────────────────────────────────── */
+html.fk-dark #fk-dispatch-toast {
+  background: #1e293b;
+  border-color: #334155;
+  border-left-color: #059669;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+html.fk-dark #fk-dispatch-toast .fk-toast-icon { background: #064e3b; }
+html.fk-dark #fk-dispatch-toast .fk-toast-title { color: #e2e8f0; }
+html.fk-dark #fk-dispatch-toast .fk-toast-sub   { color: #7a95ad; }
+
+/* ── Framework label chip ────────────────────────────────────── */
+html.fk-dark #framework-label-chip {
+  background: #1e3a5f;
+  color: #93c5fd;
+  border-color: #2563eb;
+}
+
+/* ── Cohort Insights (ci-* classes — all hardcoded light colours) */
+html.fk-dark .ci-section       { background: #141d2e; border-color: #263347; }
+html.fk-dark .ci-summary-block { background: #1a1810; border-color: #b48a3d; border-left-color: #b48a3d; }
+html.fk-dark .ci-summary-h3    { color: #b48a3d; }
+html.fk-dark .ci-h1            { color: #e2e8f0; }
+html.fk-dark .ci-h2            { color: #e2e8f0; }
+html.fk-dark .ci-h3            { color: #7a95ad; }
+html.fk-dark .ci-subtitle      { color: #7a95ad; }
+html.fk-dark .ci-k             { color: #7a95ad; }
+html.fk-dark .ci-v             { color: #e2e8f0; }
+html.fk-dark .ci-bar-track     { background: #263347; }
+html.fk-dark .ci-bar           { background: #3b82f6; }
+html.fk-dark .ci-bar-label     { color: #94a3b8; }
+html.fk-dark .ci-bar-count     { color: #7a95ad; }
+html.fk-dark .ci-note          { color: #7a95ad; }
+html.fk-dark .ci-panel-note    { color: #7a95ad; }
+html.fk-dark .ci-small-n       { color: #64748b; }
+html.fk-dark .ci-dist-icon     { color: #64748b; }
+html.fk-dark .ci-pointer       { color: #93c5fd; }
+html.fk-dark .ci-tip           { color: #93c5fd; border-bottom-color: #93c5fd; }
+html.fk-dark .ci-footer        { color: #64748b; border-top-color: #263347; }
+html.fk-dark .ci-amber  { background: #1c1108; color: #fcd34d; border-color: #78350f; }
+html.fk-dark .ci-teal   { background: #042f2e; color: #5eead4; border-color: #115e59; }
+html.fk-dark .ci-purple { background: #1a0a2e; color: #c4b5fd; border-color: #4c1d95; }
+html.fk-dark .ci-mixed-strip {
+  background: #1a0a2e; border-color: #4c1d95;
+  color: #c4b5fd; border-left-color: #8b6fb0;
+}
+html.fk-dark .ci-mixed-strip strong { color: #ddd6fe; }
+html.fk-dark .ci-qualifier    { background: #1c1108; border-color: #78350f; color: #fcd34d; }
+html.fk-dark .ci-suppressed-note,
+html.fk-dark .ci-disclaimer,
+html.fk-dark .ci-subset-banner {
+  background: #1e293b; border-color: #334155; color: #94a3b8;
+}
+
+/* ── Hover Tailwind variants — override blue/slate hover states ── */
+html.fk-dark .hover\:bg-blue-50:hover      { background-color: #1a2234 !important; }
+html.fk-dark .hover\:border-blue-400:hover { border-color: #334155 !important; }
+html.fk-dark .hover\:bg-slate-100:hover    { background-color: #1e2d40; }
+html.fk-dark .hover\:text-blue-800:hover   { color: #93c5fd; }
+html.fk-dark .hover\:text-blue-700:hover   { color: #93c5fd; }
+
+/* ── Section notes panel (#sec-notes) ───────────────────────── */
+html.fk-dark #sec-notes {
+  background-color: #141d2e;
+  border-color: #263347;
+}
+html.fk-dark #sec-notes .border-t.border-slate-200 {
+  border-color: #263347;
+}
+
+/* ── Border colour — slate-300 (refine-wording selects, misc) ── */
+html.fk-dark .border-slate-300 { border-color: #334155; }
+
+/* ── Section-rail separator (bg-slate-200 span) ─────────────── */
+/* Covered by the .bg-slate-200 global override above; listed here
+   with increased specificity as a safety net */
+html.fk-dark #section-rail .bg-slate-200 { background-color: #263347; }
+
+/* ── AI Explainer — disclosure arrow ────────────────────────── */
+html.fk-dark .ai-explainer > summary::before { color: #64748b; }
+
+/* ── Green text tokens (rubric tiers, weight-check, AI panel) ── */
+html.fk-dark .text-green-600 { color: #34d399; }
+html.fk-dark .text-green-800 { color: #6ee7b7; }
+html.fk-dark .text-green-900 { color: #a7f3d0; }
+
+/* ── Blue-8xx/9xx text tokens (AI panel, validation chips, tier badges) */
+html.fk-dark .text-blue-800 { color: #93c5fd; }
+html.fk-dark .text-blue-900 { color: #bfdbfe; }
+
+/* ── Blue/green 200-level surface tokens (tier pill backgrounds) ─ */
+html.fk-dark .bg-blue-200  { background-color: #1e3a5f; }
+html.fk-dark .bg-green-200 { background-color: #064e3b; }
+html.fk-dark .border-blue-200  { border-color: #1e3050; }
+html.fk-dark .border-green-200 { border-color: #065f46; }
+
+/* ── Tier pills — drop the coloured ring; bg alone reads cleanly ─ */
+html.fk-dark .tier-pill { box-shadow: none !important; }
+/* Tailwind ring-colour custom properties (used by ring-1 ring-*-300) */
+html.fk-dark .ring-blue-300  { --tw-ring-color: #1e3a5f; }
+html.fk-dark .ring-green-300 { --tw-ring-color: #064e3b; }
+
+/* ── Scorer nav wordmark — belt-and-braces for the span inside <a> */
+html.fk-dark nav span.font-semibold { color: #e2e8f0; }
+
+/* ── btn-secondary (import/export snippets CSV buttons) ────────── */
+html.fk-dark .btn-secondary {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+html.fk-dark .btn-secondary:hover {
+  background: #263347;
+  color: #cbd5e1;
+}
+
+/* "Doesn't do" block — already slate-900, leave it ────────────── */
+/* Footer — already dark via shared.css, leave it ─────────────── */
+/* Hero — always dark regardless of mode, leave it ────────────── */
