@@ -1669,6 +1669,7 @@
       if (!raw) {
         out.className = 'text-xs text-slate-400';
         out.innerHTML = 'Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.';
+        inp.setAttribute('aria-invalid', 'false');
         return;
       }
       const scale = _activeGradeScale();
@@ -1677,10 +1678,12 @@
         inp.style.borderColor = '#16a34a';
         out.className = 'text-xs text-emerald-600 font-medium';
         out.textContent = '✓ Override applied: ' + norm;
+        inp.setAttribute('aria-invalid', 'false');
       } else {
         inp.style.borderColor = '#dc2626';
         out.className = 'text-xs text-red-600';
-        out.textContent = 'Not in this rubric\u2019s grade scale. Valid: ' + scale.join(', ');
+        out.textContent = 'Not in this rubric’s grade scale. Valid: ' + scale.join(', ');
+        inp.setAttribute('aria-invalid', 'true');
       }
     }
     function onOverrideGrade() {
