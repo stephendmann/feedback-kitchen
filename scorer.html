@@ -496,14 +496,14 @@
             <table>
               <thead>
                 <tr>
-                  <th title="The marking criterion as defined in your rubric.">Criterion</th>
-                  <th class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
-                  <th class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
-                  <th class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
-                  <th class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
-                  <th class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
-                  <th class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
-                  <th class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
+                  <th scope="col" title="The marking criterion as defined in your rubric.">Criterion</th>
+                  <th scope="col" class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
+                  <th scope="col" class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
+                  <th scope="col" class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
+                  <th scope="col" class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
+                  <th scope="col" class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
+                  <th scope="col" class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
+                  <th scope="col" class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
                 </tr>
               </thead>
               <tbody id="criteria-tbody"></tbody>
@@ -1418,6 +1418,7 @@
           <td class="text-center text-sm text-slate-500 font-semibold">${c.weight}%</td>
           <td class="text-center">
             <select class="grade-select" id="grade-sel-${i}"
+                    aria-label="Grade for ${c.name}"
                     onchange="S.onGradeChange(${i})"
                     onmousedown="S.onGradeRowReviewed(${i})"
                     onfocus="S.onGradeRowReviewed(${i})">
@@ -1778,8 +1779,10 @@
             const bandHigh = scaleEntry ? scaleEntry.bandHigh : (SA.GRADE_MIDPOINTS[row.grade] + 6);
             const oob = row.override < bandLow || row.override > bandHigh;
             overInp.className = 'override-input' + (oob ? ' out-of-band' : '');
+            overInp.setAttribute('aria-invalid', oob ? 'true' : 'false');
           } else {
             overInp.className = 'override-input';
+            overInp.setAttribute('aria-invalid', 'false');
           }
         } else {
           el('midpoint-' + i).textContent  = '—';
