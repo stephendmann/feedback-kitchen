@@ -1,9 +1,16 @@
-# Feedback Kitchen — UI/UX Roadmap
+# Feedback Kitchen — Engineering Roadmap
 
-**Current baseline:** v2.1.1 (quick-win copy + status chips pass complete).
-**Source of this plan:** Perplexity UX review (April 2026) + Steve's own tracking notes.
+Feedback Kitchen is a browser-based rubric scoring tool for university educators that runs entirely client-side, exporting completed evaluations as Excel files via SheetJS.
 
-This file is the resume-point for later sessions. Each version below is a discrete, shippable pass — pick one, do it, tag it, move on.
+## PR Sequence
+
+| PR | Branch | Description | Status |
+|----|--------|-------------|--------|
+| 1 | `feat/draft-persistence` | Persist in-progress student work to localStorage; resume prompt on load | [ ] Open |
+| 2 | `perf/lazy-load-sheetjs` | Remove 930 KB SheetJS from critical path; load on first export | [ ] Open |
+| 3 | `fix/accessible-modals` | role=dialog, aria-modal, focus trap, Esc close for all 12 modals | [ ] Open |
+| 4 | `fix/aria-rubric-table` | scope="col", aria-label on grade selects, aria-invalid on overrides | [ ] Open |
+| 5 | `perf/homepage-and-dark-mode` | Homepage perf quick wins + dark-mode gap fixes | [ ] Open |
 
 ---
 
@@ -23,252 +30,129 @@ This file is the resume-point for later sessions. Each version below is a discre
 
 ---
 
-## ✅ Completed — v2.0 → v2.1.1
+## PR 1 — `feat/draft-persistence`
 
-Baseline already pushed to Git.
+### Goals
+Prevent silent data loss when a marker accidentally closes or refreshes the tab mid-session.
 
-- **v2.0** — Cohort Excel export (Option B): auto-add on Copy/Export, first-use scoping modal, replace-on-rematch, post-export wipe prompt, 30-day nudge, version stamping.
-- **v2.0.1–2.0.4** — Cache-busting + Marker's Notes copy clarified; Excel tab order fixed (Student Feedback → Grade Matrix → Cohort Summary → Rubric → Grade Feedback → Instructions).
-- **v2.1.0** — Quick-win copy pass per Perplexity review: task-based section titles (Student, Rubric scores, Adjustments, Feedback builder, Marker's notes, AI polish, Export, Cohort export); short buttons ("Copy feedback", "Export student record", "Export cohort (Excel)"); tightened micro-copy; added live status chips (rubric, feedback, AI, cohort).
-- **v2.1.1** — Fixed chip bug where "Rubric scores" always read "7 of 7"; now counts only graded criteria.
+### Files affected
+- `feedback-kitchen/scorer.html`
 
----
+### Key changes
+- Add `DRAFT_KEY` constant and `saveDraft()` helper that writes `studentGrades`, the feedback textarea, additional-comments, student name/ID/tutor, and grade-override to `localStorage` as a single JSON blob.
+- Call `saveDraft()` at the end of `onGradeChange()`, `recalculate()`, and whenever feedback/name inputs fire `input` events.
+- On page load (inside the existing init block), detect a stale draft and show a non-blocking banner offering "Resume" or "Discard".
+- In `confirmNewStudent()`, call `clearDraft()` to wipe the key so a fresh student starts clean.
+- In `downloadExcel()`, call `clearDraft()` after the file is generated — successful export is the canonical save.
+- Tighten the `beforeunload` handler: fire the native prompt only when a draft exists AND contains at least one graded criterion (currently it fires for any non-empty cohort regardless of whether the current student has unsaved work).
 
-## 🎯 v2.2 — Sticky action bar + workspace polish
-
-**Goal:** single dominant primary action always visible; less scrolling to export.
-**Estimated effort:** half-day.
-
-1. **Sticky footer action bar** (bottom of viewport, no-print).
-   - Primary: `📋 Copy feedback` (same `S.copyFeedback()`).
-   - Secondary: `📥 Export student record`, `📥 Export cohort`, `↺ New student`.
-   - Mirror the buttons inside Section G but hide them on narrow screens where the sticky bar takes over.
-   - Add a small live summary chip on the left: `"Jane Doe · A- · 7 of 7 graded · Draft ready"` — pulled from existing status-chip data.
-2. **Sticky section indicator** (optional, top of viewport when scrolled past nav).
-   - A single strip showing `Student › Rubric › Adjustments › Feedback › AI › Export` with the current in-view section highlighted (IntersectionObserver).
-3. **Collapsible `<details>` defaults audit.**
-   - Decide which sections default-open vs collapsed on a fresh load. Suggested: Student + Rubric open; Adjustments, Feedback builder, Marker's notes, AI polish, Export, Cohort export collapsed but auto-open when a trigger fires (e.g., AI polish opens automatically after first `aiGarnishDirect()` call).
-4. **Feedback textarea auto-grow.**
-   - Pure CSS approach using `field-sizing: content` fallback to a tiny JS listener.
-
-**Acceptance:** marker can grade a full student + copy feedback without scrolling past the rubric.
+### Acceptance criteria
+- [ ] Refreshing the page mid-grade shows a "Resume draft?" banner; clicking Resume restores all fields exactly.
+- [ ] Clicking Discard clears the banner and starts a blank form with no console errors.
+- [ ] After clicking "Finalise & Export", refreshing the page does NOT show the resume banner.
+- [ ] Starting a new student via the New Student modal clears the draft key.
+- [ ] `beforeunload` prompt fires only when there is at least one graded criterion, not on a blank form.
+- [ ] No existing localStorage keys (snippets, settings, cohort, credentials) are overwritten.
+- [ ] Works in Chrome, Firefox, and Safari private-browsing modes (quota exceeded is caught and silently skipped).
 
 ---
 
-## 🎯 v2.3 — AI Copilot redesign
+## PR 2 — `perf/lazy-load-sheetjs`
 
-**Goal:** move from "AI Garnish" (playful feature) to "AI Copilot" (trusted assistant) per Perplexity review.
-**Estimated effort:** 1 full day.
+### Goals
+Eliminate ~930 KB of synchronous script parse time on every page load; SheetJS is only needed at export time.
 
-1. **Three explicit actions instead of one "Garnish" button.**
-   - `Draft feedback from rubric` — regenerate body based on current grades.
-   - `Improve clarity and tone` — light rewrite of current body.
-   - `Shorten for LMS paste` — compress to fit typical 2000-char Moodle limits.
-   - Implement as three buttons with different prompt prefixes; share the existing `/api/garnish` proxy.
-2. **Visible "Input used" pane.**
-   - Chips listing exactly what was sent to Claude: `grades`, `rubric descriptors`, `marker's notes`, `snippets`, `penalty setting`. Click-to-expand view of the actual prompt (already available in debug log — expose it properly).
-3. **Visible "Locked" pane.**
-   - Static list: `greeting`, `final grade notice`, `late penalty statement`. Microcopy: *"These stay exactly as generated from your grades; AI never touches them."*
-4. **Output controls (three buttons under the result):**
-   - `Replace draft` — overwrite main feedback textarea.
-   - `Insert below current text` — append.
-   - `Compare changes` — side-by-side or inline diff (use a small diff library or colour-coded split view).
-5. **Microcopy overhaul.**
-   - Panel intro: *"AI can rewrite the body for clarity, tone, and consistency. It will not change scores or penalty settings. Review before copying."*
-   - Status chip: `Idle` / `Drafting…` / `Applied — 3 edits` / `Error`.
-6. **BETA badge review.**
-   - Once the copilot pattern is in, demote BETA to a smaller tag or drop it entirely.
+### Files affected
+- `feedback-kitchen/scorer.html`
 
-**Acceptance:** a cautious marker feels the AI is transparent, bounded, and reversible. No scores or penalties can change via the AI path. A new user understands in 5 seconds what AI will and will not do.
+### Key changes
+- Remove `<script src="/js/xlsx.full.min.js"></script>` from `<head>` (line 45).
+- In `downloadExcel()`, guard the export body behind a dynamic loader: if `window.XLSX` is already defined proceed immediately; otherwise inject a `<script>` tag for `/js/xlsx.full.min.js`, await its `onload`, then continue.
+- Show a brief spinner or disable the Finalise button while the script loads (first click only; subsequent clicks are instant).
+- Add an `onerror` handler that restores the button and shows an `alert` if the local file is missing.
+
+### Acceptance criteria
+- [ ] Lighthouse TTI improves (SheetJS no longer blocks main thread on load).
+- [ ] First click on "Finalise & Export" still produces a valid .xlsx file.
+- [ ] Second click on "Finalise & Export" in the same session does not reload the script.
+- [ ] If `/js/xlsx.full.min.js` is unreachable, the user sees a clear error message rather than a silent failure.
 
 ---
 
-## 🎯 v3.0 — Dashboard layout (optional, only if v2.2 + v2.3 still feel cramped)
+## PR 3 — `fix/accessible-modals`
 
-**Goal:** shift from vertical form to app-style workspace with the rubric as the visual centre.
-**Estimated effort:** 1–2 days.
+### Goals
+Make all 12 modals usable by keyboard and screen reader users.
 
-1. **Top header card** — compact student details strip (name · ID · tutor · date · current grade badge). Always visible.
-2. **Main panel** — rubric table (the marker's primary work surface).
-3. **Right rail (or tabs on narrow screens):**
-   - Adjustments
-   - Feedback builder + textarea
-   - AI Copilot
-   - Export / Cohort
-4. **Keyboard shortcuts** (since power users will mark 40+ students in a sitting):
-   - `⌘/Ctrl+C` from anywhere → copy feedback (with confirmation toast).
-   - `⌘/Ctrl+E` → export student record.
-   - `Tab` cycles through grade dropdowns row by row.
-5. **Autosave badge** in header: `Saved · 14:32` / `Unsaved changes`.
+### Files affected
+- `feedback-kitchen/scorer.html`
 
-**Acceptance:** feels like a real SaaS marking tool, not a long form.
+### Key changes
+- Add `role="dialog"`, `aria-modal="true"`, and `aria-labelledby="<heading-id>"` to all 12 modal `<div>` elements.
+- Write a shared `trapFocus(modalEl)` / `releaseFocus()` utility (~25 lines) that constrains Tab/Shift-Tab to focusable descendants.
+- Call `trapFocus` in every modal-open function (e.g. `showCohortList()`, `showAISettings()`, `showNewStudentModal()`); call `releaseFocus` on close and store the triggering element to restore focus.
+- Add the 6 missing modal IDs (`new-student-modal`, `modexport-optin-modal`, `modexport-block-modal`, `bulk-fill-threshold-modal`, `snippets-modal`, `scorer-settings-modal`) to `closeAnyOpenModal()`.
+- Ensure the Esc handler in `bindKeyboardShortcuts()` does not interfere with text input (currently fires unconditionally).
 
----
-
-## 🔹 Nice-to-haves (not version-bound)
-
-Drop any of these into whichever pass has capacity.
-
-- **Inline rubric descriptors** — click a grade cell → popover of the rubric band text (currently only in Excel export).
-- **Keyboard-first grade entry** — type `A`, `B+`, etc. into a focused cell.
-- **Scorer switcher** in the nav — quick dropdown of saved scorers so you don't bounce through `index.html`.
-- **Cohort import** — bring a previous `.xlsx` cohort back into localStorage so you can re-open a partially-marked cohort.
-- **PDF export** alongside Excel for single-student records (some institutions prefer it for moderation).
-- **Dark mode** — deferred until v3.
-
-# Best sequencing
-My suggested order is: 
-- 1) keyboard-first grade entry, 
-- 2) inline rubric descriptors, 
-- 3) scorer switcher, 
-- 4) cohort import, 
-- 5) PDF export, 
-- 6) dark mode.
-
-That order prioritizes improvements to the live marking loop first, then admin convenience, then rehydration/import complexity, and lastly alternate-output and cosmetic work.
-
-## Quick read
-If you want the strongest mix of payoff and buildability, I'd put them into four buckets:
-
-**Do next**: keyboard-first grade entry, inline rubric descriptors.
-
-**Quick win**: scorer switcher.
-
-**Useful but heavier**: cohort import.
-
-**Later**: PDF export, dark mode.
-
-## ProductScoring lens
-If I translate your list into a simple product lens, it looks like this:
-
-**Highest value-per-effort**: scorer switcher.
-
-**Highest absolute value**: keyboard-first grade entry.
-
-**Best quality-of-judgment aid**: inline rubric descriptors.
-
-**Highest implementation risk**: cohort import.
-
-**Most deferrable**: dark mode.
----
-
-## 📝 Working notes for next session
-
-- **Cache-bust pattern:** bump `?v=` on `js/shared.js` and `js/excel.js` in `scorer.html` whenever JS changes — otherwise browser will serve stale code even after Ctrl+F5.
-- **File locations:**
-  - Main scorer UI: `C:\Users\GGPC\feedback-kitchen\scorer.html`
-  - Builder: `C:\Users\GGPC\feedback-kitchen\builder.html`
-  - Homepage: `C:\Users\GGPC\feedback-kitchen\index.html`
-  - Shared JS + storage + scoring: `js/shared.js`
-  - Excel export (single + cohort): `js/excel.js`
-- **Version conventions:**
-  - `config.appVersion` = Feedback Kitchen app version (currently `'2.0'` in `shared.js` `newConfig()`; bump to `'2.1'` when we ship v2.2+).
-  - `config.version` = user's own scorer revision (unchanged by us).
-- **Status-chip logic** lives in `refreshStatusChips()` inside `scorer.html`. Hooked by `recalculate()`, `updateFeedback()`, `refreshCohortUI()`, `aiGarnishDirect()` completion, and `newStudent()` reset. When v2.2 adds a sticky summary bar, reuse the same data source.
-- **Perplexity source review:** full text saved in prior chat; key quotes that drove v2.1:
-  - *"Phrases like 'Copy Feedback (+ add to cohort)' are accurate but cognitively dense for a repeated action workflow."*
-  - *"For grading tools, trust comes from explicit state, concise labels, and clear boundaries."*
-  - *"The best version of this tool is not 'AI garnish'; it is a marking copilot with explicit guardrails."*
+### Acceptance criteria
+- [ ] Tab key cycles only within the open modal's focusable elements.
+- [ ] Escape closes every modal regardless of which one is open.
+- [ ] Focus returns to the triggering button when a modal closes.
+- [ ] VoiceOver/NVDA announces modal role and title on open.
+- [ ] `closeAnyOpenModal()` closes all 12 modal variants.
 
 ---
 
-## Resume cue (paste into next chat)
+## PR 4 — `fix/aria-rubric-table`
 
-> Resuming Feedback Kitchen. Current live version v2.1.1. Engineering sprint (Claude Code) in progress — 5 PRs open (#12–#16), merge in order. Next UX pass is **v2.2 (sticky action bar + workspace polish)** per `ROADMAP.md` in the repo. Read that file first, then confirm scope before editing.
+### Goals
+Make the rubric scoring table and grade controls operable and understandable via assistive technology.
 
+### Files affected
+- `feedback-kitchen/scorer.html`
 
-## Missing
-(i) Quick Guide
-Tiers vs. grades
+### Key changes
+- Add `scope="col"` to all 8 `<th>` elements in the rubric `<thead>`.
+- In `renderCriteriaRows()`, add `aria-label="Grade for <criterion name>"` to each `<select id="grade-sel-${i}">`.
+- In `recalculate()`, toggle `aria-invalid="true/false"` on each `.override-input` element alongside the existing `out-of-band` class assignment.
+- In `_renderOverrideStatus()`, mirror `aria-invalid` changes on `#grade-override` alongside `classList.add/remove('out-of-band')`.
 
-Grades are grouped into four performance tiers: Excellent (A+/A/A–), Proficient (B+/B/B–), Developing (C+/C/C–), and Unsatisfactory (D). The rubric descriptor shown in each student's feedback is the one written for that tier — not the individual grade.
-
-Feedback tone and late penalties
-
-The opening and closing paragraphs always reflect the student's pre-penalty grade — they speak to the quality of the work itself. Any late deduction and the final penalised score are appended at the end of the feedback block, after the academic commentary.
-
-Personal snippets
-
-Use the 💬 Insert snippet… dropdown in the Cooked Feedback panel to insert a saved phrase at the cursor. Select ⚙ Manage snippets… to build your own library of reusable phrases in your own style. Snippets are personal to your browser — they are not included when you export or share a Scorer.
-
-Marker's Notes
-
-The Marker's Notes panel below the feedback is a private scratchpad. Notes are not included when you copy feedback to paste into Moodle or Turnitin — but are included in your Excel download as part of the formal marking record, useful for moderation.
-
-
-## Expand
-Click to expand vs click to **expand and contract** (marking.sdm version is **"click to collapse"**
+### Acceptance criteria
+- [ ] Screen reader announces column headers when navigating rubric table cells.
+- [ ] Each grade dropdown is announced with its criterion name, not just "select".
+- [ ] An out-of-band override input is announced as invalid by screen readers.
+- [ ] No regression in visual styling of the `out-of-band` state.
 
 ---
 
-## Builder & Brand Pass (BBP)
+## PR 5 — `perf/homepage-and-dark-mode`
 
-**Owner:** Stephen Mann (brand voice + Product), CD (technical implementation)
-**Source:** Tutorial-video mockup audit, May 2026 (D15)
-**Gating:** BBP v1.0 blocked until Phase 6 and Marking Roadmap v3.0 stable
-**Priority:** Lower than Marking Roadmap v3.0 (marking-loop UX is higher user impact)
+### Goals
+Fix the three homepage performance gaps and patch dark-mode visual regressions; defer the full CSS token refactor.
 
-**Rationale:** Builder is used once per rubric; marking view is used hundreds of times per rubric. Prioritise high-frequency surfaces first.
+### Files affected
+- `feedback-kitchen/index.html`
+- `feedback-kitchen/scorer.html`
 
-**Reorder trigger:** If tutorial video drives significant inbound builder traffic, promote BBP v1.0 above v3.0.
+### Key changes
+- **index.html**: Add `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` after the existing fonts.googleapis.com preconnect. Add explicit `width` and `height` attributes to both university logo `<img>` elements. Give the "Try the Demo Scorer" hero button an underline or pill treatment to signal it is interactive.
+- **scorer.html**: Replace hardcoded hex colours in `renderLineDiff()` (`#fee2e2`, `#dcfce7`) with CSS custom properties or `data-` driven classes so dark mode inverts them correctly. Add `.fk-hero` class to the hero `<section>` for theme targeting. Fix badge contrast in dark mode.
 
----
-
-### BBP v0.1 — Copy & Messaging Quick Wins
-
-Pure copy edits. No new decisions, no technical risk. Ship between cycles (Steve owns approval).
-
-**Status:** Shipped 2026-05-21. See `bbp-v0.1-audit-triage.html` for visual audit briefing; canonical record in `fk-decisions.md` § D15.
-
-**Scope:**
-- Calm override-banner wording (`scorer.html` #override-audit)
-- "Not an autograder — you choose the grades, the tool drafts the feedback." sub-headline (homepage hero, builder/scorer top)
-- Footer privacy/sharing micro-copy: "Everything stays in this browser. You can export the scorer as JSON to share with your team." (`builder.html` persistent footer)
-- Simplified wizard helper copy (`builder.html` Steps 3–6 subtitles)
-- Rule-of-three brand voice pattern codified ("Your X. Your X. Your X." sentence structure)
-
-**Acceptance:** All five strings live in production; pattern documented in `brand-voice-canon.md`.
+### Acceptance criteria
+- [ ] Lighthouse flags no missing `fonts.gstatic.com` preconnect warning.
+- [ ] University logo images have explicit width/height (no layout shift).
+- [ ] "Try the Demo Scorer" button is visually distinct as a clickable affordance.
+- [ ] `renderLineDiff` removed/added lines remain readable in dark mode.
+- [ ] No new Tailwind purge warnings from added classes.
 
 ---
 
-### BBP v1.0 — Wizard UX
+## Tooling / CI
 
-Needs design brief + Figma + real UX iteration. Estimated effort: 1–2 weeks.
+Recommended additions (not blocked on any PR above):
 
-**Scope:**
-- Left-sidebar wizard navigation (replace top progress bar)
-- Step 6 tabular summary (replace text-list `populateReviewSummary`)
-- Inline weight bars for criteria (replace bare numeric inputs)
+- **Axe-core smoke test** — add a Playwright or Cypress step that runs `axe()` against scorer.html and index.html and fails CI on any critical violation. This will gate PRs 3 and 4 automatically.
+- **Lighthouse CI** — run `lhci autorun` on index.html in CI to track TTI regression; PR 2 should show a measurable improvement.
+- **Bundle size check** — a simple `wc -c` assertion that the initial page weight (excluding `/js/xlsx.full.min.js`) stays below a threshold confirms the lazy-load invariant is maintained.
+That order prioritizes improvements to the live marking loop first...
 
-**Acceptance:** New wizard navigation passes Phase 2 a11y checks; Step 6 summary uses cross-scene math (4 criteria · 16 descriptors etc.); weight bars match calculated totals visually.
-
----
-
-### BBP v1.1 — Builder Polish
-
-Batch with v1.0 or follow-up pass.
-
-**Scope:**
-- Token-pill highlighting in feedback templates
-- 2-letter country pills (NZ/AU/GB/US) replacing flag emojis
-- Per-tier feedback template tab strip
-- Default starter snippets seed
-- "6 steps · ~10 min" expectation badge
-- Discrete "Course code" + "Tutor" fields in Step 1
-- Custom dropdown for "Insert snippet"
-- Avatar colour-coding for shared scorers
-
----
-
-### Cross-Track Integrations
-
-These mockup items don't live in BBP — they attach to other streams:
-
-**Autosave signalling (mockup #13)** → Marking Roadmap v3.0
-Harmonise "Untitled draft" / "Saved · 14:32" pattern across builder AND marking headers; same component.
-
-**Toast pattern (mockup #20)** → new Global Notification System pass
-One design for success/error/info toasts across MV, RE, builder. Replaces ad-hoc `showCohortToast` variations.
-
-**In-UI privacy reassurance (mockup #10)** → UX + Legal/Comms cross-surface item
-The privacy *behaviour* is signed off (Addendum B); the privacy *visibility* in the UI is not. Lock-icon + "Names and IDs are stripped before anything is sent" message should appear wherever data leaves the browser (wording assistant in `scorer.html`; any future surfaces).
