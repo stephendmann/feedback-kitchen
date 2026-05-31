@@ -1131,6 +1131,133 @@
     const SNIPPETS_KEY = 'SA_SNIPPETS';
     let snippets = [];
 
+    // Draft persistence (PR #12)
+    const FK_DRAFT_KEY = 'SA_DRAFT_V1';
+    // Guard: stays false until _offerDraftResume() has run, preventing the init-time
+    // recalculate() call from overwriting a saved draft before we've offered to restore it.
+    let _draftReady = false;
+
+    function saveDraft() {
+      if (!_draftReady) return;
+      try {
+        const draft = {
+          studentGrades: JSON.parse(JSON.stringify(studentGrades || [])),
+          feedbackText:       (document.getElementById('feedback-text')       || {}).value || '',
+          additionalComments: (document.getElementById('additional-comments') || {}).value || '',
+          studentName:        (document.getElementById('student-name')        || {}).value || '',
+          studentId:          (document.getElementById('student-id')          || {}).value || '',
+          studentTutor:       (document.getElementById('student-tutor')       || {}).value || '',
+          gradeOverride:      (document.getElementById('grade-override')      || {}).value || ''
+        };
+        localStorage.setItem(FK_DRAFT_KEY, JSON.stringify(draft));
+      } catch (e) { /* quota / private browsing — fail silently */ }
+    }
+
+    function clearDraft() {
+      try { localStorage.removeItem(FK_DRAFT_KEY); } catch (e) {}
+    }
+
+    /* ── Shared modal helpers (PR #14) ──────────────────────
+       openModal / closeModal provide:
+         • role="dialog" + aria-modal + aria-labelledby (fallback if not in HTML)
+         • focus on first focusable element (or heading)
+         • Tab / Shift+Tab trap within the modal
+         • Escape to close
+         • trigger-element focus restore on close
+    ────────────────────────────────────────────────────── */
+    const _modalTriggers    = {};   // id → element that opened the modal
+    const _modalKeyHandlers = {};   // id → keydown handler attached to the modal div
+
+    function _getFocusables(container) {
+      return Array.from(container.querySelectorAll(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
+        'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      )).filter(function (n) {
+        return !n.closest('.hidden') && getComputedStyle(n).display !== 'none';
+      });
+    }
+
+    function openModal(id, triggerEl) {
+      const modal = el(id);
+      if (!modal) return;
+
+      // Store trigger (caller can pass explicit element; fall back to active element)
+      _modalTriggers[id] = (triggerEl !== undefined ? triggerEl : document.activeElement) || null;
+
+      // Ensure ARIA attributes — static in HTML, set here as a safety net
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      if (!modal.hasAttribute('aria-labelledby')) {
+        const h = modal.querySelector('h1[id],h2[id],h3[id],h4[id]');
+        if (h) modal.setAttribute('aria-labelledby', h.id);
+      }
+
+      modal.classList.remove('hidden');
+
+      // Attach Tab-trap + Escape handler BEFORE focus so the trap is armed
+      // during the requestAnimationFrame gap between unhide and focus placement.
+      function keyHandler(e) {
+        if (e.key === 'Escape') {
+          closeModal(id);
+          return;
+        }
+        if (e.key !== 'Tab') return;
+        const foc = _getFocusables(modal);
+        if (!foc.length) return;
+        const first = foc[0], last = foc[foc.length - 1];
+        // If focus escaped (e.g. during rAF delay or backdrop click), pull it back.
+        if (!modal.contains(document.activeElement)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+          return;
+        }
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+      _modalKeyHandlers[id] = keyHandler;
+      modal.addEventListener('keydown', keyHandler);
+
+      // Queue focus after the browser has painted the now-visible modal so
+      // .focus() reliably succeeds (synchronous focus on a just-unhidden element
+      // can silently fail in some browsers before layout settles).
+      requestAnimationFrame(function () {
+        const focusables = _getFocusables(modal);
+        if (focusables.length) {
+          focusables[0].focus();
+        } else {
+          const h = modal.querySelector('h1,h2,h3,h4');
+          if (h) {
+            if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
+            h.focus();
+          }
+        }
+      });
+    }
+
+    function closeModal(id) {
+      const modal = el(id);
+      if (!modal || modal.classList.contains('hidden')) return; // already closed
+
+      modal.classList.add('hidden');
+
+      // Remove the per-modal key listener
+      const handler = _modalKeyHandlers[id];
+      if (handler) {
+        modal.removeEventListener('keydown', handler);
+        delete _modalKeyHandlers[id];
+      }
+
+      // Restore focus to the triggering element
+      const trigger = _modalTriggers[id];
+      delete _modalTriggers[id];
+      if (trigger && typeof trigger.focus === 'function') {
+        try { trigger.focus(); } catch (_) {}
+      }
+    }
+
     /* ── Init ────────────────────────────────────────────── */
     function init() {
       const params = new URLSearchParams(window.location.search);
@@ -1409,20 +1536,17 @@
 
     /* Bulk-fill threshold quality prompt (>50% bulk-filled) */
     function showBulkFillThresholdModal(bulkCount, total) {
-      const m = el('bulk-fill-threshold-modal');
-      if (!m) return;
       const msg = el('bulk-fill-threshold-msg');
       if (msg) {
         msg.textContent = 'More than half of this student\u2019s criteria were bulk-filled (' +
           bulkCount + ' of ' + total + '). Bulk-fill is best used where one performance tier ' +
           'clearly dominates. Please review each row before saving.';
       }
-      m.classList.remove('hidden');
+      openModal('bulk-fill-threshold-modal', el('bulk-fill-apply'));
       usageTrack && usageTrack('bulk_fill_threshold_warned');
     }
     function hideBulkFillThresholdModal() {
-      const m = el('bulk-fill-threshold-modal');
-      if (m) m.classList.add('hidden');
+      closeModal('bulk-fill-threshold-modal');
     }
 
     function undoBulkFill() {
@@ -2091,7 +2215,7 @@
             '</li>';
           }).join('') + '</ul>';
       }
-      modal.classList.remove('hidden');
+      openModal('cohort-list-modal');
     }
 
     function removeCohortStudent(key) {
@@ -2101,7 +2225,7 @@
       viewCohortList();
     }
 
-    function hideCohortListModal() { const m = el('cohort-list-modal'); if (m) m.classList.add('hidden'); }
+    function hideCohortListModal() { closeModal('cohort-list-modal'); }
 
     function refreshCohortUI() {
       const cohort = SA.getCohort(config && config.id);
@@ -2237,7 +2361,7 @@
       const suggested = (config.assessmentTitle || config.name || 'Cohort') + ' \u2014 ' + SA.formatDate();
       const labelInput = el('cohort-setup-label');
       if (labelInput) labelInput.value = suggested;
-      modal.classList.remove('hidden');
+      openModal('cohort-setup-modal');
       const confirmBtn = el('cohort-setup-confirm');
       confirmBtn.onclick = function () {
         const multi = el('cohort-setup-multi-yes').checked;
@@ -2249,27 +2373,24 @@
             label = tutor + ' \u2014 ' + label;
           }
         }
-        modal.classList.add('hidden');
+        closeModal('cohort-setup-modal');
         _cohortSetupDismissedThisSession = false;
         onConfirm && onConfirm(label, multi);
       };
     }
 
     function hideCohortSetupModal() {
-      const m = el('cohort-setup-modal');
-      if (m) m.classList.add('hidden');
+      closeModal('cohort-setup-modal');
       // Treat Cancel / backdrop click as a session-level dismiss.
       _cohortSetupDismissedThisSession = true;
     }
 
     function showPostExportWipeModal(count, filename) {
-      const modal = el('cohort-wipe-modal');
-      if (!modal) return;
       setText('cohort-wipe-count', String(count));
       setText('cohort-wipe-filename', filename || 'Cohort.xlsx');
-      modal.classList.remove('hidden');
+      openModal('cohort-wipe-modal');
     }
-    function hideCohortWipeModal() { const m = el('cohort-wipe-modal'); if (m) m.classList.add('hidden'); }
+    function hideCohortWipeModal() { closeModal('cohort-wipe-modal'); }
     function wipeCohortAfterExport() {
       SA.clearCohort(config.id);
       refreshCohortUI();
@@ -2368,12 +2489,11 @@
       const err = el('modexport-optin-error');
       if (err) { err.classList.add('hidden'); err.textContent = ''; }
 
-      modal.classList.remove('hidden');
+      openModal('modexport-optin-modal');
     }
 
     function hideModExportOptIn() {
-      const m = el('modexport-optin-modal');
-      if (m) m.classList.add('hidden');
+      closeModal('modexport-optin-modal');
     }
 
     function _modShowOptInError(msg) {
@@ -2436,14 +2556,11 @@
     }
 
     function showModExportBlock(n) {
-      const m = el('modexport-block-modal');
-      if (!m) return;
       setText('modexport-block-count', String(n || 0));
-      m.classList.remove('hidden');
+      openModal('modexport-block-modal');
     }
     function hideModExportBlock() {
-      const m = el('modexport-block-modal');
-      if (m) m.classList.add('hidden');
+      closeModal('modexport-block-modal');
     }
 
     function runModExport() {
@@ -2479,7 +2596,7 @@
         showCohortToast('Add students to the cohort first.', 'amber');
         return;
       }
-      modal.classList.remove('hidden');
+      openModal('cohort-insights-modal');
       modal.scrollTop = 0;
 
       // NEW pill: increment open count; hide after 3 opens
@@ -2503,10 +2620,7 @@
     }
 
     function hideCohortInsights() {
-      const modal = el('cohort-insights-modal');
-      if (modal) modal.classList.add('hidden');
-      const trigger = el('btn-insights');
-      if (trigger) trigger.focus();
+      closeModal('cohort-insights-modal');
     }
 
     /* ── New student ─────────────────────────────────────── */
@@ -2670,13 +2784,13 @@
     }
 
     function showSnippetModal() {
-      el('snippets-modal').classList.remove('hidden');
       renderSnippetsList();
+      openModal('snippets-modal');
     }
 
     function hideSnippetModal() {
-      el('snippets-modal').classList.add('hidden');
       el('snippet-select').value = '';
+      closeModal('snippets-modal');
     }
 
     function renderSnippetsList() {
@@ -2959,10 +3073,10 @@
       const pIn = el('fk-pass-input'); if (pIn) pIn.value = p;
       const status = el('ai-settings-status');
       if (status) status.textContent = u ? '✓ Saved credentials detected on this browser.' : 'No credentials saved yet.';
-      el('ai-settings-modal').classList.remove('hidden');
+      openModal('ai-settings-modal');
     }
     function hideAISettings() {
-      el('ai-settings-modal').classList.add('hidden');
+      closeModal('ai-settings-modal');
     }
     function saveAICreds() {
       const u = (el('fk-user-input').value || '').trim();
@@ -3321,22 +3435,29 @@
       }
 
       function closeAnyOpenModal() {
-        ['cohort-list-modal', 'cohort-setup-modal', 'cohort-wipe-modal', 'ai-settings-modal', 'shortcuts-modal', 'cohort-insights-modal']
-          .forEach(function (id) {
-            const m = document.getElementById(id);
-            if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
-          });
+        ['new-student-modal', 'cohort-setup-modal', 'cohort-list-modal',
+         'cohort-wipe-modal', 'modexport-optin-modal', 'modexport-block-modal',
+         'cohort-insights-modal', 'bulk-fill-threshold-modal', 'snippets-modal',
+         'ai-settings-modal', 'shortcuts-modal', 'scorer-settings-modal']
+          .forEach(function (id) { closeModal(id); });
       }
 
       document.addEventListener('keydown', function (e) {
-        // Esc — always close modals
-        if (e.key === 'Escape') { closeAnyOpenModal(); return; }
+        if (e.key === 'Escape') {
+          const active = document.activeElement;
+          const tag = active && active.tagName;
+          const editing = active && (tag === 'INPUT' || tag === 'TEXTAREA' || active.isContentEditable);
+          if (!editing) {
+            closeAnyOpenModal();
+          }
+          return;
+        }
 
         // ? — open shortcuts modal (only if not editing)
         if (e.key === '?' && !e.ctrlKey && !e.metaKey && !isEditing()) {
           e.preventDefault();
           const m = document.getElementById('shortcuts-modal');
-          if (m) m.classList.remove('hidden');
+          if (m) openModal ? openModal('shortcuts-modal', document.activeElement) : m.classList.remove('hidden');
           return;
         }
 
@@ -3853,18 +3974,20 @@
              // Cohort Insights (Phase 1)
              showCohortInsights, hideCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
-             aiToggleAllExplainers };
+             aiToggleAllExplainers,
+             // Modal accessibility (PR #14)
+             openModal, closeModal };
   })();
 
   document.addEventListener('DOMContentLoaded', S.init);
   </script>
 
   <!-- ── New Student modal ─────────────────────────────────── -->
-  <div id="new-student-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="new-student-modal" role="dialog" aria-modal="true" aria-labelledby="new-student-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="hideNewStudentModal()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
       <div class="text-4xl mb-3">↺</div>
-      <h3 class="font-bold text-slate-800 text-lg mb-2">Start a new student?</h3>
+      <h3 id="new-student-modal-heading" class="font-bold text-slate-800 text-lg mb-2">Start a new student?</h3>
       <p class="text-slate-500 text-sm mb-1">This will clear all grades, scores, and feedback.</p>
       <p class="text-xs text-slate-400 mb-6">Your tutor name will be kept for the next student.</p>
       <div class="flex gap-3">
@@ -3881,11 +4004,11 @@
   </div>
 
   <!-- ── Cohort setup (first-use) modal ───────────────────── -->
-  <div id="cohort-setup-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="cohort-setup-modal" role="dialog" aria-modal="true" aria-labelledby="cohort-setup-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortSetupModal()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <div class="text-3xl mb-3 text-center">👥</div>
-      <h3 class="font-bold text-slate-800 text-lg mb-2 text-center">Set up this cohort</h3>
+      <h3 id="cohort-setup-modal-heading" class="font-bold text-slate-800 text-lg mb-2 text-center">Set up this cohort</h3>
       <p class="text-slate-500 text-sm mb-5 text-center">Students will accumulate in a single workbook for this scorer. Set the cohort label and marker context now.</p>
 
 
@@ -3915,11 +4038,11 @@
   </div>
 
   <!-- ── Cohort list modal ───────────────────────────────── -->
-  <div id="cohort-list-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="cohort-list-modal" role="dialog" aria-modal="true" aria-labelledby="cohort-list-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortListModal()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[85vh]">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="font-bold text-slate-800 text-lg">Cohort students</h3>
+        <h3 id="cohort-list-modal-heading" class="font-bold text-slate-800 text-lg">Cohort students</h3>
         <button onclick="S.hideCohortListModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <div id="cohort-list-body" class="overflow-y-auto flex-1 pr-2"></div>
@@ -3930,11 +4053,11 @@
   </div>
 
   <!-- ── Post-export wipe prompt ─────────────────────────── -->
-  <div id="cohort-wipe-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="cohort-wipe-modal" role="dialog" aria-modal="true" aria-labelledby="cohort-wipe-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortWipeModal()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
       <div class="text-3xl mb-3">✅</div>
-      <h3 class="font-bold text-slate-800 text-lg mb-2">Cohort saved to Excel</h3>
+      <h3 id="cohort-wipe-modal-heading" class="font-bold text-slate-800 text-lg mb-2">Cohort saved to Excel</h3>
       <p class="text-sm text-slate-600 mb-1"><strong id="cohort-wipe-filename"></strong></p>
       <p class="text-sm text-slate-500 mb-1"><span id="cohort-wipe-count"></span> students exported.</p>
       <p class="text-xs text-slate-400 mb-6">For privacy, clear the local copy now that the cohort is safely saved in Excel. You can always start a new cohort after this.</p>
@@ -3952,11 +4075,11 @@
   </div>
 
   <!-- ── Moderation Export — lecturer/coordinator opt-in modal ─── -->
-  <div id="modexport-optin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="modexport-optin-modal" role="dialog" aria-modal="true" aria-labelledby="modexport-optin-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideModExportOptIn()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
       <div class="text-3xl mb-3 text-center">🛡️</div>
-      <h3 class="font-bold text-slate-800 text-lg mb-1 text-center">Enable Moderation Export</h3>
+      <h3 id="modexport-optin-modal-heading" class="font-bold text-slate-800 text-lg mb-1 text-center">Enable Moderation Export</h3>
       <p class="text-slate-500 text-xs mb-4 text-center">Privacy-reduced workbook for cross-tutor moderation meetings.</p>
 
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-700 mb-4 space-y-3">
@@ -4034,11 +4157,11 @@
   </div>
 
   <!-- ── Moderation Export — n<15 blocking dialog ─────────────── -->
-  <div id="modexport-block-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="modexport-block-modal" role="dialog" aria-modal="true" aria-labelledby="modexport-block-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideModExportBlock()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
       <div class="text-3xl mb-3">🚫</div>
-      <h3 class="font-bold text-slate-800 text-lg mb-2">Moderation Export blocked</h3>
+      <h3 id="modexport-block-modal-heading" class="font-bold text-slate-800 text-lg mb-2">Moderation Export blocked</h3>
       <p class="text-sm text-slate-600 mb-2">
         The cohort has only <strong><span id="modexport-block-count">0</span></strong> student record(s).
       </p>
@@ -4055,14 +4178,14 @@
   <!-- ── Cohort Insights panel ─────────────────────────── -->
   <!-- z-[60] sits above all other modals (z-50). Scroll happens on the outer
        div so the whole white card is reachable on short viewports. -->
-  <div id="cohort-insights-modal" class="no-print fixed inset-0 z-[60] overflow-y-auto hidden">
+  <div id="cohort-insights-modal" role="dialog" aria-modal="true" aria-labelledby="cohort-insights-modal-heading" class="no-print fixed inset-0 z-[60] overflow-y-auto hidden">
     <div class="flex items-start justify-center min-h-full p-4 pb-8" style="padding-top:8rem">
       <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideCohortInsights()"></div>
       <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col">
 
         <!-- Panel header ------------------------------------------- -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 rounded-t-2xl">
-          <h2 class="font-semibold text-slate-700 text-base">Cohort Insights</h2>
+          <h2 id="cohort-insights-modal-heading" class="font-semibold text-slate-700 text-base">Cohort Insights</h2>
           <button onclick="S.hideCohortInsights()"
                   class="text-sm font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg px-4 py-2 transition-colors"
                   aria-label="Close Cohort Insights">Close</button>
@@ -4078,11 +4201,11 @@
   </div>
 
   <!-- ── Bulk-fill threshold quality prompt ────────────── -->
-  <div id="bulk-fill-threshold-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="bulk-fill-threshold-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-fill-threshold-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
       <div class="text-3xl mb-3">✨</div>
-      <h3 class="font-bold text-slate-800 text-lg mb-2">Quick check before you continue</h3>
+      <h3 id="bulk-fill-threshold-modal-heading" class="font-bold text-slate-800 text-lg mb-2">Quick check before you continue</h3>
       <p id="bulk-fill-threshold-msg" class="text-slate-600 text-sm mb-6 leading-relaxed">
         More than half of this student’s criteria were bulk-filled. Bulk-fill is best used where one performance tier clearly dominates. Please review each row before saving.
       </p>
@@ -4096,11 +4219,11 @@
   </div>
 
   <!-- ── Snippets modal ─────────────────────────────────────────────────── -->
-  <div id="snippets-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="snippets-modal" role="dialog" aria-modal="true" aria-labelledby="snippets-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideSnippetModal()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-slate-800 text-lg">Manage Snippets</h3>
+        <h3 id="snippets-modal-heading" class="font-bold text-slate-800 text-lg">Manage Snippets</h3>
         <button onclick="S.hideSnippetModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <p class="text-slate-500 text-sm mb-4">Create reusable comments to quickly insert into the feedback box.</p>
@@ -4128,11 +4251,11 @@
   </div>
 
   <!-- ── AI Settings modal ─────────────────────────────── -->
-  <div id="ai-settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="ai-settings-modal" role="dialog" aria-modal="true" aria-labelledby="ai-settings-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.hideAISettings()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-slate-800 text-lg">Wording Assistant Login</h3>
+        <h3 id="ai-settings-modal-heading" class="font-bold text-slate-800 text-lg">Wording Assistant Login</h3>
         <button onclick="S.hideAISettings()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <p class="text-slate-500 text-sm mb-4">
@@ -4165,13 +4288,14 @@
 
   <!-- ── Keyboard shortcuts modal (v2.5) ─────────────────────── -->
   <div id="shortcuts-modal"
+       role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-heading"
        class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print"
-       onclick="if(event.target===this) this.classList.add('hidden')">
+       onclick="if(event.target===this) S.closeModal('shortcuts-modal')">
     <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-slate-800">Keyboard shortcuts</h3>
+        <h3 id="shortcuts-modal-heading" class="text-lg font-bold text-slate-800">Keyboard shortcuts</h3>
         <button class="text-slate-400 hover:text-slate-600 text-xl leading-none"
-                onclick="document.getElementById('shortcuts-modal').classList.add('hidden')"
+                onclick="S.closeModal('shortcuts-modal')"
                 aria-label="Close">×</button>
       </div>
       <dl class="space-y-2 text-sm">
@@ -4212,17 +4336,13 @@
 
   <script>
     function showNewStudentModal() {
-      document.getElementById('new-student-modal').classList.remove('hidden');
+      S.openModal('new-student-modal', document.activeElement);
     }
     function hideNewStudentModal() {
-      document.getElementById('new-student-modal').classList.add('hidden');
+      S.closeModal('new-student-modal');
     }
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        hideNewStudentModal();
-        if (S && S.hideSnippetModal) S.hideSnippetModal();
-      }
-    });
+    // Escape handling is now owned by openModal()'s per-modal keydown listener
+    // and the document-level handler inside bindKeyboardShortcuts(). No outer listener needed.
 
     (function () {
       const rail = document.querySelectorAll('#section-rail [data-rail]');
@@ -4264,21 +4384,21 @@
       <a href="index.html" class="hover:text-slate-700 transition-colors" id="footer-edit-link" title="Edit this scorer in the builder">⚙ Manage</a>
       <span class="text-slate-300" aria-hidden="true">·</span>
       <button class="hover:text-slate-700 transition-colors"
-              onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')"
+              onclick="S.openModal('shortcuts-modal', this)"
               title="Keyboard shortcuts (press ?)">⌨ Keyboard shortcuts</button>
       <span class="text-slate-300" aria-hidden="true">·</span>
       <button class="hover:text-slate-700 transition-colors"
-              onclick="document.getElementById('scorer-settings-modal').classList.remove('hidden')"
+              onclick="S.openModal('scorer-settings-modal', this)"
               title="Scorer settings">⚙ Settings</button>
     </div>
   </div>
 
   <!-- Scorer settings modal (toggles for advanced features) -->
-  <div id="scorer-settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div id="scorer-settings-modal" role="dialog" aria-modal="true" aria-labelledby="scorer-settings-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
-         onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')"></div>
+         onclick="S.closeModal('scorer-settings-modal')"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-      <h3 class="font-bold text-slate-800 text-lg mb-3">Scorer settings</h3>
+      <h3 id="scorer-settings-modal-heading" class="font-bold text-slate-800 text-lg mb-3">Scorer settings</h3>
       <label class="flex items-start gap-3 cursor-pointer mb-4">
         <input type="checkbox" id="setting-show-advanced-wording"
                class="mt-1"
@@ -4298,7 +4418,7 @@
       </div>
       <div class="flex justify-end mt-4">
         <button class="btn btn-ghost text-sm"
-                onclick="document.getElementById('scorer-settings-modal').classList.add('hidden')">Close</button>
+                onclick="S.closeModal('scorer-settings-modal')">Close</button>
       </div>
     </div>
   </div>
