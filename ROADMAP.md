@@ -7,6 +7,22 @@ This file is the resume-point for later sessions. Each version below is a discre
 
 ---
 
+## ⚙️ Engineering Sprint — Claude Code PR Sequence (May 2026)
+
+> **Workflow:** These 5 PRs are being implemented via Claude Code (Sonnet 4.5). Use the prompt pack in `CC-PROMPT-PACK.md` to work through each PR in sequence. Merge in order — PRs 3 and 4 share `renderCriteriaRows` so PR 3 must land before PR 4.
+
+| PR | Branch | Description | Status |
+|----|--------|-------------|--------|
+| [#12](https://github.com/stephendmann/feedback-kitchen/pull/12) | `feat/draft-persistence` | Persist in-progress student work to localStorage; resume prompt on load | 🔵 Open |
+| [#13](https://github.com/stephendmann/feedback-kitchen/pull/13) | `perf/lazy-load-sheetjs` | Remove 930 KB SheetJS from critical path; load on first export | 🔵 Open |
+| [#14](https://github.com/stephendmann/feedback-kitchen/pull/14) | `fix/accessible-modals` | role=dialog, aria-modal, focus trap, Esc close for all 12 modals | 🔵 Open |
+| [#15](https://github.com/stephendmann/feedback-kitchen/pull/15) | `fix/aria-rubric-table` | scope="col", aria-label on grade selects, aria-invalid on overrides | 🔵 Open |
+| [#16](https://github.com/stephendmann/feedback-kitchen/pull/16) | `perf/homepage-and-dark-mode` | Homepage perf quick wins + dark-mode gap fixes | 🔵 Open |
+
+**Merge order:** #12 → #13 → #14 → #15 → #16
+
+---
+
 ## ✅ Completed — v2.0 → v2.1.1
 
 Baseline already pushed to Git.
@@ -112,7 +128,7 @@ My suggested order is:
 That order prioritizes improvements to the live marking loop first, then admin convenience, then rehydration/import complexity, and lastly alternate-output and cosmetic work.
 
 ## Quick read
-If you want the strongest mix of payoff and buildability, I’d put them into four buckets:
+If you want the strongest mix of payoff and buildability, I'd put them into four buckets:
 
 **Do next**: keyboard-first grade entry, inline rubric descriptors.
 
@@ -158,7 +174,7 @@ If I translate your list into a simple product lens, it looks like this:
 
 ## Resume cue (paste into next chat)
 
-> Resuming Feedback Kitchen. Current live version v2.1.1. Next planned pass is **v2.2 (sticky action bar + workspace polish)** per `ROADMAP.md` in the repo. Read that file first, then confirm scope before editing.
+> Resuming Feedback Kitchen. Current live version v2.1.1. Engineering sprint (Claude Code) in progress — 5 PRs open (#12–#16), merge in order. Next UX pass is **v2.2 (sticky action bar + workspace polish)** per `ROADMAP.md` in the repo. Read that file first, then confirm scope before editing.
 
 
 ## Missing
@@ -256,4 +272,3 @@ One design for success/error/info toasts across MV, RE, builder. Replaces ad-hoc
 
 **In-UI privacy reassurance (mockup #10)** → UX + Legal/Comms cross-surface item
 The privacy *behaviour* is signed off (Addendum B); the privacy *visibility* in the UI is not. Lock-icon + "Names and IDs are stripped before anything is sent" message should appear wherever data leaves the browser (wording assistant in `scorer.html`; any future surfaces).
-
