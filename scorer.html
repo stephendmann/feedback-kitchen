@@ -1131,6 +1131,32 @@
     const SNIPPETS_KEY = 'SA_SNIPPETS';
     let snippets = [];
 
+    // Draft persistence (PR #12)
+    const FK_DRAFT_KEY = 'SA_DRAFT_V1';
+    // Guard: stays false until _offerDraftResume() has run, preventing the init-time
+    // recalculate() call from overwriting a saved draft before we've offered to restore it.
+    let _draftReady = false;
+
+    function saveDraft() {
+      if (!_draftReady) return;
+      try {
+        const draft = {
+          studentGrades: JSON.parse(JSON.stringify(studentGrades || [])),
+          feedbackText:       (document.getElementById('feedback-text')       || {}).value || '',
+          additionalComments: (document.getElementById('additional-comments') || {}).value || '',
+          studentName:        (document.getElementById('student-name')        || {}).value || '',
+          studentId:          (document.getElementById('student-id')          || {}).value || '',
+          studentTutor:       (document.getElementById('student-tutor')       || {}).value || '',
+          gradeOverride:      (document.getElementById('grade-override')      || {}).value || ''
+        };
+        localStorage.setItem(FK_DRAFT_KEY, JSON.stringify(draft));
+      } catch (e) { /* quota / private browsing — fail silently */ }
+    }
+
+    function clearDraft() {
+      try { localStorage.removeItem(FK_DRAFT_KEY); } catch (e) {}
+    }
+
     /* ── Init ────────────────────────────────────────────── */
     function init() {
       const params = new URLSearchParams(window.location.search);
@@ -1223,8 +1249,24 @@
       applyBulkFillVisibility();
       refreshCohortUI();
 
-      // Warn user if they try to leave with unsaved cohort data (not yet exported)
+      // Warn user if they try to leave with an in-progress draft (at least one graded criterion)
+      // OR unsaved cohort data.
       window.addEventListener('beforeunload', function (e) {
+        // Draft guard: only fire when there's a stored draft with at least one graded criterion.
+        let draftHasGrade = false;
+        try {
+          const raw = localStorage.getItem(FK_DRAFT_KEY);
+          if (raw) {
+            const d = JSON.parse(raw);
+            draftHasGrade = Array.isArray(d.studentGrades) && d.studentGrades.some(function (g) { return g && g.grade; });
+          }
+        } catch (e2) {}
+        if (draftHasGrade) {
+          e.preventDefault();
+          e.returnValue = 'You have unsaved marking in progress. Export or save before leaving.';
+          return e.returnValue;
+        }
+        // Cohort guard: unchanged from before.
         const cohort = SA.getCohort(config && config.id);
         if (cohort && cohort.students && cohort.students.length > 0) {
           e.preventDefault();
@@ -1244,6 +1286,107 @@
       wireSectionStatePersistence();
       wireExplainerPersistence();
       bindKeyboardShortcuts();
+
+      // Wire saveDraft() on input for text fields
+      ['feedback-text', 'additional-comments', 'student-name', 'student-id', 'student-tutor', 'grade-override'].forEach(function (id) {
+        const field = document.getElementById(id);
+        if (field) field.addEventListener('input', saveDraft);
+      });
+
+      // Detect and offer to resume a saved draft
+      _offerDraftResume();
+    }
+
+    function _offerDraftResume() {
+      // Arm saveDraft() regardless of whether a draft exists — must happen before any
+      // user interaction so subsequent grade changes are captured.
+      _draftReady = true;
+
+      let raw;
+      try { raw = localStorage.getItem(FK_DRAFT_KEY); } catch (e) { return; }
+      if (!raw) return;
+      let draft;
+      try { draft = JSON.parse(raw); } catch (e) { clearDraft(); return; }
+      if (!draft) return;
+
+      // Only show the banner if there's something worth resuming
+      const hasGrade = Array.isArray(draft.studentGrades) && draft.studentGrades.some(function (g) { return g && g.grade; });
+      const hasText  = draft.studentName || draft.studentId || draft.feedbackText || draft.additionalComments;
+      if (!hasGrade && !hasText) { clearDraft(); return; }
+
+      const banner = document.createElement('div');
+      banner.id = 'fk-draft-banner';
+      // role="alert" already implies aria-live="assertive"; no aria-live override needed.
+      banner.setAttribute('role', 'alert');
+      banner.style.cssText = [
+        'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
+        'background:#1e40af', 'color:#fff',
+        'display:flex', 'align-items:center', 'justify-content:center',
+        'gap:0.75rem', 'padding:0.65rem 1rem',
+        'font-size:0.875rem', 'font-weight:600',
+        'box-shadow:0 2px 8px rgba(0,0,0,0.18)'
+      ].join(';');
+      banner.innerHTML = [
+        '<span>You have an unsaved draft in progress.</span>',
+        '<button id="fk-draft-resume"  style="background:#fff;color:#1e40af;border:none;border-radius:0.4rem;padding:0.3rem 0.9rem;font-weight:700;cursor:pointer;font-size:0.85rem;">Resume</button>',
+        '<button id="fk-draft-discard" style="background:transparent;color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.4);border-radius:0.4rem;padding:0.3rem 0.9rem;font-weight:600;cursor:pointer;font-size:0.85rem;">Discard</button>'
+      ].join('');
+      document.body.insertBefore(banner, document.body.firstChild);
+      // Move focus to Resume so keyboard users land on the first action immediately.
+      // Tab continues naturally through Discard then the rest of the page (non-blocking banner).
+      document.getElementById('fk-draft-resume').focus();
+
+      document.getElementById('fk-draft-resume').addEventListener('click', function () {
+        _restoreDraft(draft);
+        banner.remove();
+      });
+      document.getElementById('fk-draft-discard').addEventListener('click', function () {
+        clearDraft();
+        banner.remove();
+      });
+    }
+
+    function _restoreDraft(draft) {
+      // Restore studentGrades array and selects
+      if (Array.isArray(draft.studentGrades)) {
+        draft.studentGrades.forEach(function (g, i) {
+          if (!studentGrades[i]) return;
+          studentGrades[i].grade          = g.grade          || '';
+          studentGrades[i].override       = g.override       != null ? g.override : null;
+          studentGrades[i].overrideManual = !!g.overrideManual;
+          studentGrades[i].autoFilled     = !!g.autoFilled;
+          const sel = document.getElementById('grade-sel-' + i);
+          if (sel) sel.value = g.grade || '';
+          const ovr = document.getElementById('override-' + i);
+          if (ovr) ovr.value = g.override != null ? g.override : '';
+        });
+      }
+      // Restore all fields EXCEPT feedback-text (restored after recalculate below)
+      const nonFeedbackFields = {
+        'additional-comments': draft.additionalComments,
+        'student-name':        draft.studentName,
+        'student-id':          draft.studentId,
+        'student-tutor':       draft.studentTutor,
+        'grade-override':      draft.gradeOverride
+      };
+      Object.keys(nonFeedbackFields).forEach(function (id) {
+        const field = document.getElementById(id);
+        if (field && nonFeedbackFields[id] != null) {
+          field.value = nonFeedbackFields[id];
+          field.dispatchEvent(new Event('input'));
+        }
+      });
+      // recalculate() → updateFeedback() will overwrite feedback-text because lastScoreResult
+      // is null on a fresh page load. Let it run first so lastScoreResult is populated,
+      // then restore the user's saved feedback text on top of what was generated.
+      recalculate();
+      if (draft.feedbackText != null) {
+        const fbEl = document.getElementById('feedback-text');
+        if (fbEl) {
+          fbEl.value = draft.feedbackText;
+          fbEl.dispatchEvent(new Event('input'));
+        }
+      }
     }
 
     /* ── No-config screen (with list if scorers exist) ───── */
@@ -1344,6 +1487,7 @@
       document.getElementById('override-' + i).value = '';
       recalculate();
       refreshAIInputChips();
+      saveDraft();
     }
 
     // ── Bulk-fill ungraded criteria ─────────────────────────
@@ -1740,6 +1884,7 @@
       updateFeedback();
       refreshStatusChips();
       refreshAIInputChips();
+      saveDraft();
     }
 
     /* ── Feedback generation ─────────────────────────────── */
@@ -1935,6 +2080,7 @@
       const feedbackText = el('feedback-text').value;
       const comments     = el('additional-comments').value;
       SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
+      clearDraft();
       // Also auto-add to cohort
       saveCurrentStudentToCohort({ silent: false });
     }
@@ -2515,6 +2661,7 @@
     }
 
     function confirmNewStudent() {
+      clearDraft();
       el('student-name').value   = '';
       el('student-id').value     = '';
       // Tutor name intentionally kept — same marker for the whole batch
@@ -4231,6 +4378,9 @@
         a.classList.toggle('text-emerald-700', a.getAttribute('href') === '#' + id);
         a.classList.toggle('text-slate-400', a.getAttribute('href') !== '#' + id);
       });
+      // Seed the initial highlight so it always starts on A, not whichever section
+      // happens to land in the narrow IO trigger zone during initial layout.
+      highlight('sec-student');
       const io = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
       }, { rootMargin: '-40% 0px -55% 0px' });
