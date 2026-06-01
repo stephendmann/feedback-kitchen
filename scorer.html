@@ -41,8 +41,7 @@
     })();
   </script>
   <link rel="stylesheet" href="/css/tailwind.out.css">
-  <!-- SheetJS vendored locally to remove runtime CDN dependency; source: xlsx-0.20.3/package/dist/xlsx.full.min.js -->
-  <script src="/js/xlsx.full.min.js"></script>
+  <!-- SheetJS is loaded on first export (lazy) — see loadSheetJS() in the script below -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -1130,6 +1129,7 @@
     // Snippets
     const SNIPPETS_KEY = 'SA_SNIPPETS';
     let snippets = [];
+    let sheetJSPromise = null;
 
     // Draft persistence (PR #12)
     const FK_DRAFT_KEY = 'SA_DRAFT_V1';
@@ -2052,6 +2052,43 @@
       showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
     }
 
+    /* ── SheetJS lazy loader ─────────────────────────────── */
+    function loadSheetJS(onReady) {
+      if (window.XLSX) { onReady(); return; }
+      const btns = document.querySelectorAll('.btn-finalise');
+      const origLabels = Array.from(btns).map(function (b) { return b.innerHTML; });
+      btns.forEach(function (b) { b.disabled = true; b.innerHTML = 'Loading…'; });
+      if (sheetJSPromise) {
+        sheetJSPromise
+          .then(function () {
+            btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+            onReady();
+          })
+          .catch(function () {
+            btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+          });
+        return;
+      }
+      sheetJSPromise = new Promise(function (resolve, reject) {
+        var s = document.createElement('script');
+        s.src = '/js/xlsx.full.min.js';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      sheetJSPromise
+        .then(function () {
+          btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+          onReady();
+        })
+        .catch(function (err) {
+          sheetJSPromise = null;
+          btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+          console.warn('SheetJS failed to load:', err);
+          alert('Could not load the Excel export library. Please check your connection and try again.');
+        });
+    }
+
     /* ── Excel download (single student) ─────────────────── */
     function downloadExcel() {
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
@@ -2064,9 +2101,11 @@
       };
       const feedbackText = el('feedback-text').value;
       const comments     = el('additional-comments').value;
-      SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
-      // Also auto-add to cohort
-      saveCurrentStudentToCohort({ silent: false });
+      loadSheetJS(function () {
+        SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
+        // Also auto-add to cohort
+        saveCurrentStudentToCohort({ silent: false });
+      });
     }
 
     /* ── Cohort management ───────────────────────────────── */
@@ -2171,8 +2210,10 @@
         alert('No students in the cohort yet. Grade at least one student and click Copy Feedback or Marker\'s Record to add them.');
         return;
       }
-      const filename = SAExcel.exportCohortToExcel(config, cohort);
-      if (filename) showPostExportWipeModal(cohort.students.length, filename);
+      loadSheetJS(function () {
+        const filename = SAExcel.exportCohortToExcel(config, cohort);
+        if (filename) showPostExportWipeModal(cohort.students.length, filename);
+      });
     }
 
     function renameCohort() {
