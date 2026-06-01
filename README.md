@@ -2,9 +2,7 @@
 
 Feedback Kitchen is a browser-based assessment feedback tool adapted from the original Feedback Kitchen Excel workbook developed and generously shared by Dr Michael Harker, University of Strathclyde. Redesigned as a static web application for use at the University of Waikato and beyond — build your rubric once, then deliver consistent, personalised feedback at scale.
 
-> Experimental sandbox notice
->
-> This repository, feedback-kitchen, has been a sandbox for prototyping features and alternative deployments. The older version is available at: https://github.com/stephendmann/score-automator and https://www.stephendmann.com/score-automator, where-as this update can be tested at https://marking.stephendmann.com/
+**Live app:** [marking.stephendmann.com](https://marking.stephendmann.com/)
 
 ---
 
