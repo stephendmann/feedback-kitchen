@@ -41,8 +41,7 @@
     })();
   </script>
   <link rel="stylesheet" href="/css/tailwind.out.css">
-  <!-- SheetJS vendored locally to remove runtime CDN dependency; source: xlsx-0.20.3/package/dist/xlsx.full.min.js -->
-  <script src="/js/xlsx.full.min.js"></script>
+  <!-- SheetJS is loaded on first export (lazy) — see loadSheetJS() in the script below -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -496,14 +495,14 @@
             <table>
               <thead>
                 <tr>
-                  <th title="The marking criterion as defined in your rubric.">Criterion</th>
-                  <th class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
-                  <th class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
-                  <th class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
-                  <th class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
-                  <th class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
-                  <th class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
-                  <th class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
+                  <th scope="col" title="The marking criterion as defined in your rubric.">Criterion</th>
+                  <th scope="col" class="text-center w-16" title="How much this criterion contributes to the overall mark, as a percentage. All criteria should total 100%.">Wt %</th>
+                  <th scope="col" class="text-center" title="Select the grade band earned for this criterion.">Grade</th>
+                  <th scope="col" class="text-center w-24" title="The numeric midpoint of the selected grade band — used as the raw score for this criterion.">Midpoint</th>
+                  <th scope="col" class="text-center w-24" title="Optional: enter a specific numeric score to use instead of the grade midpoint (e.g. if the student sits between two bands).">Override</th>
+                  <th scope="col" class="text-center w-28" title="The score out of 100 used for this criterion — either the midpoint or your override value.">Final /100</th>
+                  <th scope="col" class="text-center w-24" title="This criterion's Final score multiplied by its weight — its contribution to the overall total.">Weighted</th>
+                  <th scope="col" class="text-center" title="The performance tier this criterion score falls into (e.g. Excellent, Proficient, Developing).">Tier</th>
                 </tr>
               </thead>
               <tbody id="criteria-tbody"></tbody>
@@ -1130,6 +1129,7 @@
     // Snippets
     const SNIPPETS_KEY = 'SA_SNIPPETS';
     let snippets = [];
+    let sheetJSPromise = null;
 
     // Draft persistence (PR #12)
     const FK_DRAFT_KEY = 'SA_DRAFT_V1';
@@ -1418,6 +1418,7 @@
           <td class="text-center text-sm text-slate-500 font-semibold">${c.weight}%</td>
           <td class="text-center">
             <select class="grade-select" id="grade-sel-${i}"
+                    aria-label="Grade for ${c.name}"
                     onchange="S.onGradeChange(${i})"
                     onmousedown="S.onGradeRowReviewed(${i})"
                     onfocus="S.onGradeRowReviewed(${i})">
@@ -1668,6 +1669,7 @@
       if (!raw) {
         out.className = 'text-xs text-slate-400';
         out.innerHTML = 'Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.';
+        inp.setAttribute('aria-invalid', 'false');
         return;
       }
       const scale = _activeGradeScale();
@@ -1676,10 +1678,12 @@
         inp.style.borderColor = '#16a34a';
         out.className = 'text-xs text-emerald-600 font-medium';
         out.textContent = '✓ Override applied: ' + norm;
+        inp.setAttribute('aria-invalid', 'false');
       } else {
         inp.style.borderColor = '#dc2626';
         out.className = 'text-xs text-red-600';
-        out.textContent = 'Not in this rubric\u2019s grade scale. Valid: ' + scale.join(', ');
+        out.textContent = 'Not in this rubric’s grade scale. Valid: ' + scale.join(', ');
+        inp.setAttribute('aria-invalid', 'true');
       }
     }
     function onOverrideGrade() {
@@ -1778,8 +1782,10 @@
             const bandHigh = scaleEntry ? scaleEntry.bandHigh : (SA.GRADE_MIDPOINTS[row.grade] + 6);
             const oob = row.override < bandLow || row.override > bandHigh;
             overInp.className = 'override-input' + (oob ? ' out-of-band' : '');
+            overInp.setAttribute('aria-invalid', oob ? 'true' : 'false');
           } else {
             overInp.className = 'override-input';
+            overInp.setAttribute('aria-invalid', 'false');
           }
         } else {
           el('midpoint-' + i).textContent  = '—';
@@ -2046,6 +2052,43 @@
       showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
     }
 
+    /* ── SheetJS lazy loader ─────────────────────────────── */
+    function loadSheetJS(onReady) {
+      if (window.XLSX) { onReady(); return; }
+      const btns = document.querySelectorAll('.btn-finalise');
+      const origLabels = Array.from(btns).map(function (b) { return b.innerHTML; });
+      btns.forEach(function (b) { b.disabled = true; b.innerHTML = 'Loading…'; });
+      if (sheetJSPromise) {
+        sheetJSPromise
+          .then(function () {
+            btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+            onReady();
+          })
+          .catch(function () {
+            btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+          });
+        return;
+      }
+      sheetJSPromise = new Promise(function (resolve, reject) {
+        var s = document.createElement('script');
+        s.src = '/js/xlsx.full.min.js';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      sheetJSPromise
+        .then(function () {
+          btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+          onReady();
+        })
+        .catch(function (err) {
+          sheetJSPromise = null;
+          btns.forEach(function (b, i) { b.disabled = false; b.innerHTML = origLabels[i]; });
+          console.warn('SheetJS failed to load:', err);
+          alert('Could not load the Excel export library. Please check your connection and try again.');
+        });
+    }
+
     /* ── Excel download (single student) ─────────────────── */
     function downloadExcel() {
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
@@ -2058,9 +2101,11 @@
       };
       const feedbackText = el('feedback-text').value;
       const comments     = el('additional-comments').value;
-      SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
-      // Also auto-add to cohort
-      saveCurrentStudentToCohort({ silent: false });
+      loadSheetJS(function () {
+        SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
+        // Also auto-add to cohort
+        saveCurrentStudentToCohort({ silent: false });
+      });
     }
 
     /* ── Cohort management ───────────────────────────────── */
@@ -2165,8 +2210,10 @@
         alert('No students in the cohort yet. Grade at least one student and click Copy Feedback or Marker\'s Record to add them.');
         return;
       }
-      const filename = SAExcel.exportCohortToExcel(config, cohort);
-      if (filename) showPostExportWipeModal(cohort.students.length, filename);
+      loadSheetJS(function () {
+        const filename = SAExcel.exportCohortToExcel(config, cohort);
+        if (filename) showPostExportWipeModal(cohort.students.length, filename);
+      });
     }
 
     function renameCohort() {
