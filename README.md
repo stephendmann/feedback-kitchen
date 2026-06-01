@@ -218,12 +218,12 @@ JSON exports contain the Scorer configuration only — criteria, rubric descript
 
 ## Technical Architecture
 
-Feedback Kitchen is a fully static application. There is no database, no build step, and no framework dependency beyond CDN-loaded libraries.
+Feedback Kitchen is a fully static application. There is no database, no server-side process, and no runtime CDN dependency — all libraries are vendored locally or loaded on demand.
 
 | Library | Purpose |
 |---|---|
-| [Tailwind CSS](https://tailwindcss.com) | Utility-first styling via CDN |
-| [SheetJS (xlsx 0.20.3)](https://sheetjs.com) | Client-side Excel workbook generation |
+| [Tailwind CSS](https://tailwindcss.com) | Utility-first styling, built locally via Tailwind CLI |
+| [SheetJS (xlsx 0.20.3)](https://sheetjs.com) | Client-side Excel workbook generation (vendored locally, loaded on first export) |
 | [Inter](https://fonts.google.com/specimen/Inter) | Typeface via Google Fonts |
 
 **Storage model:**
