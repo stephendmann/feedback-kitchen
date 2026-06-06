@@ -31,7 +31,7 @@ document.getElementById('site-footer').innerHTML = `
         <h3 id="footer-support">Support</h3>
         <p>
           Support hosting and development, request wording-assistant access, or fund a custom course build via
-          <a class="site-footer__kofi-link" href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer">Ko-fi</a>.
+          <a class="site-footer__kofi-link" href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer" aria-label="Support Stephen on Ko-fi (opens in a new tab)" onclick="if(typeof gtag==='function'){gtag('event','kofi_click',{event_category:'engagement',link_location:'footer'})}">Ko-fi</a>.
         </p>
       </section>
     </div>
