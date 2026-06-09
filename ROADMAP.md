@@ -156,3 +156,14 @@ Recommended additions (not blocked on any PR above):
 - **Bundle size check** — a simple `wc -c` assertion that the initial page weight (excluding `/js/xlsx.full.min.js`) stays below a threshold confirms the lazy-load invariant is maintained.
 That order prioritizes improvements to the live marking loop first...
 
+---
+
+## UI Polish and Branding Safety — Parked Items
+
+### Dark-mode UoW logo
+
+- **Live state:** current dark-mode treatment is deployed and acceptable.
+- **Implementation:** CSS filter workaround (`invert(0.85)` / `grayscale+invert+screen`) — not an official reversed or dark-background logo asset.
+- **End state:** replace filter-based treatment with an official dark-safe UoW asset (transparent PNG or reversed variant) when available from UoW marketing; remove workaround CSS at that point.
+- **Stash note:** an alternative filter refinement exists in local stash only and is not planned for release unless the current live version proves inadequate.
+
