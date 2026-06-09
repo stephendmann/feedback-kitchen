@@ -773,3 +773,12 @@ Post-ship axe + keyboard audit surfaced 12 violations across `index.html`, `buil
 **Net BBP v0.1 a11y state:** 3 of 12 violations cleared at source; 9 logged to canonical owners with no scope collision.
 
 **Reference doc:** Visual briefing at `bbp-v0.1-audit-triage.html` (Perplexity-authored, non-canonical) — useful for sharing context with CD or future contributors.
+
+---
+
+## D16 — Interim dark-mode UoW logo treatment
+
+**Date:** 2026-06-10
+**Status:** ✅ Approved as temporary workaround — mirror-local decision.
+**Decision:** CSS filter-based dark-mode treatment for the University of Waikato logo (`invert`/`grayscale` filter on `#uow-logo`) is acceptable and deployed. This is a workaround, not an official reversed or dark-background asset; end-state is an asset swap when a suitable file is available from UoW marketing, at which point the workaround CSS is removed. An alternative filter refinement exists in local stash only and is not planned for release unless the live version proves inadequate.
+**See:** ROADMAP.md § UI Polish and Branding Safety — Parked Items.
