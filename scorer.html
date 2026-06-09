@@ -2670,6 +2670,17 @@
       closeModal('cohort-insights-modal');
     }
 
+    function copyCohortInsights() {
+      const body = el('cohort-insights-body');
+      if (!body) return;
+      const btn = el('ci-copy-btn');
+      navigator.clipboard.writeText(body.innerText).then(function () {
+        if (btn) { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy insights'; }, 2000); }
+      }).catch(function () {
+        if (btn) { btn.textContent = 'Copy failed'; setTimeout(function () { btn.textContent = 'Copy insights'; }, 2000); }
+      });
+    }
+
     /* ── New student ─────────────────────────────────────── */
     function newStudent() {
       showNewStudentModal();
@@ -4019,7 +4030,7 @@
              showModExportBlock, hideModExportBlock,
              refreshModExportUI,
              // Cohort Insights (Phase 1)
-             showCohortInsights, hideCohortInsights,
+             showCohortInsights, hideCohortInsights, copyCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
              aiToggleAllExplainers,
              // Modal accessibility (PR #14)
