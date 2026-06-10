@@ -5,6 +5,9 @@
   "functions": {
     "api/garnish.js": {
       "maxDuration": 30
+    },
+    "api/parse-manual.js": {
+      "maxDuration": 60
     }
   }
 }

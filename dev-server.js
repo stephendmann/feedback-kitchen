@@ -37,13 +37,21 @@ const PORT  = parseInt(process.env.PORT || '3000', 10);
   console.log('[dev] loaded .env.local');
 })();
 
-// ── Lazy-load the Vercel handler ───────────────────────────────
+// ── Lazy-load the Vercel handlers ─────────────────────────────
 let garnishHandler = null;
 try {
   garnishHandler = require('./api/garnish.js');
-  console.log('[dev] mounted POST /api/garnish  ->  api/garnish.js');
+  console.log('[dev] mounted POST /api/garnish      ->  api/garnish.js');
 } catch (e) {
   console.warn('[dev] could not load api/garnish.js — /api/garnish will 500:', e.message);
+}
+
+let parseManualHandler = null;
+try {
+  parseManualHandler = require('./api/parse-manual.js');
+  console.log('[dev] mounted POST /api/parse-manual ->  api/parse-manual.js');
+} catch (e) {
+  console.warn('[dev] could not load api/parse-manual.js — /api/parse-manual will 500:', e.message);
 }
 
 // ── MIME map ───────────────────────────────────────────────────
@@ -97,27 +105,29 @@ async function handler(req, res) {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname || '/';
 
-  // API route
-  if (pathname === '/api/garnish') {
-    if (!garnishHandler) { send(res, 500, JSON.stringify({ error: 'garnish handler not loaded' })); return; }
-    // Collect raw body so the Vercel-style handler can parse it
+  // ── API routes ────────────────────────────────────────────────
+  const apiHandlers = {
+    '/api/garnish':      garnishHandler,
+    '/api/parse-manual': parseManualHandler
+  };
+
+  if (pathname in apiHandlers) {
+    const apiHandler = apiHandlers[pathname];
+    if (!apiHandler) { send(res, 500, JSON.stringify({ error: pathname + ' handler not loaded' }), { 'Content-Type': 'application/json' }); return; }
     let raw = '';
     req.on('data', c => raw += c);
     req.on('end', async () => {
       try {
-        // Vercel auto-parses JSON when content-type is application/json; emulate that
         if ((req.headers['content-type'] || '').includes('application/json') && raw) {
           try { req.body = JSON.parse(raw); } catch { req.body = {}; }
         } else {
           req.body = raw || {};
         }
-        // The handler expects res.status(x).json(obj) — node's http res doesn't have these
-        // Add shims that match the Vercel response surface
         res.status = (code) => { res.statusCode = code; return res; };
         res.json   = (obj)  => { res.setHeader('Content-Type', 'application/json; charset=utf-8'); res.end(JSON.stringify(obj)); };
-        await garnishHandler(req, res);
+        await apiHandler(req, res);
       } catch (e) {
-        console.error('[dev] /api/garnish error:', e);
+        console.error('[dev] ' + pathname + ' error:', e);
         if (!res.headersSent) send(res, 500, JSON.stringify({ error: String(e && e.message || e) }), { 'Content-Type': 'application/json' });
         else try { res.end(); } catch {}
       }

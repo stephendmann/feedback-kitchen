@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <title>Convert Manual — Feedback Kitchen</title>
+  <meta name="description" content="Upload an assessment manual PDF to generate a Feedback Kitchen scorer JSON automatically.">
+  <link rel="canonical" href="https://marking.stephendmann.com/convert.html">
+  <link rel="stylesheet" href="/css/tailwind.out.css">
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    .drop-zone {
+      border: 2px dashed #cbd5e1;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone.drag-over {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    .drop-zone.has-file {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+
+    .assessment-card { transition: box-shadow 0.15s; }
+    .assessment-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    /* Rubric table column widths */
+    #criteria-table .col-name  { min-width: 160px; }
+    #criteria-table .col-wt    { width: 80px; }
+    #criteria-table .col-rubric{ min-width: 130px; }
+    #criteria-table .col-del   { width: 40px; }
+
+    textarea { font-size: 0.75rem; line-height: 1.4; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- Nav -->
+  <nav class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2 font-bold text-blue-700 text-lg hover:text-blue-900 transition-colors">
+      <img src="/favicon-32.png" alt="" width="22" height="22" style="vertical-align:middle"> Feedback Kitchen
+    </a>
+    <a href="index.html" class="text-sm text-slate-500 hover:text-slate-800 transition-colors">← Back to home</a>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-4">📄</div>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Convert Assessment Manual</h1>
+      <p class="text-slate-500 text-sm max-w-xl mx-auto">Upload a PDF assessment manual and Feedback Kitchen will detect the assessment structure, extract the rubric, and generate a ready-to-use scorer JSON.</p>
+    </div>
+
+    <!-- How it works -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-8 text-sm text-slate-700">
+      <p class="font-semibold text-blue-800 mb-2">How it works</p>
+      <ol class="list-decimal list-inside space-y-1 text-slate-600 ml-1">
+        <li>Upload your assessment manual PDF (up to 6 MB)</li>
+        <li>The tool scans the document and lists all detected assessment sections</li>
+        <li>Select one assessment — the rubric, criteria, and weights are extracted</li>
+        <li>Review and edit the result, then download the FK scorer JSON</li>
+      </ol>
+      <p class="text-slate-400 text-xs mt-3">The PDF is sent to a secure server for AI processing and is not stored. Only PDF files are supported in this version.</p>
+    </div>
+
+    <!-- Global error -->
+    <div id="global-error" class="hidden bg-red-50 border border-red-300 rounded-xl p-4 mb-6 text-sm text-red-700 font-medium"></div>
+
+    <!-- ── STEP 1: Upload ──────────────────────────────────────── -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+      <h2 class="text-base font-bold text-slate-700 mb-4">Step 1 — Upload your manual</h2>
+
+      <!-- Drop zone -->
+      <div id="drop-zone"
+           class="drop-zone rounded-xl p-8 text-center cursor-pointer mb-4 bg-slate-50"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="CONV.handleDragOver(event)"
+           ondragleave="CONV.handleDragLeave()"
+           ondrop="CONV.handleDrop(event)">
+        <div class="text-3xl mb-2">📂</div>
+        <p class="text-slate-600 font-medium text-sm mb-1">Drop your <code class="bg-slate-200 px-1 rounded">.pdf</code> file here</p>
+        <p class="text-slate-400 text-xs">or click to browse — max 6 MB</p>
+        <input type="file" id="file-input" accept=".pdf,application/pdf" class="hidden"
+               onchange="CONV.handleFileSelect(event)" />
+      </div>
+
+      <!-- File info (shown after selection) -->
+      <div id="file-info" class="hidden flex items-center gap-2 text-sm text-slate-600 mb-4 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+        <span class="text-green-600">✓</span>
+        <span id="file-name" class="font-medium"></span>
+        <span class="text-slate-400 text-xs" id="file-size"></span>
+        <button onclick="CONV.reset()" class="ml-auto text-xs text-slate-400 hover:text-red-500 transition-colors">× Remove</button>
+      </div>
+
+      <!-- Credentials -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1" for="cred-user">Access username</label>
+          <input id="cred-user" type="text" autocomplete="username"
+            placeholder="Username"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1" for="cred-pass">Access password</label>
+          <input id="cred-pass" type="password" autocomplete="current-password"
+            placeholder="Password"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none" />
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 mb-4">Credentials are saved in your browser session and are not stored on any server.</p>
+
+      <button id="btn-detect" onclick="CONV.detect()"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm">
+        Scan document →
+      </button>
+    </section>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="hidden flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-5 py-4 mb-6 text-slate-600 text-sm">
+      <svg class="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      <span id="loading-msg">Processing…</span>
+    </div>
+
+    <!-- ── STEP 2: Assessment list ──────────────────────────────── -->
+    <section id="detect-results" class="hidden bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+      <h2 class="text-base font-bold text-slate-700 mb-1">Step 2 — Select an assessment</h2>
+      <p class="text-sm text-slate-500 mb-4">Click "Extract scorer →" on the assessment you want to convert. Only assessments with a four-band weighted rubric can be auto-exported; others can be extracted but will need manual review.</p>
+      <div id="assessment-list" class="grid gap-3 sm:grid-cols-2"></div>
+    </section>
+
+    <!-- ── STEP 3: Review ─────────────────────────────────────── -->
+    <section id="review-section" class="hidden bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+      <h2 class="text-base font-bold text-slate-700 mb-1">Step 3 — Review and edit</h2>
+      <p class="text-sm text-slate-500 mb-5">Check every field before exporting. Edit anything that looks wrong — rubric text, weights, and metadata are all editable inline.</p>
+
+      <!-- Confidence bar -->
+      <div id="confidence-section" class="hidden mb-5">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs text-slate-500" id="confidence-label">Extraction confidence</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2">
+          <div id="confidence-bar" class="h-2 rounded-full bg-green-500 transition-all" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Warnings -->
+      <div id="warnings-section" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5">
+        <p class="text-xs font-semibold text-amber-800 mb-2">Extraction warnings — please review</p>
+        <ul id="warnings-list" class="space-y-1 text-xs text-amber-700"></ul>
+      </div>
+
+      <!-- Metadata fields -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Assessment title <span class="text-red-400">*</span></label>
+          <input id="rv-assessment-title" type="text"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none"
+            oninput="CONV.updateMeta('assessmentTitle', this.value)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Scorer name</label>
+          <input id="rv-name" type="text"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none"
+            oninput="CONV.updateMeta('name', this.value)" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Course name</label>
+          <input id="rv-course-name" type="text"
+            placeholder="e.g. MRKTG101-26A (TGA)"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none"
+            oninput="CONV.updateMeta('courseName', this.value)" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">University</label>
+          <input id="rv-university-name" type="text"
+            placeholder="e.g. University of Waikato"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none"
+            oninput="CONV.updateMeta('universityName', this.value)" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Assignment info</label>
+          <textarea id="rv-assignment-info" rows="3"
+            placeholder="Brief description of the assessment task, weighting, and key constraints."
+            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none resize-y"
+            oninput="CONV.updateMeta('assignmentInfo', this.value)"></textarea>
+        </div>
+      </div>
+
+      <!-- Criteria table -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-slate-700">Rubric criteria</h3>
+          <div class="flex items-center gap-4">
+            <span id="weight-total" class="text-sm font-medium text-slate-500">Weights total: 0%</span>
+            <button onclick="CONV.addCriterion()"
+              class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+              + Add criterion
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table id="criteria-table" class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <tr>
+                <th class="px-3 py-2 col-name">Criterion</th>
+                <th class="px-3 py-2 col-wt">Weight</th>
+                <th class="px-3 py-2 col-rubric text-green-700">Excellent (A)</th>
+                <th class="px-3 py-2 col-rubric text-blue-700">Proficient (B)</th>
+                <th class="px-3 py-2 col-rubric text-amber-700">Developing (C)</th>
+                <th class="px-3 py-2 col-rubric text-red-600">Unsatisfactory (D)</th>
+                <th class="px-3 py-2 col-del"></th>
+              </tr>
+            </thead>
+            <tbody id="criteria-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Defaults applied -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 text-sm">
+        <p class="font-semibold text-slate-700 mb-3">Defaults applied</p>
+        <div class="space-y-2 text-slate-600 text-xs">
+          <div class="flex items-start gap-2">
+            <span class="text-green-500 mt-0.5">✓</span>
+            <div>
+              <span class="font-medium">Grade scale:</span>
+              <span id="grade-scale-preview" class="text-slate-400 ml-1">A+, A, A-, B+, B, B-, C+, C, C-, D</span>
+              <span class="text-slate-400"> (NZ University default)</span>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-green-500 mt-0.5">✓</span>
+            <div>
+              <span class="font-medium">Grade feedback:</span>
+              <span id="feedback-count" class="text-slate-400 ml-1">10 grade bands</span>
+              <span class="text-slate-400"> — generic academic intro/outro per grade</span>
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-green-500 mt-0.5">✓</span>
+            <div>
+              <span class="font-medium">Late penalties:</span>
+              <span id="lp-count" class="text-slate-400 ml-1">5 tiers</span>
+              <span class="text-slate-400"> — 0%, 10%, 20%, 30%, fail after 3 days</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">These can all be customised after importing into Feedback Kitchen.</p>
+      </div>
+
+      <!-- Confirmation checkboxes -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <p class="font-semibold text-slate-700 text-sm mb-3">Before you export, confirm:</p>
+        <div class="space-y-2">
+          <label class="flex items-start gap-2 text-sm text-slate-600 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded" id="chk-rubric" onchange="CONV.onCheckboxChange()" />
+            <span>This assessment has a rubric suitable for FK export</span>
+          </label>
+          <label class="flex items-start gap-2 text-sm text-slate-600 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded" id="chk-policy" checked onchange="CONV.onCheckboxChange()" />
+            <span>General policy text has been excluded from assignment info</span>
+          </label>
+          <label class="flex items-start gap-2 text-sm text-slate-600 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded" id="chk-defaults" checked onchange="CONV.onCheckboxChange()" />
+            <span>Default grade feedback and late penalties are appropriate</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Export actions -->
+      <div class="flex flex-wrap gap-3 items-center">
+        <button id="btn-export" onclick="CONV.downloadJSON()" disabled
+          class="bg-slate-300 text-slate-500 font-semibold px-6 py-2.5 rounded-lg cursor-not-allowed text-sm">
+          Download scorer JSON
+        </button>
+        <button onclick="CONV.importToFK()"
+          class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm">
+          Import directly to FK
+        </button>
+        <button onclick="CONV.reset()"
+          class="text-sm text-slate-400 hover:text-slate-600 transition-colors px-2">
+          Start over
+        </button>
+      </div>
+
+      <!-- Export success -->
+      <div id="export-success" class="hidden mt-4 bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-800">
+        <p class="font-semibold mb-1">✓ Scorer JSON downloaded</p>
+        <p class="text-green-700 text-xs">Import the file using <a href="upload.html" class="underline hover:text-green-900">Load a Shared Scorer</a> to add it to your Feedback Kitchen on this device.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/shared.js"></script>
+  <script src="/js/converter.js"></script>
+  <script>
+    CONV.init();
+  </script>
+</body>
+</html>
