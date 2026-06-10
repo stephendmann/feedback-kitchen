@@ -260,7 +260,7 @@
           </div>
           <p class="text-xs text-slate-500 mb-1">${escapeHTML(weightingText)}</p>
           <p class="text-xs text-slate-400 mb-3 italic">${escapeHTML(a.notes || '')}</p>
-          <button onclick="CONV.extract(${JSON.stringify(a.title)})"
+          <button onclick="CONV.extract('${escapeAttr(a.title)}')"
             class="${btnClass} text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
             Extract scorer →
           </button>
