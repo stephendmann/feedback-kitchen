@@ -7,18 +7,18 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <title>Import Scorer — Feedback Kitchen</title>
-  <meta name="description" content="Upload a Feedback Kitchen scorer JSON file shared by a colleague — adds the scorer to your browser locally.">
+  <title>Add a Scorer — Feedback Kitchen</title>
+  <meta name="description" content="Build a scorer manually, open a saved scorer JSON, or import a rubric PDF — free or with Ko-fi support.">
   <link rel="canonical" href="https://marking.stephendmann.com/upload.html">
-  <meta property="og:title" content="Feedback Kitchen — Upload a Scorer">
-  <meta property="og:description" content="Upload a scorer JSON file shared by a colleague. Stays in your browser.">
+  <meta property="og:title" content="Feedback Kitchen — Add a Scorer">
+  <meta property="og:description" content="Build a scorer manually, open a saved scorer JSON, or import a rubric PDF.">
   <meta property="og:image" content="https://marking.stephendmann.com/og-image.png">
   <meta property="og:url" content="https://marking.stephendmann.com/upload.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Feedback Kitchen">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Feedback Kitchen — Upload a Scorer">
-  <meta name="twitter:description" content="Upload a scorer JSON file shared by a colleague.">
+  <meta name="twitter:title" content="Feedback Kitchen — Add a Scorer">
+  <meta name="twitter:description" content="Build a scorer manually, open a saved scorer JSON, or import a rubric PDF.">
   <meta name="twitter:image" content="https://marking.stephendmann.com/og-image.png">
   <meta name="theme-color" content="#1e40af">
   <!-- Google tag (gtag.js) -->
@@ -27,21 +27,18 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-LQSJNBBPKZ', {
-      anonymize_ip: true
-    });
+    gtag('config', 'G-LQSJNBBPKZ', { anonymize_ip: true });
   </script>
   <link rel="stylesheet" href="/css/tailwind.out.css">
   <style>
     body { font-family: 'Segoe UI', system-ui, sans-serif; }
-    .drop-zone {
-      border: 2px dashed #cbd5e1;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .drop-zone.drag-over {
+    .task-card { transition: box-shadow 0.15s, border-color 0.15s; }
+    /* JSON card drag-over state */
+    #json-card.drag-over {
       border-color: #3b82f6;
       background: #eff6ff;
     }
+    #json-card.drag-over .drop-hint { color: #3b82f6; }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
@@ -58,103 +55,235 @@
 
   <main class="max-w-xl mx-auto px-4 py-12">
 
-    <div class="text-center mb-6">
-      <div class="text-5xl mb-4">⬆</div>
-      <h1 class="text-2xl font-bold text-slate-800 mb-2">Load a Shared Scorer</h1>
-      <p class="text-slate-500 text-sm mb-4">Upload a <code class="bg-slate-100 px-1 rounded">.json</code> file to add it to your saved scorers on this device.</p>
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Add a Scorer</h1>
+      <p class="text-slate-500 text-sm">Choose how you'd like to set up your scorer for this assessment.</p>
     </div>
 
-    <!-- Plain-English explainer -->
-    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6 text-sm text-slate-700 space-y-2">
-      <p class="font-semibold text-blue-800">📖 What is a JSON file and why would I use one?</p>
-      <p>A <strong>.json file</strong> is simply a portable save file for a scorer. It's a small text file that stores all the rubric settings — criteria, grade bands, feedback templates — in a format Feedback Kitchen can read back exactly.</p>
-      <p><strong>When would you use this?</strong></p>
-      <ul class="list-disc list-inside space-y-1 ml-1 text-slate-600">
-        <li>A colleague built a scorer and emailed or shared the <code class="bg-slate-100 px-1 rounded">.json</code> file with you</li>
-        <li>You exported your own scorer from another computer or browser and want to restore it here</li>
-        <li>Your department is sharing a standard rubric across multiple markers</li>
-      </ul>
-      <p class="text-slate-500 text-xs pt-1">Nothing is uploaded to any server — the file is read directly in your browser and saved only on this device.</p>
-    </div>
+    <!-- ── Three task cards ───────────────────────────────────── -->
+    <div class="space-y-3" role="list">
 
-    <!-- Drop zone -->
-    <div id="drop-zone" class="drop-zone rounded-2xl p-10 text-center cursor-pointer mb-6 bg-white"
-         onclick="document.getElementById('file-input').click()"
-         ondragover="handleDragOver(event)"
-         ondragleave="handleDragLeave(event)"
-         ondrop="handleDrop(event)">
-      <div class="text-4xl mb-3">📂</div>
-      <p class="text-slate-600 font-medium mb-1">Drop your <code class="bg-slate-100 px-1 rounded">.json</code> file here</p>
-      <p class="text-slate-400 text-sm">or click to browse</p>
-      <input type="file" id="file-input" accept=".json,application/json" class="hidden" onchange="handleFileSelect(event)" />
-    </div>
+      <!-- Card 1: Build manually (free) -->
+      <a href="builder.html" role="listitem"
+         class="task-card group flex items-start gap-4 bg-white border border-slate-200 rounded-2xl p-5 hover:border-emerald-400 hover:shadow-md">
+        <div class="text-2xl shrink-0 mt-0.5" aria-hidden="true">🔨</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <h2 class="font-semibold text-slate-800 text-base">Build a scorer manually</h2>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Free</span>
+          </div>
+          <p class="text-sm text-slate-500">Build a scorer manually in your browser — free, no sign-up. Takes around 10–20 minutes for a new assessment.</p>
+        </div>
+        <span class="text-slate-300 group-hover:text-emerald-500 transition-colors text-xl shrink-0 self-center" aria-hidden="true">→</span>
+      </a>
 
-    <!-- Result panel (hidden initially) -->
-    <div id="result-panel" class="hidden rounded-2xl border p-6 bg-white mb-6">
-      <div id="result-icon" class="text-3xl mb-2 text-center"></div>
-      <h2 id="result-title" class="text-lg font-bold text-center text-slate-800 mb-1"></h2>
-      <p id="result-message" class="text-sm text-center text-slate-500"></p>
-
-      <!-- Preview card (shown on success) -->
-      <div id="preview-card" class="hidden mt-5 bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm space-y-1">
-        <div><span class="text-slate-400">Assessment:</span> <span id="prev-title" class="font-semibold text-slate-700"></span></div>
-        <div><span class="text-slate-400">Course:</span> <span id="prev-course" class="text-slate-700"></span></div>
-        <div><span class="text-slate-400">Criteria:</span> <span id="prev-criteria" class="text-slate-700"></span></div>
-        <div><span class="text-slate-400">Grade scale:</span> <span id="prev-scale" class="text-slate-700"></span></div>
+      <!-- Card 2: Open saved JSON (free, acts as the drop zone) -->
+      <div id="json-card" role="listitem"
+           class="task-card flex items-start gap-4 bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer hover:border-blue-400 hover:shadow-md"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)"
+           tabindex="0"
+           onkeydown="if(event.key==='Enter'||event.key===' '){document.getElementById('file-input').click();}"
+           aria-label="Open a saved scorer JSON — click or drop a file here">
+        <div class="text-2xl shrink-0 mt-0.5" aria-hidden="true">📂</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <h2 class="font-semibold text-slate-800 text-base">Open a saved scorer JSON</h2>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Free</span>
+          </div>
+          <p class="text-sm text-slate-500 mb-1">Open a saved scorer JSON to continue editing or use an existing setup. Shared by a colleague, or exported from another device.</p>
+          <p class="drop-hint text-xs text-slate-400 transition-colors">Drop a <code class="bg-slate-100 px-1 rounded">.json</code> file here, or click to browse</p>
+        </div>
+        <input type="file" id="file-input" accept=".json,application/json" class="hidden" onchange="handleFileSelect(event)" />
       </div>
 
-      <!-- Action buttons -->
-      <div id="action-buttons" class="hidden mt-5 flex gap-3 justify-center">
-        <button id="btn-save" onclick="saveImported()"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
-          ✓ Add to My Scorers
-        </button>
-        <button onclick="resetUI()"
-          class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
-          Cancel
-        </button>
+      <!-- Card 3: Import rubric from PDF (supporter feature) -->
+      <div id="pdf-card" role="listitem"
+           class="task-card bg-white border border-slate-200 rounded-2xl p-5">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl shrink-0 mt-0.5" aria-hidden="true">📄</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h2 class="font-semibold text-slate-800 text-base" id="pdf-import">Import rubric from PDF</h2>
+              <span id="pdf-badge-locked" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Supporter feature</span>
+              <span id="pdf-badge-unlocked" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">✓ Unlocked</span>
+            </div>
+            <p class="text-sm text-slate-500 mb-3">Import a rubric PDF to create a scorer — unlocked with Ko-fi support. PDF import is a supporter feature; manual scorer building remains free.</p>
+
+            <!-- LOCKED state ──────────────────────────────── -->
+            <div id="pdf-locked-section">
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3 text-xs text-amber-800">
+                <p class="font-semibold mb-2">How to unlock PDF import:</p>
+                <ol class="space-y-1.5">
+                  <li class="flex gap-2">
+                    <span class="font-bold shrink-0">1.</span>
+                    <span>Support the project on Ko-fi —
+                      <a href="https://ko-fi.com/smann" target="_blank" rel="noopener"
+                         onclick="if(typeof gtag==='function'){gtag('event','kofi_click',{event_category:'engagement',event_label:'upload_pdf_unlock'})}"
+                         class="font-semibold underline hover:text-amber-900">ko-fi.com/smann</a>
+                    </span>
+                  </li>
+                  <li class="flex gap-2"><span class="font-bold shrink-0">2.</span><span>Receive your access credentials by message</span></li>
+                  <li class="flex gap-2"><span class="font-bold shrink-0">3.</span><span>Enter them below — your key is then saved in this browser for future sessions</span></li>
+                </ol>
+              </div>
+
+              <div class="space-y-2">
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="text" id="key-user" placeholder="Username" autocomplete="username"
+                    class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+                  <input type="password" id="key-pass" placeholder="Access key" autocomplete="current-password"
+                    class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+                </div>
+                <div class="flex items-center gap-3">
+                  <button onclick="unlockPDFImport()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                    Unlock PDF import
+                  </button>
+                  <p id="key-error" class="hidden text-xs text-red-600"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- UNLOCKED state ─────────────────────────────── -->
+            <div id="pdf-unlocked-section" class="hidden flex flex-wrap items-center gap-3">
+              <a href="convert.html"
+                 class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                Go to PDF import →
+              </a>
+              <button onclick="revokeAccess()"
+                class="text-xs text-slate-400 hover:text-slate-600 transition-colors underline">
+                Remove saved access
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
     </div>
 
-    <!-- Duplicate warning (hidden initially) -->
-    <div id="duplicate-panel" class="hidden rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-800 mb-6">
-      <p class="font-semibold mb-1">⚠️ A scorer with this name already exists</p>
-      <p id="duplicate-message" class="mb-3"></p>
-      <div class="flex gap-3">
-        <button onclick="saveImported(true)"
-          class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-          Replace existing
-        </button>
-        <button onclick="saveImported(false, true)"
-          class="bg-white hover:bg-amber-100 border border-amber-300 text-amber-800 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-          Save as a copy
-        </button>
-        <button onclick="resetUI()"
-          class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-          Cancel
-        </button>
+    <!-- ── Result panels (revealed after JSON file is processed) ─ -->
+    <div id="result-section" class="mt-6">
+
+      <div id="result-panel" class="hidden rounded-2xl border p-6 bg-white mb-4">
+        <div id="result-icon" class="text-3xl mb-2 text-center"></div>
+        <h2 id="result-title" class="text-lg font-bold text-center text-slate-800 mb-1"></h2>
+        <p id="result-message" class="text-sm text-center text-slate-500"></p>
+
+        <div id="preview-card" class="hidden mt-5 bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm space-y-1">
+          <div><span class="text-slate-400">Assessment:</span> <span id="prev-title" class="font-semibold text-slate-700"></span></div>
+          <div><span class="text-slate-400">Course:</span> <span id="prev-course" class="text-slate-700"></span></div>
+          <div><span class="text-slate-400">Criteria:</span> <span id="prev-criteria" class="text-slate-700"></span></div>
+          <div><span class="text-slate-400">Grade scale:</span> <span id="prev-scale" class="text-slate-700"></span></div>
+        </div>
+
+        <div id="action-buttons" class="hidden mt-5 flex gap-3 justify-center">
+          <button id="btn-save" onclick="saveImported()"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
+            ✓ Add to My Scorers
+          </button>
+          <button onclick="resetUI()"
+            class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
+            Cancel
+          </button>
+        </div>
       </div>
+
+      <div id="duplicate-panel" class="hidden rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-800 mb-4">
+        <p class="font-semibold mb-1">⚠️ A scorer with this name already exists</p>
+        <p id="duplicate-message" class="mb-3"></p>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="saveImported(true)"
+            class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            Replace existing
+          </button>
+          <button onclick="saveImported(false, true)"
+            class="bg-white hover:bg-amber-100 border border-amber-300 text-amber-800 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            Save as a copy
+          </button>
+          <button onclick="resetUI()"
+            class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <p class="text-center text-xs text-slate-400">Only <code>.json</code> files exported from Feedback Kitchen are supported.</p>
+    <p class="text-center text-xs text-slate-400 mt-4">
+      Only <code>.json</code> files exported from Feedback Kitchen are supported for the open-scorer option.
+    </p>
 
   </main>
 
+  <!-- Prevent browser from opening dropped files outside the JSON card -->
+  <script>
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('drop', e => {
+      if (!e.target.closest('#json-card')) e.preventDefault();
+    });
+  </script>
+
   <script src="js/shared.js"></script>
   <script>
+    // ── Shared localStorage key names (same as wording assistant in scorer.html) ──
+    // Using the same keys means existing supporter credentials work here immediately.
+    const FK_USER_KEY = 'SA_FK_USER';
+    const FK_PASS_KEY = 'SA_FK_PASS';
+
     let pendingConfig = null;
 
-    // ── Drag & drop handlers ─────────────────────────────────────────────────
+    // ── Supporter access state ────────────────────────────────────
+    function checkSupporterAccess() {
+      const unlocked = !!(localStorage.getItem(FK_USER_KEY) && localStorage.getItem(FK_PASS_KEY));
+      document.getElementById('pdf-locked-section').classList.toggle('hidden', unlocked);
+      document.getElementById('pdf-unlocked-section').classList.toggle('hidden', !unlocked);
+      document.getElementById('pdf-badge-locked').classList.toggle('hidden', unlocked);
+      document.getElementById('pdf-badge-unlocked').classList.toggle('hidden', !unlocked);
+    }
+
+    function unlockPDFImport() {
+      const user = document.getElementById('key-user').value.trim();
+      const pass = document.getElementById('key-pass').value;
+      const errEl = document.getElementById('key-error');
+      if (!user || !pass) {
+        errEl.textContent = 'Please enter both your username and access key.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      errEl.classList.add('hidden');
+      localStorage.setItem(FK_USER_KEY, user);
+      localStorage.setItem(FK_PASS_KEY, pass);
+      // Mirror to sessionStorage so convert.html picks them up immediately this session
+      sessionStorage.setItem('fk_conv_user', user);
+      sessionStorage.setItem('fk_conv_pass', pass);
+      window.location.href = 'convert.html';
+    }
+
+    function revokeAccess() {
+      if (!confirm('Remove your saved PDF import access from this browser?')) return;
+      localStorage.removeItem(FK_USER_KEY);
+      localStorage.removeItem(FK_PASS_KEY);
+      checkSupporterAccess();
+    }
+
+    // ── Drag & drop for JSON card ────────────────────────────────
     function handleDragOver(e) {
       e.preventDefault();
-      document.getElementById('drop-zone').classList.add('drag-over');
+      document.getElementById('json-card').classList.add('drag-over');
     }
     function handleDragLeave(e) {
-      document.getElementById('drop-zone').classList.remove('drag-over');
+      // Only remove if leaving the card entirely (not entering a child)
+      const card = document.getElementById('json-card');
+      if (!card.contains(e.relatedTarget)) {
+        card.classList.remove('drag-over');
+      }
     }
     function handleDrop(e) {
       e.preventDefault();
-      document.getElementById('drop-zone').classList.remove('drag-over');
+      document.getElementById('json-card').classList.remove('drag-over');
       const file = e.dataTransfer.files[0];
       if (file) processFile(file);
     }
@@ -163,7 +292,7 @@
       if (file) processFile(file);
     }
 
-    // ── File processing ──────────────────────────────────────────────────────
+    // ── JSON file processing ─────────────────────────────────────
     function processFile(file) {
       if (!file.name.endsWith('.json')) {
         showError('Wrong file type', 'Please upload a <code>.json</code> file exported from Feedback Kitchen.');
@@ -182,25 +311,21 @@
     }
 
     function validateAndPreview(data) {
-      // Basic validation — must have the core fields a scorer needs
       if (!data.assessmentTitle || !Array.isArray(data.criteria) || data.criteria.length === 0) {
         showError('Not a valid scorer file', 'This file doesn\'t look like a Feedback Kitchen scorer. Make sure you\'re uploading the right file.');
         return;
       }
 
       pendingConfig = data;
-
-      // Populate preview
-      document.getElementById('prev-title').textContent   = data.assessmentTitle || '—';
-      document.getElementById('prev-course').textContent  = data.courseCode || '—';
+      document.getElementById('prev-title').textContent    = data.assessmentTitle || '—';
+      document.getElementById('prev-course').textContent   = data.courseCode || data.courseName || '—';
       document.getElementById('prev-criteria').textContent = data.criteria.length + ' criteria';
-      document.getElementById('prev-scale').textContent   = data.gradeScale
+      document.getElementById('prev-scale').textContent    = data.gradeScale
         ? data.gradeScale.map(g => g.grade).join(', ')
         : 'NZ University (default)';
 
       showSuccess();
 
-      // Check for duplicate name
       const existing = SA.loadAllConfigs();
       const duplicate = existing.find(c => c.assessmentTitle === data.assessmentTitle);
       if (duplicate) {
@@ -211,14 +336,11 @@
       }
     }
 
-    // ── Save logic ───────────────────────────────────────────────────────────
+    // ── Save logic ───────────────────────────────────────────────
     function saveImported(replace = false, asCopy = false) {
       if (!pendingConfig) return;
-
       const configs = SA.loadAllConfigs();
-
       if (replace) {
-        // Remove existing with same title
         const updated = configs.filter(c => c.assessmentTitle !== pendingConfig.assessmentTitle);
         pendingConfig.id = SA.uid();
         updated.push(pendingConfig);
@@ -231,16 +353,14 @@
         pendingConfig.id = SA.uid();
         SA.saveConfig(pendingConfig);
       }
-
-      // Redirect home with success flag
       window.location.href = 'index.html?imported=1';
     }
 
-    // ── UI helpers ───────────────────────────────────────────────────────────
+    // ── UI helpers ───────────────────────────────────────────────
     function showSuccess() {
       const panel = document.getElementById('result-panel');
+      panel.className = panel.className.replace(/border-\S+/g, '').replace(/bg-\S+/g, '');
       panel.classList.remove('hidden');
-      panel.className = panel.className.replace('border-red-200 bg-red-50', '').replace('border-green-200 bg-green-50', '');
       panel.classList.add('border-green-200', 'bg-green-50');
       document.getElementById('result-icon').textContent    = '✅';
       document.getElementById('result-title').textContent   = 'Scorer file looks good!';
@@ -248,10 +368,12 @@
       document.getElementById('preview-card').classList.remove('hidden');
       document.getElementById('action-buttons').classList.remove('hidden');
       document.getElementById('duplicate-panel').classList.add('hidden');
+      document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function showError(title, message) {
       const panel = document.getElementById('result-panel');
+      panel.className = panel.className.replace(/border-\S+/g, '').replace(/bg-\S+/g, '');
       panel.classList.remove('hidden');
       panel.classList.add('border-red-200', 'bg-red-50');
       document.getElementById('result-icon').textContent  = '❌';
@@ -260,6 +382,7 @@
       document.getElementById('preview-card').classList.add('hidden');
       document.getElementById('action-buttons').classList.add('hidden');
       document.getElementById('duplicate-panel').classList.add('hidden');
+      document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function resetUI() {
@@ -269,9 +392,15 @@
       document.getElementById('file-input').value = '';
     }
 
-    // ── Show imported success toast if redirected back ───────────────────────
-    window.addEventListener('DOMContentLoaded', () => {
-      // handled on index.html side via ?imported=1
+    // ── Init ─────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      checkSupporterAccess();
+      // Scroll PDF card into view if linked to directly
+      if (window.location.hash === '#pdf-import') {
+        setTimeout(() => {
+          document.getElementById('pdf-import').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     });
   </script>
 

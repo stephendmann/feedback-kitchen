@@ -20,10 +20,19 @@
     credPass: ''
   };
 
-  // ── Credential persistence (sessionStorage) ─────────────────
+  // ── Credential persistence ───────────────────────────────────
+  // Shared localStorage keys — same store as scorer.html wording assistant and
+  // the upload.html supporter-unlock form. Credentials entered anywhere are
+  // available everywhere without re-entry.
+  const FK_USER_KEY = 'SA_FK_USER';
+  const FK_PASS_KEY = 'SA_FK_PASS';
+
   function loadCreds() {
-    state.credUser = sessionStorage.getItem('fk_conv_user') || '';
-    state.credPass = sessionStorage.getItem('fk_conv_pass') || '';
+    // Session override takes precedence; fall back to persistent supporter key.
+    state.credUser = sessionStorage.getItem('fk_conv_user')
+                  || localStorage.getItem(FK_USER_KEY) || '';
+    state.credPass = sessionStorage.getItem('fk_conv_pass')
+                  || localStorage.getItem(FK_PASS_KEY) || '';
     const u = document.getElementById('cred-user');
     const p = document.getElementById('cred-pass');
     if (u && state.credUser) u.value = state.credUser;
@@ -33,8 +42,16 @@
   function saveCreds() {
     const u = document.getElementById('cred-user');
     const p = document.getElementById('cred-pass');
-    if (u) { state.credUser = u.value.trim(); sessionStorage.setItem('fk_conv_user', state.credUser); }
-    if (p) { state.credPass = p.value;       sessionStorage.setItem('fk_conv_pass', state.credPass); }
+    if (u) {
+      state.credUser = u.value.trim();
+      localStorage.setItem(FK_USER_KEY, state.credUser);
+      sessionStorage.setItem('fk_conv_user', state.credUser);
+    }
+    if (p) {
+      state.credPass = p.value;
+      localStorage.setItem(FK_PASS_KEY, state.credPass);
+      sessionStorage.setItem('fk_conv_pass', state.credPass);
+    }
   }
 
   // ── UI helpers ───────────────────────────────────────────────
