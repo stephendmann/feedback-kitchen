@@ -535,7 +535,7 @@
       <!-- Shown only when Focus mode is on; replaces sections B + D in the marking loop.
            Pairs the grade controls and the matching feedback block for ONE criterion at a
            time. The grade controls delegate to the hidden table inputs (#grade-sel-i /
-           #override-i) so all existing scoring, merge, autosave and export logic is reused
+           #override-i) so all existing scoring, merge and export logic is reused
            unchanged — this is an additive view, not a parallel data model. -->
       <section id="focus-workspace" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print" aria-label="Focus marking">
         <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100">
@@ -2306,21 +2306,34 @@
 
     // The assembled draft formats each graded criterion as:
     //   <name> – <weighted> / <weight>\n<descriptor lines...>\n\n
-    // A block ends at the next header line, the TOTAL SCORE line, or end of text.
+    // A header line ends with " / <number>". Requiring that trailing score (rather
+    // than just an en-dash followed by a digit) stops an ordinary feedback line such
+    // as "Provides 8 – 10 examples" from being mistaken for a header.
     function focusIsHeaderLine(line) {
-      return / – -?\d/.test(line);   // "Name – 7 / 10" — matches existing extract logic
+      return / – -?\d[\d.]* \/ \d[\d.]*\s*$/.test(line);
     }
 
+    // Locate criterion i's feedback block by POSITION among the graded criteria,
+    // not by name — so duplicate criterion names can't collide on the wrong block.
+    // The draft emits one block per graded row, in criteria order, so we count
+    // header lines and take the one matching criterion i's graded position.
     function focusFindBlock(full, i) {
-      const c = config.criteria[i];
-      if (!c) return null;
+      const rows = scoreResult && scoreResult.rows;
+      if (!rows || !rows[i] || !rows[i].grade) return null;   // ungraded → no block emitted
+      let pos = 0;                                            // i's index among graded rows
+      for (let k = 0; k < i; k++) { if (rows[k] && rows[k].grade) pos++; }
+
       const lines = full.split('\n');
-      const prefix = c.name + ' – ';   // "Name – "
-      let headerIdx = -1;
+      let seen = -1, headerIdx = -1;
       for (let k = 0; k < lines.length; k++) {
-        if (lines[k].indexOf(prefix) === 0) { headerIdx = k; break; }
+        if (lines[k].startsWith('TOTAL SCORE:')) break;      // blocks live above the total
+        if (focusIsHeaderLine(lines[k])) {
+          seen++;
+          if (seen === pos) { headerIdx = k; break; }
+        }
       }
       if (headerIdx === -1) return null;
+
       let endIdx = lines.length;
       for (let k = headerIdx + 1; k < lines.length; k++) {
         if (lines[k].startsWith('TOTAL SCORE:') || focusIsHeaderLine(lines[k])) { endIdx = k; break; }
