@@ -116,6 +116,15 @@
     #focus-workspace { display: none; }
     .fk-focus-on #focus-workspace { display: block; }
     .fk-focus-on #sec-rubric, .fk-focus-on #sec-feedback { display: none !important; }
+    /* Rail: hide the sections that disappear in focus mode; dim the secondary ones */
+    .fk-focus-on [data-rail="B"], .fk-focus-on [data-rail="D"] { display: none !important; }
+    .fk-focus-on [data-rail="C"], .fk-focus-on [data-rail="E"],
+    .fk-focus-on [data-rail="F"], .fk-focus-on [data-rail="G"] { opacity: 0.4; }
+    /* Focus workspace rail entry: hidden outside focus mode, full opacity inside */
+    [data-rail="◎"] { display: none; }
+    .fk-focus-on [data-rail="◎"] { display: inline !important; opacity: 1; }
+    /* C · Penalty & grade override compact mode: drop verbose instructions in focus mode */
+    .fk-focus-on #sec-adjust .step-sub { display: none; }
     #focus-toggle.is-on { color: #047857; background: #d1fae5; }
     #focus-body[disabled] { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
     #focus-save-chip { transition: opacity 0.4s; }
@@ -334,7 +343,7 @@
           <ul class="list-disc pl-5 space-y-0.5 mb-2">
             <li><strong>A · Student</strong> — Add the student name or identifier and any basic details.</li>
             <li><strong>B · Rubric</strong> — Choose the level that best matches each criterion. The scorer calculates the total from the saved weights.</li>
-            <li><strong>C · Adjustments</strong> — Make a small manual adjustment if needed, and note why.</li>
+            <li><strong>C · Penalty &amp; grade override</strong> — Apply a late-submission penalty or manually override the calculated grade.</li>
             <li><strong>D · Feedback</strong> — Review or edit the generated feedback so it matches your judgement and tone.</li>
             <li><strong>E · Notes</strong> — Keep any private marker notes here (not shown to the student).</li>
           </ul>
@@ -417,7 +426,8 @@
       <div class="max-w-5xl mx-auto px-4 py-2 flex flex-nowrap overflow-x-auto md:flex-wrap md:overflow-x-visible items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-400">
         <a href="#sec-student"  data-rail="A" class="hover:text-emerald-600 whitespace-nowrap">A · Student</a>
         <a href="#sec-rubric"   data-rail="B" class="hover:text-emerald-600 whitespace-nowrap">B · Rubric</a>
-        <a href="#sec-adjust"   data-rail="C" class="hover:text-emerald-600 whitespace-nowrap">C · Adjustments</a>
+        <a href="#focus-workspace" data-rail="◎" class="hover:text-emerald-600 whitespace-nowrap">◎ Focus marking</a>
+        <a href="#sec-adjust"   data-rail="C" class="hover:text-emerald-600 whitespace-nowrap">C · Penalty &amp; grade override</a>
         <a href="#sec-feedback" data-rail="D" class="hover:text-emerald-600 whitespace-nowrap">D · Feedback</a>
         <a href="#sec-notes"    data-rail="E" class="hover:text-emerald-600 whitespace-nowrap">E · Notes</a>
         <a href="#sec-export"   data-rail="F" class="hover:text-emerald-600 whitespace-nowrap">F · Finish</a>
@@ -531,90 +541,18 @@
         </div>
       </details>
 
-      <!-- ─ Focus mode workspace (criterion-by-criterion) ── -->
-      <!-- Shown only when Focus mode is on; replaces sections B + D in the marking loop.
-           Pairs the grade controls and the matching feedback block for ONE criterion at a
-           time. The grade controls delegate to the hidden table inputs (#grade-sel-i /
-           #override-i) so all existing scoring, merge and export logic is reused
-           unchanged — this is an additive view, not a parallel data model. -->
-      <section id="focus-workspace" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print" aria-label="Focus marking">
-        <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100">
-          <h2 class="step-title mb-0"><span class="step-badge">◎</span>Focus marking</h2>
-          <div class="flex items-center gap-2">
-            <span id="focus-student" class="text-xs font-semibold text-slate-400 truncate max-w-[12rem]" title="Student being marked (edit in section A · Student)."></span>
-            <span id="focus-progress" class="text-xs font-semibold text-slate-500">—</span>
-            <button onclick="S.toggleFocusMode()" class="btn btn-ghost text-xs" title="Return to the full overview page (rubric table + feedback draft).">Exit focus</button>
-          </div>
-          <!-- Screen-reader announcement of the current criterion on navigation. -->
-          <span id="focus-live" class="sr-only" aria-live="polite"></span>
-        </div>
-        <div class="px-5 py-4">
-          <div class="focus-card-grid">
-            <!-- Left: grade controls for this criterion -->
-            <div>
-              <div class="mb-1 flex items-baseline justify-between gap-2">
-                <h3 id="focus-criterion-name" class="font-bold text-slate-800 text-base leading-snug">—</h3>
-                <span id="focus-criterion-weight" class="text-xs font-semibold text-slate-400 whitespace-nowrap"></span>
-              </div>
-              <p class="text-xs text-slate-500 mb-3">Pick a grade. Override sets a specific score instead of the band midpoint.</p>
-              <div class="space-y-3">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-500 mb-1" for="focus-grade">Grade</label>
-                  <select id="focus-grade" class="grade-select w-full" onchange="S.focusOnGrade()"></select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-500 mb-1" for="focus-override">Override <span class="font-normal text-slate-400">(optional)</span></label>
-                  <input type="number" id="focus-override" class="override-input w-full" placeholder="–" min="0" max="100" step="0.5" oninput="S.focusOnOverride()">
-                </div>
-                <div class="flex flex-wrap gap-3 text-xs pt-1">
-                  <span class="text-slate-500">Score: <strong id="focus-score" class="text-slate-700">—</strong> / 100</span>
-                  <span class="text-slate-500">Weighted: <strong id="focus-weighted" class="text-emerald-700">—</strong></span>
-                  <span id="focus-tier" class="tier-pill"></span>
-                </div>
-              </div>
-            </div>
-            <!-- Right: this criterion's feedback block -->
-            <div>
-              <div class="mb-1 flex items-center justify-between gap-2">
-                <label class="block text-xs font-semibold text-slate-500" for="focus-body">Feedback for this criterion</label>
-                <span id="focus-save-chip" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Idle</span>
-              </div>
-              <textarea id="focus-body" class="input-field w-full text-sm" rows="8" spellcheck="true"
-                        placeholder="Grade this criterion to generate its feedback, then edit here."
-                        oninput="S.focusOnBodyInput()"></textarea>
-              <p class="text-[11px] text-slate-400 mt-1">Edits here are written straight into the full feedback draft — nothing is hidden.</p>
-            </div>
-          </div>
-
-          <!-- Navigation -->
-          <div class="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-slate-100">
-            <button id="focus-prev" onclick="S.focusPrev()" class="btn btn-ghost text-sm" title="Previous criterion (Page Up)">← Previous</button>
-            <button onclick="S.focusToggleFullDraft()" class="btn btn-ghost text-xs" title="Peek at the whole assembled feedback draft without leaving Focus mode.">Open full draft</button>
-            <button id="focus-next" onclick="S.focusNext()" class="btn btn-blue text-sm" title="Next criterion (Page Down)">Next →</button>
-          </div>
-
-          <!-- Full-draft peek (read-only mirror of the main feedback textarea) -->
-          <div id="focus-full-draft" class="hidden mt-4 panel panel-light border border-slate-200 rounded-xl">
-            <div class="flex items-center justify-between px-3 py-2">
-              <span class="text-xs font-semibold text-slate-600">Full assembled draft (read-only)</span>
-              <button onclick="S.focusToggleFullDraft()" class="text-xs text-slate-500 hover:text-slate-700">Close</button>
-            </div>
-            <textarea id="focus-full-draft-text" class="input-field w-full text-xs m-0 rounded-t-none" rows="10" readonly></textarea>
-            <p class="text-[11px] text-slate-400 px-3 py-2">To edit the intro, totals or outro, exit Focus mode and use the full feedback editor.</p>
-          </div>
-        </div>
-      </section>
-
       <!-- ─ C. Apply Any Penalty ─────────────────────────── -->
+      <!-- DOM order: C appears before #focus-workspace so keyboard Tab from C's last
+           field flows naturally into the workspace controls (WCAG 2.4.3). -->
       <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
-          <h2 class="step-title mb-0"><span class="step-badge">C</span>Adjustments</h2>
+          <h2 class="step-title mb-0"><span class="step-badge">C</span>Penalty &amp; grade override</h2>
           <span class="text-[11px] text-slate-400">click to collapse</span>
         </summary>
         <div class="section-body">
           <p class="step-sub mb-4" style="margin-left:2.15rem">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div class="flex-1">
+            <div id="late-penalty-controls" class="flex-1">
               <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
               <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.onPenaltyChange()" style="max-width:320px"
                       title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
@@ -662,6 +600,84 @@
           </div>
         </div>
       </details>
+
+      <!-- ─ Focus mode workspace (criterion-by-criterion) ── -->
+      <!-- Shown only when Focus mode is on; replaces sections B + D in the marking loop.
+           Pairs the grade controls and the matching feedback block for ONE criterion at a
+           time. The grade controls delegate to the hidden table inputs (#grade-sel-i /
+           #override-i) so all existing scoring, merge and export logic is reused
+           unchanged — this is an additive view, not a parallel data model. -->
+      <section id="focus-workspace" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print" aria-label="Focus marking">
+        <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100">
+          <h2 class="step-title mb-0"><span class="step-badge">◎</span>Focus marking</h2>
+          <div class="flex items-center gap-2">
+            <span id="focus-student" class="text-xs font-semibold text-slate-400 truncate max-w-[12rem]" title="Student being marked (edit in section A · Student)."></span>
+            <span id="focus-progress" class="text-xs font-semibold text-slate-500">—</span>
+            <button onclick="S.toggleFocusMode()" class="btn btn-ghost text-xs" title="Return to the full overview page (rubric table + feedback draft).">Exit focus</button>
+          </div>
+          <!-- Screen-reader announcement of the current criterion on navigation. -->
+          <span id="focus-live" class="sr-only" aria-live="polite"></span>
+        </div>
+        <div class="px-5 py-4">
+          <div class="focus-card-grid">
+            <!-- Left: grade controls for this criterion -->
+            <div>
+              <div class="mb-1 flex items-baseline justify-between gap-2">
+                <h3 id="focus-criterion-name" class="font-bold text-slate-800 text-base leading-snug">—</h3>
+                <span id="focus-criterion-weight" class="text-xs font-semibold text-slate-400 whitespace-nowrap"></span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Pick a grade. Override sets a specific score instead of the band midpoint.</p>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1" for="focus-grade">Grade</label>
+                  <select id="focus-grade" class="grade-select w-full" onchange="S.focusOnGrade()"></select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1" for="focus-override">Override <span class="font-normal text-slate-400">(optional)</span></label>
+                  <input type="number" id="focus-override" class="override-input w-full" placeholder="–" min="0" max="100" step="0.5"
+                         onmousedown="S.focusOnOverridePrime()"
+                         onkeydown="S.focusOnOverrideKeydown(event)"
+                         onwheel="S.focusOnOverridePrime()"
+                         oninput="S.focusOnOverride()">
+                </div>
+                <div class="flex flex-wrap gap-3 text-xs pt-1">
+                  <span class="text-slate-500">Score: <strong id="focus-score" class="text-slate-700">—</strong> / 100</span>
+                  <span class="text-slate-500">Weighted: <strong id="focus-weighted" class="text-emerald-700">—</strong></span>
+                  <span id="focus-tier" class="tier-pill"></span>
+                </div>
+              </div>
+            </div>
+            <!-- Right: this criterion's feedback block -->
+            <div>
+              <div class="mb-1 flex items-center justify-between gap-2">
+                <label class="block text-xs font-semibold text-slate-500" for="focus-body">Feedback for this criterion</label>
+                <span id="focus-save-chip" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">Idle</span>
+              </div>
+              <textarea id="focus-body" class="input-field w-full text-sm" rows="8" spellcheck="true"
+                        placeholder="Grade this criterion to generate its feedback, then edit here."
+                        oninput="S.focusOnBodyInput()"></textarea>
+              <p class="text-[11px] text-slate-400 mt-1">Edits here are written straight into the full feedback draft — nothing is hidden.</p>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div class="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-slate-100">
+            <button id="focus-prev" onclick="S.focusPrev()" class="btn btn-ghost text-sm" title="Previous criterion (Page Up)">← Previous</button>
+            <button onclick="S.focusToggleFullDraft()" class="btn btn-ghost text-xs" title="Peek at the whole assembled feedback draft without leaving Focus mode.">Open full draft</button>
+            <button id="focus-next" onclick="S.focusNext()" class="btn btn-blue text-sm" title="Next criterion (Page Down)">Next →</button>
+          </div>
+
+          <!-- Full-draft peek (read-only mirror of the main feedback textarea) -->
+          <div id="focus-full-draft" class="hidden mt-4 panel panel-light border border-slate-200 rounded-xl">
+            <div class="flex items-center justify-between px-3 py-2">
+              <span class="text-xs font-semibold text-slate-600">Full assembled draft (read-only)</span>
+              <button onclick="S.focusToggleFullDraft()" class="text-xs text-slate-500 hover:text-slate-700">Close</button>
+            </div>
+            <textarea id="focus-full-draft-text" class="input-field w-full text-xs m-0 rounded-t-none" rows="10" readonly></textarea>
+            <p class="text-[11px] text-slate-400 px-3 py-2">To edit the intro, totals or outro, exit Focus mode and use the full feedback editor.</p>
+          </div>
+        </div>
+      </section>
 
       <!-- Penalty+grade print version -->
       <section class="hidden bg-slate-50 rounded-xl border border-slate-200 p-4 print-penalty-section">
@@ -1217,6 +1233,7 @@
     const FK_FOCUS_KEY = 'SA_FOCUS_MODE';
     let focusMode = false;
     let focusIdx  = 0;
+    let _focusSavedAdjOpen = false; // remembers C · Adjustments state before focus entry
 
     // Snippets
     const SNIPPETS_KEY = 'SA_SNIPPETS';
@@ -1410,7 +1427,7 @@
       // Late penalty select
       const sel = document.getElementById('late-penalty-select');
       if (!config.enableLatePenalties) {
-        document.getElementById('sec-adjust').style.display = 'none';
+        document.getElementById('late-penalty-controls').style.display = 'none';
       } else {
         config.latePenalties.forEach((lp, i) => {
           const opt = document.createElement('option');
@@ -1529,6 +1546,7 @@
                    min="0" max="100" step="0.5"
                    onmousedown="S.onOverridePrime(${i})"
                    onkeydown="S.onOverrideKeydown(${i}, event)"
+                   onwheel="S.onOverridePrime(${i})"
                    onfocus="S.onOverrideFocus(${i})"
                    oninput="S.onOverrideChange(${i})">
           </td>
@@ -2149,7 +2167,14 @@
         btn.setAttribute('aria-pressed', focusMode ? 'true' : 'false');
       }
       try { localStorage.setItem(FK_FOCUS_KEY, focusMode ? '1' : '0'); } catch (e) { /* private mode */ }
+      // C · Penalty & grade override: collapse on enter only when no penalty controls need
+      // to stay accessible. When late penalties are enabled the section stays open so the
+      // marker can adjust without leaving focus mode. Always restore on exit.
+      const secAdj = document.getElementById('sec-adjust');
+      const hasPenalties = config && config.enableLatePenalties;
       if (focusMode) {
+        _focusSavedAdjOpen = secAdj ? secAdj.open : false;
+        if (secAdj && !hasPenalties) secAdj.open = false;
         // Clamp index in case the criteria count changed.
         const n = (config && config.criteria) ? config.criteria.length : 0;
         if (focusIdx >= n) focusIdx = Math.max(0, n - 1);
@@ -2157,6 +2182,7 @@
         const ws = document.getElementById('focus-workspace');
         if (ws && ws.scrollIntoView) ws.scrollIntoView({ block: 'start', behavior: 'auto' });
       } else {
+        if (secAdj) secAdj.open = !!_focusSavedAdjOpen;
         const fd = document.getElementById('focus-full-draft');
         if (fd) fd.classList.add('hidden');
       }
@@ -2245,7 +2271,19 @@
 
       // Nav button states.
       const prev = el('focus-prev'); if (prev) prev.disabled = (i === 0);
-      const next = el('focus-next'); if (next) next.disabled = (i === n - 1);
+      const next = el('focus-next');
+      if (next) {
+        next.disabled = false;
+        if (i === n - 1) {
+          next.textContent = 'Copy feedback';
+          next.title = 'Copy feedback to clipboard and save to cohort — end of rubric.';
+          next.onclick = function () { S.copyFeedback(); };
+        } else {
+          next.textContent = 'Next →';
+          next.title = 'Next criterion (Page Down)';
+          next.onclick = function () { S.focusNext(); };
+        }
+      }
 
       // Keep the peek panel in sync if it is open.
       const fd = el('focus-full-draft');
@@ -2278,6 +2316,22 @@
       const graded = !!(row && row.grade);
       setText('focus-score',    graded ? SA.formatScore(row.finalScore, _displayRounding) : '—');
       setText('focus-weighted', graded ? SA.formatScore(row.weightedScore, _displayRounding) : '—');
+    }
+
+    // Mirror the normal-mode override priming behaviour: seed the visible focus-override
+    // input with the grade-band midpoint before the spinner or arrow-key increments it,
+    // so the starting point matches what the rubric table would show (not 0).
+    function focusOnOverridePrime() {
+      if (_primeOverrideFromMidpoint(focusIdx)) {
+        const ov = el('focus-override');
+        if (ov && ov.value === '') ov.value = studentGrades[focusIdx].override;
+      }
+    }
+
+    function focusOnOverrideKeydown(ev) {
+      if (ev && (ev.key === 'ArrowUp' || ev.key === 'ArrowDown')) {
+        focusOnOverridePrime();
+      }
     }
 
     // Write the edited body for criterion i back into the assembled draft.
@@ -2711,9 +2765,9 @@
       if (railLbl) {
         railLbl.textContent = cohortCount === 0 ? 'G · Cohort' : 'G · Cohort (' + cohortCount + ')';
       }
-      // Auto-expand H once the first student is saved (only the first time per session)
+      // Auto-expand G once the first student is saved (only the first time per session, not during focus mode)
       const hSec = document.getElementById('sec-cohort');
-      if (hSec && cohortCount > 0 && !hSec.dataset.userToggled && !hSec.open) {
+      if (hSec && cohortCount > 0 && !hSec.dataset.userToggled && !hSec.open && !focusMode) {
         hSec.open = true;
       }
       // Insights button: show when cohort has ≥ 1 student; update NEW pill from open count
@@ -3086,6 +3140,7 @@
       }
 
       setAIState('idle');
+      focusIdx = 0;
       recalculate();
       refreshStatusChips();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4404,6 +4459,7 @@
              aiToggleAllExplainers,
              // Focus mode (criterion-by-criterion workspace)
              toggleFocusMode, focusPrev, focusNext, focusOnGrade, focusOnOverride,
+             focusOnOverridePrime, focusOnOverrideKeydown,
              focusOnBodyInput, focusToggleFullDraft,
              // Modal accessibility (PR #14)
              openModal, closeModal };
@@ -4795,7 +4851,7 @@
       const io = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
       }, { rootMargin: '-40% 0px -55% 0px' });
-      ['sec-student','sec-rubric','sec-adjust','sec-feedback',
+      ['sec-student','sec-rubric','sec-adjust','focus-workspace','sec-feedback',
        'sec-notes','sec-ai','sec-export','sec-cohort']
         .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
     })();
