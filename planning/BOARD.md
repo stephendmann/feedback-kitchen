@@ -4,19 +4,11 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11): Safe to implement now: 6 · Needs inspection: 7 · Backlog: 3 · others: 0
+Column counts (2026-06-11, post-FK-01): Safe to implement now: 5 · Needs inspection: 7 · Backlog: 3 · Ready to document: 1 · others: 0
 
 ---
 
 ## Safe to implement now
-
-### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale
-- **Rationale:** Grade arithmetic is the correctness core; current Jest suite covers only AI-wording post-processing. These two functions are already in an importable module (`js/shared.js`) with a harness present — testable today with zero refactoring.
-- **Evidence:** O — `js/shared.test.js` contents (no score-math tests); functions at `js/shared.js:158,167`.
-- **Dependencies:** none.
-- **Risk:** Low. Worst case: tests confirm correctness (still valuable as a regression net).
-- **DoD:** Tests cover all grade-band boundaries for both functions, both scale variants, and malformed input; suite green; any surprising behavior logged as a finding in INSPECTION.md (INS-4) rather than "fixed" silently.
-- **Column:** Safe to implement now. **Priority:** P0. **Effort:** S.
 
 ### FK-02 · Fix section-lettering / onboarding-banner mismatch
 - **Rationale:** Banner teaches A·Student, B·Rubric, C·Penalty, D·Feedback, E·Notes; the page has decayed further than first observed. First-run users are directed by an incomplete map.
@@ -156,4 +148,11 @@ Column counts (2026-06-11): Safe to implement now: 6 · Needs inspection: 7 · B
 *(empty)*
 
 ## Ready to document
-*(empty — see promotion rule in README.md)*
+
+### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale — DONE 2026-06-11
+- **Outcome:** `js/score-grade.test.js` — 75 characterization tests; full suite 98/98 green. Zero source changes needed (both functions already exported on `window.SA`, shared.js:1201). Surprises S-1…S-5 recorded in INS-4; none fixed in the test commit (no-silent-fixes rule held). D-01 validation outcome recorded.
+- **DoD check:** all grade-band boundaries (±0.01 each floor) ✓ · both functions ✓ · default thresholds + custom scale (shuffled NZ-mirror, sparse 3-band, floored) ✓ · malformed input (null, undefined, NaN, negative, >100, numeric/non-numeric/empty strings, empty/null scale) ✓ · suite green ✓ · surprises → INS-4 ✓.
+- **Column note:** skipped *Validate in runtime* — test-only card, no runtime surface; suite green is the validation.
+- **Was:** Safe to implement now. **Priority:** P0. **Effort:** S (actual: S).
+
+*(promotion rule in README.md applies)*

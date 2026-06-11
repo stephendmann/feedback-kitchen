@@ -49,7 +49,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - **Notable behaviour:** `scoreToGradeFromScale` returns the *lowest* band's grade for any score below all bands (shared.js:172–173) and will throw on an empty/missing scale (no guard on `sorted[length-1]` — `.grade` of undefined). Unknown grade keys in `computeScores` fall back to midpoint 50 / tier 'developing'. Record any further oddities in INS-4 once FK-01 tests run.
   - **Fail-penalty interaction:** `lp.fail` zeroes the score and forces the bottom grade; `onPenaltyChange` (scorer.html:1824–1847) additionally *clears* any letter override and shows a conflict banner (1833–1845).
 
-## INS-4 ☐ Characterization-test surprises ledger
+## INS-4 ☑ Characterization-test surprises ledger
 - **Gates:** none (FK-01 is safe-now); this item *collects* what FK-01 discovers.
 - **Rule (operational):** test the behaviour **as it is** — the assertion captures what the code *does*, not what it *should* do. File the surprise here using the template. Fix only in a separate commit, only after triage, never inside the FK-01 test commit.
 - **Surprise template (copy per entry):**
@@ -67,7 +67,44 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - Score below all bands returns the lowest band's grade even for negative/NaN-ish inputs — check `NaN >= floor` is false for every band, so NaN falls through to the floor grade in both functions.
   - `scoreToGrade` with non-numeric string: `'80' >= 80` is true (string coercion) — does it band correctly for numeric strings? Capture as-is.
   - weightedTotal sums *rounded* per-row values (shared.js:376) — totals can differ from unrounded arithmetic by design.
-- **Findings:** _(pending — populate during FK-01)_
+- **Findings:** _(populated 2026-06-11 from FK-01 — `js/score-grade.test.js`, 75 tests, all green on first run; every pre-seeded candidate confirmed. Ledger reopens if later characterization work finds more.)_
+
+  ### S-1 · Empty or null gradeScale crashes scoreToGradeFromScale
+  - Input: `scoreToGradeFromScale(75, [])` and `(75, null)`
+  - Expected: graceful fallback (e.g. default thresholds or null)
+  - Actual: TypeError — `[]` → `sorted[sorted.length - 1]` is undefined → `.grade` throws (shared.js:173); `null` → `.slice()` throws (shared.js:168). Both asserted with `toThrow(TypeError)`.
+  - Suspected cause: no guard; written assuming callers pre-validate.
+  - Triage: **bug (latent, unreachable in normal flow)** — `computeScores` only calls it when `config.gradeScale` is a non-empty array (shared.js:331), and `applyGradeOverride` routes through `bandMinimumForGrade` which has its own guard.
+  - Action: none now; add a guard at the FK-09 module boundary (separate commit), then update the two characterization tests.
+
+  ### S-2 · Score below every band still earns the lowest band's grade
+  - Input: `scoreToGradeFromScale(10, [{High:80},{Low:60}])` → `'Low'`
+  - Expected (naive): some "no band" signal for scores under the lowest floor.
+  - Actual: lowest band's grade awarded regardless of distance below its floor; negatives included.
+  - Suspected cause: deliberate — code comment "If below all bands, return the lowest grade" (shared.js:172).
+  - Triage: **intended.**
+  - Action: none; documented so FK-09 preserves it.
+
+  ### S-3 · null and '' band as 0; NaN/undefined/'abc' fall through to the same grade
+  - Input: `scoreToGrade(null)` → 'D' (via `null >= 0` coercing true); `scoreToGrade('')` → 'D' ('' coerces to 0); `scoreToGrade(NaN)`/`(undefined)`/`('abc')` → 'D' (all comparisons false → fallback return, shared.js:162).
+  - Expected: rejection of non-numeric input.
+  - Actual: every malformed input lands on 'D' — by two *different* mechanisms that happen to agree on the default scale. On a custom scale both mechanisms also agree (lowest grade), per tests.
+  - Triage: **intended-by-coincidence / benign.** Output is stable; the mechanism is fragile.
+  - Action: none now; FK-09 boundary should validate numeric input explicitly.
+
+  ### S-4 · Numeric strings are accepted and band correctly
+  - Input: `scoreToGrade('80')` → 'A-'; `scoreToGradeFromScale('80', scale)` → 'A-'
+  - Expected: type error or 'D'.
+  - Actual: JS relational coercion makes string scores work transparently.
+  - Triage: **unclear** — harmless today; masks upstream type bugs (e.g. an unparsed input field value would silently band).
+  - Action: none now; tighten to number-only at the FK-09 boundary.
+
+  ### S-5 · No upper cap: scores above 100 band as the top grade
+  - Input: `scoreToGrade(105)` → 'A+'
+  - Expected: cap or warning at 100.
+  - Actual: any score ≥ top floor returns the top grade; no 0–100 range enforcement anywhere in either function.
+  - Triage: **intended (caller's responsibility)** — penalty math clamps at 0 but nothing clamps high; overrides could exceed 100 upstream.
+  - Action: none; note for FK-09 interface contract.
 
 ## INS-5 ☐ localStorage capacity and failure-mode measurement
 - **Gates:** FK-10; outcome decides whether a migration card gets created at all.
