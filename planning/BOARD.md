@@ -19,11 +19,11 @@ Column counts (2026-06-11): Safe to implement now: 6 · Needs inspection: 7 · B
 - **Column:** Safe to implement now. **Priority:** P0. **Effort:** S.
 
 ### FK-02 · Fix section-lettering / onboarding-banner mismatch
-- **Rationale:** Banner teaches A·Student, B·Rubric, C·Penalty, D·Feedback, E·Notes; page shows A, C, Focus, E, F, G. First-run users are directed to sections that don't exist.
-- **Evidence:** O — both screenshots; nav strip confirms B and D are gone.
-- **Dependencies:** Decide re-letter vs de-letter first (DECISIONS.md D-02). Coordinate with FK-05 (section reorder) to avoid lettering twice.
-- **Risk:** Low. Banner copy and section badges only.
-- **DoD:** Banner list matches on-page sections 1:1; nav strip matches; no stale letter references elsewhere in scorer.html (`grep -n "B · Rubric\|D · Feedback"` returns nothing); checked in dev server.
+- **Rationale:** Banner teaches A·Student, B·Rubric, C·Penalty, D·Feedback, E·Notes; the page has decayed further than first observed. First-run users are directed by an incomplete map.
+- **Evidence:** O (refined 2026-06-11, code read) — banner lists A–E only (scorer.html:344–348); page actually has **nine** lettered/badged blocks: A Student (465), B Rubric (498), C Penalty (547), ◎ Focus (610), D Feedback draft (705), E Notes (869), **F Wording assistant (883) AND F Finish (1115) — duplicate letter F**, G Cohort (1139). B/D are hidden *in focus mode only* (CSS 118–120), not gone. Focus-mode CSS keys off letters: `[data-rail="B"]/[data-rail="D"]` (120–122) — load-bearing, must be re-keyed when de-lettering.
+- **Dependencies:** D-02 **resolved 2026-06-11: de-letter** (see DECISIONS.md for grep evidence). Coordinate with FK-05 (section reorder) to avoid touching the rail twice; re-key the focus-mode CSS selectors in the same change.
+- **Risk:** Low. Banner copy, section badges, rail labels, and four CSS selectors.
+- **DoD:** Banner list matches on-page sections 1:1 (including Focus, wording assistant, Finish, Cohort); nav strip matches; `data-rail` selectors re-keyed (no letter-valued `data-rail` left); README "Section F" wording (lines 164, 231) reworded; REVIEW.md:21 stale rail checklist updated; no stale letter references (`grep -n "· Student\|· Rubric\|· Penalty\|· Feedback\|· Notes" scorer.html` returns nothing letter-prefixed); checked in dev server.
 - **Column:** Safe to implement now. **Priority:** P0. **Effort:** S.
 
 ### FK-03 · Copy/casing consistency pass
@@ -36,26 +36,27 @@ Column counts (2026-06-11): Safe to implement now: 6 · Needs inspection: 7 · B
 
 ### FK-04 · Non-color signal + legend for yellow "awaiting input" fields
 - **Rationale:** Empty/required state appears to be conveyed by yellow fill alone; colorblind/low-vision markers lose the signal. (Meaning of yellow is inferred — confirm while implementing.)
-- **Evidence:** O — yellow fills in screenshots; I — that yellow means "empty/awaiting".
+- **Evidence:** O (refined 2026-06-11) — yellow is the static class `.cell-yellow` (`background:#fefce8 !important`, scorer.html:51) applied to exactly 5 inputs: student-name (473), student-id (478), student-tutor (483), late-penalty-select (555), grade-override (594). It is **always-on for marker-input fields**, not a dynamic empty/awaiting state — i.e. yellow means "you type here", which still fails colour-only signalling. I — that markers read it as "awaiting input". Note: the existing "Wording key" button (408) is the AI-assistant *credentials* dialog, NOT a legend — the legend in this card's DoD must be new UI, do not overload that term.
 - **Dependencies:** none.
 - **Risk:** Low. If yellow means something else, the fix is renamed, not removed.
-- **DoD:** Each yellow-state field also carries a non-color cue (icon/text/border treatment) and the state is explained once on screen or in the wording key; axe run shows no new violations.
+- **DoD:** Each `.cell-yellow` field also carries a non-color cue (icon/text/border treatment) and the state is explained once on screen in a small legend (named something other than "wording key"); axe run shows no new violations.
 - **Column:** Safe to implement now. **Priority:** P3. **Effort:** S.
 
-### FK-05 · Reorder sections to task sequence (Student → Marking → Penalty → Notes → Finish → Cohort)
+### FK-05 · Reorder sections to task sequence (Student → Rubric/Focus → Penalty → Feedback → Notes → Wording assistant → Finish → Cohort)
 - **Rationale:** Penalty & override currently renders above the marking block; marker task order is score-then-penalise. Forces a per-student visual skip and risks anchoring.
-- **Evidence:** O — screenshot 1 order. Impact magnitude unmeasured (Medium confidence).
-- **Dependencies:** **Pre-flight check, not full inspection:** grep scorer.html for index-anchored section lookups before moving DOM (known fragility per commit "make Focus block lookup index-anchored"). If lookups are positional, fix them as part of this card.
-- **Risk:** Medium — breaking focus-mode navigation. Mitigated by the pre-flight grep + runtime validation.
-- **DoD:** New order live; focus-mode Previous/Next/Exit, expand/collapse-all, and nav strip all work in dev server; lettering (FK-02) consistent with new order.
+- **Scope note 2026-06-11:** earlier order shorthand ("Student → Marking → Penalty → Notes → Finish → Cohort") omitted the Feedback-draft and Wording-assistant sections, which exist on the page. Full target order recorded above; the only *move* is Penalty (`#sec-adjust`) from before the rubric/focus blocks to after them — everything else already sits in task order.
+- **Evidence:** O — screenshot 1 order + code read (section `<details>` blocks at 463/496/545/~600/703/867/~880/~1110/1134). Impact magnitude unmeasured (Medium confidence).
+- **Dependencies:** INS-9 **resolved 2026-06-11 — no positional lookups remain**; focus nav is criterion-index based and order-independent. Remaining coupled items: rail markup order (427–434) must be re-sequenced manually; letter-keyed focus CSS (118–127) is FK-02's re-key job — land FK-02 first or together.
+- **Risk:** Downgraded to Low-Medium per INS-9 — runtime validation still mandatory.
+- **DoD:** New order live; focus-mode Previous/Next/Exit, expand/collapse-all, and nav strip all work in dev server; lettering/naming (FK-02) consistent with new order.
 - **Column:** Safe to implement now. **Priority:** P1. **Effort:** S–M.
 
 ### FK-06 · Demote/guard "Clear Cohort"; group cohort actions visually
 - **Rationale:** Destructive action sits at equal weight among 8 peer buttons. *Partial* fix only — merging/renaming the "Moderation Export…" / "Export for Moderation" pair stays gated on INS-2.
-- **Evidence:** O — screenshot 2 button row. U — whether Clear Cohort already confirms.
+- **Evidence:** O (refined 2026-06-11) — screenshot 2 button row; **Clear Cohort already double-confirms** (`confirmClearCohort()` scorer.html:2640–2652, two `confirm()` dialogs naming the student count). Empty-cohort path clears silently (2642–2646, harmless). One other `SA.clearCohort` call at 2853 inside a modal flow — verify its guard during implementation. See INS-2 findings (Q3).
 - **Dependencies:** none for the demote/guard portion.
-- **Risk:** Low.
-- **DoD:** Clear Cohort visually separated (danger styling or overflow), confirmation step verified or added; primary actions (Export, Insights, View list) visually primary; runtime check.
+- **Risk:** Low. Scope is now visual-only: demote/group; the guard exists and just needs runtime verification.
+- **DoD:** Clear Cohort visually separated (danger styling or overflow), existing double-confirmation verified in runtime (incl. the 2853 path); primary actions (Export, Insights, View list) visually primary; runtime check.
 - **Column:** Safe to implement now. **Priority:** P1. **Effort:** S.
 
 ---
@@ -141,7 +142,7 @@ Column counts (2026-06-11): Safe to implement now: 6 · Needs inspection: 7 · B
 ### FK-16 · Styling consolidation onto token/Tailwind build + CSS watch task
 - **Rationale:** Three coexisting systems (tailwind.out.css, shared.css, inline workaround styles — the stale-build footgun is documented in working memory). Consolidate on the token build the ADR work already invested in.
 - **Evidence:** O — css/ contents; memory note on build staleness.
-- **Dependencies:** none hard; do opportunistically alongside FK-15 contact-extractions. The watch task (`build:css --watch` wired into dev-server) is a same-day standalone win — could be split out as Safe-now.
+- **Dependencies:** none hard; do opportunistically alongside FK-15 contact-extractions. The watch task is a same-day standalone win — **and is already half-done: `watch:css` exists in package.json:7** (2026-06-11 read). The slice reduces to wiring it into the dev workflow: a combined `dev` script (watch:css + `node dev-server.js` concurrently) and a README/dev-notes line, killing the stale-build footgun.
 - **Risk:** Low-medium — visual drift during migration; existing screenshot baselines mitigate.
 - **DoD:** watch task running with dev server; migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch); screenshot diffs clean.
 - **Column:** Backlog (watch-task slice: Safe to implement now). **Priority:** P3. **Effort:** M amortized.

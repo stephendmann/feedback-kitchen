@@ -19,7 +19,7 @@ remaining no-inspection-needed fixes.
 | 0.2 | Resolve D-02 (de-letter vs re-letter) | Run its grep validation step; record in DECISIONS.md |
 | 0.3 | FK-02 lettering/banner fix + FK-03 casing rider | One small PR; follows D-02 |
 | 0.4 | Run INS-3 (scoring-surface map) and INS-9 (reorder pre-flight) | Inspection only, no changes |
-| 0.5 | FK-05 section reorder | Pulled forward; uses INS-9 findings; runtime-validate focus-mode nav |
+| 0.5 | FK-05 section reorder | Pulled forward; uses INS-9 findings (☑ 2026-06-11: no positional lookups; rail re-sequence + FK-02 CSS re-key are the only coupled bits); runtime-validate focus-mode nav. Order clarified 2026-06-11: Student → Rubric/Focus → Penalty → Feedback → Notes → Wording assistant → Finish → Cohort (earlier shorthand omitted Feedback/assistant; the only move is Penalty below the marking blocks) |
 | 0.6 | FK-06 Clear Cohort demote/guard | Pulled forward; partial cohort cleanup only — moderation pair stays gated on INS-2 |
 | 0.7 | FK-04 non-color signal for yellow fields | Pulled forward |
 | 0.8 | FK-16 watch-task slice (`build:css --watch`) | Pulled forward from Phase 4; no styling migration |

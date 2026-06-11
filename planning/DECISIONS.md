@@ -14,14 +14,21 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** run FK-01 today; count surprises in INS-4.
 - **Outcome:** _(pending)_
 
-## D-02 ☐ De-letter vs re-letter the section badges
+## D-02 ◐ De-letter vs re-letter the section badges
 - **Why it matters:** FK-02 needs a direction; letters keep decaying as sections evolve (B and D already gone).
 - **Evidence:** O — current mismatch is the second drift (focus mode replaced B·Rubric).
 - **Depends on assumption:** letters carry no load-bearing references in exports/docs/how-to page.
 - **Risk if wrong:** broken cross-references in how-to-feedback-kitchen.html / README.
 - **First validation step:** `grep -rn "A · Student\|B · Rubric\|C · Penalty" *.html *.md` to find every letter reference before choosing.
 - **Leaning:** de-letter (plain names) — letters re-decay on every structural change; names don't.
-- **Outcome:** _(pending)_
+- **Outcome:** **Decided 2026-06-11 — DE-LETTER.** Validation grep run across *.html *.md (worktree-wide). Findings:
+  - Letter references are confined to scorer.html itself: onboarding banner (lines 344–348, teaches A–E only), nav rail (427–434: A, B, ◎, C, D, E, F, G), step-badges (465, 498, 547, 610, 705, 869, 883, 1115, 1139), title text at 612, comments at 126/1234/2168, JS rail label at 2757–2764.
+  - **Letters have already decayed twice more than BOARD.md records:** the page now has a *duplicate F* — "F · Feedback wording assistant" (883, amber badge) and "F · Finish" (1115, green badge) — and a non-letter "◎ Focus marking" badge (610).
+  - **One load-bearing letter reference in code:** focus-mode CSS hides rail entries by letter — `[data-rail="B"], [data-rail="D"]` (120) and dims `[data-rail="C"/"E"/"F"/"G"]` (121–122). De-lettering must re-key these selectors to hrefs/ids (FK-02 spec step).
+  - how-to-feedback-kitchen.html: **zero** section-letter references (its "A+ → D" strings are grade scales, not sections). README.md: two "Section F" references (164, 231 — both mean the wording assistant); reword during FK-02. REVIEW.md:21 has a stale rail checklist (says "C · Adjustments") — update or delete.
+  - `_snapshots/` hits are frozen history; ignore.
+  - Risk assumption held: no letter references in exports/docs that would break. De-letter is safe.
+  - Promote to ☑ once FK-02 lands consistent with this and passes Validate in runtime.
 
 ## D-03 ☐ Build the class-list queue (workbench model)
 - **Why it matters:** biggest workflow gap vs ideal; cohort invisible during marking.
