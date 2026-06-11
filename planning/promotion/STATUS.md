@@ -1,7 +1,18 @@
 # Promotion status (2026-06-12)
 
-Executed locally; **nothing pushed**. Awaiting explicit go after the sense-check
-report.
+## FK-17 promotion (second wave)
+
+| Step | State |
+|---|---|
+| PR branch `fk17-wcag-aa-pass` | ✅ origin/main + `dd8b9b4` (harness) + `a102126` (contrast) + `3222b92` (labels/landmarks) + `62dc0f5` (D8 cross-ref — narrows, not closes) |
+| Sense check | ✅ GO: cherry-pick equivalence empty, leak scan clean, full-coverage axe 0/0/0 on the branch tree, Jest 98/98, runtime battery green |
+| Push + PR | ✅ **PR #22** open — https://github.com/stephendmann/feedback-kitchen/pull/22 (WARNs acknowledged: deploy-on-merge; emerald-600→700 brand shift). Awaiting merge. |
+
+---
+
+## Phase 0 promotion (first wave)
+
+Executed locally; pushed after sense-check confirmation.
 
 | Step | State |
 |---|---|
