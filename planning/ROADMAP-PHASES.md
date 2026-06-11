@@ -30,6 +30,12 @@ recorded and FK-05 runtime-validated (focus-mode nav, nav strip, expand/collapse
 FK-06 guard verified in runtime; FK-04 passes axe with no new violations; FK-16 watch
 task running; INS-3 status ☑ with findings.
 
+> **✅ PHASE 0 EXIT SATISFIED 2026-06-11.** All criteria met: FK-01 75 tests green
+> (suite 98/98) · INS-4 populated (S-1…S-6) · D-02 ☑ + FK-02/FK-03 landed ·
+> INS-9 ☑ + FK-05 runtime-validated · FK-06 guard verified (all four confirm paths
+> exercised) · FK-04 axe baseline diff clean · FK-16 watch task verified rebuilding ·
+> INS-3 ☑ with findings. Evidence on each BOARD.md card. Phase 1 (INS-1 + INS-2) is next.
+
 ## Phase 1 — Scope-deciding inspections
 **Goal:** resolve the two inspections that determine Phase 2's shape.
 

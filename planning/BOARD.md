@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11, post-FK-05): Safe to implement now: 3 (FK-04, FK-06 + FK-09 per its Column field) · Needs inspection: 6 · Backlog: 3 · Ready to document: 4 · others: 0
+Column counts (2026-06-11, Phase 0 closeout): Safe to implement now: 1 (FK-09, per its Column field) · Needs inspection: 6 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
 
 ---
 
@@ -36,7 +36,10 @@ Column counts (2026-06-11, post-FK-05): Safe to implement now: 3 (FK-04, FK-06 +
 - **Dependencies:** none.
 - **Risk:** Low. If yellow means something else, the fix is renamed, not removed.
 - **DoD:** Each `.cell-yellow` field also carries a non-color cue (icon/text/border treatment) and the state is explained once on screen in a small legend (named something other than "wording key"); axe run shows no new violations.
-- **Column:** Safe to implement now. **Priority:** P3. **Effort:** S.
+- **Done 2026-06-11:** meaning re-confirmed (static marker-input convention, all 5 fields, no dynamic usage). Cue: 3px amber left border on `.cell-yellow` (inline CSS, `!important` so it survives `:focus` recolouring — verified). Legend: "✎ Tinted fields are marker inputs." appended to the Student section's intro line (amber text, ✎ aria-hidden). Dark mode verified: existing `.fk-dark` overrides keep tint + legend visible; the amber border persists.
+- **Observation (recorded, no action):** `.grade-select` / `.override-input` in rubric rows share the yellow convention but already carry full amber borders of their own — covered by the legend's wording, no extra cue added.
+- **Validated:** computed-style checks (cue 3px solid #d97706, survives focus), a11y baseline diff zero new violations on all pages, Jest 98/98.
+- **Column:** Ready to document (2026-06-11). **Priority:** P3. **Effort:** S (actual: S).
 
 ### FK-05 · Reorder sections to task sequence (Student → Rubric/Focus → Penalty → Feedback → Notes → Wording assistant → Finish → Cohort)
 - **Rationale:** Penalty & override currently renders above the marking block; marker task order is score-then-penalise. Forces a per-student visual skip and risks anchoring.
@@ -55,7 +58,9 @@ Column counts (2026-06-11, post-FK-05): Safe to implement now: 3 (FK-04, FK-06 +
 - **Dependencies:** none for the demote/guard portion.
 - **Risk:** Low. Scope is now visual-only: demote/group; the guard exists and just needs runtime verification.
 - **DoD:** Clear Cohort visually separated (danger styling or overflow), existing double-confirmation verified in runtime (incl. the 2853 path); primary actions (Export, Insights, View list) visually primary; runtime check.
-- **Column:** Safe to implement now. **Priority:** P1. **Effort:** S.
+- **Done 2026-06-11:** button row regrouped — primaries first, moderation trio behind a divider (labels/behaviour untouched, INS-2 still gates semantics), Clear cohort right-isolated (`ml-auto`) with new `.btn-danger` class. **Discovery:** the old `text-red-600` utility never actually applied — the inline `.btn-ghost` rules load after Tailwind and win the cascade, so the button was plain grey all along; `.btn-danger` lives in the same inline block so it wins deterministically. Label sentence-cased "Clear cohort" per canon §7 (the on-next-touch moment). "2853 path" identified as `wipeCohortAfterExport` — export-gated (only offered after a successful export, scorer.html:2632) and confirmed via a proper modal (4546–4560); safe by design.
+- **Validated (runtime, stubbed `confirm`):** empty cohort → 0 dialogs, non-destructive no-op; cancel at first dialog → nothing deleted; accept-then-cancel → nothing deleted; accept both → cohort cleared. Danger styling computed-verified (red-50 bg / red-700 text / red-200 border); Clear cohort focusable and last in tab order; a11y baseline diff: zero new violations; Jest 98/98.
+- **Column:** Ready to document (2026-06-11). **Priority:** P1. **Effort:** S (actual: S).
 
 ---
 
@@ -142,8 +147,9 @@ Column counts (2026-06-11, post-FK-05): Safe to implement now: 3 (FK-04, FK-06 +
 - **Evidence:** O — css/ contents; memory note on build staleness.
 - **Dependencies:** none hard; do opportunistically alongside FK-15 contact-extractions. The watch task is a same-day standalone win — **and is already half-done: `watch:css` exists in package.json:7** (2026-06-11 read). The slice reduces to wiring it into the dev workflow: a combined `dev` script (watch:css + `node dev-server.js` concurrently) and a README/dev-notes line, killing the stale-build footgun.
 - **Risk:** Low-medium — visual drift during migration; existing screenshot baselines mitigate.
-- **DoD:** watch task running with dev server; migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch); screenshot diffs clean.
-- **Column:** Backlog (watch-task slice: Safe to implement now). **Priority:** P3. **Effort:** M amortized.
+- **DoD:** watch task running with dev server ✓ (slice done 2026-06-11); migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch); screenshot diffs clean.
+- **Watch-task slice done 2026-06-11:** `npm run dev` script added (dev-server.js); `watch:css` hardened to `--watch=always` (the bare `--watch` exits when stdin closes — non-TTY contexts silently got no watcher); README gained a "Local Development" section documenting the two-terminal workflow and the stale-build footgun explicitly. Verified: watcher rebuilds tailwind.out.css on source change while the dev server runs. **Residual noted:** watch output is unminified (only `build:css` passes `--minify`) — run `npm run build:css` before committing the artifact; folded into the future migration-policy text.
+- **Column:** Backlog (watch-task slice: **done**; remaining scope is the styling migration). **Priority:** P3. **Effort:** M amortized.
 
 ---
 
@@ -155,7 +161,7 @@ Column counts (2026-06-11, post-FK-05): Safe to implement now: 3 (FK-04, FK-06 +
 
 ## Ready to document
 
-*FK-02, FK-03, and FK-05 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
+*FK-02, FK-03, FK-04, FK-05, and FK-06 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
 
 ### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale — DONE 2026-06-11
 - **Outcome:** `js/score-grade.test.js` — 75 characterization tests; full suite 98/98 green. Zero source changes needed (both functions already exported on `window.SA`, shared.js:1201). Surprises S-1…S-5 recorded in INS-4; none fixed in the test commit (no-silent-fixes rule held). D-01 validation outcome recorded.
