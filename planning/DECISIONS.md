@@ -14,7 +14,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** run FK-01 today; count surprises in INS-4.
 - **Outcome:** **Validation run 2026-06-11.** FK-01 implemented (`js/score-grade.test.js`, 75 characterization tests, suite 98/98 green). Surprise count: **5** (INS-4 S-1…S-5) — one latent crash (empty/null scale, unreachable in normal flow), four benign/intended coercion or boundary behaviours. **No surprises affect grade correctness on the normal path** — the assumption "math is testable without behavior change" held; zero source changes were needed (both functions were already exported). Decision validated; promote alongside FK-09's ADR.
 
-## D-02 ◐ De-letter vs re-letter the section badges
+## D-02 ☑ De-letter vs re-letter the section badges
 - **Why it matters:** FK-02 needs a direction; letters keep decaying as sections evolve (B and D already gone).
 - **Evidence:** O — current mismatch is the second drift (focus mode replaced B·Rubric).
 - **Depends on assumption:** letters carry no load-bearing references in exports/docs/how-to page.
@@ -28,7 +28,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
   - how-to-feedback-kitchen.html: **zero** section-letter references (its "A+ → D" strings are grade scales, not sections). README.md: two "Section F" references (164, 231 — both mean the wording assistant); reword during FK-02. REVIEW.md:21 has a stale rail checklist (says "C · Adjustments") — update or delete.
   - `_snapshots/` hits are frozen history; ignore.
   - Risk assumption held: no letter references in exports/docs that would break. De-letter is safe.
-  - Promote to ☑ once FK-02 lands consistent with this and passes Validate in runtime.
+  - ~~Promote to ☑ once FK-02 lands consistent with this and passes Validate in runtime.~~ **☑ 2026-06-11 (later session): FK-02 landed consistent with de-letter and passed runtime validation (focus-mode nav, rail, banner) with a clean a11y baseline diff. Ready to promote to fk-decisions.md.**
 
 ## D-03 ☐ Build the class-list queue (workbench model)
 - **Why it matters:** biggest workflow gap vs ideal; cohort invisible during marking.

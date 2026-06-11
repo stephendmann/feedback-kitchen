@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11, post-FK-01): Safe to implement now: 5 · Needs inspection: 7 · Backlog: 3 · Ready to document: 1 · others: 0
+Column counts (2026-06-11, post-FK-02/03): Safe to implement now: 3 · Needs inspection: 7 · Backlog: 3 · Ready to document: 3 · others: 0
 
 ---
 
@@ -16,7 +16,9 @@ Column counts (2026-06-11, post-FK-01): Safe to implement now: 5 · Needs inspec
 - **Dependencies:** D-02 **resolved 2026-06-11: de-letter** (see DECISIONS.md for grep evidence). Coordinate with FK-05 (section reorder) to avoid touching the rail twice; re-key the focus-mode CSS selectors in the same change.
 - **Risk:** Low. Banner copy, section badges, rail labels, and four CSS selectors.
 - **DoD:** Banner list matches on-page sections 1:1 (including Focus, wording assistant, Finish, Cohort); nav strip matches; `data-rail` selectors re-keyed (no letter-valued `data-rail` left); README "Section F" wording (lines 164, 231) reworded; REVIEW.md:21 stale rail checklist updated; no stale letter references (`grep -n "· Student\|· Rubric\|· Penalty\|· Feedback\|· Notes" scorer.html` returns nothing letter-prefixed); checked in dev server.
-- **Column:** Safe to implement now. **Priority:** P0. **Effort:** S.
+- **DoD deviation (recorded per conflict rule):** banner matches *visible* sections 1:1 — the wording-assistant section is omitted from the banner because `sec-ai` is legacy and hidden by default behind "Show advanced wording tools" (scorer.html:880, `display:none`); teaching a hidden section in onboarding would mislead. All other DoD lines met as written.
+- **Done 2026-06-11:** focus CSS re-keyed to section slugs (`data-rail="rubric"` etc.) before markup changes; all nine step-badges de-lettered (◎ Focus glyph kept); banner rewritten to 8 visible sections in page order; rail labels plain names; JS cohort rail label writer updated; unused badge colour variant CSS removed; README/REVIEW.md reworded. Runtime-validated in dev server: focus enter/exit hides Rubric+Feedback rail entries and dims secondaries, Previous/Next navigates criteria, console clean. A11y baseline diff: **zero new violations, one pre-existing color-contrast violation removed.**
+- **Column:** Ready to document (2026-06-11). **Priority:** P0. **Effort:** S (actual: S).
 
 ### FK-03 · Copy/casing consistency pass
 - **Rationale:** "New Student" (header) vs "New student" (footer); duplicate "Exact" rounding badges. Minor, but the repo has a brand-canon process this drifts from.
@@ -24,7 +26,9 @@ Column counts (2026-06-11, post-FK-01): Safe to implement now: 5 · Needs inspec
 - **Dependencies:** none. Cheap rider on FK-02's PR.
 - **Risk:** Negligible.
 - **DoD:** One casing rule applied; brand-voice-canon.md consulted for the rule; visual check in dev server.
-- **Column:** Safe to implement now. **Priority:** P3. **Effort:** S.
+- **Done 2026-06-11:** canon had **no** casing rule — added "§7 UI Control Casing — Sentence Case" to brand-voice-canon.md, then applied: "New Student" → "New student" (header button, banner closing line, modal comment, README §5); duplicate "Exact" disambiguated — the read-only status chip now reads "Display: exact" (markup + the JS writer at ~3166 that overwrites it), nav-bar button unchanged. Visual check in dev server (screenshot).
+- **Residuals (recorded, not scope-crept):** `index.html:323` "New Student" (outside this session's agreed file scope); field labels still Title Case ("Student Name", "Late Submission Penalty", "Grade Override", "Score Rounding") — normalise on next touch per the canon rule's "on next touch" convention.
+- **Column:** Ready to document (2026-06-11). **Priority:** P3. **Effort:** S (actual: S).
 
 ### FK-04 · Non-color signal + legend for yellow "awaiting input" fields
 - **Rationale:** Empty/required state appears to be conveyed by yellow fill alone; colorblind/low-vision markers lose the signal. (Meaning of yellow is inferred — confirm while implementing.)
@@ -38,7 +42,7 @@ Column counts (2026-06-11, post-FK-01): Safe to implement now: 5 · Needs inspec
 - **Rationale:** Penalty & override currently renders above the marking block; marker task order is score-then-penalise. Forces a per-student visual skip and risks anchoring.
 - **Scope note 2026-06-11:** earlier order shorthand ("Student → Marking → Penalty → Notes → Finish → Cohort") omitted the Feedback-draft and Wording-assistant sections, which exist on the page. Full target order recorded above; the only *move* is Penalty (`#sec-adjust`) from before the rubric/focus blocks to after them — everything else already sits in task order.
 - **Evidence:** O — screenshot 1 order + code read (section `<details>` blocks at 463/496/545/~600/703/867/~880/~1110/1134). Impact magnitude unmeasured (Medium confidence).
-- **Dependencies:** INS-9 **resolved 2026-06-11 — no positional lookups remain**; focus nav is criterion-index based and order-independent. Remaining coupled items: rail markup order (427–434) must be re-sequenced manually; letter-keyed focus CSS (118–127) is FK-02's re-key job — land FK-02 first or together.
+- **Dependencies:** INS-9 **resolved 2026-06-11 — no positional lookups remain**; focus nav is criterion-index based and order-independent. Remaining coupled items: rail markup order (~427–434) must be re-sequenced manually. ~~Letter-keyed focus CSS is FK-02's re-key job~~ — **done 2026-06-11: FK-02 re-keyed `data-rail` to section slugs (`student`/`rubric`/`focus`/`adjust`/…), so the focus CSS is now order- and letter-independent; FK-05's only remaining rail task is re-sequencing the link markup.**
 - **Risk:** Downgraded to Low-Medium per INS-9 — runtime validation still mandatory.
 - **DoD:** New order live; focus-mode Previous/Next/Exit, expand/collapse-all, and nav strip all work in dev server; lettering/naming (FK-02) consistent with new order.
 - **Column:** Safe to implement now. **Priority:** P1. **Effort:** S–M.
@@ -148,6 +152,8 @@ Column counts (2026-06-11, post-FK-01): Safe to implement now: 5 · Needs inspec
 *(empty)*
 
 ## Ready to document
+
+*FK-02 and FK-03 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
 
 ### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale — DONE 2026-06-11
 - **Outcome:** `js/score-grade.test.js` — 75 characterization tests; full suite 98/98 green. Zero source changes needed (both functions already exported on `window.SA`, shared.js:1201). Surprises S-1…S-5 recorded in INS-4; none fixed in the test commit (no-silent-fixes rule held). D-01 validation outcome recorded.
