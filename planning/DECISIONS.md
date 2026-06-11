@@ -6,7 +6,8 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 
 ---
 
-## D-01 ◐ Test the scoring engine before any feature work
+## D-01 ☑ Test the scoring engine before any feature work
+*(Promoted 2026-06-12 → fk-decisions.md **Addendum F.1**, via PR branch `phase0-trust-ux-fixes`.)*
 - **Why it matters:** Grade arithmetic is the product's licence to exist; a bug ships wrong grades to transcripts.
 - **Evidence:** O — shared.test.js covers only AI-wording QA; D5 rounding-drift math is non-trivial; penalty/rounding handlers inline in monolith.
 - **Depends on assumption:** the math is extractable/testable without behavior change.
@@ -15,6 +16,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Outcome:** **Validation run 2026-06-11.** FK-01 implemented (`js/score-grade.test.js`, 75 characterization tests, suite 98/98 green). Surprise count: **5** (INS-4 S-1…S-5) — one latent crash (empty/null scale, unreachable in normal flow), four benign/intended coercion or boundary behaviours. **No surprises affect grade correctness on the normal path** — the assumption "math is testable without behavior change" held; zero source changes were needed (both functions were already exported). Decision validated; promote alongside FK-09's ADR.
 
 ## D-02 ☑ De-letter vs re-letter the section badges
+*(Promoted 2026-06-12 → fk-decisions.md **Addendum F.2**, via PR branch `phase0-trust-ux-fixes`.)*
 - **Why it matters:** FK-02 needs a direction; letters keep decaying as sections evolve (B and D already gone).
 - **Evidence:** O — current mismatch is the second drift (focus mode replaced B·Rubric).
 - **Depends on assumption:** letters carry no load-bearing references in exports/docs/how-to page.
@@ -47,6 +49,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Outcome:** _(pending)_
 
 ## D-05 ☑ Reorder sections to task sequence
+*(Promoted 2026-06-12 → fk-decisions.md **Addendum F.3**, via PR branch `phase0-trust-ux-fixes`.)*
 - **Why it matters:** per-student friction; override UI before grading invites anchoring.
 - **Evidence:** O — current order A, C, Focus.
 - **Depends on assumption:** section order isn't load-bearing for index-anchored lookups.
