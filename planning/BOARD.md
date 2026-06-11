@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11, post-FK-02/03): Safe to implement now: 3 · Needs inspection: 7 · Backlog: 3 · Ready to document: 3 · others: 0
+Column counts (2026-06-11, post-INS-3): Safe to implement now: 4 (FK-04, FK-05, FK-06 + FK-09 per its Column field) · Needs inspection: 6 · Backlog: 3 · Ready to document: 3 · others: 0
 
 ---
 
@@ -75,13 +75,13 @@ Column counts (2026-06-11, post-FK-02/03): Safe to implement now: 3 · Needs ins
 - **DoD:** Either one button + clear secondary, or two distinctly-named actions whose labels state the difference; doc page matches.
 - **Column:** Needs inspection. **Priority:** P1. **Effort:** S–M after inspection.
 
-### FK-09 · Extract scoring engine (penalty, rounding, weighted total, override precedence) into pure module
-- **Rationale:** The high-stakes arithmetic lives inline in the 4,975-line monolith (`onPenaltyChange` scorer.html:1824, `setRounding` ~:3185) and is untestable as structured. D5 redistribution math (fk-decisions.md) needs property tests.
-- **Evidence:** O — file structure, function locations, absence of tests.
-- **Dependencies:** FK-01 first (cheap regression net); **INS-3** (enumerate calculation functions + call sites + shared state).
-- **Risk:** Medium — behavior change during extraction. Mitigated by characterization-tests-first discipline: extract verbatim, test, only then fix bugs as separate commits.
-- **DoD:** `js/rubric-engine.js` (name TBD) exports pure functions; scorer.html consumes it; characterization suite green pre/post; edge-case tests added (override × penalty × each rounding mode; D5 ±1 drift); no behavior diff in dev server on the demo scorer.
-- **Column:** Needs inspection. **Priority:** P0 (decision) / execution after INS-3. **Effort:** M.
+### FK-09 · Harden the scoring-engine boundary (test what's extracted; wrap the DOM glue)
+- **Rationale (rescoped 2026-06-11 per INS-3 ☑):** ~~the high-stakes arithmetic lives inline in the monolith~~ — INS-3 found the arithmetic core **already lives in shared.js as pure functions** (`computeScores` :325, `applyGradeOverride` :194, `scoreToGrade[FromScale]` :158/:167, `formatScore` :1188 — no DOM, no storage). What remains inline in scorer.html is orchestration: `recalculate()` reads two authoritative inputs *from the DOM* (`#grade-override` letter, `#late-penalty-select` index) and fans results out to ~20 DOM writes. FK-09 is therefore: (a) add input-validation guards at the engine boundary (INS-4 S-1 empty-scale crash, S-4 string tolerance decision, S-5 no-cap contract); (b) lift the DOM-read glue into a thin explicit-args adapter so the pipeline is callable headless; (c) edge-case test suite over the existing engine. Rounding mode is an **engine input**, not a view preference (INS-4 S-6).
+- **Evidence:** O — INS-3 findings (caller table, state inventory, DOM-as-state note, two-rounding-systems doc) in INSPECTION.md.
+- **Dependencies:** FK-01 ✓ (regression net in place); INS-3 ✓. Unblocked — ready to schedule (Phase 2 per roadmap).
+- **Risk:** Low-Medium (down from Medium) — no verbatim-extraction step for the core remains; behaviour-change risk now concentrated in the adapter lift and the guard semantics (guards change S-1/S-4 behaviour deliberately, each in its own commit with the characterization tests updated alongside).
+- **DoD:** engine boundary takes explicit args (no DOM reads in the score path); guards added with tests; characterization suite green pre/post; edge-case tests added (override × penalty × each rounding mode); no behavior diff in dev server on the demo scorer. **Flag — not silently dropped:** the original DoD's "D5 ±1 drift" test item is untestable in this repo (D5 lives in the CD-side rubric-editor preview component, absent here — INS-3 Q4); decide at FK-09 kickoff whether to drop it formally or gate it on that component's integration.
+- **Column:** Needs inspection → **Safe to implement now** (gating inspection resolved). **Priority:** P0. **Effort:** S–M (down from M).
 
 ### FK-10 · localStorage capacity & failure-mode audit
 - **Rationale:** localStorage is the sole store (53 refs in scorer.html, zero IndexedDB anywhere). Quota risk at cohort scale is plausible but unquantified — measure before deciding to migrate.
@@ -130,7 +130,7 @@ Column counts (2026-06-11, post-FK-02/03): Safe to implement now: 3 · Needs ins
 ### FK-15 · Incremental scorer decomposition (ES modules + state→render)
 - **Rationale:** 4,975 lines / 20 inline script blocks / 261 functions / DOM- and text-anchored cross-feature lookups (per the index-anchored hardening commit). Strangler-fig extraction, not rewrite.
 - **Evidence:** O — structure + commit history (one hardening commit = thin trend evidence; see validation gate).
-- **Dependencies:** FK-09 is the first extraction and the template for the rest; INS-3 informs boundaries. **Validation gate before committing to the full program:** tag the next ~5 scorer bugs by cause; proceed broadly only if coupling-related bugs recur.
+- **Dependencies:** FK-09 is the first extraction and the template for the rest; INS-3 informs boundaries — **INS-3 ☑ 2026-06-11: the boundary picture is better than assumed.** Module-level score state is small and single-writer-dominated (`scoreResult`/`latePenaltyIdx` written only by `recalculate`); the coupling hot-spots are (1) DOM-as-state inputs (`#grade-override`, `#late-penalty-select`) and (2) the feedback-draft splice state (`lastScoreResult`/`lastGeneratedText`). Extract-on-contact should target those two seams first; the arithmetic core needs no extraction (already shared.js). **Validation gate before committing to the full program:** tag the next ~5 scorer bugs by cause; proceed broadly only if coupling-related bugs recur.
 - **Risk:** Medium — refactor churn without user-visible payoff if the monolith is actually stable.
 - **DoD (program-level):** each touched feature extracted as a module on contact; scorer.html line count monotonically decreasing (tracked per PR); no Date-of-big-bang rewrite.
 - **Column:** Backlog. **Priority:** P2. **Effort:** L (amortized).

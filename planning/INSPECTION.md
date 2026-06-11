@@ -27,7 +27,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - O — button markup observed: Clear Cohort is `btn-ghost text-red-600` (1175), last of 8 buttons in one flex row (1166–1176); already partially differentiated by colour but at equal visual weight. Primary candidates per BOARD: Export cohort (btn-blue, 1167), Cohort Insights (1168, hidden until data), View list (1169).
   - FK-06 scope consequence: the "add confirmation" half of the DoD is already satisfied — remaining work is visual demotion/grouping only. Q1/Q2 (moderation pair semantics) still gate FK-08 and stay open.
 
-## INS-3 ◐ Map the scoring calculation surface in scorer.html
+## INS-3 ☑ Map the scoring calculation surface in scorer.html
 - **Gates:** FK-09 (engine extraction); informs FK-15 boundaries. **Inspection only — changes no code.** Findings shape FK-09's eventual module boundary (Phase 2), not FK-01.
 - **Where to look:** start from `onPenaltyChange` (scorer.html:1824), `setRounding`/`highlightRoundingBtn` (~:3153–3185), `cloneScoreResultForStorage` (~:2585); trace the weighted-total computation; cross-ref `scoreToGrade`/`scoreToGradeFromScale` call sites in shared.js (lines 394–726 region).
 - **Questions:**
@@ -35,19 +35,56 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   2. What shared/global state do they touch (DOM reads? module-level vars? localStorage directly?).
   3. Order of operations: override → weight → penalty → rounding? Where can they interleave?
   4. Is D5 weight-redistribution math in builder.html, scorer.html, or both (duplication risk)?
-- **Execution checklist (remaining steps to reach ☑):**
-  - [x] Locate the engine core and confirm where the arithmetic actually lives (done — see findings).
-  - [x] Resolve order of operations (Q3 — done, see findings).
-  - [ ] Q1 (complete the list): enumerate *every* caller of `recalculate()` (12+ call sites: 1452, 1583, 1633, 1679, 1752, 1815, 1819, 1846, 2301→, 2311→, 3142, 3192) and classify each as state-writer vs display-refresher.
-  - [ ] Q2 (complete the list): list module-level score state in scorer.html (`scoreResult`, `studentGrades`, `latePenaltyIdx`, `_displayRounding`, `focusIdx`) and which functions mutate each; note any direct localStorage writes in the score path (`cloneScoreResultForStorage` ~:2585 → cohort save).
-  - [ ] Q4: D5 redistribution grep came back **empty** (`redistribut|rebalance|weightDelta` — 0 hits in scorer.html, builder.html, js/*). Either it's named differently or it doesn't exist — search builder.html weight-editing handlers by hand and record the verdict.
-  - [ ] Confirm `highlightRoundingBtn` / `setRounding` only affect *display* rounding (`_displayRounding` → `SA.formatScore`) vs `config.scoreRounding` (→ inside `computeScores`); document the two-rounding-systems distinction.
+- **Execution checklist (all complete 2026-06-11, second pass — anchors re-verified post-FK-02/f1cc122; call-site lines were unchanged, `focusIdx` decl drifted 1233→1236):**
+  - [x] Locate the engine core and confirm where the arithmetic actually lives.
+  - [x] Resolve order of operations (Q3).
+  - [x] Q1 — full `recalculate()` caller enumeration + classification (see findings).
+  - [x] Q2 — module/global score-state inventory + localStorage writes in the score path (see findings).
+  - [x] Q4 — D5 redistribution verdict: **absent from this repo** (see findings).
+  - [x] Two-rounding-systems documentation — **they are NOT display-vs-compute as assumed; `setRounding` writes both** (see findings; surprise routed to INS-4 S-6).
 - **Findings:** _(2026-06-11, Phase 0 kickoff — partial)_
   - **The engine core is ALREADY in shared.js, not inline in scorer.html.** `recalculate()` (scorer.html:1858) delegates: `SA.computeScores(config, studentGrades, latePenaltyIdx)` → `SA.applyGradeOverride(config, scoreResult, overrideGrade)` — then does pure DOM writes. Engine functions in js/shared.js: `computeScores` (325), `applyGradeOverride` (194), `scoreToGrade` (158), `scoreToGradeFromScale` (167), `bandMinimumForGrade` (178), `formatScore` (1188). **FK-09's scope shrinks substantially:** it's less "extract the engine" and more "test what's already extracted + move the remaining DOM-reading glue (override input parse, penalty index read) behind a clean interface".
   - **Q3 resolved — order of operations** (computeScores, shared.js:325–397): per-criterion numeric override ?? grade midpoint → ×weight/100 → **per-row rounding** (config.scoreRounding) → sum of *rounded* rows → round total → late penalty (flat deduction, or fail→0) → round again → grade lookup (`scoreToGrade[FromScale]`). Marker *letter* override applied afterwards in a separate pass (`applyGradeOverride`): snaps total UP to band minimum only (never down), re-applies the penalty deduction delta, attaches audit metadata.
   - **Notable behaviour (feed FK-01 test design):** weightedTotal deliberately sums the *displayed/rounded* per-row scores — comment at shared.js:373–376 calls out the trade ("sub-0.5 precision drift for perfect visual consistency"). Characterization tests must assert this, not "pure" arithmetic.
   - **Notable behaviour:** `scoreToGradeFromScale` returns the *lowest* band's grade for any score below all bands (shared.js:172–173) and will throw on an empty/missing scale (no guard on `sorted[length-1]` — `.grade` of undefined). Unknown grade keys in `computeScores` fall back to midpoint 50 / tier 'developing'. Record any further oddities in INS-4 once FK-01 tests run.
   - **Fail-penalty interaction:** `lp.fail` zeroes the score and forces the bottom grade; `onPenaltyChange` (scorer.html:1824–1847) additionally *clears* any letter override and shows a conflict banner (1833–1845).
+
+- **Findings — second pass (2026-06-11, INS-3 completion; resolves Q1/Q2/Q4 + rounding doc):**
+
+  **Q1 · `recalculate()` callers — 9 functions, 10 direct call sites, scorer.html only (zero references in js/* or builder.html):**
+  | Caller (line of call) | Classification | What it changes before recalc |
+  |---|---|---|
+  | `init` (1452) | state-writer | seeds `studentGrades` (1423) on load |
+  | `onGradeChange(i)` (1583) | state-writer | `studentGrades[i].grade`; wipes `.override/.overrideManual/.autoFilled`; clears override input |
+  | `bulkFillUngraded` (1633) | state-writer | fills empty `studentGrades` rows; sets `.autoFilled`; snapshots for undo |
+  | `undoBulkFill` (1679) | state-writer | restores `studentGrades` from snapshot |
+  | `onOverrideChange(i)` (1752) | state-writer | `studentGrades[i].override/.overrideManual` from input |
+  | `onOverrideGrade` (1815, 1819) | display-refresher* | mutates no module state; *the letter override lives only in the DOM input* (`#grade-override`), which `recalculate` reads at 1864 |
+  | `onPenaltyChange` (1846) | display-refresher* | clears the DOM override input on fail-penalty; recalc reads `#late-penalty-select` |
+  | `confirmNewStudent` (3142) | state-writer | resets `studentGrades`, `lastScoreResult`, `lastGeneratedText`, `_bulkFillSnapshot`, `focusIdx`, all inputs |
+  | `setRounding` (3192) | state-writer **+ persists** | `_displayRounding`, `config.scoreRounding`, then `SA.saveConfig(config)` → **localStorage write** |
+  Indirect: focus-mode handlers `focusOnGrade`/`focusOnOverride` (2301/2311) delegate to `onGradeChange`/`onOverrideChange` — additive view, no parallel write path (by design, per the focus-workspace comment block ~2150–2160).
+  \* "display-refresher" here means *no module-state mutation*; both still change effective inputs via the DOM (see DOM-as-state note below).
+
+  **Q2 · Module/global score-state inventory (scorer.html top-of-script cluster, decls 1220–1236):**
+  | State (decl) | Mutated by | Read by (score path) |
+  |---|---|---|
+  | `studentGrades` (1220) | `init`/1423, `onGradeChange`, `bulkFillUngraded`, `undoBulkFill`, `onOverrideChange`, `_primeOverrideFromMidpoint`/1714 (spinner-seed: writes `.override` **without** recalc until change fires), `onGradeRowReviewed` (`.autoFilled` only), `confirmNewStudent`/3108 | `recalculate`→`SA.computeScores`, cohort save (deep-copied at 2561), focus cards |
+  | `latePenaltyIdx` (1221) | **only** `recalculate`/1859 (parsed from DOM each pass) | the same `computeScores` call |
+  | `scoreResult` (1222) | **only** `recalculate`/1860 | DOM cell writes (1871–1933), `_primeOverrideFromMidpoint`, focus cards, `saveCurrentStudentToCohort` (2539/2555), feedback pipeline |
+  | `_displayRounding` (1223) | `init`/1389 (from `config.scoreRounding`), `setRounding`/3186 | ~12 `SA.formatScore` display calls (rows, totals, override audit, print, focus cards) |
+  | `lastScoreResult` (1227) | feedback-diff pipeline (2003, 2029, 2143, 2440), `confirmNewStudent`/3117 | `updateFeedback` splice/diff logic |
+  | `focusIdx` (1236) | `focusGoto`/2201 (clamped), criteria-count clamp/2178, `confirmNewStudent`/3141 | focus delegates (grade/override/body writes for row i) |
+  **DOM-as-state (structural risk for FK-09):** two authoritative scoring inputs live *only* in the DOM until save — the marker letter override (`#grade-override`, read fresh at 1864) and the penalty selection (`#late-penalty-select`, read fresh at 1859). Any headless/module reuse of the pipeline must supply these explicitly.
+  **localStorage writes in the score path:** `setRounding` → `SA.saveConfig` (3189); `saveCurrentStudentToCohort` → `SA.addToCohort`/`saveCohort` (2568, via shared.js); focus-mode preference key write on toggle (2170). `SA.computeScores`/`applyGradeOverride` themselves: pure — no DOM, no storage.
+
+  **Q4 · D5 weight-redistribution verdict: ABSENT from this repo.** The D5 ADR (fk-decisions.md:333–361) locates the implementation in `preview/component-rubric-editor.behaviours.js` — a CD-design-folder preview component; no `preview/` dir, `behaviours.js`, or `fk-rubric-editor*` file exists in this worktree (glob verified). builder.html has **no redistribution at all**: add-criterion seeds `weight: 0` (938), weights are hand-edited (`syncAndUpdateWeight` 953), and the only enforcement is the sum-to-100 validation gate (`updateWeightCheck` 958; step-gate 544–546). Greps for `redistribut|equalis|equaliz|drift|largest|remainder` across builder/scorer/js: zero hits. **Consequence flagged (not silently fixed): FK-09's DoD line "edge-case tests added (… D5 ±1 drift)" is untestable in-repo until the rubric-editor component is integrated — see board flag.**
+
+  **Two rounding systems — documented, and the assumed split is wrong:**
+  - `config.scoreRounding` (`'none'|'half'|'whole'`, default `'none'` in `newConfig`, shared.js:261) — consumed *inside* `SA.computeScores`: rounds each per-row weighted score before summing, the summed total, and the penalised score. Changes **stored/exported arithmetic and potentially the banded grade**.
+  - `_displayRounding` (scorer.html:1223) — scorer-local; feeds every `SA.formatScore` *display* call.
+  - They are kept in lockstep by their only UI writer: `setRounding(val)` (3185–3193) sets **both** and persists the config. They can diverge only if the config is edited elsewhere (builder) without a scorer reload — `init` re-syncs at 1389.
+  - The nav-bar UI presents this as a display choice ("Score Rounding … Scores shown at full precision"; chip "Display: exact") while it actually switches computation mode too → behavioural surprise recorded as **INS-4 S-6** (structural fact stays here; triage there).
 
 ## INS-4 ☑ Characterization-test surprises ledger
 - **Gates:** none (FK-01 is safe-now); this item *collects* what FK-01 discovers.
@@ -98,6 +135,14 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - Actual: JS relational coercion makes string scores work transparently.
   - Triage: **unclear** — harmless today; masks upstream type bugs (e.g. an unparsed input field value would silently band).
   - Action: none now; tighten to number-only at the FK-09 boundary.
+
+  ### S-6 · "Score Rounding" toggle changes computation, not just display *(added 2026-06-11 by INS-3 — ledger reopened per its rule, entry triaged, status stays ☑)*
+  - Input: click nav-bar rounding button (Exact / Half marks / Whole marks)
+  - Expected (from UI copy): display formatting only — "Scores shown at full precision", chip says "Display: …"
+  - Actual: `setRounding` (scorer.html:3185–3193) also sets `config.scoreRounding` and `SA.saveConfig(config)`s it; `computeScores` then rounds per-row weighted scores, the total, and the penalised score in that mode — stored totals and even the banded grade can change with the toggle, and the choice persists to the scorer config for future sessions.
+  - Suspected cause: deliberate lockstep design (one toggle drives both systems); the UI copy just undersells it.
+  - Triage: **intended (code) / misleading (copy)**.
+  - Action: no code change now. Copy fix candidate ("affects calculated totals, not just display") when that nav area is next touched; FK-09's interface spec must treat rounding mode as an *engine input*, not a view preference.
 
   ### S-5 · No upper cap: scores above 100 band as the top grade
   - Input: `scoreToGrade(105)` → 'A+'
