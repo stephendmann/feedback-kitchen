@@ -270,6 +270,21 @@ There are no environment variables, server-side processes, or database connectio
 
 ---
 
+## Local Development
+
+Two terminals while developing:
+
+```bash
+npm run dev        # dev server on http://localhost:3000 (serves the repo root + local /api/garnish)
+npm run watch:css  # rebuilds css/tailwind.out.css whenever a Tailwind class changes
+```
+
+The site *serves* with no build step, but **styling changes do need the CSS watcher**: Tailwind utility classes are compiled into `css/tailwind.out.css`, so a class that isn't already in that file silently does nothing until it's rebuilt. Keep `watch:css` running (or run `npm run build:css` once) whenever you add or change Tailwind classes. Plain CSS in each page's inline `<style>` block applies immediately and needs no build.
+
+Run the test suite with `npx jest`; the accessibility harness is `bash run-bbp-a11y.sh` (needs the dev server up).
+
+---
+
 ## How I use Pull Requests for FK
 
 For this project I use **one pull request per feature**. A pull request is just a page on GitHub where I review a set of changes before they become the new “official” version of the app.

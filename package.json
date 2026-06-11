@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "dev": "node dev-server.js",
     "build:css": "node node_modules/tailwindcss/lib/cli.js -i ./css/tailwind.src.css -o ./css/tailwind.out.css --minify",
-    "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./css/tailwind.src.css -o ./css/tailwind.out.css --watch",
+    "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./css/tailwind.src.css -o ./css/tailwind.out.css --watch=always",
     "build": "npm run build:css"
   },
   "devDependencies": {
