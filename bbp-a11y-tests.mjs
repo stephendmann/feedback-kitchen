@@ -7,10 +7,28 @@ const BASE_URL = 'http://localhost:3000';
 const PAGES = [
   { name: 'Home / Dashboard', path: '/' },
   { name: 'Builder', path: '/builder.html' },
-  { name: 'Scorer', path: '/scorer.html' },
+  // Demo-loaded scorer (FK-17): the bare /scorer.html renders only the
+  // "No Scorer Found" panel, which hid most of the marking UI from every
+  // baseline before 2026-06-12. seedDemo replicates tryDemoScorer()'s
+  // localStorage writes using index.html's own DEMO_SCORER object.
+  { name: 'Scorer', path: '/scorer.html?id=demo-written-response-v2', seedDemo: true },
   // Note: /results.html dropped from BBP v0.1 audit scope (2026-05-21).
   // Page does not exist in the repo and was never built. See fk-decisions.md § D15.
 ];
+
+// Seed the bundled demo scorer into localStorage without UI clicks:
+// load index.html (same origin) and run the same writes tryDemoScorer()
+// performs, minus the navigation and analytics.
+async function seedDemoScorer(page) {
+  await page.goto(BASE_URL + '/', { waitUntil: 'networkidle2', timeout: 15000 });
+  await page.evaluate(() => {
+    /* global SA, DEMO_SCORER, DEMO_SCORER_ID */
+    const all = SA.loadAllConfigs();
+    if (!all.some(c => c.id === DEMO_SCORER_ID)) SA.saveConfig(DEMO_SCORER);
+    SA.setActiveId(DEMO_SCORER_ID);
+    localStorage.removeItem('SA_DEMO_ONBOARDING_DISMISSED'); // banner visible, parity with first-run
+  });
+}
 
 // `bodyFocusOk: true` means body-focus after this step is a legitimate
 // outcome (navigation, state change, or a no-op like Escape when no
@@ -31,7 +49,7 @@ const KEYBOARD_TESTS = {
     { desc: 'Activate Add Band with Enter', key: 'Enter', bodyFocusOk: true },
     { desc: 'Escape from any modal/drawer', key: 'Escape', bodyFocusOk: true },
   ],
-  '/scorer.html': [
+  '/scorer.html?id=demo-written-response-v2': [
     { desc: 'Tab to first scoring control', key: 'Tab', repeat: 4 },
     { desc: 'Arrow key through score options', key: 'ArrowRight', repeat: 3 },
     { desc: 'Tab to submit/next', key: 'Tab', repeat: 5 },
@@ -126,6 +144,7 @@ async function main() {
       };
 
       try {
+        if (pageInfo.seedDemo) await seedDemoScorer(page);
         const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
 
         if (!response || response.status() >= 400) {

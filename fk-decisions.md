@@ -548,6 +548,13 @@ Align on next pass or leave — does not affect contract.
 **Status:** Open — does not gate P0/P1. Can land in any Phase 6 bundle.
 **Source:** Phase 5 mirror decision (excluded from Pass 2 scope); CD scoping triage 2026-05-16.
 
+> **Cross-reference (2026-06-12, improvement-programme FK-17):** the *live-app*
+> `region` violations (index.html, builder.html, scorer.html — page chrome,
+> rails, banners, action bars) were cleared by the FK-17 WCAG AA pass and are
+> now guarded by the full-coverage local axe harness (demo-loaded scorer).
+> D8's own scope — the preview-component surfaces (modals, legends, callouts,
+> inner cards) — remains open and unsigned; this note narrows, not closes, it.
+
 ### Context
 
 The `region` axe rule fires on content outside `<main>`. Phase 5 Pass 1 resolved the `landmark-one-main` carry by adding `<main>`. However, modal, legend, callout, and inner-card surfaces were explicitly deferred because the restructure is broad and shouldn't share a bundle with the CLS-sensitive Pass 2 items.
