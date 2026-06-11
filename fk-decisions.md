@@ -370,6 +370,7 @@ The Phase 4 brief's "Take 10% from each" wording was illustrative. Literal flat-
 | **C** | Schema versioning convention | Phase 3 v1.0.1 patch | `schemaVersion: "1.0"` as first field of `persistedShape()`. 18 bytes per entity, free forward-compat for v1.1 folder adapter. |
 | **D** | C4 redistribution lock (proportional) | Phase 4 Pass 2 (2026-05-16) | D5 above. Both sides signed: CD via Pass 2 bundle + `PHASE-4-MERGED.md`; mirror via `phase-4-pass-2-validation.md`. Phase 5 housekeeping pickup explicitly captured: `fk-rubric-editor-v1.html` narrative spec to be extracted from `behaviours.js` header docblock as a post-merge artefact (non-gating, extraction-only — no new content beyond Pass 2 doc set). |
 | **E** | Folder-as-storage adapter contract (v1.1) | Phase 6 Pass 1 — ✅ both sides signed 2026-05-16 | Implementation-shape contract for FolderAdapter. 5-method surface (get/set/del/list/stat); ETag-on-load conflict resolution; banner + localStorage fallback permission-renewal UX; kitchen-config.json schema; migration and OOS. Supersedes `fk-marking-interactions-v1-addendum-storage.md`. |
+| **F** | Improvement-programme Phase 0 decisions (2026-06) | 2026-06-11 — solo-maintainer track | Three validated decisions from the 2026-06 architecture-assessment improvement programme (a different "Phase 0" from this document's title): F.1 characterization-tests-first for the scoring functions; F.2 de-letter sections/navigation; F.3 reorder sections to the marking task sequence. Full text at the end of this document; planning trail snapshot at `docs/planning-202606/`. |
 
 ---
 
@@ -782,3 +783,87 @@ Post-ship axe + keyboard audit surfaced 12 violations across `index.html`, `buil
 **Status:** ✅ Approved as temporary workaround — mirror-local decision.
 **Decision:** CSS filter-based dark-mode treatment for the University of Waikato logo (`invert`/`grayscale` filter on `#uow-logo`) is acceptable and deployed. This is a workaround, not an official reversed or dark-background asset; end-state is an asset swap when a suitable file is available from UoW marketing, at which point the workaround CSS is removed. An alternative filter refinement exists in local stash only and is not planned for release unless the live version proves inadequate.
 **See:** ROADMAP.md § UI Polish and Branding Safety — Parked Items.
+
+---
+
+## Addendum F — Improvement-programme Phase 0 decisions (2026-06)
+
+**Track:** 2026-06 architecture-assessment improvement programme (planning
+worktree board) — distinct from the CD-project "Phase 0" this document's title
+refers to. Planning trail snapshot: `docs/planning-202606/` (DECISIONS.md,
+BOARD.md, INSPECTION.md).
+**Status:** recorded, solo-maintainer track. Each decision below ran its
+planning-register validation step before promotion; outcomes are quoted. No
+new global D-numbers — subsections are addendum-scoped (F.1–F.3) to avoid
+colliding with the legacy D-series.
+
+### F.1 — Characterise the scoring functions before any feature work *(planning D-01)*
+
+**Decision.** Grade arithmetic gets a characterization-test net before any
+behavioural change ships. Tests assert what the code *does*, not what it
+should do; surprises are ledgered (planning INS-4) and triaged — never fixed
+inside the test commit.
+
+**Rationale.** Grade arithmetic is the product's licence to exist; until this
+programme, the Jest suite covered only AI-wording post-processing — zero
+score-math tests.
+
+**Validation outcome (2026-06-11).** `js/score-grade.test.js`: 75 tests over
+`scoreToGrade` / `scoreToGradeFromScale` — every NZ band boundary (floor,
+±0.01), custom scales (shuffled, sparse, floored), malformed input. All passed
+on first run; **zero source changes needed** (both functions were already
+exported). Five surprises ledgered (INS-4 S-1…S-5): one latent crash
+(empty/null gradeScale → TypeError, unreachable in normal flow), four
+intended/benign coercion behaviours. None affect normal-path correctness.
+Suite 98/98.
+
+**Consequences.** FK-09 (engine boundary hardening) inherits the S-1/S-4/S-5
+guard decisions as interface-contract items. The no-silent-fixes rule is
+standing policy for future characterization work.
+
+**Refs.** planning D-01 · FK-01 · INS-3, INS-4.
+
+### F.2 — De-letter sections and navigation *(planning D-02)*
+
+**Decision.** Section identity is the plain name ("Student", "Rubric scores",
+"Penalty & grade override", …). The A–G letter badges are removed from step
+badges, onboarding banner, nav rail, and the letter-keyed CSS hooks
+(`data-rail` re-keyed to section slugs). Letters do not return.
+
+**Rationale.** Letters re-decay on every structural change — observed twice
+before the decision (focus mode replaced B·Rubric; the page carried a
+*duplicate F*: wording assistant and Finish) and the onboarding banner taught
+sections that no longer matched. Names don't decay.
+
+**Validation outcome (2026-06-11).** Repo-wide grep: letter references were
+confined to scorer.html (plus one stale REVIEW.md checklist); the how-to page
+and README carried no load-bearing letters. One load-bearing code reference —
+focus-mode CSS hiding rail entries by letter — was re-keyed to slugs *before*
+markup changes. Landed with FK-02/FK-03; runtime-validated (focus enter/exit,
+rail, banner); a11y baseline diff clean (one pre-existing violation removed).
+
+**Consequences.** brand-voice-canon.md gained §7 (UI control casing: sentence
+case). FK-05's reorder no longer interacts with navigation labelling.
+
+**Refs.** planning D-02 · FK-02, FK-03 · INS-9.
+
+### F.3 — Reorder sections to the marking task sequence *(planning D-05)*
+
+**Decision.** Page order follows the marker's task order: Student → Rubric /
+Focus marking → Penalty & grade override → Feedback draft → Notes → Finish →
+Cohort. Penalty/override no longer renders above the marking blocks.
+
+**Rationale.** Marker task order is score-then-penalise; the old layout forced
+a per-student visual skip and put override UI in view before grading (anchoring
+risk).
+
+**Validation outcome (2026-06-11).** Pre-flight inspection (planning INS-9)
+found zero positional DOM lookups — focus navigation is criterion-indexed and
+order-independent — so the move was a markup splice plus banner re-match; the
+rail was already in target order. Runtime battery (focus nav, expand/collapse-
+all, penalty → recalculate → sticky bar) and a11y baseline diff clean.
+
+**Consequences.** Section order is confirmed non-load-bearing; future reorders
+need only the INS-9 grep set re-run as a guard.
+
+**Refs.** planning D-05 · FK-05 · INS-9, INS-3.

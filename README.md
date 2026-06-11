@@ -125,9 +125,9 @@ Criterion weights must total 100%. The tool displays a ✓ when correct and warn
 
 The weighted score is mapped to an overall grade using the scale defined in the Scorer. Use Override Score on individual criteria to fine-tune, or use the Grade Override field to set the overall grade directly where professional judgement warrants it.
 
-### 5. Start a New Student
+### 5. Start a new student
 
-Click ↺ New Student to reset all grades, scores, feedback, and Marker's Notes. Your tutor name is retained.
+Click ↺ New student to reset all grades, scores, feedback, and Marker's notes. Your tutor name is retained.
 
 ---
 
@@ -161,7 +161,7 @@ The assembled text is fully editable before copying — add a personal note, adj
 
 ## Feedback Wording Assistant
 
-Section F provides an optional AI-powered wording assistant to help polish or rephrase your assembled feedback before copying. It is distinct from the core marking workflow — the Scorer and rubric operate entirely independently of it.
+The Feedback wording assistant provides an optional AI-powered way to polish or rephrase your assembled feedback before copying. It is distinct from the core marking workflow — the Scorer and rubric operate entirely independently of it.
 
 Before any prompt is sent, a PII scrubber automatically strips student names and IDs from the text — Unicode-aware, handling diacritics, macrons (e.g. Ngāti), apostrophes, and hyphenated names (e.g. Smith-Jones). Student identity never leaves your device via this route.
 
@@ -228,7 +228,7 @@ Feedback Kitchen is a fully static application. There is no database, no server-
 
 **Storage model:**
 
-All data is held in `localStorage`. No student data is transmitted to any server. Explainer and assistant panel preferences (for example, whether Section F explainers are expanded or collapsed) are also stored in localStorage, so your preferred layout is remembered on that device only. These settings never include student-identifiable data and can be safely reset by clearing your browser data.
+All data is held in `localStorage`. No student data is transmitted to any server. Explainer and assistant panel preferences (for example, whether the wording assistant's explainer panels are expanded or collapsed) are also stored in localStorage, so your preferred layout is remembered on that device only. These settings never include student-identifiable data and can be safely reset by clearing your browser data.
 
 | Key | Contents |
 |---|---|
@@ -267,6 +267,21 @@ Feedback Kitchen is a static site — any web server or static host can serve it
 - Any standard web server (Apache, Nginx, Caddy) — copy the files and serve
 
 There are no environment variables, server-side processes, or database connections to configure.
+
+---
+
+## Local Development
+
+Two terminals while developing:
+
+```bash
+npm run dev        # dev server on http://localhost:3000 (serves the repo root + local /api/garnish)
+npm run watch:css  # rebuilds css/tailwind.out.css whenever a Tailwind class changes
+```
+
+The site *serves* with no build step, but **styling changes do need the CSS watcher**: Tailwind utility classes are compiled into `css/tailwind.out.css`, so a class that isn't already in that file silently does nothing until it's rebuilt. Keep `watch:css` running (or run `npm run build:css` once) whenever you add or change Tailwind classes. Plain CSS in each page's inline `<style>` block applies immediately and needs no build.
+
+Run the test suite with `npx jest`; the accessibility harness is `bash run-bbp-a11y.sh` (needs the dev server up).
 
 ---
 

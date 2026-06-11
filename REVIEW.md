@@ -9,21 +9,21 @@
   - A Student | B Rubric | C Adjustments | D Feedback | E Notes | F Finish | G Cohort
 - Old wording assistant (was F) folded inline into D as a "✨ Refine wording" panel
 - Sticky bar reduced to **Copy feedback** + **↺ New student** only (no duplicates with G)
-- F (Finish) now contains: Export student record · Print page · Edit scorer
-- G (Cohort) is progressive: collapsed when empty, auto-expands on first save, rail badge shows live count `G · Cohort (n)`
-- New scorer-level setting "Show advanced wording tools" (off by default) — gates the legacy F section + manual fallback / prompt builder / log
+- Finish now contains: Export student record · Print page · Edit scorer
+- Cohort is progressive: collapsed when empty, auto-expands on first save, rail badge shows live count `Cohort (n)`
+- New scorer-level setting "Show advanced wording tools" (off by default) — gates the legacy wording-assistant section + manual fallback / prompt builder / log
 - Local-only usage instrumentation at `localStorage` key `scorer.usage.v1`
 - Diagnostic page at `?diag=usage` (Copy JSON / Reset / Back to scorer)
 
 ## Test checklist
 
 - [ ] Hard-refresh (Ctrl+Shift+R) to clear cache before testing
-- [ ] Rail reads exactly: `A · Student | B · Rubric | C · Adjustments | D · Feedback | E · Notes | F · Finish | G · Cohort`
-- [ ] D has "✨ Refine wording" button + helper "Optional: improve wording without changing marks"
+- [ ] Rail reads exactly: `Student | Rubric | ◎ Focus marking (focus mode only) | Penalty & grade override | Feedback | Notes | Finish | Cohort` (de-lettered 2026-06-11, FK-02/D-02)
+- [ ] Feedback draft has "✨ Refine wording" button + helper "Optional: improve wording without changing marks"
 - [ ] Clicking Refine wording opens inline panel with: Improve clarity & tone · Make concise · Draft from rubric · suggestion textarea · Replace draft / Insert below / Copy suggestion
-- [ ] E badge is slate **E** (Marker's notes 📝)
-- [ ] F badge is green **F** (Finish), with: Export student record · Print page · Edit scorer
-- [ ] G badge is slate **G** (Cohort); chip says "Ready" when empty, "n saved" after first student
+- [ ] Marker's notes section header (📝, no letter badge)
+- [ ] Finish section contains: Export student record · Print page · Edit scorer (no letter badge)
+- [ ] Cohort chip says "Ready" when empty, "n saved" after first student (no letter badge)
 - [ ] Sticky bar shows only **📋 Copy feedback** and **↺ New student**
 - [ ] Footer bar has ⚙ Settings + 📊 Diag links
 - [ ] Settings modal opens; "Show advanced wording tools" toggle is off by default

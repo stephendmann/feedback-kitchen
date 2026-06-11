@@ -255,6 +255,54 @@ Locked decisions, signed by CD. See `fk-decisions.md` for full ADR.
 
 ---
 
+## Scoring engine boundary and state model (2026-06, improvement-programme INS-3)
+
+Findings from the 2026-06 scoring-surface inspection. This is the map FK-09
+(engine boundary hardening) and FK-15 (incremental decomposition) work from —
+do not re-derive it. Full detail: `docs/planning-202606/INSPECTION.md` (INS-3).
+
+**Where the arithmetic lives.** The engine core is already in `js/shared.js`
+as pure functions (no DOM, no storage): `computeScores`, `applyGradeOverride`,
+`scoreToGrade`, `scoreToGradeFromScale`, `bandMinimumForGrade`, `formatScore`.
+What remains in scorer.html is orchestration: `recalculate()` reads inputs,
+delegates to the engine, fans results out to ~20 DOM writes.
+
+**Order of operations** (computeScores): per-criterion numeric override ??
+grade midpoint → ×weight/100 → per-row rounding (`config.scoreRounding`) →
+sum of *rounded* rows (deliberate visual-consistency trade) → round total →
+late penalty (flat deduction, or fail→0) → round → grade lookup. The marker
+*letter* override is applied afterwards (`applyGradeOverride`): snaps the
+total UP to the new grade's band minimum only, re-applies the penalty delta,
+attaches audit metadata.
+
+**DOM-as-state (key hazard).** Two authoritative scoring inputs live only in
+the DOM until save: the letter override (`#grade-override`) and the penalty
+selection (`#late-penalty-select`) — re-read fresh on every recalculate. Any
+headless/module reuse of the pipeline must supply these explicitly.
+
+**Module state is small and single-writer-dominated.** `scoreResult` and
+`latePenaltyIdx` are written only by `recalculate()`; `studentGrades` has six
+writers (grade/override/bulk-fill/reset paths); display state is
+`_displayRounding` + `focusIdx`. The feedback-draft splice state
+(`lastScoreResult` / `lastGeneratedText`) is the other coupling hot-spot —
+FK-15's first extraction seams are these two clusters.
+
+**Two rounding systems, kept in lockstep.** `config.scoreRounding` (inside
+computeScores — affects stored arithmetic and can change the banded grade) and
+`_displayRounding` (display formatting only). The nav "Score Rounding" toggle
+sets BOTH and persists the config (`setRounding`) — the UI copy presents it as
+display-only, which undersells it (ledgered as INS-4 S-6: intended in code,
+misleading copy). FK-09 must treat rounding mode as an engine input, not a
+view preference.
+
+**Known engine edge behaviours** (characterized in `js/score-grade.test.js`,
+ledgered as INS-4 S-1…S-5): empty/null gradeScale throws (unreachable in
+normal flow — guard at the FK-09 boundary); below-all-bands returns the floor
+grade by design; malformed inputs converge on the bottom grade; numeric
+strings band via coercion; no upper cap above 100.
+
+---
+
 ## Critical-path summary
 
 ```
