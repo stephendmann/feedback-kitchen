@@ -93,14 +93,11 @@
     .score-badge { font-size: 1.8rem; font-weight: 800; }
     .grade-badge { display: inline-flex; align-items: center; justify-content: center;
                    border-radius: 0.75rem; font-weight: 800; }
-    /* Step letter badge for the A–G workflow flow */
+    /* Step badge — now used only for the ◎ Focus-marking glyph (letters removed, FK-02/D-02) */
     .step-badge { display: inline-flex; align-items: center; justify-content: center;
                   width: 1.6rem; height: 1.6rem; border-radius: 9999px;
                   background: #059669; color: white; font-weight: 800; font-size: 0.8rem;
                   margin-right: 0.55rem; flex-shrink: 0; line-height: 1; }
-    .step-badge.amber  { background: #d97706; }
-    .step-badge.green  { background: #059669; }
-    .step-badge.slate  { background: #475569; }
     .step-title { display: inline-flex; align-items: center; font-size: 0.95rem;
                   font-weight: 800; color: #1e293b; text-transform: none; letter-spacing: 0; }
     .step-sub { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; margin-left: 2.15rem; font-weight: 400; }
@@ -117,13 +114,13 @@
     .fk-focus-on #focus-workspace { display: block; }
     .fk-focus-on #sec-rubric, .fk-focus-on #sec-feedback { display: none !important; }
     /* Rail: hide the sections that disappear in focus mode; dim the secondary ones */
-    .fk-focus-on [data-rail="B"], .fk-focus-on [data-rail="D"] { display: none !important; }
-    .fk-focus-on [data-rail="C"], .fk-focus-on [data-rail="E"],
-    .fk-focus-on [data-rail="F"], .fk-focus-on [data-rail="G"] { opacity: 0.4; }
+    .fk-focus-on [data-rail="rubric"], .fk-focus-on [data-rail="feedback"] { display: none !important; }
+    .fk-focus-on [data-rail="adjust"], .fk-focus-on [data-rail="notes"],
+    .fk-focus-on [data-rail="export"], .fk-focus-on [data-rail="cohort"] { opacity: 0.4; }
     /* Focus workspace rail entry: hidden outside focus mode, full opacity inside */
-    [data-rail="◎"] { display: none; }
-    .fk-focus-on [data-rail="◎"] { display: inline !important; opacity: 1; }
-    /* C · Penalty & grade override compact mode: drop verbose instructions in focus mode */
+    [data-rail="focus"] { display: none; }
+    .fk-focus-on [data-rail="focus"] { display: inline !important; opacity: 1; }
+    /* Penalty & grade override compact mode: drop verbose instructions in focus mode */
     .fk-focus-on #sec-adjust .step-sub { display: none; }
     #focus-toggle.is-on { color: #047857; background: #d1fae5; }
     #focus-body[disabled] { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
@@ -135,7 +132,7 @@
       body { background: white; padding-bottom: 0; }
       .print-full { max-width: none !important; }
     }
-    /* ── Section F panel system ──────────────────────────────── */
+    /* ── Wording-assistant panel system ──────────────────────── */
     .panel { border-radius: 8px; padding: 12px 16px; margin: 8px 0; border-left: 4px solid #ccc; }
     .panel-safe    { border-left-color: #16a34a; background: #f0fdf4; }
     .panel-info    { border-left-color: #2563eb; background: #eff6ff; }
@@ -158,7 +155,7 @@
       background: #6b7280; color: #fff; font-size: 11px; font-weight: bold;
       cursor: help; margin-left: 6px; vertical-align: middle;
     }
-    /* Section F button hierarchy */
+    /* Wording-assistant button hierarchy */
     .btn-primary-step {
       padding: 0.7rem 1.4rem;
       font-size: 0.95rem;
@@ -184,7 +181,7 @@
     }
     /* Quick use step numbers align with button step numbers */
     .panel-light ol strong { font-weight: 600; }
-    /* Collapsible explainer panels in Section F */
+    /* Collapsible explainer panels in the wording assistant */
     .ai-explainer > summary {
       position: relative;
       padding-left: 18px;
@@ -341,13 +338,16 @@
           <h3 class="font-bold text-slate-800 mb-1">Using the DEMO101 / 2026 Short Written Response scorer</h3>
           <p class="mb-2">This demo scorer helps you mark a short written response using a clear rubric and generate plain‑language feedback. Use it to practise the workflow before building your own scorer.</p>
           <ul class="list-disc pl-5 space-y-0.5 mb-2">
-            <li><strong>A · Student</strong> — Add the student name or identifier and any basic details.</li>
-            <li><strong>B · Rubric</strong> — Choose the level that best matches each criterion. The scorer calculates the total from the saved weights.</li>
-            <li><strong>C · Penalty &amp; grade override</strong> — Apply a late-submission penalty or manually override the calculated grade.</li>
-            <li><strong>D · Feedback</strong> — Review or edit the generated feedback so it matches your judgement and tone.</li>
-            <li><strong>E · Notes</strong> — Keep any private marker notes here (not shown to the student).</li>
+            <li><strong>Student</strong> — Add the student name or identifier and any basic details.</li>
+            <li><strong>Rubric scores</strong> — Choose the level that best matches each criterion. The scorer calculates the total from the saved weights.</li>
+            <li><strong>Penalty &amp; grade override</strong> — Apply a late-submission penalty or manually override the calculated grade.</li>
+            <li><strong>Focus marking</strong> — Optionally mark one criterion at a time, grade and feedback together.</li>
+            <li><strong>Editable feedback draft</strong> — Review or edit the generated feedback so it matches your judgement and tone.</li>
+            <li><strong>Marker's notes</strong> — Keep any private marker notes here (not shown to the student).</li>
+            <li><strong>Finish</strong> — Export the student record or print the page.</li>
+            <li><strong>Cohort</strong> — Saved students collect here for export and insights.</li>
           </ul>
-          <p class="text-slate-500">Finish by checking the score, band, and feedback, then use <strong>↺ New Student</strong> to mark the next response.</p>
+          <p class="text-slate-500">Finish by checking the score, band, and feedback, then use <strong>↺ New student</strong> to mark the next response.</p>
         </div>
         <button type="button" onclick="dismissDemoOnboarding()"
                 class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5"
@@ -377,7 +377,7 @@
           <span class="hidden" id="nav-scorer-name"></span>
         </div>
 
-        <!-- Mobile row 2 / Desktop right: rounding + wording key + desktop New Student -->
+        <!-- Mobile row 2 / Desktop right: rounding + wording key + desktop New student -->
         <div class="flex items-center gap-3">
           <!-- Rounding group -->
           <div class="flex flex-col gap-0.5">
@@ -407,8 +407,8 @@
           <button class="btn btn-ghost text-sm" id="ai-settings-btn" onclick="S.showAISettings()" title="Wording assistant login — credentials for direct access">
             <span class="hidden md:inline">Wording key</span>
           </button>
-          <!-- New Student: desktop only (mobile version lives in logo row above) -->
-          <button class="inline-flex btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New Student</button>
+          <!-- New student: desktop only (mobile version lives in logo row above) -->
+          <button class="inline-flex btn btn-blue text-sm" onclick="S.newStudent()" title="Clear all fields and start marking a new student">↺ New student</button>
         </div>
       </div>
     </nav>
@@ -424,14 +424,14 @@
     <div id="section-rail"
          class="no-print sticky top-[88px] md:top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
       <div class="max-w-5xl mx-auto px-4 py-2 flex flex-nowrap overflow-x-auto md:flex-wrap md:overflow-x-visible items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-400">
-        <a href="#sec-student"  data-rail="A" class="hover:text-emerald-600 whitespace-nowrap">A · Student</a>
-        <a href="#sec-rubric"   data-rail="B" class="hover:text-emerald-600 whitespace-nowrap">B · Rubric</a>
-        <a href="#focus-workspace" data-rail="◎" class="hover:text-emerald-600 whitespace-nowrap">◎ Focus marking</a>
-        <a href="#sec-adjust"   data-rail="C" class="hover:text-emerald-600 whitespace-nowrap">C · Penalty &amp; grade override</a>
-        <a href="#sec-feedback" data-rail="D" class="hover:text-emerald-600 whitespace-nowrap">D · Feedback</a>
-        <a href="#sec-notes"    data-rail="E" class="hover:text-emerald-600 whitespace-nowrap">E · Notes</a>
-        <a href="#sec-export"   data-rail="F" class="hover:text-emerald-600 whitespace-nowrap">F · Finish</a>
-        <a href="#sec-cohort"   data-rail="G" class="hover:text-emerald-600 whitespace-nowrap"><span id="rail-cohort-label">G · Cohort</span></a>
+        <a href="#sec-student"  data-rail="student" class="hover:text-emerald-600 whitespace-nowrap">Student</a>
+        <a href="#sec-rubric"   data-rail="rubric" class="hover:text-emerald-600 whitespace-nowrap">Rubric</a>
+        <a href="#focus-workspace" data-rail="focus" class="hover:text-emerald-600 whitespace-nowrap">◎ Focus marking</a>
+        <a href="#sec-adjust"   data-rail="adjust" class="hover:text-emerald-600 whitespace-nowrap">Penalty &amp; grade override</a>
+        <a href="#sec-feedback" data-rail="feedback" class="hover:text-emerald-600 whitespace-nowrap">Feedback</a>
+        <a href="#sec-notes"    data-rail="notes" class="hover:text-emerald-600 whitespace-nowrap">Notes</a>
+        <a href="#sec-export"   data-rail="export" class="hover:text-emerald-600 whitespace-nowrap">Finish</a>
+        <a href="#sec-cohort"   data-rail="cohort" class="hover:text-emerald-600 whitespace-nowrap"><span id="rail-cohort-label">Cohort</span></a>
         <span class="flex-1 min-w-[12px]"></span>
         <button id="focus-toggle" onclick="S.toggleFocusMode()" aria-pressed="false"
                 class="text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded px-1.5 py-0.5 whitespace-nowrap relative z-10"
@@ -462,7 +462,7 @@
       <!-- ─ A. Student Details ───────────────────────────── -->
       <details open id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100">
         <summary>
-          <h2 class="step-title mb-0"><span class="step-badge">A</span>Student</h2>
+          <h2 class="step-title mb-0">Student</h2>
           <span class="text-[11px] text-slate-400">click to collapse</span>
         </summary>
         <div class="section-body">
@@ -495,7 +495,7 @@
       <!-- ─ B. Grade Student using Rubric Criteria ──────── -->
       <details open id="sec-rubric" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <summary>
-          <h2 class="step-title mb-0"><span class="step-badge">B</span>Rubric scores <span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span><span id="framework-label-chip" class="hidden" aria-label="Framework"></span></h2>
+          <h2 class="step-title mb-0">Rubric scores<span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span><span id="framework-label-chip" class="hidden" aria-label="Framework"></span></h2>
           <span class="text-[11px] text-slate-400">click to collapse</span>
         </summary>
         <div class="section-body compact">
@@ -544,7 +544,7 @@
       <!-- ─ C. Penalty & grade override ──────────────────── -->
       <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
-          <h2 class="step-title mb-0"><span class="step-badge">C</span>Penalty &amp; grade override</h2>
+          <h2 class="step-title mb-0">Penalty &amp; grade override</h2>
           <span class="text-[11px] text-slate-400">click to collapse</span>
         </summary>
         <div class="section-body">
@@ -568,7 +568,7 @@
                 <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
                 <span id="score-rounding-label"
                       class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
-                      title="Current score display mode — change using Score rounding in the nav bar above">Exact</span>
+                      title="Current score display mode — change using Score rounding in the nav bar above">Display: exact</span>
               </div>
               <div class="flex items-baseline justify-end gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"
                    title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change using Score rounding in the nav bar.">
@@ -609,7 +609,7 @@
         <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100">
           <h2 class="step-title mb-0"><span class="step-badge">◎</span>Focus marking</h2>
           <div class="flex items-center gap-2">
-            <span id="focus-student" class="text-xs font-semibold text-slate-400 truncate max-w-[12rem]" title="Student being marked (edit in section A · Student)."></span>
+            <span id="focus-student" class="text-xs font-semibold text-slate-400 truncate max-w-[12rem]" title="Student being marked (edit in the Student section)."></span>
             <span id="focus-progress" class="text-xs font-semibold text-slate-500">—</span>
             <button onclick="S.toggleFocusMode()" class="btn btn-ghost text-xs" title="Return to the full overview page (rubric table + feedback draft).">Exit focus</button>
           </div>
@@ -702,7 +702,7 @@
       <!-- ─ D. Add Snippets to Precooked Feedback ────────── -->
       <details open id="sec-feedback" class="bg-white rounded-2xl shadow-sm border border-slate-100">
         <summary>
-          <h2 class="step-title mb-0" title="🍳 Cooked Feedback = the auto-generated, editable feedback draft assembled from your grades, ready to paste into Moodle / Turnitin."><span class="step-badge">D</span>Editable feedback draft <span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
+          <h2 class="step-title mb-0" title="🍳 Cooked Feedback = the auto-generated, editable feedback draft assembled from your grades, ready to paste into Moodle / Turnitin.">Editable feedback draft<span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
           <span class="text-[11px] text-slate-400">click to collapse</span>
         </summary>
         <div class="section-body">
@@ -866,7 +866,7 @@
       <!-- ─ E. Marker's Notes (private context — also feeds the wording assistant) ─ -->
       <details id="sec-notes" class="bg-slate-50 border border-slate-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
-          <span class="step-title"><span class="step-badge slate">E</span>Marker's notes</span>
+          <span class="step-title">Marker's notes</span>
           <span class="text-xs text-slate-400 font-normal">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
@@ -876,11 +876,11 @@
         </div>
       </details>
 
-      <!-- ─ Legacy F (Feedback wording assistant) — hidden unless 'Show advanced wording tools' is on. Primary controls live inline in D. ─ -->
+      <!-- ─ Legacy wording-assistant section — hidden unless 'Show advanced wording tools' is on. Primary controls live inline in the feedback draft section. ─ -->
       <details id="sec-ai" class="bg-white border border-slate-200 rounded-2xl no-print" style="display:none">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title">
-            <span class="step-badge amber">F</span>Feedback wording assistant
+            Feedback wording assistant
             <span id="ai-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Idle</span>
           </span>
           <span class="text-xs text-slate-500 font-normal">Optional · your wording, your choice &mdash; never changes scores or penalties</span>
@@ -1112,7 +1112,7 @@
       <!-- ─ F. Finish (end-of-student handoff) ─────────────── -->
       <details id="sec-export" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
-          <h2 class="step-title mb-0"><span class="step-badge green">F</span>Finish</h2>
+          <h2 class="step-title mb-0">Finish</h2>
           <span class="text-[11px] text-slate-400">click to expand</span>
         </summary>
         <div class="section-body">
@@ -1136,7 +1136,7 @@
         <summary>
           <div class="flex items-center justify-between gap-3 flex-wrap w-full">
             <div>
-              <h2 class="step-title mb-0"><span class="step-badge slate">G</span>Cohort <span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span></h2>
+              <h2 class="step-title mb-0">Cohort<span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span></h2>
             </div>
             <div class="text-right text-sm">
               <div class="text-slate-400 text-xs">Cohort label</div>
@@ -1231,7 +1231,7 @@
     const FK_FOCUS_KEY = 'SA_FOCUS_MODE';
     let focusMode = false;
     let focusIdx  = 0;
-    let _focusSavedAdjOpen = false; // remembers C · Penalty & grade override open state before focus entry
+    let _focusSavedAdjOpen = false; // remembers Penalty & grade override open state before focus entry
 
     // Snippets
     const SNIPPETS_KEY = 'SA_SNIPPETS';
@@ -2165,7 +2165,7 @@
         btn.setAttribute('aria-pressed', focusMode ? 'true' : 'false');
       }
       try { localStorage.setItem(FK_FOCUS_KEY, focusMode ? '1' : '0'); } catch (e) { /* private mode */ }
-      // C · Penalty & grade override: collapse on enter only when no penalty controls need
+      // Penalty & grade override: collapse on enter only when no penalty controls need
       // to stay accessible. When late penalties are enabled the section stays open so the
       // marker can adjust without leaving focus mode. Always restore on exit.
       const secAdj = document.getElementById('sec-adjust');
@@ -2758,12 +2758,12 @@
         cChip.className = 'ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle '
           + (cohortCount === 0 ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-800');
       }
-      // Rail badge for H
+      // Rail badge for Cohort
       const railLbl = el('rail-cohort-label');
       if (railLbl) {
-        railLbl.textContent = cohortCount === 0 ? 'G · Cohort' : 'G · Cohort (' + cohortCount + ')';
+        railLbl.textContent = cohortCount === 0 ? 'Cohort' : 'Cohort (' + cohortCount + ')';
       }
-      // Auto-expand G once the first student is saved (only the first time per session, not during focus mode)
+      // Auto-expand Cohort once the first student is saved (only the first time per session, not during focus mode)
       const hSec = document.getElementById('sec-cohort');
       if (hSec && cohortCount > 0 && !hSec.dataset.userToggled && !hSec.open && !focusMode) {
         hSec.open = true;
@@ -3160,8 +3160,8 @@
       });
       var lbl = document.getElementById('score-rounding-label');
       if (lbl) {
-        var labels = { none: 'Exact', half: 'Half marks', whole: 'Whole marks' };
-        lbl.textContent = labels[val] || 'Exact';
+        var labels = { none: 'Display: exact', half: 'Display: half marks', whole: 'Display: whole marks' };
+        lbl.textContent = labels[val] || 'Display: exact';
       }
       var ex = document.getElementById('rounding-example');
       if (ex) {
@@ -3993,7 +3993,7 @@
       });
     }
 
-    /* ── Section F explainer panels: individual collapse state ── */
+    /* ── Wording-assistant explainer panels: individual collapse state ── */
     const AI_EXPLAINER_KEY = 'SA_AI_EXPLAINER_STATE_V1';
 
     function persistExplainerState() {
@@ -4466,7 +4466,7 @@
   document.addEventListener('DOMContentLoaded', S.init);
   </script>
 
-  <!-- ── New Student modal ─────────────────────────────────── -->
+  <!-- ── New student modal ─────────────────────────────────── -->
   <div id="new-student-modal" role="dialog" aria-modal="true" aria-labelledby="new-student-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="hideNewStudentModal()"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
