@@ -99,6 +99,13 @@ In code identifiers: stick to original (e.g., `color-contrast`, `behaviours.js`)
 
 **Exception:** Technical terms follow established conventions (e.g., "color tokens" in design systems documentation).
 
+### 7. UI Control Casing — Sentence Case
+Buttons, labels, section headings, chips, and menu items use sentence case: capitalise the first word and proper nouns only.
+- ✅ "New student" · "Export cohort (Excel)" · "Penalty & grade override" · "Clear Cohort" → "Clear cohort" (on next touch)
+- ❌ "New Student" · "Export Cohort (Excel)"
+Product names and proper nouns keep their capitals (Feedback Kitchen, Moodle, Turnitin, Excel).
+(Added 2026-06-11, FK-03 — the header/footer "New Student"/"New student" split was the trigger.)
+
 ---
 
 ## Canonical Copy Examples
