@@ -340,8 +340,8 @@
           <ul class="list-disc pl-5 space-y-0.5 mb-2">
             <li><strong>Student</strong> — Add the student name or identifier and any basic details.</li>
             <li><strong>Rubric scores</strong> — Choose the level that best matches each criterion. The scorer calculates the total from the saved weights.</li>
-            <li><strong>Penalty &amp; grade override</strong> — Apply a late-submission penalty or manually override the calculated grade.</li>
             <li><strong>Focus marking</strong> — Optionally mark one criterion at a time, grade and feedback together.</li>
+            <li><strong>Penalty &amp; grade override</strong> — Apply a late-submission penalty or manually override the calculated grade.</li>
             <li><strong>Editable feedback draft</strong> — Review or edit the generated feedback so it matches your judgement and tone.</li>
             <li><strong>Marker's notes</strong> — Keep any private marker notes here (not shown to the student).</li>
             <li><strong>Finish</strong> — Export the student record or print the page.</li>
@@ -541,66 +541,8 @@
         </div>
       </details>
 
-      <!-- ─ C. Penalty & grade override ──────────────────── -->
-      <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
-        <summary>
-          <h2 class="step-title mb-0">Penalty &amp; grade override</h2>
-          <span class="text-[11px] text-slate-400">click to collapse</span>
-        </summary>
-        <div class="section-body">
-          <p class="step-sub mb-4" style="margin-left:2.15rem">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
-          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div id="late-penalty-controls" class="flex-1">
-              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
-              <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.onPenaltyChange()" style="max-width:320px"
-                      title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
-              <!-- Penalty × override conflict banners -->
-              <div id="penalty-override-conflict" class="hidden mt-2 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-3 py-2" role="alert" aria-live="polite">
-                <span class="font-semibold">Override removed:</span>
-                <span id="penalty-override-conflict-text"></span>
-              </div>
-              <div id="penalty-override-info" class="hidden mt-2 text-xs text-slate-500 italic" aria-live="polite">
-                Override and late penalty are both active — penalty applies after the bump.
-              </div>
-            </div>
-            <div class="flex-1 text-right">
-              <div class="flex items-center justify-end gap-2 mb-2">
-                <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
-                <span id="score-rounding-label"
-                      class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
-                      title="Current score display mode — change using Score rounding in the nav bar above">Display: exact</span>
-              </div>
-              <div class="flex items-baseline justify-end gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"
-                   title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change using Score rounding in the nav bar.">
-                <span class="score-badge text-slate-700" id="penalised-score-display"
-                      title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
-                <span class="text-slate-400 text-sm">/100</span>
-                <span class="grade-badge text-2xl px-4 py-1 bg-emerald-100 text-emerald-800" id="grade-display"
-                      title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
-              </div>
-            </div>
-            <!-- Override audit badge (shown only when override is active) -->
-            <div id="override-audit" class="hidden mt-2 flex justify-end">
-              <span class="inline-flex items-center gap-2 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-1" aria-live="polite">
-                <span aria-hidden="true">↑</span>
-                <span id="override-audit-text"></span>
-              </span>
-            </div>
-          </div>
-
-          <!-- Grade Override -->
-          <div class="mt-4 flex flex-wrap items-center gap-3">
-            <label class="text-xs font-semibold text-slate-400 shrink-0" for="grade-override">Grade Override <span class="font-normal">(optional)</span></label>
-            <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
-                   placeholder="—" maxlength="3" oninput="S.onOverrideGrade()"
-                   title="Bumps a borderline student up to the chosen band. Sets the grade letter AND raises /100 to the band minimum (e.g. B+ → 75). Per-criterion data is preserved. Never reduces a score.">
-            <span id="grade-override-status" class="text-xs text-slate-400" aria-live="polite">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
-          </div>
-        </div>
-      </details>
-
       <!-- ─ Focus mode workspace (criterion-by-criterion) ── -->
-      <!-- Shown only when Focus mode is on; replaces sections B + D in the marking loop.
+      <!-- Shown only when Focus mode is on; replaces the Rubric and Feedback sections in the marking loop.
            Pairs the grade controls and the matching feedback block for ONE criterion at a
            time. The grade controls delegate to the hidden table inputs (#grade-sel-i /
            #override-i) so all existing scoring, merge and export logic is reused
@@ -677,6 +619,64 @@
         </div>
       </section>
 
+      <!-- ─ C. Penalty & grade override ──────────────────── -->
+      <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
+        <summary>
+          <h2 class="step-title mb-0">Penalty &amp; grade override</h2>
+          <span class="text-[11px] text-slate-400">click to collapse</span>
+        </summary>
+        <div class="section-body">
+          <p class="step-sub mb-4" style="margin-left:2.15rem">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div id="late-penalty-controls" class="flex-1">
+              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
+              <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.onPenaltyChange()" style="max-width:320px"
+                      title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
+              <!-- Penalty × override conflict banners -->
+              <div id="penalty-override-conflict" class="hidden mt-2 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-3 py-2" role="alert" aria-live="polite">
+                <span class="font-semibold">Override removed:</span>
+                <span id="penalty-override-conflict-text"></span>
+              </div>
+              <div id="penalty-override-info" class="hidden mt-2 text-xs text-slate-500 italic" aria-live="polite">
+                Override and late penalty are both active — penalty applies after the bump.
+              </div>
+            </div>
+            <div class="flex-1 text-right">
+              <div class="flex items-center justify-end gap-2 mb-2">
+                <div class="text-xs font-semibold text-slate-500">Penalised Score / Suggested Grade</div>
+                <span id="score-rounding-label"
+                      class="text-xs bg-amber-100 text-amber-700 font-semibold px-1.5 py-0.5 rounded cursor-default"
+                      title="Current score display mode — change using Score rounding in the nav bar above">Display: exact</span>
+              </div>
+              <div class="flex items-baseline justify-end gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"
+                   title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change using Score rounding in the nav bar.">
+                <span class="score-badge text-slate-700" id="penalised-score-display"
+                      title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
+                <span class="text-slate-400 text-sm">/100</span>
+                <span class="grade-badge text-2xl px-4 py-1 bg-emerald-100 text-emerald-800" id="grade-display"
+                      title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
+              </div>
+            </div>
+            <!-- Override audit badge (shown only when override is active) -->
+            <div id="override-audit" class="hidden mt-2 flex justify-end">
+              <span class="inline-flex items-center gap-2 text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-1" aria-live="polite">
+                <span aria-hidden="true">↑</span>
+                <span id="override-audit-text"></span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Grade Override -->
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <label class="text-xs font-semibold text-slate-400 shrink-0" for="grade-override">Grade Override <span class="font-normal">(optional)</span></label>
+            <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
+                   placeholder="—" maxlength="3" oninput="S.onOverrideGrade()"
+                   title="Bumps a borderline student up to the chosen band. Sets the grade letter AND raises /100 to the band minimum (e.g. B+ → 75). Per-criterion data is preserved. Never reduces a score.">
+            <span id="grade-override-status" class="text-xs text-slate-400" aria-live="polite">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
+          </div>
+        </div>
+      </details>
+
       <!-- Penalty+grade print version -->
       <section class="hidden bg-slate-50 rounded-xl border border-slate-200 p-4 print-penalty-section">
         <div class="flex items-center justify-between">
@@ -699,7 +699,7 @@
         </div>
       </section>
 
-      <!-- ─ D. Add Snippets to Precooked Feedback ────────── -->
+      <!-- ─ Add snippets to precooked feedback ───────────── -->
       <details open id="sec-feedback" class="bg-white rounded-2xl shadow-sm border border-slate-100">
         <summary>
           <h2 class="step-title mb-0" title="🍳 Cooked Feedback = the auto-generated, editable feedback draft assembled from your grades, ready to paste into Moodle / Turnitin.">Editable feedback draft<span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
