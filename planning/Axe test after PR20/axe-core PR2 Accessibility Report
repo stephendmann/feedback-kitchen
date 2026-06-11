@@ -1,0 +1,126 @@
+# Feedback Kitchen — PR2 axe-core Accessibility Audit
+**Tool:** axe-core 4.10.2 | **Standard:** WCAG 2.1 AA | **Date:** 12 June 2026
+
+## Views tested
+
+| View | URL | Violations | Passes | Incomplete |
+|------|-----|-----------|--------|-----------|
+| Home | `marking.stephendmann.com/` | 2 | 33 | 14 |
+| Builder | `marking.stephendmann.com/builder.html` | 2 | 36 | 5 |
+| Scorer | `marking.stephendmann.com/scorer.html?id=demo-written-response-v2` | 3 | 46 | 5 |
+
+**Total distinct violations: 4 rule IDs across all views.**
+
+---
+
+## 1. Total violations by severity and rule ID
+
+### Serious
+| Rule ID | Views affected | Node count | WCAG reference |
+|---------|---------------|-----------|----------------|
+| `color-contrast` | Home, Builder, Scorer | 7 + 12 + 36 = **55 nodes** | WCAG 2.1 SC 1.4.3 |
+| `link-in-text-block` | Home only | 1 node | WCAG 2.1 SC 1.4.1 |
+| `label-title-only` | Scorer only | 5 nodes | Best practice / SC 4.1.2 |
+
+### Moderate
+| Rule ID | Views affected | Node count | WCAG reference |
+|---------|---------------|-----------|----------------|
+| `region` | Builder, Scorer | 3 + 14 = **17 nodes** | Best practice / SC 1.3.1 |
+
+---
+
+## 2. New violations compared to main
+
+> **Baseline unavailable.** The audit was run against `marking.stephendmann.com` as the PR2 preview. No separate main-branch URL was provided for comparison. The four rule violations found (`color-contrast`, `link-in-text-block`, `label-title-only`, `region`) **cannot be categorised as new or pre-existing** without a clean main-branch run.
+>
+> For the PR2 Phase 0 scope (trust & UX fixes): the `link-in-text-block` hit on the Ko-fi link and several `color-contrast` nodes on the research-citation text and footer elements are plausible additions from trust-related copy added in this PR. The others are more likely pre-existing structural issues. To confirm, re-run axe on the main deployment or a tagged release URL.
+
+---
+
+## 3. `select-name` violations
+
+**None detected.** The `<select id="late-penalty-select">` has a `title` attribute which gives it a programmatic accessible name, so `select-name` (which fires only when *no* name exists) does not trigger. However, the `title`-only labelling is flagged under **`label-title-only`** (see §4).
+
+---
+
+## 4. `colour-contrast` violations — CSS selectors and locations
+
+### Home (`marking.stephendmann.com/`)
+
+| # | CSS selector | Location | Issue |
+|---|-------------|----------|-------|
+| 1 | `.bg-emerald-600` | "Build a New Scorer" CTA button | White on emerald-600 (#059669) ≈ 3.9:1 — fails 4.5:1 AA for normal text |
+| 2 | `.text-slate-400.mb-6.text-xs` | Research citations paragraph ("Wetzler et al. 2025…") | slate-400 (#94a3b8) on white ≈ 2.8:1 |
+| 3 | `.justify-between.mb-3.items-start > div > .text-slate-400.text-sm` | Demo scorer card subtext ("DEMO101 / 2026 · Feedback Kitchen Demo") | slate-400 on white |
+| 4 | `#site-footer-title` | Footer heading "Privacy & support" | `.site-footer__utility-title` colour insufficient |
+| 5 | `#acknowledgements > p` | Footer acknowledgements body text | Low-contrast footer text |
+| 6 | `p > em` | "Feedback Kitchen" italic in footer acknowledgements | |
+| 7 | `.site-footer__muted` | "Built with AI coding assistance…" footer note | `.site-footer__muted` colour insufficient |
+
+### Builder (`builder.html`)
+
+| # | CSS selector | Location | Issue |
+|---|-------------|----------|-------|
+| 1–5 | `div[data-step-indicator="2–6"] > .sm:block.mt-1.hidden` | Step labels "Scale / Criteria / Rubric / Feedback / Settings" | text-slate-400 on white wizard nav |
+| 6 | `.text-amber-600.mt-1` | Rounding hint text below score scale controls | amber-600 (#d97706) on white ≈ 2.7:1 |
+| 7 | `label[for="s1-assignmentInfo"] > .font-normal.text-slate-400` | "(optional — appears on exports)" sub-label | slate-400 on white |
+| 8 | `.border-blue-100` | Blue info box: "💡 Everything stays in this browser…" | text-slate-500 (#64748b) on blue-50 (#eff6ff) ≈ 3.8:1 |
+| 9–12 | `#site-footer-title`, `#acknowledgements > p`, `p > em`, `.site-footer__muted` | Footer (same as Home) | Same footer contrast failures |
+
+### Scorer (`scorer.html?id=demo-written-response-v2`)
+
+| # | CSS selector | Location | Issue |
+|---|-------------|----------|-------|
+| 1 | `.leading-relaxed.flex-1.text-slate-700 > p:nth-child(4)` | Onboarding tip "Finish by checking…" (text-slate-500) | slate-500 (#64748b) on white ≈ 4.4:1 — marginal fail |
+| 2 | `#rounding-example` | "Scores shown at full precision" hint text (10px, slate-400) | Small text + low contrast double-fail |
+| 3 | `.inline-flex.btn-blue[onclick="S.newStudent()"]` | "↺ New student" button | btn-blue colour vs white text — check exact ratio |
+| 4–8 | `a[href$="#sec-student"]`, `a[href$="#focus-workspace"]`, `a[href$="#sec-adjust"]`, `a[href$="#sec-notes"]`, `a[href$="#sec-export"]` | Rail navigation links (text-slate-400 on white) | slate-400 insufficient |
+| 9 | `#rail-cohort-label` | "Cohort" in rail nav | slate-400 |
+| 10 | `#sec-student > summary > .text-[11px].text-slate-400` | Section expand hint "click to collapse" | 11px + slate-400 double-fail |
+| 11–14 | `.sm:grid-cols-4 > div:nth-child(1–3) > .block`, `div:nth-child(4) > .block` | Form labels: Student Name, Student ID, Tutor, Date (text-slate-400) | slate-400 on white |
+| 15 | `#focus-student` | "(no name)" live student display | text-xs slate-400 |
+| 16 | `#focus-criterion-weight` | "Weight 25%" label | text-xs slate-400 |
+| 17 | `label[for="focus-override"] > .font-normal.text-slate-400` | "(optional)" sub-label in focus override | |
+| 18 | `.text-[11px].mt-1.text-slate-400` | Focus workspace hint text | 11px + slate-400 |
+| 19 | `#focus-next` | "Next →" button | btn-blue |
+| 20 | `#sec-adjust > summary > .text-[11px].text-slate-400` | Section hint "click to collapse" (Adjust section) | |
+| 21 | `#late-penalty-controls > .block` | "Late Submission Penalty" label | slate-400 |
+| 22 | `.text-slate-400.text-sm` | "/100" suffix on grade override | |
+| 23–24 | `label[for="grade-override"]`, `.font-normal` | "Grade Override (optional)" label | |
+| 25 | `#grade-override-status` | Override status text | slate-400 |
+| 26 | `.font-normal.text-slate-400.text-xs` | Notes privacy note | |
+| 27 | `#sec-export > summary > .text-[11px].text-slate-400` | Finish section hint | |
+| 28 | `.text-right.text-sm > .text-slate-400.text-xs` | "Cohort label" legend | |
+| 29 | `.lg:inline` | "Press ? for shortcuts" hint | 10px + slate-400 |
+| 30 | `.max-w-5xl.mx-auto.px-4 > .btn-green.btn[onclick="S.copyFeedback()"]` | "Copy feedback" button (btn-green + white text) | |
+| 31–34 | Footer selectors (same as Home) | Footer elements | Same footer failures |
+
+---
+
+## 5. `label-title-only` violations — Scorer only
+
+| Element | CSS selector | Title text (current label source) |
+|---------|-------------|----------------------------------|
+| `<input id="student-name">` | `#student-name` | "The full name of the student…" |
+| `<input id="student-id">` | `#student-id` | "The student's institutional ID…" |
+| `<input id="student-tutor">` | `#student-tutor` | "Your name or initials…" |
+| `<input id="student-date">` | `#student-date` | "Auto-filled with today's date…" |
+| `<select id="late-penalty-select">` | `#late-penalty-select` | "Apply a deduction if the student…" |
+
+Root cause: visible `<label>` elements are not programmatically associated (missing `for` attribute); screen readers fall back to `title`, which is non-discoverable by most users and unreachable on mobile.
+
+---
+
+## 6. WCAG-grounded fix recommendations
+
+| Rule | Fix |
+|------|-----|
+| **color-contrast** — `text-slate-400` everywhere | Replace `text-slate-400` (#94a3b8, ≈2.8:1) with `text-slate-600` (#475569, ≈5.9:1) for all body/label/hint text; reserve slate-400 only for decorative or disabled states. *[WCAG 1.4.3 — AA requires 4.5:1 for normal text, 3:1 for large/bold ≥18.67px/bold]* |
+| **color-contrast** — `.bg-emerald-600` CTA button | Darken to `bg-emerald-700` (#047857, ≈5.2:1 on white) or use `text-white`+`font-bold` with emerald-700. *[WCAG 1.4.3]* |
+| **color-contrast** — `.btn-blue` / `.btn-green` | Verify button bg colours meet 3:1 against white text (large text rule applies if ≥18px bold); adjust to darker shade if below. *[WCAG 1.4.3]* |
+| **color-contrast** — `.text-amber-600` builder hint | Change to `text-amber-700` (#b45309, ≈4.7:1 on white). *[WCAG 1.4.3]* |
+| **color-contrast** — sub-10px/11px hint text | Either increase font size to ≥14px (so 3:1 applies instead of 4.5:1) or switch colour to slate-600+. *[WCAG 1.4.3 — 3:1 threshold for ≥18pt/14pt bold only]* |
+| **color-contrast** — `.site-footer__muted` / footer headings | Raise to at least slate-600 equivalent in the footer stylesheet. *[WCAG 1.4.3]* |
+| **link-in-text-block** — Ko-fi link in footer | Add `text-decoration: underline` (always, not just on hover) so the link is visually distinct without relying on colour. *[WCAG 1.4.1 — Use of Colour]* |
+| **label-title-only** — Student Name / ID / Tutor / Date / Late Penalty | Add `for="<input-id>"` to each `<label>` element (e.g. `<label for="student-name">`), removing the sole reliance on `title`. *[WCAG 4.1.2 — Name, Role, Value; SC 1.3.1]* |
+| **region** — orphaned content in Builder + Scorer | Wrap the sticky-header/nav-rail in `<header>` or `role="banner"`, wrap the scoring workspace in `<main>`, and wrap the onboarding banner in `<aside>` or `role="complementary"`; ensure `<h1 class="sr-only">` is inside `<main>`. *[WCAG 1.3.1 / ARIA Landmark Roles]* |

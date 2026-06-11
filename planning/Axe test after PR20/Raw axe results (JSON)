@@ -1,0 +1,460 @@
+[
+  {
+    "view": "Home",
+    "ok": true,
+    "url": "https://marking.stephendmann.com/",
+    "title": "Feedback Kitchen — Build Custom Assessment Feedback Tools",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
+        "wcagTags": [
+          "wcag2aa",
+          "wcag143"
+        ],
+        "nodeCount": 7,
+        "nodes": [
+          {
+            "html": "<a href=\"builder.html\" class=\"bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl text-lg hover:bg-emerald-500 transition-colors shadow-lg\">\n          Build a New Scorer\n        </a>",
+            "target": "[\".bg-emerald-600\"]"
+          },
+          {
+            "html": "<p class=\"text-xs text-slate-400 mb-6\">Wetzler et al. 2025 · Flodén 2025 · EDUCAUSE 2025 · HEPI/Kortext 2025 · Birmingham/Graide 2025</p>",
+            "target": "[\".text-slate-400.mb-6.text-xs\"]"
+          },
+          {
+            "html": "<p class=\"text-sm text-slate-400\">DEMO101 / 2026 · Feedback Kitchen Demo</p>",
+            "target": "[\".justify-between.mb-3.items-start > div > .text-slate-400.text-sm\"]"
+          },
+          {
+            "html": "<h2 id=\"site-footer-title\" class=\"site-footer__utility-title\">Privacy &amp; support</h2>",
+            "target": "[\"#site-footer-title\"]"
+          },
+          {
+            "html": "<p>",
+            "target": "[\"#acknowledgements > p\"]"
+          },
+          {
+            "html": "<em>Feedback Kitchen</em>",
+            "target": "[\"p > em\"]"
+          },
+          {
+            "html": "<span class=\"site-footer__muted\">Built with AI coding assistance (Claude / Anthropic · Perplexity · Microsoft Copilot). The tool itself runs in your browser — the AI listed here assisted with development only.</span>",
+            "target": "[\".site-footer__muted\"]"
+          }
+        ]
+      },
+      {
+        "id": "link-in-text-block",
+        "impact": "serious",
+        "help": "Links must be distinguishable without relying on color",
+        "description": "Ensure links are distinguished from surrounding text in a way that does not rely on color",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/link-in-text-block?application=axeAPI",
+        "wcagTags": [
+          "wcag2a",
+          "wcag141"
+        ],
+        "nodeCount": 1,
+        "nodes": [
+          {
+            "html": "<a href=\"https://ko-fi.com/smann\" target=\"_blank\" rel=\"noopener\" class=\"text-blue-600 hover:underline\">Ko-fi</a>",
+            "target": "[\".text-slate-700.text-sm > .hover\\\\:underline[href$=\\\"smann\\\"][rel=\\\"noopener\\\"]\"]"
+          }
+        ]
+      }
+    ],
+    "passes": 33,
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodeCount": 14,
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds"
+      }
+    ]
+  },
+  {
+    "view": "Scorer",
+    "ok": true,
+    "url": "https://marking.stephendmann.com/scorer.html?id=demo-written-response-v2",
+    "title": "Feedback Kitchen — DEMO101 / 2026 — Short Written Response",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
+        "wcagTags": [
+          "wcag2aa",
+          "wcag143"
+        ],
+        "nodeCount": 36,
+        "nodes": [
+          {
+            "html": "<p class=\"text-slate-500\">Finish by checking the score, band, and feedback, then use <strong>↺ New student</strong> to mark the next response.</p>",
+            "target": "[\".leading-relaxed.flex-1.text-slate-700 > p:nth-child(4)\"]"
+          },
+          {
+            "html": "<strong>↺ New student</strong>",
+            "target": "[\".leading-relaxed.flex-1.text-slate-700 > p:nth-child(4) > strong\"]"
+          },
+          {
+            "html": "<p id=\"rounding-example\" class=\"text-[10px] text-slate-400 ml-1 hidden md:block\">Scores shown at full precision, e.g. 76.4</p>",
+            "target": "[\"#rounding-example\"]"
+          },
+          {
+            "html": "<button class=\"inline-flex btn btn-blue text-sm\" onclick=\"S.newStudent()\" title=\"Clear all fields and start marking a new student\">↺ New student</button>",
+            "target": "[\".inline-flex.btn-blue[onclick=\\\"S.newStudent()\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-student\" data-rail=\"student\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">Student</a>",
+            "target": "[\"a[href$=\\\"#sec-student\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#focus-workspace\" data-rail=\"focus\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">◎ Focus marking</a>",
+            "target": "[\"a[href$=\\\"#focus-workspace\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-adjust\" data-rail=\"adjust\" class=\"hover:text-emerald-600 whitespace-nowrap text-emerald-700\">Penalty &amp; grade override</a>",
+            "target": "[\"a[href$=\\\"#sec-adjust\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-notes\" data-rail=\"notes\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">Notes</a>",
+            "target": "[\"a[href$=\\\"#sec-notes\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-export\" data-rail=\"export\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">Finish</a>",
+            "target": "[\"a[href$=\\\"#sec-export\\\"]\"]"
+          },
+          {
+            "html": "<span id=\"rail-cohort-label\">Cohort</span>",
+            "target": "[\"#rail-cohort-label\"]"
+          },
+          {
+            "html": "<span class=\"text-[11px] text-slate-400\">click to collapse</span>",
+            "target": "[\"#sec-student > summary > .text-\\\\[11px\\\\].text-slate-400\"]"
+          },
+          {
+            "html": "<label class=\"block text-xs font-semibold text-slate-400 mb-1\" title=\"The full name of the student being marked.\">Student Name</label>",
+            "target": "[\".sm\\\\:grid-cols-4 > div:nth-child(1) > .block\"]"
+          },
+          {
+            "html": "<label class=\"block text-xs font-semibold text-slate-400 mb-1\" title=\"The student's institutional ID number — used in your Excel record for identification.\">Student ID</label>",
+            "target": "[\".sm\\\\:grid-cols-4 > div:nth-child(2) > .block\"]"
+          },
+          {
+            "html": "<label class=\"block text-xs font-semibold text-slate-400 mb-1\" title=\"Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.\">Tutor</label>",
+            "target": "[\".sm\\\\:grid-cols-4 > div:nth-child(3) > .block\"]"
+          },
+          {
+            "html": "<label class=\"block text-xs font-semibold text-slate-400 mb-1\" title=\"Auto-filled with today's date. Recorded in your Excel marker's record.\">Date</label>",
+            "target": "[\"div:nth-child(4) > .block\"]"
+          },
+          {
+            "html": "<span id=\"focus-student\" class=\"text-xs font-semibold text-slate-400 truncate max-w-[12rem]\" title=\"Student being marked (edit in the Student section).\">(no name)</span>",
+            "target": "[\"#focus-student\"]"
+          },
+          {
+            "html": "<span id=\"focus-criterion-weight\" class=\"text-xs font-semibold text-slate-400 whitespace-nowrap\">Weight 25%</span>",
+            "target": "[\"#focus-criterion-weight\"]"
+          },
+          {
+            "html": "<span class=\"font-normal text-slate-400\">(optional)</span>",
+            "target": "[\"label[for=\\\"focus-override\\\"] > .font-normal.text-slate-400\"]"
+          },
+          {
+            "html": "<p class=\"text-[11px] text-slate-400 mt-1\">Edits here are written straight into the full feedback draft — nothing is hidden.</p>",
+            "target": "[\".text-\\\\[11px\\\\].mt-1.text-slate-400\"]"
+          },
+          {
+            "html": "<button id=\"focus-next\" onclick=\"S.focusNext()\" class=\"btn btn-blue text-sm\" title=\"Next criterion (Page Down)\">Next →</button>",
+            "target": "[\"#focus-next\"]"
+          },
+          {
+            "html": "<span class=\"text-[11px] text-slate-400\">click to collapse</span>",
+            "target": "[\"#sec-adjust > summary > .text-\\\\[11px\\\\].text-slate-400\"]"
+          },
+          {
+            "html": "<label class=\"block text-xs font-semibold text-slate-400 mb-1\" title=\"Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.\">Late Submission Penalty</label>",
+            "target": "[\"#late-penalty-controls > .block\"]"
+          },
+          {
+            "html": "<span class=\"text-slate-400 text-sm\">/100</span>",
+            "target": "[\".text-slate-400.text-sm\"]"
+          },
+          {
+            "html": "<label class=\"text-xs font-semibold text-slate-400 shrink-0\" for=\"grade-override\">Grade Override <span class=\"font-normal\">(optional)</span></label>",
+            "target": "[\"label[for=\\\"grade-override\\\"]\"]"
+          },
+          {
+            "html": "<span class=\"font-normal\">(optional)</span>",
+            "target": "[\"label[for=\\\"grade-override\\\"] > .font-normal\"]"
+          },
+          {
+            "html": "<span id=\"grade-override-status\" class=\"text-xs text-slate-400\" aria-live=\"polite\">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>",
+            "target": "[\"#grade-override-status\"]"
+          },
+          {
+            "html": "<em>overall</em>",
+            "target": "[\"#grade-override-status > em\"]"
+          },
+          {
+            "html": "<span class=\"text-xs text-slate-400 font-normal\">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>",
+            "target": "[\".font-normal.text-slate-400.text-xs\"]"
+          },
+          {
+            "html": "<span class=\"text-[11px] text-slate-400\">click to expand</span>",
+            "target": "[\"#sec-export > summary > .text-\\\\[11px\\\\].text-slate-400\"]"
+          },
+          {
+            "html": "<div class=\"text-slate-400 text-xs\">Cohort label</div>",
+            "target": "[\".text-right.text-sm > .text-slate-400.text-xs\"]"
+          },
+          {
+            "html": "<span class=\"hidden lg:inline text-[10px] text-slate-400 italic whitespace-nowrap mr-2\">\n          Press <kbd class=\"px-1 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono\">?</kbd> for shortcuts\n        </span>",
+            "target": "[\".lg\\\\:inline\"]"
+          },
+          {
+            "html": "<button class=\"btn btn-green text-sm\" onclick=\"S.copyFeedback()\" title=\"Copy feedback + auto-save to cohort\">Copy feedback</button>",
+            "target": "[\".max-w-5xl.mx-auto.px-4 > .btn-green.btn[onclick=\\\"S.copyFeedback()\\\"]\"]"
+          },
+          {
+            "html": "<h2 id=\"site-footer-title\" class=\"site-footer__utility-title\">Privacy &amp; support</h2>",
+            "target": "[\"#site-footer-title\"]"
+          },
+          {
+            "html": "<p>",
+            "target": "[\"#acknowledgements > p\"]"
+          },
+          {
+            "html": "<em>Feedback Kitchen</em>",
+            "target": "[\"p > em\"]"
+          },
+          {
+            "html": "<span class=\"site-footer__muted\">Built with AI coding assistance (Claude / Anthropic · Perplexity · Microsoft Copilot). The tool itself runs in your browser — the AI listed here assisted with development only.</span>",
+            "target": "[\".site-footer__muted\"]"
+          }
+        ]
+      },
+      {
+        "id": "label-title-only",
+        "impact": "serious",
+        "help": "Form elements should have a visible label",
+        "description": "Ensure that every form element has a visible label and is not solely labeled using hidden labels, or the title or aria-describedby attributes",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/label-title-only?application=axeAPI",
+        "wcagTags": [
+          "best-practice"
+        ],
+        "nodeCount": 5,
+        "nodes": [
+          {
+            "html": "<input type=\"text\" id=\"student-name\" class=\"input-field cell-yellow\" placeholder=\"e.g. Mickey Mouse\" oninput=\"S.onStudentChange()\" title=\"The full name of the student being marked. Appears in the feedback header and your Excel record.\">",
+            "target": "[\"#student-name\"]"
+          },
+          {
+            "html": "<input type=\"text\" id=\"student-id\" class=\"input-field cell-yellow\" placeholder=\"e.g. 1234567\" oninput=\"S.onStudentChange()\" title=\"The student's institutional ID number — used in your Excel record for identification.\">",
+            "target": "[\"#student-id\"]"
+          },
+          {
+            "html": "<input type=\"text\" id=\"student-tutor\" class=\"input-field cell-yellow\" placeholder=\"e.g. SM\" oninput=\"S.onStudentChange()\" title=\"Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.\">",
+            "target": "[\"#student-tutor\"]"
+          },
+          {
+            "html": "<input type=\"text\" id=\"student-date\" class=\"input-field\" readonly=\"\" title=\"Auto-filled with today's date. Recorded in your Excel marker's record.\">",
+            "target": "[\"#student-date\"]"
+          },
+          {
+            "html": "<select id=\"late-penalty-select\" class=\"input-field cell-yellow\" onchange=\"S.onPenaltyChange()\" style=\"max-width:320px\" title=\"Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.\">",
+            "target": "[\"#late-penalty-select\"]"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "help": "All page content should be contained by landmarks",
+        "description": "Ensure all page content is contained by landmarks",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+        "wcagTags": [
+          "best-practice"
+        ],
+        "nodeCount": 14,
+        "nodes": [
+          {
+            "html": "<span class=\"text-2xl mt-0.5 shrink-0\">👋</span>",
+            "target": "[\".shrink-0.text-2xl.mt-0\\\\.5\"]"
+          },
+          {
+            "html": "<div class=\"flex-1 text-sm text-slate-700 leading-relaxed\">",
+            "target": "[\".leading-relaxed.flex-1.text-slate-700\"]"
+          },
+          {
+            "html": "<p class=\"no-print max-w-5xl mx-auto px-4 pt-2 text-xs text-slate-500 italic\">\n      Not an autograder — you choose the grades, the tool drafts the feedback.\n    </p>",
+            "target": "[\".pt-2.italic.max-w-5xl\"]"
+          },
+          {
+            "html": "<h1 class=\"sr-only\">Mark a student</h1>",
+            "target": "[\"#app > h1\"]"
+          },
+          {
+            "html": "<a href=\"#sec-student\" data-rail=\"student\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">Student</a>",
+            "target": "[\"a[href$=\\\"#sec-student\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#focus-workspace\" data-rail=\"focus\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">◎ Focus marking</a>",
+            "target": "[\"a[href$=\\\"#focus-workspace\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-adjust\" data-rail=\"adjust\" class=\"hover:text-emerald-600 whitespace-nowrap text-emerald-700\">Penalty &amp; grade override</a>",
+            "target": "[\"a[href$=\\\"#sec-adjust\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-notes\" data-rail=\"notes\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">Notes</a>",
+            "target": "[\"a[href$=\\\"#sec-notes\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-export\" data-rail=\"export\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\">Finish</a>",
+            "target": "[\"a[href$=\\\"#sec-export\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-cohort\" data-rail=\"cohort\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-400\"><span id=\"rail-cohort-label\">Cohort</span></a>",
+            "target": "[\"a[href$=\\\"#sec-cohort\\\"]\"]"
+          },
+          {
+            "html": "<div class=\"bg-slate-50 border-b border-slate-200 px-4 py-2 no-print\" role=\"note\" aria-label=\"Product positioning\">",
+            "target": "[\"div[role=\\\"note\\\"]\"]"
+          },
+          {
+            "html": "<div id=\"sticky-summary\" class=\"text-xs font-medium text-slate-600 flex-1 min-w-0 truncate\" title=\"Live summary of the current student\">(no name) · — · 0 of 5 graded · Draft pending</div>",
+            "target": "[\"#sticky-summary\"]"
+          },
+          {
+            "html": "<span class=\"hidden lg:inline text-[10px] text-slate-400 italic whitespace-nowrap mr-2\">\n          Press <kbd class=\"px-1 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono\">?</kbd> for shortcuts\n        </span>",
+            "target": "[\".lg\\\\:inline\"]"
+          },
+          {
+            "html": "<a href=\"builder.html?id=demo-written-response-v2\" class=\"hover:text-slate-700 transition-colors\" id=\"footer-edit-link\" title=\"Edit this scorer in the builder\">⚙ Manage</a>",
+            "target": "[\"#footer-edit-link\"]"
+          }
+        ]
+      }
+    ],
+    "passes": 46,
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodeCount": 5,
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds"
+      }
+    ]
+  },
+  {
+    "view": "Builder",
+    "ok": true,
+    "url": "https://marking.stephendmann.com/builder.html",
+    "title": "Builder — Feedback Kitchen",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
+        "wcagTags": [
+          "wcag2aa",
+          "wcag143"
+        ],
+        "nodeCount": 12,
+        "nodes": [
+          {
+            "html": "<span class=\"text-xs mt-1 text-slate-400 hidden sm:block\">Scale</span>",
+            "target": "[\"div[data-step-indicator=\\\"2\\\"] > .sm\\\\:block.mt-1.hidden\"]"
+          },
+          {
+            "html": "<span class=\"text-xs mt-1 text-slate-400 hidden sm:block\">Criteria</span>",
+            "target": "[\"div[data-step-indicator=\\\"3\\\"] > .sm\\\\:block.mt-1.hidden\"]"
+          },
+          {
+            "html": "<span class=\"text-xs mt-1 text-slate-400 hidden sm:block\">Rubric</span>",
+            "target": "[\"div[data-step-indicator=\\\"4\\\"] > .sm\\\\:block.mt-1.hidden\"]"
+          },
+          {
+            "html": "<span class=\"text-xs mt-1 text-slate-400 hidden sm:block\">Feedback</span>",
+            "target": "[\"div[data-step-indicator=\\\"5\\\"] > .sm\\\\:block.mt-1.hidden\"]"
+          },
+          {
+            "html": "<span class=\"text-xs mt-1 text-slate-400 hidden sm:block\">Settings</span>",
+            "target": "[\"div[data-step-indicator=\\\"6\\\"] > .sm\\\\:block.mt-1.hidden\"]"
+          },
+          {
+            "html": "<p class=\"text-xs text-amber-600 mt-1\">Sets how calculated scores appear — can also be toggled live on the scoring page.</p>",
+            "target": "[\".text-amber-600.mt-1\"]"
+          },
+          {
+            "html": "<span class=\"text-slate-400 font-normal\">(optional — appears on exports)</span>",
+            "target": "[\"label[for=\\\"s1-assignmentInfo\\\"] > .font-normal.text-slate-400\"]"
+          },
+          {
+            "html": "<p class=\"mt-6 text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2\">\n      💡 Everything stays in this browser. You can export the scorer as JSON to share with your team.\n    </p>",
+            "target": "[\".border-blue-100\"]"
+          },
+          {
+            "html": "<h2 id=\"site-footer-title\" class=\"site-footer__utility-title\">Privacy &amp; support</h2>",
+            "target": "[\"#site-footer-title\"]"
+          },
+          {
+            "html": "<p>",
+            "target": "[\"#acknowledgements > p\"]"
+          },
+          {
+            "html": "<em>Feedback Kitchen</em>",
+            "target": "[\"em\"]"
+          },
+          {
+            "html": "<span class=\"site-footer__muted\">Built with AI coding assistance (Claude / Anthropic · Perplexity · Microsoft Copilot). The tool itself runs in your browser — the AI listed here assisted with development only.</span>",
+            "target": "[\".site-footer__muted\"]"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "help": "All page content should be contained by landmarks",
+        "description": "Ensure all page content is contained by landmarks",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+        "wcagTags": [
+          "best-practice"
+        ],
+        "nodeCount": 3,
+        "nodes": [
+          {
+            "html": "<p class=\"max-w-4xl mx-auto px-4 pt-3 text-xs text-slate-500 italic\">\n    Not an autograder — you choose the grades, the tool drafts the feedback.\n  </p>",
+            "target": "[\".pt-3\"]"
+          },
+          {
+            "html": "<h1 class=\"sr-only\">Build a scorer</h1>",
+            "target": "[\"h1\"]"
+          },
+          {
+            "html": "<div class=\"bg-white border-b border-slate-100 px-4 py-4\">",
+            "target": "[\".py-4\"]"
+          }
+        ]
+      }
+    ],
+    "passes": 36,
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodeCount": 5,
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds"
+      }
+    ]
+  }
+]

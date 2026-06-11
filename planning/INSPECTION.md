@@ -178,14 +178,18 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   2. Are they computed on demand from the cohort store (reusable in-flow) or only inside the insights view?
 - **Findings:** _(pending)_
 
-## INS-8 ☐ ARIA usage inventory in scorer.html
+## INS-8 ◐ ARIA usage inventory in scorer.html
 - **Gates:** FK-13.
 - **Method:** `grep -n "aria-invalid\|aria-describedby\|aria-live\|role=" scorer.html` + skim each cluster.
 - **Questions:**
   1. Is validation state set from one place or per-widget?
   2. Any aria-live regions for score updates / focus-mode navigation announcements?
 - **Verdict to record:** ad-hoc (open a backlog card) vs adequate (drop FK-13).
-- **Findings:** _(pending)_
+- **Findings:** _(◐ 2026-06-12 — external production axe audit supplies the violation inventory; the ARIA-centralization questions above remain open)_
+  - Full-coverage axe 4.10.2 run against production post-PR-#21 (demo-loaded scorer, `?id=demo-written-response-v2`): **4 rule IDs / 78 nodes** — color-contrast 55 (mostly `text-slate-400` hint/label text, plus `btn-blue`/`btn-green`/`bg-emerald-600` white-on-#059669 ≈3.9:1, amber-600 builder hint, footer styles), label-title-only 5 (student fields + penalty select: visible labels lack `for=`), region 17 (no `<main>`/landmark structure), link-in-text-block 1 (Ko-fi). Report + raw JSON: `planning/Axe test after PR20/`.
+  - **Triage: all pre-existing — zero introduced by PR #20/#21.** The PRs changed labels/structure on some flagged elements but no colours; everything the PRs *added* passes (`.btn-danger`, FK-04 legend and cue). The external report's §2 guess that footer/citation hits came from PR #21 is wrong — those files weren't in either PR's diff.
+  - **Harness coverage gap found:** bbp-a11y-tests.mjs tests `/scorer.html` with no `?id=` — the no-config page — so all prior local baselines covered only a fraction of the real marking UI. Fixing the harness URL is step 1 of any remediation (→ FK-17).
+  - Remediation scoped as **FK-17** on the board. INS-8 stays open for the centralization questions, which still gate FK-13's verdict.
 
 ## INS-9 ☑ Pre-flight for section reorder (FK-05) — positional lookups
 - **Gates:** none (FK-05 is safe-now with this as its first task, not a blocker).

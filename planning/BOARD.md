@@ -4,11 +4,19 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11, Phase 0 closeout): Safe to implement now: 1 (FK-09, per its Column field) · Needs inspection: 6 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
+Column counts (2026-06-12, post-axe-audit): Safe to implement now: 2 (FK-09, FK-17) · Needs inspection: 6 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 (all shipped) · others: 0
 
 ---
 
 ## Safe to implement now
+
+### FK-17 · WCAG AA pass: contrast, programmatic labels, landmarks (from 2026-06-12 production axe audit)
+- **Rationale:** Full-coverage production axe run (demo-loaded scorer — see INS-8 findings) surfaced 4 rule IDs / 78 nodes, all pre-existing: `text-slate-400` hint/label text fails 4.5:1 across all three pages; `btn-blue`/`btn-green`/`bg-emerald-600` are white-on-#059669 ≈3.9:1; 5 form fields are `title`-labelled only (`for=` missing); no landmark structure (`region` ×17); Ko-fi link colour-only. Evidence + per-node selectors: `planning/Axe test after PR20/` (report + raw JSON).
+- **Evidence:** O — axe 4.10.2 vs production 2026-06-12; triaged zero-new vs PR #20/#21.
+- **Dependencies:** none hard. **Step 1 is the harness fix:** point bbp-a11y-tests.mjs's Scorer entry at `/scorer.html?id=demo-written-response-v2` (requires seeding the demo config in the test browser context) and capture a fresh local baseline — otherwise the remediation can't be diffed. Brand interaction: button/emerald changes touch brand colours (fk-tokens, D1/D3 territory) — darken within the token family (e.g. emerald-600→700) rather than inventing new colours; canon/tokens note on touch.
+- **Risk:** Low-Medium — broad cosmetic surface (55 contrast nodes), but fixes are mechanical: slate-400→slate-600 for informational text (reserve slate-400 for decorative/disabled), amber-600→amber-700, darken button backgrounds one step, add `for=` to the 5 labels, wrap pages in `<header>`/`<main>` landmarks, always-underline the Ko-fi link. The landmark wrap overlaps fk-decisions.md D8 (`region` full-surface restructure, parked P2) — implementing here closes that, note it there on landing.
+- **DoD:** harness tests the demo-loaded scorer; axe (full coverage) shows 0 violations of the four rule IDs on Home/Builder/Scorer, or each remaining node is explicitly waived with a reason; no visual regressions per screenshot pass; Jest green; sentence-case/canon respected on any copy touched.
+- **Column:** Safe to implement now. **Priority:** P1 (it's the whole of the user-visible WCAG debt). **Effort:** M.
 
 ### FK-02 · Fix section-lettering / onboarding-banner mismatch
 - **Rationale:** Banner teaches A·Student, B·Rubric, C·Penalty, D·Feedback, E·Notes; the page has decayed further than first observed. First-run users are directed by an incomplete map.
