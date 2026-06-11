@@ -50,4 +50,4 @@ planning D-01 (decision: characterize before feature work), INS-4 (surprises
 ledger S-1…S-5), fk-decisions.md Addendum F.1. Snapshot:
 `docs/planning-202606/`.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+

@@ -75,4 +75,4 @@ Developed in the local planning worktree. References: FK-02…FK-06, FK-16
 (watch-task slice) board cards · planning D-02, D-05 · INS-3, INS-4 (S-6),
 INS-9 · fk-decisions.md Addendum F.2/F.3. Snapshot: `docs/planning-202606/`.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
