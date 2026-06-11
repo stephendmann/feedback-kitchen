@@ -163,6 +163,8 @@ Column counts (2026-06-11, Phase 0 closeout): Safe to implement now: 1 (FK-09, p
 
 *FK-02, FK-03, FK-04, FK-05, and FK-06 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
 
+> **SHIPPED 2026-06-12:** everything in this column (FK-01…FK-06 + FK-16 watch slice) merged to main via PR [#20](https://github.com/stephendmann/feedback-kitchen/pull/20) and PR [#21](https://github.com/stephendmann/feedback-kitchen/pull/21); production verified. Decisions promoted to fk-decisions.md Addendum F; planning snapshot at `docs/planning-202606/` on main. These cards are candidates for pruning at the Phase-1 board refresh (per README promotion rule).
+
 ### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale — DONE 2026-06-11
 - **Outcome:** `js/score-grade.test.js` — 75 characterization tests; full suite 98/98 green. Zero source changes needed (both functions already exported on `window.SA`, shared.js:1201). Surprises S-1…S-5 recorded in INS-4; none fixed in the test commit (no-silent-fixes rule held). D-01 validation outcome recorded.
 - **DoD check:** all grade-band boundaries (±0.01 each floor) ✓ · both functions ✓ · default thresholds + custom scale (shuffled NZ-mirror, sparse 3-band, floored) ✓ · malformed input (null, undefined, NaN, negative, >100, numeric/non-numeric/empty strings, empty/null scale) ✓ · suite green ✓ · surprises → INS-4 ✓.
