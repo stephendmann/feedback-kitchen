@@ -336,7 +336,7 @@
   <div id="app" class="hidden">
 
     <!-- Demo onboarding panel — only shown for the bundled demo scorer. -->
-    <section id="demo-onboarding" class="hidden no-print bg-blue-50 border-b border-blue-100 py-5 px-4">
+    <section id="demo-onboarding" aria-label="Demo onboarding" class="hidden no-print bg-blue-50 border-b border-blue-100 py-5 px-4">
       <div class="max-w-5xl mx-auto flex items-start gap-4">
         <span class="text-2xl mt-0.5 shrink-0">👋</span>
         <div class="flex-1 text-sm text-slate-700 leading-relaxed">
@@ -369,7 +369,7 @@
 
 
     <!-- Nav -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print">
+    <nav aria-label="Primary" class="bg-white border-b border-slate-200 sticky top-0 z-50 no-print">
       <div class="max-w-5xl mx-auto px-4 flex flex-col gap-2 py-2 md:flex-row md:items-center md:justify-between md:h-14 md:gap-0 md:py-0">
 
         <!-- Mobile row 1 / Desktop left: logo + mobile-only New button -->
@@ -419,14 +419,14 @@
     </nav>
 
     <!-- Brand-voice sub-headline (BBP v0.1) -->
+    <!-- Page chrome landmark (FK-17): positioning line + rail + title band + note -->
+    <header>
     <p class="no-print max-w-5xl mx-auto px-4 pt-2 text-xs text-slate-500 italic">
       Not an autograder — you choose the grades, the tool drafts the feedback.
     </p>
 
-    <h1 class="sr-only">Mark a student</h1>
-
     <!-- Section rail (v2.2) -->
-    <div id="section-rail"
+    <nav id="section-rail" aria-label="Sections"
          class="no-print sticky top-[88px] md:top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
       <div class="max-w-5xl mx-auto px-4 py-2 flex flex-nowrap overflow-x-auto md:flex-wrap md:overflow-x-visible items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600">
         <a href="#sec-student"  data-rail="student" class="hover:text-emerald-600 whitespace-nowrap">Student</a>
@@ -445,15 +445,15 @@
         <button onclick="S.setAllDetails(true)"  class="text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded px-1.5 py-0.5 whitespace-nowrap relative z-10" title="Expand all sections">⤢ Expand all</button>
         <button onclick="S.setAllDetails(false)" class="text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded px-1.5 py-0.5 whitespace-nowrap relative z-10" title="Collapse all sections except the current one">⤡ Collapse all</button>
       </div>
-    </div>
+    </nav>
 
-    <!-- Header -->
-    <header class="text-white px-4 py-6 no-print" style="background:#0c1527; border-bottom:1px solid #1e3050;">
+    <!-- Title band (was <header>; now a div inside the page-chrome <header>, FK-17) -->
+    <div class="text-white px-4 py-6 no-print" style="background:#0c1527; border-bottom:1px solid #1e3050;">
       <div class="max-w-5xl mx-auto">
         <h1 class="font-bold text-xl" id="hdr-title"></h1>
         <p class="text-emerald-300 text-sm mt-0.5 opacity-80" id="hdr-subtitle"></p>
       </div>
-    </header>
+    </div>
 
     <div class="bg-slate-50 border-b border-slate-200 px-4 py-2 no-print" role="note" aria-label="Product positioning">
       <div class="max-w-5xl mx-auto text-[12px] sm:text-[13px] text-slate-700 leading-snug">
@@ -461,8 +461,10 @@
         <span class="text-slate-500">Not an autograder &mdash; you choose the grades and author the feedback. Student data stays on your device by default.</span>
       </div>
     </div>
+    </header>
 
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 print-full">
+      <h1 class="sr-only">Mark a student</h1>
 
       <!-- ─ A. Student Details ───────────────────────────── -->
       <details open id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100">
@@ -475,22 +477,22 @@
             <span class="text-amber-800 whitespace-nowrap"><span aria-hidden="true">✎</span> Tinted fields are marker inputs.</span></p>
           <div class="grid sm:grid-cols-4 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" title="The full name of the student being marked.">Student Name</label>
+              <label for="student-name" class="block text-xs font-semibold text-slate-600 mb-1" title="The full name of the student being marked.">Student Name</label>
               <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()"
                      title="The full name of the student being marked. Appears in the feedback header and your Excel record.">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
+              <label for="student-id" class="block text-xs font-semibold text-slate-600 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
               <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()"
                      title="The student's institutional ID number — used in your Excel record for identification.">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
+              <label for="student-tutor" class="block text-xs font-semibold text-slate-600 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
               <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()"
                      title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
+              <label for="student-date" class="block text-xs font-semibold text-slate-600 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
               <input type="text" id="student-date" class="input-field" readonly
                      title="Auto-filled with today's date. Recorded in your Excel marker's record.">
             </div>
@@ -501,7 +503,7 @@
       <!-- ─ B. Grade Student using Rubric Criteria ──────── -->
       <details open id="sec-rubric" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <summary>
-          <h2 class="step-title mb-0">Rubric scores<span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span><span id="framework-label-chip" class="hidden" aria-label="Framework"></span></h2>
+          <h2 class="step-title mb-0">Rubric scores<span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span><span id="framework-label-chip" class="hidden" title="Marking framework"></span></h2>
           <span class="text-[11px] text-slate-600">click to collapse</span>
         </summary>
         <div class="section-body compact">
@@ -635,7 +637,7 @@
           <p class="step-sub mb-4" style="margin-left:2.15rem">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
             <div id="late-penalty-controls" class="flex-1">
-              <label class="block text-xs font-semibold text-slate-600 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
+              <label for="late-penalty-select" class="block text-xs font-semibold text-slate-600 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
               <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.onPenaltyChange()" style="max-width:320px"
                       title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
               <!-- Penalty × override conflict banners -->
@@ -717,7 +719,7 @@
           </div>
           <div class="flex items-center justify-between mb-4 no-print">
             <div class="flex items-center gap-4">
-              <select id="snippet-select" class="input-field text-sm py-1 px-2 w-48 bg-slate-50 border-slate-200 cursor-pointer" onchange="S.insertSnippet(this.value); this.value='';">
+              <select id="snippet-select" aria-label="Insert a saved snippet into the feedback draft" class="input-field text-sm py-1 px-2 w-48 bg-slate-50 border-slate-200 cursor-pointer" onchange="S.insertSnippet(this.value); this.value='';">
                 <option value="">Insert snippet…</option>
               </select>
             </div>
@@ -1189,7 +1191,7 @@
     </main>
 
     <!-- ── Sticky action bar (v2.2) ─────────────────────────── -->
-    <div id="sticky-action-bar"
+    <div id="sticky-action-bar" role="region" aria-label="Quick actions"
          class="no-print fixed bottom-0 left-0 right-0 z-40
                 bg-white/95 backdrop-blur border-t border-slate-200
                 shadow-[0_-2px_8px_rgba(15,23,42,0.05)]">
@@ -4883,7 +4885,7 @@
   </script>
 
   <!-- Utility meta-bar: secondary actions moved out of topbar -->
-  <div class="no-print bg-slate-50 border-t border-slate-200 text-sm py-2 px-4">
+  <div role="region" aria-label="Utility" class="no-print bg-slate-50 border-t border-slate-200 text-sm py-2 px-4">
     <div class="max-w-5xl mx-auto flex items-center gap-3 text-slate-500">
       <a href="index.html" class="hover:text-slate-700 transition-colors" id="footer-edit-link" title="Edit this scorer in the builder">⚙ Manage</a>
       <span class="text-slate-300" aria-hidden="true">·</span>
