@@ -151,6 +151,28 @@ findings sections, ROADMAP-PHASES.md Phase-0 wording, or README.md promotion rul
 When proposing rather than applying, quote the existing heading and show the exact
 lines to add.
 
+### 6. End-of-session planning update summary (mandatory)
+Before ending the session, verify the items you actually worked on still match the
+Phase 0 table (0.1–0.8) in ROADMAP-PHASES.md — if any mismatch emerged mid-session,
+stop and report it rather than papering over it. Then produce a summary with exactly
+these sections (this is a planning/recording step — change no code or tests while
+producing it):
+
+1. **Planning artefacts touched** — every file under `planning/` updated or needing
+   update (BOARD.md, INSPECTION.md, ROADMAP-PHASES.md, DECISIONS.md,
+   PHASE0-PROMPT.md). For edits you already applied directly (allowed for
+   `planning/`), report what changed. For any edits NOT applied, show the exact
+   lines to add/change so they can be pasted in manually.
+2. **Status changes** — every FK-, INS-, and D- ID whose status changed this
+   session, with the new status (e.g. FK-01 → Validate in runtime,
+   INS-3 → ☑ Resolved, D-02 → Decided: de-letter). BOARD.md columns and
+   INSPECTION.md/DECISIONS.md status markers must already reflect these.
+3. **Still blocked** — every FK-/INS- item that remains blocked and on what
+   (e.g. FK-09 blocked on INS-3 findings review; FK-08 blocked on INS-2).
+4. **Ready for promotion?** — state explicitly whether Phase 0's exit criteria in
+   ROADMAP-PHASES.md are now satisfied. If not, list each unmet criterion verbatim
+   with what remains to be done.
+
 ## Constraints and style
 
 - Respect the Observed / Inferred / Unknown evidence model. Do not upgrade
