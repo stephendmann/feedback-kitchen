@@ -541,9 +541,7 @@
         </div>
       </details>
 
-      <!-- ─ C. Apply Any Penalty ─────────────────────────── -->
-      <!-- DOM order: C appears before #focus-workspace so keyboard Tab from C's last
-           field flows naturally into the workspace controls (WCAG 2.4.3). -->
+      <!-- ─ C. Penalty & grade override ──────────────────── -->
       <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
           <h2 class="step-title mb-0"><span class="step-badge">C</span>Penalty &amp; grade override</h2>
@@ -1233,7 +1231,7 @@
     const FK_FOCUS_KEY = 'SA_FOCUS_MODE';
     let focusMode = false;
     let focusIdx  = 0;
-    let _focusSavedAdjOpen = false; // remembers C · Adjustments state before focus entry
+    let _focusSavedAdjOpen = false; // remembers C · Penalty & grade override open state before focus entry
 
     // Snippets
     const SNIPPETS_KEY = 'SA_SNIPPETS';
@@ -1897,7 +1895,7 @@
             const bandHigh = scaleEntry ? scaleEntry.bandHigh : (SA.GRADE_MIDPOINTS[row.grade] + 6);
             const oob = row.override < bandLow || row.override > bandHigh;
             overInp.className = 'override-input' + (oob ? ' out-of-band' : '');
-            overInp.setAttribute('aria-invalid', oob ? 'true' : 'false');
+            overInp.setAttribute('aria-invalid', 'false');
           } else {
             overInp.className = 'override-input';
             overInp.setAttribute('aria-invalid', 'false');
@@ -3140,7 +3138,7 @@
       }
 
       setAIState('idle');
-      focusIdx = 0;
+      if (focusMode) focusIdx = 0;
       recalculate();
       refreshStatusChips();
       window.scrollTo({ top: 0, behavior: 'smooth' });
