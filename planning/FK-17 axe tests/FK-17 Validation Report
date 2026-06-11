@@ -1,0 +1,70 @@
+# Feedback Kitchen — FK-17 axe-core Validation Report
+**Tool:** axe-core 4.10.2 | **Standard:** WCAG 2.1 AA | **Date:** 12 June 2026  
+**Baseline:** PR2 audit (same session, same scope)
+
+---
+
+## Summary
+
+| View | PR2 violations | FK-17 violations | Δ |
+|------|---------------|-----------------|---|
+| Home | 2 | **0** | −2 ✅ |
+| Builder | 2 | **0** | −2 ✅ |
+| Scorer | 3 | **1** | −2 ⚠️ |
+| **Total** | **7 rule-violations** | **1** | **−6** |
+
+**78 → 4 affected nodes** across all views.
+
+---
+
+## Violations by rule ID and impact — FK-17
+
+| Rule ID | Impact | Nodes | View | Location hint |
+|---------|--------|------:|------|---------------|
+| `color-contrast` | Serious | 4 | Scorer | Scorer rail nav |
+
+All other rules from the PR2 audit: **0 violations**.
+
+---
+
+## Previously flagged rules — confirmed status
+
+| Rule ID | PR2 count | FK-17 count | Status |
+|---------|-----------|-------------|--------|
+| `color-contrast` | 55 nodes | **4 nodes** | ⚠️ Partially resolved (51 fixed) |
+| `link-in-text-block` | 1 | **0** | ✅ Fixed |
+| `label-title-only` | 5 | **0** | ✅ Fixed |
+| `region` | 17 | **0** | ✅ Fixed |
+
+---
+
+## New violations introduced by FK-17
+
+**None.** All violations present in FK-17 were already flagged in the PR2 audit.
+
+---
+
+## Remaining `color-contrast` detail — Scorer rail (4 nodes)
+
+| CSS selector | Class in DOM | Location |
+|---|---|---|
+| `a[href$="#sec-adjust"]` | `text-emerald-700` | Rail: "Penalty & grade override" link (active state) |
+| `a[href$="#sec-notes"]` | `text-slate-600` | Rail: "Notes" link |
+| `a[href$="#sec-export"]` | `text-slate-600` | Rail: "Finish" link |
+| `#rail-cohort-label` | (inherits from parent `<a>`) | Rail: "Cohort" label |
+
+**Root cause:** The scorer rail sits on a non-white computed background. Colours that would pass on plain white (e.g. `text-slate-600` #475569 ≈ 5.9:1 on #fff) are failing against the rail's actual rendered background colour. The active-state `text-emerald-700` also fails on the same background. `#rail-cohort-label` likely still inherits a low-contrast colour from its parent `<a>` element which may not have been updated.
+
+**Fix:** Inspect the computed background of the rail container and either (a) ensure the rail background is `#ffffff` / transparent, or (b) darken the text tokens further until the computed ratio ≥ 4.5:1 against the actual background. For `#rail-cohort-label`, confirm the parent `<a>` also received the colour token update.
+
+---
+
+## Incomplete items (axe "needs review" — not counted as violations)
+
+| View | Rule | Nodes | Note |
+|------|------|------:|------|
+| Home | `color-contrast` | 14 | Borderline or dynamic backgrounds — manual check recommended |
+| Builder | `color-contrast` | 5 | Same |
+| Scorer | `color-contrast` | 4 | Same |
+
+These are axe's "cannot determine automatically" cases. They are not failures per this automated scan scope.

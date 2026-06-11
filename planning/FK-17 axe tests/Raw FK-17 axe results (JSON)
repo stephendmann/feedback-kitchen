@@ -1,0 +1,76 @@
+[
+  {
+    "view": "Home",
+    "ok": true,
+    "url": "https://marking.stephendmann.com/",
+    "title": "Feedback Kitchen — Build Custom Assessment Feedback Tools",
+    "violations": [],
+    "passes": 33,
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodeCount": 14
+      }
+    ]
+  },
+  {
+    "view": "Builder",
+    "ok": true,
+    "url": "https://marking.stephendmann.com/builder.html",
+    "title": "Builder — Feedback Kitchen",
+    "violations": [],
+    "passes": 38,
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodeCount": 5
+      }
+    ]
+  },
+  {
+    "view": "Scorer",
+    "ok": true,
+    "url": "https://marking.stephendmann.com/scorer.html?id=demo-written-response-v2",
+    "title": "Feedback Kitchen — DEMO101 / 2026 — Short Written Response",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "wcagTags": [
+          "wcag2aa",
+          "wcag143"
+        ],
+        "nodeCount": 4,
+        "nodes": [
+          {
+            "html": "<a href=\"#sec-adjust\" data-rail=\"adjust\" class=\"hover:text-emerald-600 whitespace-nowrap text-emerald-700\">Penalty &amp; grade override</a>",
+            "target": "[\"a[href$=\\\"#sec-adjust\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-notes\" data-rail=\"notes\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-600\">Notes</a>",
+            "target": "[\"a[href$=\\\"#sec-notes\\\"]\"]"
+          },
+          {
+            "html": "<a href=\"#sec-export\" data-rail=\"export\" class=\"hover:text-emerald-600 whitespace-nowrap text-slate-600\">Finish</a>",
+            "target": "[\"a[href$=\\\"#sec-export\\\"]\"]"
+          },
+          {
+            "html": "<span id=\"rail-cohort-label\">Cohort</span>",
+            "target": "[\"#rail-cohort-label\"]"
+          }
+        ]
+      }
+    ],
+    "passes": 46,
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodeCount": 4
+      }
+    ]
+  }
+]
