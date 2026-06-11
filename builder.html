@@ -75,12 +75,12 @@
     </div>
   </nav>
 
+  <!-- ── Page chrome landmark (FK-17): positioning line + step progress ── -->
+  <header>
   <!-- ── Brand-voice sub-headline (BBP v0.1) ──────────────── -->
   <p class="max-w-4xl mx-auto px-4 pt-3 text-xs text-slate-500 italic">
     Not an autograder — you choose the grades, the tool drafts the feedback.
   </p>
-
-  <h1 class="sr-only">Build a scorer</h1>
 
   <!-- ── Step Progress ────────────────────────────────────── -->
   <div class="bg-white border-b border-slate-100 px-4 py-4">
@@ -93,34 +93,37 @@
         <div class="step-line" id="line-1-2"></div>
         <div class="flex flex-col items-center" data-step-indicator="2">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-2">2</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Scale</span>
+          <span class="text-xs mt-1 text-slate-600 hidden sm:block">Scale</span>
         </div>
         <div class="step-line" id="line-2-3"></div>
         <div class="flex flex-col items-center" data-step-indicator="3">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-3">3</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Criteria</span>
+          <span class="text-xs mt-1 text-slate-600 hidden sm:block">Criteria</span>
         </div>
         <div class="step-line" id="line-3-4"></div>
         <div class="flex flex-col items-center" data-step-indicator="4">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-4">4</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Rubric</span>
+          <span class="text-xs mt-1 text-slate-600 hidden sm:block">Rubric</span>
         </div>
         <div class="step-line" id="line-4-5"></div>
         <div class="flex flex-col items-center" data-step-indicator="5">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-5">5</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Feedback</span>
+          <span class="text-xs mt-1 text-slate-600 hidden sm:block">Feedback</span>
         </div>
         <div class="step-line" id="line-5-6"></div>
         <div class="flex flex-col items-center" data-step-indicator="6">
           <div class="step-dot bg-slate-200 text-slate-500" id="dot-6">6</div>
-          <span class="text-xs mt-1 text-slate-400 hidden sm:block">Settings</span>
+          <span class="text-xs mt-1 text-slate-600 hidden sm:block">Settings</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ── Main ─────────────────────────────────────────────── -->
+  </header>
+
   <main class="max-w-3xl mx-auto px-4 py-8">
+    <h1 class="sr-only">Build a scorer</h1>
 
     <!-- ─ Step 1: Assessment Details ──────────────────────── -->
     <div id="step-1" class="step-panel">
@@ -164,7 +167,7 @@
               <option value="half">Half point (e.g. 73.5)</option>
               <option value="whole">Whole number (e.g. 73)</option>
             </select>
-            <p class="text-xs text-amber-600 mt-1">Sets how calculated scores appear — can also be toggled live on the scoring page.</p>
+            <p class="text-xs text-amber-700 mt-1">Sets how calculated scores appear — can also be toggled live on the scoring page.</p>
           </div>
           <div>
             <label class="label" for="s1-spelling-locale" title="Controls AU/NZ spelling normalisation in the AI feedback post-processor. Auto detects from your browser locale.">Spelling</label>
@@ -177,7 +180,7 @@
             <p class="text-xs text-gray-500 mt-1">Applied by the AI feedback post-processor only.</p>
           </div>
           <div class="sm:col-span-2">
-            <label class="label" for="s1-assignmentInfo" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-400 font-normal">(optional — appears on exports)</span></label>
+            <label class="label" for="s1-assignmentInfo" title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">Assignment Info <span class="text-slate-600 font-normal">(optional — appears on exports)</span></label>
             <input type="text" id="s1-assignmentInfo" class="input-field" placeholder="e.g. Progress Report 1  |  Weighting: 15% of final grade"
                    title="Any extra context about this assessment — e.g. its weighting, submission type, or due date. Appears on your Excel export as a reference note.">
           </div>
@@ -234,7 +237,7 @@
 
         <!-- Grade table -->
         <div class="mb-2 flex items-center justify-between">
-          <label class="label mb-0">Grade definitions <span class="text-slate-400 font-normal">(edit any row or add your own)</span></label>
+          <label class="label mb-0">Grade definitions <span class="text-slate-600 font-normal">(edit any row or add your own)</span></label>
         </div>
 
         <div class="overflow-x-auto mb-3">
@@ -258,7 +261,7 @@
         <div class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
           <div class="flex items-center justify-between mb-2">
             <div>
-              <label class="label mb-0">Tier labels <span class="text-slate-400 font-normal">(optional)</span></label>
+              <label class="label mb-0">Tier labels <span class="text-slate-600 font-normal">(optional)</span></label>
               <p class="text-xs text-slate-500 mt-1">Rename the performance tiers if your school uses different language (e.g. "Very Good" instead of "Proficient"). These labels appear in the rubric editor, scorer tier pills, and Excel exports. The internal grouping doesn't change — only the display name.</p>
             </div>
             <button type="button" class="text-xs text-blue-600 hover:text-blue-800 underline" onclick="B.resetTierLabels()" title="Restore default tier labels">Reset to defaults</button>
@@ -357,7 +360,7 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="font-bold text-slate-700">Late Submission Penalties</h3>
-            <p class="text-sm text-slate-400">Automatically apply a deduction for late work when scoring.</p>
+            <p class="text-sm text-slate-600">Automatically apply a deduction for late work when scoring.</p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="enable-late-penalties" class="sr-only peer" checked onchange="B.toggleLatePenalties(this.checked)">
@@ -430,7 +433,7 @@
          Sits OUTSIDE the step-panels so it renders on every step,
          not just Step 6 where it was originally nested. (PR review
          follow-up 2026-05-24.) -->
-    <p class="mt-6 text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+    <p class="mt-6 text-xs text-slate-600 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
       💡 Everything stays in this browser. You can export the scorer as JSON to share with your team.
     </p>
   </main>
@@ -794,7 +797,7 @@
               <input type="number" class="gs-low input-field text-center w-20"
                      value="${g.bandLow}" min="0" max="100" step="1" placeholder="Lo"
                      aria-label="Grade band ${i + 1} low value">
-              <span class="text-slate-400 text-xs">–</span>
+              <span class="text-slate-600 text-xs">–</span>
               <input type="number" class="gs-high input-field text-center w-20"
                      value="${g.bandHigh}" min="0" max="100" step="1" placeholder="Hi"
                      aria-label="Grade band ${i + 1} high value">
@@ -913,7 +916,7 @@
         const row = document.createElement('div');
         row.className = 'flex gap-3 items-center p-3 bg-slate-50 rounded-xl border border-slate-200';
         row.innerHTML = `
-          <span class="text-slate-400 font-bold text-sm w-5 shrink-0">${idx + 1}</span>
+          <span class="text-slate-600 font-bold text-sm w-5 shrink-0">${idx + 1}</span>
           <input type="text" id="crit-name-${c.id}" value="${escHtml(c.name)}"
                  class="input-field input-yellow flex-1" placeholder="Criterion name"
                  aria-label="Criterion ${idx + 1} name"
@@ -995,11 +998,11 @@
           <div class="accordion-header flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
                onclick="B.toggleAccordion('rubric-acc-${c.id}')">
             <div class="flex items-center gap-3">
-              <span class="text-slate-400 font-bold text-sm">${idx + 1}</span>
+              <span class="text-slate-600 font-bold text-sm">${idx + 1}</span>
               <span class="font-semibold text-slate-800">${escHtml(c.name || '(unnamed criterion)')}</span>
               <span class="weight-badge bg-blue-100 text-blue-700">${c.weight}%</span>
             </div>
-            <span class="text-slate-400 text-sm" id="rubric-arrow-${c.id}">▼</span>
+            <span class="text-slate-600 text-sm" id="rubric-arrow-${c.id}">▼</span>
           </div>
           <div id="rubric-acc-${c.id}" class="hidden p-4 grid sm:grid-cols-2 gap-4 bg-white">
             ${tiers.map(t => `
@@ -1007,7 +1010,7 @@
                 <label class="label" for="rubric-${c.id}-${t.key}">
                   <span class="inline-flex items-center gap-1">
                     <span class="weight-badge ${t.bg} ${t.text}">${t.label}</span>
-                    <span class="text-slate-400 font-normal">${t.range}</span>
+                    <span class="text-slate-600 font-normal">${t.range}</span>
                   </span>
                 </label>
                 <textarea id="rubric-${c.id}-${t.key}" class="input-field"
@@ -1048,17 +1051,17 @@
                onclick="B.toggleAccordion('gf-acc-${gf.grade}')">
             <div class="flex items-center gap-3">
               <span class="weight-badge ${colours[tier]} font-bold text-base px-3">${gf.grade}</span>
-              <span class="text-sm text-slate-400">${SA.TIER_LABELS[tier].split(' (')[0]}</span>
+              <span class="text-sm text-slate-600">${SA.TIER_LABELS[tier].split(' (')[0]}</span>
             </div>
-            <span class="text-slate-400 text-sm" id="gf-arrow-${gf.grade}">▼</span>
+            <span class="text-slate-600 text-sm" id="gf-arrow-${gf.grade}">▼</span>
           </div>
           <div id="gf-acc-${gf.grade}" class="hidden p-4 space-y-4 bg-white">
             <div>
-              <label class="label" for="gf-intro-${gf.grade}">Intro Paragraph <span class="text-slate-400 font-normal">(shown at the top of the student's feedback)</span></label>
+              <label class="label" for="gf-intro-${gf.grade}">Intro Paragraph <span class="text-slate-600 font-normal">(shown at the top of the student's feedback)</span></label>
               <textarea id="gf-intro-${gf.grade}" class="input-field" rows="4" placeholder="Write an opening paragraph for ${gf.grade} grade feedback…" aria-label="${gf.grade} grade intro paragraph">${escHtml(gf.intro)}</textarea>
             </div>
             <div>
-              <label class="label" for="gf-outro-${gf.grade}">Outro Paragraph <span class="text-slate-400 font-normal">(shown at the bottom, after the criterion breakdown)</span></label>
+              <label class="label" for="gf-outro-${gf.grade}">Outro Paragraph <span class="text-slate-600 font-normal">(shown at the bottom, after the criterion breakdown)</span></label>
               <textarea id="gf-outro-${gf.grade}" class="input-field" rows="4" placeholder="Write a closing paragraph for ${gf.grade} grade feedback…" aria-label="${gf.grade} grade outro paragraph">${escHtml(gf.outro)}</textarea>
             </div>
           </div>
@@ -1152,13 +1155,13 @@
         : 'Default NZ University scale';
 
       el.innerHTML = `
-        <div class="flex justify-between"><span class="text-slate-400">Scorer name</span><span class="font-medium">${escHtml(config.name || '—')}</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Assessment</span><span class="font-medium">${escHtml(config.assessmentTitle || '—')}</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Course</span><span class="font-medium">${escHtml(config.courseName || '—')}</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Grade scale</span><span class="font-medium text-right max-w-xs">${escHtml(scaleLabel)}</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Criteria</span><span class="font-medium">${config.criteria.length} (total weight: ${totalWeight}%)</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Rubric descriptors</span><span class="font-medium">${filledRubric} / ${config.criteria.length} criteria have at least one descriptor</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Late penalties</span><span class="font-medium">${config.enableLatePenalties ? config.latePenalties.length + ' bands configured' : 'Disabled'}</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Scorer name</span><span class="font-medium">${escHtml(config.name || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Assessment</span><span class="font-medium">${escHtml(config.assessmentTitle || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Course</span><span class="font-medium">${escHtml(config.courseName || '—')}</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Grade scale</span><span class="font-medium text-right max-w-xs">${escHtml(scaleLabel)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Criteria</span><span class="font-medium">${config.criteria.length} (total weight: ${totalWeight}%)</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Rubric descriptors</span><span class="font-medium">${filledRubric} / ${config.criteria.length} criteria have at least one descriptor</span></div>
+        <div class="flex justify-between"><span class="text-slate-600">Late penalties</span><span class="font-medium">${config.enableLatePenalties ? config.latePenalties.length + ' bands configured' : 'Disabled'}</span></div>
       `;
     }
 
@@ -1272,7 +1275,7 @@
       <div class="text-4xl mb-3">🔄</div>
       <h3 class="font-bold text-slate-800 text-lg mb-2">Replace grade scale?</h3>
       <p class="text-slate-500 text-sm mb-1">This will replace your current grade rows with the selected preset.</p>
-      <p class="text-xs text-slate-400 mb-6">Any custom grades or edits will be lost.</p>
+      <p class="text-xs text-slate-600 mb-6">Any custom grades or edits will be lost.</p>
       <div class="flex gap-3">
         <button onclick="hideLoadPresetModal()"
           class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">

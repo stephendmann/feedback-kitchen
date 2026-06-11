@@ -104,7 +104,7 @@
             <button type="button" onclick="tryDemoScorer()" class="text-xs text-blue-700 hover:underline font-semibold">Or try the demo scorer →</button>
           </div>
         </div>
-        <button onclick="dismissFirstRunBanner()" class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5" title="Dismiss">&times;</button>
+        <button onclick="dismissFirstRunBanner()" class="text-slate-600 hover:text-slate-800 text-xl leading-none shrink-0 mt-0.5" title="Dismiss">&times;</button>
       </div>
     </div>
   </section>
@@ -124,7 +124,7 @@
         Build a scorer once. Grade criterion by criterion. Generate editable, ready-to-paste feedback drafts for busy university educators — entirely in your browser, no student data ever leaves your device.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="builder.html" class="bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl text-lg hover:bg-emerald-500 transition-colors shadow-lg">
+        <a href="builder.html" class="bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl text-lg hover:bg-emerald-600 transition-colors shadow-lg">
           Build a New Scorer
         </a>
         <a href="/how-to-feedback-kitchen.html" target="_blank" rel="noopener"
@@ -150,13 +150,13 @@
   <section class="bg-white py-10 px-4 border-b border-slate-200">
     <div class="max-w-4xl mx-auto text-center">
       <p class="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Built on peer-reviewed research into AI-assisted grading<sup><a href="#acknowledgements" class="text-blue-500 hover:text-blue-700 transition-colors font-semibold">¹</a></sup></p>
-      <p class="text-xs text-slate-400 mb-6">Wetzler et al. 2025 · Flodén 2025 · EDUCAUSE 2025 · HEPI/Kortext 2025 · Birmingham/Graide 2025</p>
+      <p class="text-xs text-slate-600 mb-6">Wetzler et al. 2025 · Flodén 2025 · EDUCAUSE 2025 · HEPI/Kortext 2025 · Birmingham/Graide 2025</p>
       <p class="text-sm font-semibold text-slate-500 mb-5 uppercase tracking-wider">Used by educators at</p>
       <div class="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-80">
         <img src="strath_main.jpg" alt="University of Strathclyde" class="h-12 sm:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300">
         <img id="uow-logo" src="University_of_Waikato_logo_2.svg.png" alt="University of Waikato" class="h-12 sm:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300">
       </div>
-      <p class="text-xs text-slate-500 mt-5 max-w-2xl mx-auto">Ongoing development is informed by research at the <strong>University of Waikato</strong> based on educator feedback. Suggestions and improvement ideas are welcome — please send them via <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline font-semibold">Ko-fi</a>.</p>
+      <p class="text-xs text-slate-500 mt-5 max-w-2xl mx-auto">Ongoing development is informed by research at the <strong>University of Waikato</strong> based on educator feedback. Suggestions and improvement ideas are welcome — please send them via <a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 underline font-semibold">Ko-fi</a>.</p>
     </div>
   </section>
 
@@ -200,7 +200,7 @@
       </div>
       <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
         <span class="text-blue-600 text-xl shrink-0">✓</span>
-        <p class="text-slate-700 text-sm"><strong>Optional wording assistant</strong> (<a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Ko-fi</a> key required) — refines phrasing only, with names and IDs removed before any text leaves your browser.</p>
+        <p class="text-slate-700 text-sm"><strong>Optional wording assistant</strong> (<a href="https://ko-fi.com/smann" target="_blank" rel="noopener" class="text-blue-600 underline">Ko-fi</a> key required) — refines phrasing only, with names and IDs removed before any text leaves your browser.</p>
       </div>
     </div>
   </section>
@@ -499,7 +499,7 @@
           <div class="flex items-start justify-between mb-3">
             <div>
               <h3 class="font-bold text-slate-800">${escHtml(cfg.name || 'Unnamed Scorer')}</h3>
-              <p class="text-sm text-slate-400">${escHtml(cfg.courseName || '')}${cfg.universityName ? ' · ' + escHtml(cfg.universityName) : ''}</p>
+              <p class="text-sm text-slate-600">${escHtml(cfg.courseName || '')}${cfg.universityName ? ' · ' + escHtml(cfg.universityName) : ''}</p>
             </div>
             ${isActive ? '<span class="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Active</span>' : ''}
           </div>

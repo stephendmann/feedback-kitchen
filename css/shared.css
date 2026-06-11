@@ -16,7 +16,7 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   text-transform: none;
-  color: #64748b;
+  color: #94a3b8; /* FK-17: ≥4.5:1 on the #0f172a footer panel */
 }
 
 .site-footer__kofi-link {
@@ -149,7 +149,7 @@
   border-top: 1px solid #1e293b;
   text-align: center;
   font-size: 0.7rem;
-  color: #64748b;
+  color: #94a3b8; /* FK-17: ≥4.5:1 on the #0f172a footer panel */
 }
 
 .site-footer__acknowledgement p {
@@ -159,12 +159,12 @@
 }
 
 .site-footer__acknowledgement strong {
-  color: #94a3b8;
+  color: #cbd5e1; /* FK-17: keep strong a step brighter than body */
   font-weight: 600;
 }
 
 .site-footer__muted {
-  color: #64748b;
+  color: #94a3b8; /* FK-17: ≥4.5:1 on the #0f172a footer panel */
 }
 
 @media (min-width: 768px) {
