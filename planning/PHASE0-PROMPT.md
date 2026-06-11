@@ -35,17 +35,13 @@ don't duplicate them.
   (scorer.html, js/*, css/*, package.json). For those, produce implementation specs
   only — implementation happens in follow-up commits per card.
 
-## Phase 0 scope — with explicit pull-forward
+## Phase 0 scope
 
-ROADMAP-PHASES.md currently defines Phase 0 as: FK-01, FK-02 (+FK-03 rider), and
-inspections INS-3 + INS-9. This session deliberately PULLS FORWARD the remaining
-Safe-to-implement-now items — FK-04, FK-05, FK-06, and the FK-16 watch-task slice —
-into an expanded Phase 0, because their evidence basis requires no inspection
-outcome (FK-05's INS-9 pre-flight is its own first step, not a blocker).
-
-First action of the session: record this pull-forward in ROADMAP-PHASES.md
-(amend the Phase 0 table and exit criteria; note that Phase 1 loses items 1.1/1.2)
-so the artefacts stay internally consistent.
+The scope below matches ROADMAP-PHASES.md exactly — the pull-forward of FK-04,
+FK-05, FK-06, and the FK-16 watch-task slice into Phase 0 was reconciled and
+recorded in the roadmap artefact on 2026-06-11 (see the scope-change note under
+Phase 0 there). No further roadmap amendment is needed; follow the Phase 0 table
+(items 0.1–0.8) and its exit criteria as written.
 
 Phase-0 (expanded) cards:
 
@@ -144,12 +140,10 @@ Output for this section must be copy-pastable into INSPECTION.md as expanded
 checklists; better, apply it to INSPECTION.md directly (allowed — it's planning/).
 
 ### 4. Phase-0 definition of done
-A checklist expressed only in FK-/INS-/D- IDs, aligned with the EXPANDED scope, and
-written back into ROADMAP-PHASES.md's Phase 0 exit criteria. Must include at
-minimum: FK-01 tests green and committed; INS-4 populated (or explicitly empty);
-D-02 resolved and FK-02/FK-03 landed consistent with it; INS-9 findings recorded
-and FK-05 runtime-validated; FK-06 guard verified in runtime; FK-16 watch task
-running; INS-3 status ☑ with findings.
+The authoritative DoD is ROADMAP-PHASES.md's Phase 0 exit criteria (already written
+during the 2026-06-11 reconciliation). Restate it here as a checklist in FK-/INS-/D-
+IDs, and flag any gap or contradiction you find between those exit criteria and the
+per-card DoDs in BOARD.md — propose the fix rather than silently diverging.
 
 ### 5. Suggested planning-file updates
 Propose (or directly apply) small edits to BOARD.md card DoDs, INSPECTION.md

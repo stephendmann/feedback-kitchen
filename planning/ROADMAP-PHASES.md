@@ -4,26 +4,41 @@ Internal sequencing plan. Phases are gates, not sprints — a phase closes when 
 exit criteria hold, regardless of calendar. Card IDs → BOARD.md; INS-x → INSPECTION.md.
 
 ## Phase 0 — Correctness net + trust fixes (start immediately)
-**Goal:** regression net under the grade math; kill the first-run confusion.
+**Goal:** regression net under the grade math; kill the first-run confusion; land all
+remaining no-inspection-needed fixes.
+
+> **Scope change 2026-06-11 (pull-forward):** FK-05 and FK-06 pulled forward from
+> Phase 1, FK-04 and the FK-16 watch-task slice added, because their evidence basis
+> requires no inspection outcome (FK-05's INS-9 pre-flight is its own first step,
+> not a blocker). D-02 added as an in-phase decision gate for FK-02.
+> Phase 1 reduces to the two scope-deciding inspections. See PHASE0-PROMPT.md.
 
 | Order | Item | Notes |
 |---|---|---|
 | 0.1 | FK-01 characterization tests on shared.js score functions | Findings → INS-4, not silent fixes |
-| 0.2 | FK-02 lettering/banner fix + FK-03 casing rider | One small PR |
-| 0.3 | Run INS-3 (scoring-surface map) and INS-9 (reorder pre-flight) | Inspection only, no changes |
+| 0.2 | Resolve D-02 (de-letter vs re-letter) | Run its grep validation step; record in DECISIONS.md |
+| 0.3 | FK-02 lettering/banner fix + FK-03 casing rider | One small PR; follows D-02 |
+| 0.4 | Run INS-3 (scoring-surface map) and INS-9 (reorder pre-flight) | Inspection only, no changes |
+| 0.5 | FK-05 section reorder | Pulled forward; uses INS-9 findings; runtime-validate focus-mode nav |
+| 0.6 | FK-06 Clear Cohort demote/guard | Pulled forward; partial cohort cleanup only — moderation pair stays gated on INS-2 |
+| 0.7 | FK-04 non-color signal for yellow fields | Pulled forward |
+| 0.8 | FK-16 watch-task slice (`build:css --watch`) | Pulled forward from Phase 4; no styling migration |
 
-**Exit:** score-function tests green and committed; banner matches page; INS-3/INS-9 findings recorded.
+**Exit:** score-function tests green and committed; INS-4 populated (or explicitly
+empty); D-02 resolved and FK-02/FK-03 landed consistent with it; INS-9 findings
+recorded and FK-05 runtime-validated (focus-mode nav, nav strip, expand/collapse-all);
+FK-06 guard verified in runtime; FK-04 passes axe with no new violations; FK-16 watch
+task running; INS-3 status ☑ with findings.
 
-## Phase 1 — Workflow order + destructive-action safety
-**Goal:** page order matches marking sequence; cohort actions safe.
+## Phase 1 — Scope-deciding inspections
+**Goal:** resolve the two inspections that determine Phase 2's shape.
 
 | Order | Item | Notes |
 |---|---|---|
-| 1.1 | FK-05 section reorder | Uses INS-9 findings; runtime-validate focus-mode nav |
-| 1.2 | FK-06 Clear Cohort demote/guard | Partial cohort cleanup only |
-| 1.3 | Run INS-1 (record round-trip), INS-2 (moderation pair) | Decides Phase 2 scope |
+| 1.1 | Run INS-1 (record round-trip), INS-2 (moderation pair) | Decides Phase 2 scope |
 
-**Exit:** reordered page passes focus-mode runtime checks; Clear Cohort guarded; INS-1/INS-2 resolved → FK-07/FK-08 rescoped and moved out of Needs inspection.
+**Exit:** INS-1/INS-2 resolved → FK-07/FK-08 rescoped and moved out of Needs inspection.
+*(FK-05/FK-06 moved to Phase 0 — see scope change note above.)*
 
 ## Phase 2 — Engine extraction + queue (the two big wins)
 **Goal:** provably-correct scoring module; cohort visible and editable during marking.
@@ -49,7 +64,7 @@ exit criteria hold, regardless of calendar. Card IDs → BOARD.md; INS-x → INS
 ## Phase 4 — Structural hygiene (amortized, runs alongside 2–3)
 | Item | Notes |
 |---|---|
-| FK-16 watch-task slice | Same-day: wire `build:css --watch` into dev workflow — do anytime |
+| ~~FK-16 watch-task slice~~ | Pulled forward to Phase 0 (0.8) — scope change 2026-06-11 |
 | FK-15 decomposition program | Gated on the bug-tagging validation (5 bugs tagged by cause); extract-on-contact policy |
 | FK-16 styling migration policy | Freeze shared.css, shrink-on-touch |
 | FK-13/INS-8 ARIA audit → card or drop | |
