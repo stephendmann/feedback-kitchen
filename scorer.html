@@ -76,10 +76,10 @@
     .btn { font-weight: 600; padding: 0.55rem 1.2rem; border-radius: 0.5rem;
            border: none; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; display: inline-flex;
            align-items: center; gap: 0.4rem; }
-    .btn-blue   { background: #059669; color: white; }
-    .btn-blue:hover { background: #047857; }
-    .btn-green  { background: #059669; color: white; }
-    .btn-green:hover { background: #047857; }
+    .btn-blue   { background: #047857; color: white; } /* emerald-700: ≥4.5:1 with white (FK-17) */
+    .btn-blue:hover { background: #065f46; }
+    .btn-green  { background: #047857; color: white; } /* emerald-700: ≥4.5:1 with white (FK-17) */
+    .btn-green:hover { background: #065f46; }
     .btn-amber  { background: #d97706; color: white; }
     .btn-amber:hover { background: #b45309; }
     .btn-ghost  { background: #f1f5f9; color: #334155; }
@@ -352,10 +352,10 @@
             <li><strong>Finish</strong> — Export the student record or print the page.</li>
             <li><strong>Cohort</strong> — Saved students collect here for export and insights.</li>
           </ul>
-          <p class="text-slate-500">Finish by checking the score, band, and feedback, then use <strong>↺ New student</strong> to mark the next response.</p>
+          <p class="text-slate-600">Finish by checking the score, band, and feedback, then use <strong>↺ New student</strong> to mark the next response.</p>
         </div>
         <button type="button" onclick="dismissDemoOnboarding()"
-                class="text-slate-400 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5"
+                class="text-slate-600 hover:text-slate-600 text-xl leading-none shrink-0 mt-0.5"
                 title="Dismiss">&times;</button>
       </div>
     </section>
@@ -398,7 +398,7 @@
                 <span class="hidden md:inline">Whole marks</span><span class="md:hidden">Whole</span>
               </button>
             </div>
-            <p id="rounding-example" class="text-[10px] text-slate-400 ml-1 hidden md:block"></p>
+            <p id="rounding-example" class="text-[10px] text-slate-600 ml-1 hidden md:block"></p>
           </div>
           <span class="w-px h-5 bg-slate-200 self-center hidden md:block"></span>
           <!-- Theme toggle -->
@@ -428,7 +428,7 @@
     <!-- Section rail (v2.2) -->
     <div id="section-rail"
          class="no-print sticky top-[88px] md:top-14 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div class="max-w-5xl mx-auto px-4 py-2 flex flex-nowrap overflow-x-auto md:flex-wrap md:overflow-x-visible items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-400">
+      <div class="max-w-5xl mx-auto px-4 py-2 flex flex-nowrap overflow-x-auto md:flex-wrap md:overflow-x-visible items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600">
         <a href="#sec-student"  data-rail="student" class="hover:text-emerald-600 whitespace-nowrap">Student</a>
         <a href="#sec-rubric"   data-rail="rubric" class="hover:text-emerald-600 whitespace-nowrap">Rubric</a>
         <a href="#focus-workspace" data-rail="focus" class="hover:text-emerald-600 whitespace-nowrap">◎ Focus marking</a>
@@ -468,29 +468,29 @@
       <details open id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100">
         <summary>
           <h2 class="step-title mb-0">Student</h2>
-          <span class="text-[11px] text-slate-400">click to collapse</span>
+          <span class="text-[11px] text-slate-600">click to collapse</span>
         </summary>
         <div class="section-body">
           <p class="step-sub mb-4" style="margin-left:2.15rem">Name, ID, tutor. Date auto-fills; tutor persists between students.
             <span class="text-amber-800 whitespace-nowrap"><span aria-hidden="true">✎</span> Tinted fields are marker inputs.</span></p>
           <div class="grid sm:grid-cols-4 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" title="The full name of the student being marked.">Student Name</label>
               <input type="text" id="student-name" class="input-field cell-yellow" placeholder="e.g. Mickey Mouse" oninput="S.onStudentChange()"
                      title="The full name of the student being marked. Appears in the feedback header and your Excel record.">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" title="The student's institutional ID number — used in your Excel record for identification.">Student ID</label>
               <input type="text" id="student-id" class="input-field cell-yellow" placeholder="e.g. 1234567" oninput="S.onStudentChange()"
                      title="The student's institutional ID number — used in your Excel record for identification.">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">Tutor</label>
               <input type="text" id="student-tutor" class="input-field cell-yellow" placeholder="e.g. SM" oninput="S.onStudentChange()"
                      title="Your name or initials as the marker/tutor doing the scoring. Persists between students so you only need to enter it once per session.">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" title="Auto-filled with today's date. Recorded in your Excel marker's record.">Date</label>
               <input type="text" id="student-date" class="input-field" readonly
                      title="Auto-filled with today's date. Recorded in your Excel marker's record.">
             </div>
@@ -502,7 +502,7 @@
       <details open id="sec-rubric" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <summary>
           <h2 class="step-title mb-0">Rubric scores<span id="rubric-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">0 of 0 graded</span><span id="framework-label-chip" class="hidden" aria-label="Framework"></span></h2>
-          <span class="text-[11px] text-slate-400">click to collapse</span>
+          <span class="text-[11px] text-slate-600">click to collapse</span>
         </summary>
         <div class="section-body compact">
           <p class="step-sub mb-4" style="margin-left:2.15rem">Pick a grade per criterion. Override lets you enter a specific score instead of the midpoint.</p>
@@ -517,7 +517,7 @@
             <button type="button" onclick="S.bulkFillUngraded()"
                     class="px-3 py-1 rounded-md bg-slate-700 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     id="bulk-fill-apply">Fill ungraded</button>
-            <span class="text-slate-400">Graded rows are preserved. Auto-filled rows are flagged and cleared on manual change.</span>
+            <span class="text-slate-600">Graded rows are preserved. Auto-filled rows are flagged and cleared on manual change.</span>
           </div>
 
           <div class="overflow-x-auto">
@@ -537,7 +537,7 @@
               <tbody id="criteria-tbody"></tbody>
               <tfoot>
                 <tr id="weight-check-row">
-                  <td colspan="2" class="text-xs text-slate-400 font-semibold py-3 px-3">Weight check</td>
+                  <td colspan="2" class="text-xs text-slate-600 font-semibold py-3 px-3">Weight check</td>
                   <td colspan="4" id="weight-check-cell" class="text-xs text-center font-bold py-3"></td>
                   <td colspan="2" id="weighted-total-cell" class="text-right text-base font-bold text-emerald-700 px-3"></td>
                 </tr>
@@ -557,7 +557,7 @@
         <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100">
           <h2 class="step-title mb-0"><span class="step-badge">◎</span>Focus marking</h2>
           <div class="flex items-center gap-2">
-            <span id="focus-student" class="text-xs font-semibold text-slate-400 truncate max-w-[12rem]" title="Student being marked (edit in the Student section)."></span>
+            <span id="focus-student" class="text-xs font-semibold text-slate-600 truncate max-w-[12rem]" title="Student being marked (edit in the Student section)."></span>
             <span id="focus-progress" class="text-xs font-semibold text-slate-500">—</span>
             <button onclick="S.toggleFocusMode()" class="btn btn-ghost text-xs" title="Return to the full overview page (rubric table + feedback draft).">Exit focus</button>
           </div>
@@ -570,7 +570,7 @@
             <div>
               <div class="mb-1 flex items-baseline justify-between gap-2">
                 <h3 id="focus-criterion-name" class="font-bold text-slate-800 text-base leading-snug">—</h3>
-                <span id="focus-criterion-weight" class="text-xs font-semibold text-slate-400 whitespace-nowrap"></span>
+                <span id="focus-criterion-weight" class="text-xs font-semibold text-slate-600 whitespace-nowrap"></span>
               </div>
               <p class="text-xs text-slate-500 mb-3">Pick a grade. Override sets a specific score instead of the band midpoint.</p>
               <div class="space-y-3">
@@ -579,7 +579,7 @@
                   <select id="focus-grade" class="grade-select w-full" onchange="S.focusOnGrade()"></select>
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-slate-500 mb-1" for="focus-override">Override <span class="font-normal text-slate-400">(optional)</span></label>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1" for="focus-override">Override <span class="font-normal text-slate-600">(optional)</span></label>
                   <input type="number" id="focus-override" class="override-input w-full" placeholder="–" min="0" max="100" step="0.5"
                          onmousedown="S.focusOnOverridePrime()"
                          onkeydown="S.focusOnOverrideKeydown(event)"
@@ -602,7 +602,7 @@
               <textarea id="focus-body" class="input-field w-full text-sm" rows="8" spellcheck="true"
                         placeholder="Grade this criterion to generate its feedback, then edit here."
                         oninput="S.focusOnBodyInput()"></textarea>
-              <p class="text-[11px] text-slate-400 mt-1">Edits here are written straight into the full feedback draft — nothing is hidden.</p>
+              <p class="text-[11px] text-slate-600 mt-1">Edits here are written straight into the full feedback draft — nothing is hidden.</p>
             </div>
           </div>
 
@@ -620,7 +620,7 @@
               <button onclick="S.focusToggleFullDraft()" class="text-xs text-slate-500 hover:text-slate-700">Close</button>
             </div>
             <textarea id="focus-full-draft-text" class="input-field w-full text-xs m-0 rounded-t-none" rows="10" readonly></textarea>
-            <p class="text-[11px] text-slate-400 px-3 py-2">To edit the intro, totals or outro, exit Focus mode and use the full feedback editor.</p>
+            <p class="text-[11px] text-slate-600 px-3 py-2">To edit the intro, totals or outro, exit Focus mode and use the full feedback editor.</p>
           </div>
         </div>
       </section>
@@ -629,13 +629,13 @@
       <details open id="sec-adjust" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
           <h2 class="step-title mb-0">Penalty &amp; grade override</h2>
-          <span class="text-[11px] text-slate-400">click to collapse</span>
+          <span class="text-[11px] text-slate-600">click to collapse</span>
         </summary>
         <div class="section-body">
           <p class="step-sub mb-4" style="margin-left:2.15rem">Review the suggested grade. Apply a lateness penalty or override if your judgement differs.</p>
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
             <div id="late-penalty-controls" class="flex-1">
-              <label class="block text-xs font-semibold text-slate-400 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup.">Late Submission Penalty</label>
               <select id="late-penalty-select" class="input-field cell-yellow" onchange="S.onPenaltyChange()" style="max-width:320px"
                       title="Apply a deduction if the student submitted after the deadline. Penalty options are configured in the scorer setup."></select>
               <!-- Penalty × override conflict banners -->
@@ -658,7 +658,7 @@
                    title="Final score out of 100 after any late penalty, displayed using the current rounding mode. Change using Score rounding in the nav bar.">
                 <span class="score-badge text-slate-700" id="penalised-score-display"
                       title="Calculated score after any late penalty is applied. This is the number you submit.">–</span>
-                <span class="text-slate-400 text-sm">/100</span>
+                <span class="text-slate-600 text-sm">/100</span>
                 <span class="grade-badge text-2xl px-4 py-1 bg-emerald-100 text-emerald-800" id="grade-display"
                       title="Suggested grade based on your configured grade bands. Override below if your professional judgement differs.">–</span>
               </div>
@@ -674,11 +674,11 @@
 
           <!-- Grade Override -->
           <div class="mt-4 flex flex-wrap items-center gap-3">
-            <label class="text-xs font-semibold text-slate-400 shrink-0" for="grade-override">Grade Override <span class="font-normal">(optional)</span></label>
+            <label class="text-xs font-semibold text-slate-600 shrink-0" for="grade-override">Grade Override <span class="font-normal">(optional)</span></label>
             <input type="text" id="grade-override" class="input-field cell-yellow" style="max-width:8rem"
                    placeholder="—" maxlength="3" oninput="S.onOverrideGrade()"
                    title="Bumps a borderline student up to the chosen band. Sets the grade letter AND raises /100 to the band minimum (e.g. B+ → 75). Per-criterion data is preserved. Never reduces a score.">
-            <span id="grade-override-status" class="text-xs text-slate-400" aria-live="polite">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
+            <span id="grade-override-status" class="text-xs text-slate-600" aria-live="polite">Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.</span>
           </div>
         </div>
       </details>
@@ -709,7 +709,7 @@
       <details open id="sec-feedback" class="bg-white rounded-2xl shadow-sm border border-slate-100">
         <summary>
           <h2 class="step-title mb-0" title="🍳 Cooked Feedback = the auto-generated, editable feedback draft assembled from your grades, ready to paste into Moodle / Turnitin.">Editable feedback draft<span id="feedback-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Draft pending</span></h2>
-          <span class="text-[11px] text-slate-400">click to collapse</span>
+          <span class="text-[11px] text-slate-600">click to collapse</span>
         </summary>
         <div class="section-body">
           <div class="mb-3 no-print">
@@ -856,7 +856,7 @@
                 <details id="refine-advanced" class="panel panel-advanced">
                   <summary class="cursor-pointer text-xs font-semibold text-slate-700 select-none py-1"
                            onclick="S.usageTrack('advanced_disclosure_opened')">
-                    Advanced wording tools <span class="text-slate-400 font-normal">(external AI workflows)</span>
+                    Advanced wording tools <span class="text-slate-600 font-normal">(external AI workflows)</span>
                   </summary>
                   <div class="mt-2 text-xs text-slate-500">
                     Manual fallback, prompt builder, and the local run log are kept in the legacy assistant panel below.
@@ -873,7 +873,7 @@
       <details id="sec-notes" class="bg-slate-50 border border-slate-200 rounded-2xl no-print">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title">Marker's notes</span>
-          <span class="text-xs text-slate-400 font-normal">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>
+          <span class="text-xs text-slate-600 font-normal">Private to you — saved in your Marker's Record and Cohort Workbook only (never directly copied to the student)</span>
         </summary>
         <div class="px-5 pb-4 pt-2 border-t border-slate-200">
           <textarea id="additional-comments" class="feedback-box" rows="3" spellcheck="true" oninput="S.refreshAIInputChips()"
@@ -1066,7 +1066,7 @@
           <!-- Advanced options (collapsed) -->
           <details id="sec-ai-manual-fallback" class="panel panel-advanced">
             <summary class="cursor-pointer text-xs font-semibold text-slate-700 select-none py-1">
-              Advanced options <span class="text-slate-400 font-normal">(for markers using external AI tools &mdash; optional)</span>
+              Advanced options <span class="text-slate-600 font-normal">(for markers using external AI tools &mdash; optional)</span>
             </summary>
             <div class="advanced-content mt-3 space-y-3">
               <p class="text-xs text-slate-600">
@@ -1119,7 +1119,7 @@
       <details id="sec-export" class="bg-white rounded-2xl shadow-sm border border-slate-100 no-print">
         <summary>
           <h2 class="step-title mb-0">Finish</h2>
-          <span class="text-[11px] text-slate-400">click to expand</span>
+          <span class="text-[11px] text-slate-600">click to expand</span>
         </summary>
         <div class="section-body">
           <div class="mb-4">
@@ -1145,7 +1145,7 @@
               <h2 class="step-title mb-0">Cohort<span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span></h2>
             </div>
             <div class="text-right text-sm">
-              <div class="text-slate-400 text-xs">Cohort label</div>
+              <div class="text-slate-600 text-xs">Cohort label</div>
               <div class="font-semibold text-slate-700" id="cohort-label">—</div>
               <div class="text-xs text-slate-500 mt-0.5"><span id="cohort-count">0</span> students saved</div>
             </div>
@@ -1199,7 +1199,7 @@
              title="Live summary of the current student">
           No student yet
         </div>
-        <span class="hidden lg:inline text-[10px] text-slate-400 italic whitespace-nowrap mr-2">
+        <span class="hidden lg:inline text-[10px] text-slate-600 italic whitespace-nowrap mr-2">
           Press <kbd class="px-1 bg-slate-100 border border-slate-200 rounded text-[10px] font-mono">?</kbd> for shortcuts
         </span>
         <button class="btn btn-ghost text-sm" onclick="S.newStudent()" title="Clear and start a new student">↺ New student</button>
@@ -1789,7 +1789,7 @@
       inp.classList.remove('out-of-band');
       inp.style.borderColor = '';
       if (!raw) {
-        out.className = 'text-xs text-slate-400';
+        out.className = 'text-xs text-slate-600';
         out.innerHTML = 'Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.';
         inp.setAttribute('aria-invalid', 'false');
         return;
@@ -1846,7 +1846,7 @@
         ovrInput.style.borderColor = '';
         const out = el('grade-override-status');
         if (out) {
-          out.className = 'text-xs text-slate-400';
+          out.className = 'text-xs text-slate-600';
           out.innerHTML = 'Overrides the <em>overall</em> calculated grade. Leave blank to use the weighted result.';
         }
         bannerTx.textContent = ' Late penalty results in a fail grade, so the previous override (' + removed + ') was cleared. Re-enter it if you want to award a non-fail grade despite lateness.';
@@ -1922,7 +1922,7 @@
       const wOk = Math.round(weightSum) === 100 || weightSum === 0;
       const displayWeightSum = Number.isInteger(weightSum) ? weightSum : parseFloat(weightSum.toFixed(2));
       el('weight-check-cell').innerHTML = weightSum === 0
-        ? '<span class="text-slate-400">No grades selected yet</span>'
+        ? '<span class="text-slate-600">No grades selected yet</span>'
         : `<span class="${Math.round(weightSum) === 100 ? 'text-green-600' : 'text-amber-600'}">${Math.round(weightSum) === 100 ? '✓' : '⚠'} Graded criteria: ${displayWeightSum}%</span>`;
 
       const hasGrades = scoreResult.rows.some(r => r.grade);
@@ -2668,15 +2668,15 @@
       if (!cohort || !cohort.students.length) {
         body.innerHTML = '<p class="text-sm text-slate-500 italic">No students saved yet.</p>';
       } else {
-        body.innerHTML = '<div class="text-xs text-slate-400 mb-2">' + cohort.students.length + ' students · cohort "' + (cohort.label || '—') + '"</div>' +
+        body.innerHTML = '<div class="text-xs text-slate-600 mb-2">' + cohort.students.length + ' students · cohort "' + (cohort.label || '—') + '"</div>' +
           '<ul class="divide-y divide-slate-100">' +
           cohort.students.map(function (s, i) {
             const sr = s.scoreResult || {};
             const score = sr.penalisedScore != null ? SA.formatScore(sr.penalisedScore, config.scoreRounding || 'none') : '—';
             return '<li class="py-2 flex items-center justify-between gap-2 text-sm">' +
               '<div class="min-w-0 flex-1">' +
-                '<div class="font-medium text-slate-700 truncate">' + (i + 1) + '. ' + escHtml(s.name || '(no name)') + (s.studentId ? ' <span class="text-slate-400">· ' + escHtml(s.studentId) + '</span>' : '') + '</div>' +
-                '<div class="text-xs text-slate-400">' + escHtml(sr.suggestedGrade || '—') + ' · ' + score + '/100 · saved ' + (s.savedAt ? new Date(s.savedAt).toLocaleString('en-NZ') : '—') + '</div>' +
+                '<div class="font-medium text-slate-700 truncate">' + (i + 1) + '. ' + escHtml(s.name || '(no name)') + (s.studentId ? ' <span class="text-slate-600">· ' + escHtml(s.studentId) + '</span>' : '') + '</div>' +
+                '<div class="text-xs text-slate-600">' + escHtml(sr.suggestedGrade || '—') + ' · ' + score + '/100 · saved ' + (s.savedAt ? new Date(s.savedAt).toLocaleString('en-NZ') : '—') + '</div>' +
               '</div>' +
               '<button class="text-xs text-red-500 hover:text-red-700" onclick="S.removeCohortStudent(\'' + s.key.replace(/'/g, "\\'") + '\')">Remove</button>' +
             '</li>';
@@ -3277,7 +3277,7 @@
       if (!list) return;
       list.innerHTML = '';
       if (snippets.length === 0) {
-        list.innerHTML = '<p class="text-sm text-slate-400 italic">No snippets yet.</p>';
+        list.innerHTML = '<p class="text-sm text-slate-600 italic">No snippets yet.</p>';
         return;
       }
       snippets.forEach(s => {
@@ -3288,7 +3288,7 @@
             <div class="font-semibold text-sm text-slate-700 truncate">${escHtml(s.label)}</div>
             <div class="text-xs text-slate-500 mt-1 line-clamp-2">${escHtml(s.text)}</div>
           </div>
-          <button onclick="S.deleteSnippet('${s.id}')" class="text-slate-400 hover:text-red-500 shrink-0" title="Delete snippet">&times;</button>
+          <button onclick="S.deleteSnippet('${s.id}')" class="text-slate-600 hover:text-red-500 shrink-0" title="Delete snippet">&times;</button>
         `;
         list.appendChild(div);
       });
@@ -4482,7 +4482,7 @@
       <div class="text-4xl mb-3">↺</div>
       <h3 id="new-student-modal-heading" class="font-bold text-slate-800 text-lg mb-2">Start a new student?</h3>
       <p class="text-slate-500 text-sm mb-1">This will clear all grades, scores, and feedback.</p>
-      <p class="text-xs text-slate-400 mb-6">Your tutor name will be kept for the next student.</p>
+      <p class="text-xs text-slate-600 mb-6">Your tutor name will be kept for the next student.</p>
       <div class="flex gap-3">
         <button onclick="hideNewStudentModal()"
           class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
@@ -4536,7 +4536,7 @@
     <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[85vh]">
       <div class="flex items-center justify-between mb-3">
         <h3 id="cohort-list-modal-heading" class="font-bold text-slate-800 text-lg">Cohort students</h3>
-        <button onclick="S.hideCohortListModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+        <button onclick="S.hideCohortListModal()" class="text-slate-600 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <div id="cohort-list-body" class="overflow-y-auto flex-1 pr-2"></div>
       <div class="pt-4 border-t border-slate-100 mt-4 text-center">
@@ -4553,7 +4553,7 @@
       <h3 id="cohort-wipe-modal-heading" class="font-bold text-slate-800 text-lg mb-2">Cohort saved to Excel</h3>
       <p class="text-sm text-slate-600 mb-1"><strong id="cohort-wipe-filename"></strong></p>
       <p class="text-sm text-slate-500 mb-1"><span id="cohort-wipe-count"></span> students exported.</p>
-      <p class="text-xs text-slate-400 mb-6">For privacy, clear the local copy now that the cohort is safely saved in Excel. You can always start a new cohort after this.</p>
+      <p class="text-xs text-slate-600 mb-6">For privacy, clear the local copy now that the cohort is safely saved in Excel. You can always start a new cohort after this.</p>
       <div class="flex gap-3">
         <button onclick="S.hideCohortWipeModal()"
           class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors text-sm">
@@ -4686,7 +4686,7 @@
 
         <!-- Insights content body ---------------------------------- -->
         <div id="cohort-insights-body" class="p-6">
-          <p class="ci-note text-slate-400">Loading…</p>
+          <p class="ci-note text-slate-600">Loading…</p>
         </div>
 
       </div>
@@ -4717,7 +4717,7 @@
     <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between mb-4">
         <h3 id="snippets-modal-heading" class="font-bold text-slate-800 text-lg">Manage Snippets</h3>
-        <button onclick="S.hideSnippetModal()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+        <button onclick="S.hideSnippetModal()" class="text-slate-600 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <p class="text-slate-500 text-sm mb-4">Create reusable comments to quickly insert into the feedback box.</p>
 
@@ -4749,7 +4749,7 @@
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <div class="flex items-center justify-between mb-4">
         <h3 id="ai-settings-modal-heading" class="font-bold text-slate-800 text-lg">Wording Assistant Login</h3>
-        <button onclick="S.hideAISettings()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+        <button onclick="S.hideAISettings()" class="text-slate-600 hover:text-slate-600 text-xl">&times;</button>
       </div>
       <p class="text-slate-500 text-sm mb-4">
         Enter the shared credentials to enable direct wording assistant access (one-click draft). Credentials are stored in this browser only.
@@ -4763,14 +4763,14 @@
           <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
           <input type="password" id="fk-pass-input" class="input-field" autocomplete="current-password" placeholder="••••••••">
         </div>
-        <div id="ai-settings-status" class="text-xs text-slate-400"></div>
+        <div id="ai-settings-status" class="text-xs text-slate-600"></div>
       </div>
       <div class="flex gap-2 mt-5">
         <button onclick="S.clearAICreds()" class="btn btn-red text-sm">Clear saved</button>
         <button onclick="S.hideAISettings()" class="btn btn-ghost text-sm ml-auto">Cancel</button>
         <button onclick="S.saveAICreds()" class="btn btn-blue text-sm">Save</button>
       </div>
-      <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">
+      <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">
         Credentials stay in this browser's localStorage and are only sent to our Feedback Kitchen proxy, which forwards requests to the external language service. Your feedback text is not stored by us beyond the API call. Clear credentials on shared computers.
       </p>
       <p class="text-xs text-slate-600 mt-3 leading-relaxed border-t border-slate-200 pt-3">
@@ -4787,7 +4787,7 @@
     <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <div class="flex items-center justify-between mb-4">
         <h3 id="shortcuts-modal-heading" class="text-lg font-bold text-slate-800">Keyboard shortcuts</h3>
-        <button class="text-slate-400 hover:text-slate-600 text-xl leading-none"
+        <button class="text-slate-600 hover:text-slate-600 text-xl leading-none"
                 onclick="S.closeModal('shortcuts-modal')"
                 aria-label="Close">×</button>
       </div>
@@ -4829,10 +4829,10 @@
           <dd class="text-xs text-slate-500 text-right">Native — cycles through grade dropdowns row by row</dd>
         </div>
       </dl>
-      <p class="text-xs text-slate-400 mt-2">
+      <p class="text-xs text-slate-600 mt-2">
         Page Up / Page Down move between criteria only while Focus mode is on; inside the feedback box they scroll the text as usual.
       </p>
-      <p class="text-xs text-slate-400 mt-4">
+      <p class="text-xs text-slate-600 mt-4">
         Tip: shortcuts also work while focused inside input fields, except <kbd class="px-1 bg-slate-100 border border-slate-200 rounded text-[10px]">?</kbd> which only opens help when no field is focused.
       </p>
     </div>
@@ -4853,7 +4853,7 @@
       if (!rail.length) return;
       const highlight = id => rail.forEach(a => {
         a.classList.toggle('text-emerald-700', a.getAttribute('href') === '#' + id);
-        a.classList.toggle('text-slate-400', a.getAttribute('href') !== '#' + id);
+        a.classList.toggle('text-slate-600', a.getAttribute('href') !== '#' + id);
       });
       const io = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
