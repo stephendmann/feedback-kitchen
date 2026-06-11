@@ -6,7 +6,7 @@
 |---|---|
 | PR branch `fk17-wcag-aa-pass` | ✅ origin/main + `dd8b9b4` (harness) + `a102126` (contrast) + `3222b92` (labels/landmarks) + `62dc0f5` (D8 cross-ref — narrows, not closes) |
 | Sense check | ✅ GO: cherry-pick equivalence empty, leak scan clean, full-coverage axe 0/0/0 on the branch tree, Jest 98/98, runtime battery green |
-| Push + PR | ✅ **PR #22** open — https://github.com/stephendmann/feedback-kitchen/pull/22 (WARNs acknowledged: deploy-on-merge; emerald-600→700 brand shift). Awaiting merge. |
+| Push + PR | ✅ **PR #22 merged 2026-06-12** (`ec1ea09`) — https://github.com/stephendmann/feedback-kitchen/pull/22. **Production verified**: scorer serves `label for="student-name"`, rail `<nav aria-label="Sections">`, `.btn-danger` intact; home serves `bg-emerald-700` CTA and underlined Ko-fi link. Live app is at 0 axe violations (full coverage). |
 
 ---
 
