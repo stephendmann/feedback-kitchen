@@ -48,7 +48,9 @@
     .input-field { border: 1.5px solid #e2e8f0; border-radius: 0.4rem; padding: 0.45rem 0.7rem;
                    font-size: 0.9rem; outline: none; transition: border-color 0.15s; background: white; width: 100%; }
     .input-field:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12); }
-    .cell-yellow { background: #fefce8 !important; }
+    /* Marker-input fields: yellow tint + non-color cue (amber left border, FK-04).
+       !important so the cue survives .input-field:focus recolouring the border. */
+    .cell-yellow { background: #fefce8 !important; border-left: 3px solid #d97706 !important; }
     .cell-calc   { background: #eff6ff !important; color: #1e40af; font-weight: 600; }
     .grade-select { appearance: none; background: #fefce8; border: 1.5px solid #fde68a;
                     border-radius: 0.4rem; padding: 0.35rem 0.6rem; font-weight: 700;
@@ -82,6 +84,9 @@
     .btn-amber:hover { background: #b45309; }
     .btn-ghost  { background: #f1f5f9; color: #334155; }
     .btn-ghost:hover { background: #e2e8f0; }
+    /* Destructive actions (FK-06): visually distinct from ghost peers */
+    .btn-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .btn-danger:hover { background: #fee2e2; }
     .btn-red    { background: #fee2e2; color: #b91c1c; }
     .btn-red:hover { background: #fecaca; }
     table { width: 100%; border-collapse: collapse; }
@@ -466,7 +471,8 @@
           <span class="text-[11px] text-slate-400">click to collapse</span>
         </summary>
         <div class="section-body">
-          <p class="step-sub mb-4" style="margin-left:2.15rem">Name, ID, tutor. Date auto-fills; tutor persists between students.</p>
+          <p class="step-sub mb-4" style="margin-left:2.15rem">Name, ID, tutor. Date auto-fills; tutor persists between students.
+            <span class="text-amber-800 whitespace-nowrap"><span aria-hidden="true">✎</span> Tinted fields are marker inputs.</span></p>
           <div class="grid sm:grid-cols-4 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-400 mb-1" title="The full name of the student being marked.">Student Name</label>
@@ -1163,16 +1169,19 @@
             Exports omit student and tutor names.
           </div>
 
-          <div class="flex flex-wrap gap-3 mt-4">
+          <div class="flex flex-wrap items-center gap-3 mt-4">
+            <!-- Primary actions -->
             <button class="btn btn-blue" onclick="S.exportCohort()" title="Export the full cohort to one Excel workbook: Student Feedback, Grade Matrix, Cohort Summary, Rubric and Grade Feedback reference.">Export cohort (Excel)</button>
             <button id="btn-insights" class="btn btn-ghost hidden" onclick="S.showCohortInsights()" title="View cohort analytics: grade distribution, marking patterns, distribution shape, and formative prompts.">Cohort Insights <span id="btn-insights-new" class="hidden ml-1 text-[10px] bg-teal-100 text-teal-700 border border-teal-300 px-1.5 py-0.5 rounded font-semibold">NEW</span></button>
             <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">View list</button>
             <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">Rename</button>
-            <!-- Moderation Export controls -->
+            <!-- Moderation Export group (labels/behaviour unchanged — semantics gated on INS-2) -->
+            <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center" aria-hidden="true"></span>
             <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Lecturer/coordinator opt-in for the privacy-reduced Moderation Export. Hidden by default.">Moderation Export…</button>
             <button id="btn-modexport-run" class="btn btn-ghost hidden" onclick="S.runModExport()" title="Generate the privacy-reduced Moderation Export workbook (no student/tutor names).">Export for Moderation</button>
             <button id="btn-modexport-disable" class="btn btn-ghost hidden text-slate-500" onclick="S.disableModExport()" title="Disable the Moderation Export for this paper. Existing files are unaffected.">Disable mod-export</button>
-            <button class="btn btn-ghost text-red-600" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer.">Clear Cohort</button>
+            <!-- Destructive action: right-isolated with danger styling; double-confirm guard in confirmClearCohort() -->
+            <button class="btn btn-danger ml-auto" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer. Asks for confirmation twice.">Clear cohort</button>
           </div>
         </div>
       </details>
