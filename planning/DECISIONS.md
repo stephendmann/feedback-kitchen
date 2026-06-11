@@ -46,13 +46,13 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** prototype collapsed pane; self-test a full 5-criterion mark on the demo scorer; record notes.
 - **Outcome:** _(pending)_
 
-## D-05 ☐ Reorder sections to task sequence
+## D-05 ☑ Reorder sections to task sequence
 - **Why it matters:** per-student friction; override UI before grading invites anchoring.
 - **Evidence:** O — current order A, C, Focus.
 - **Depends on assumption:** section order isn't load-bearing for index-anchored lookups.
 - **Risk if wrong:** breaking focus-mode nav (known fragility class).
 - **First validation step:** INS-9 grep before moving anything.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-11.** INS-9 ran first (resolved: zero positional lookups; focus nav criterion-indexed). FK-05 then landed: `#sec-adjust` moved below the focus block, banner re-matched, rail verified already-ordered. Assumption held — section order was not load-bearing for any lookup; full runtime battery + a11y baseline diff clean (see FK-05 card). Ready to promote alongside the Phase 0 bundle.
 
 ## D-06 ☐ Consolidate cohort actions; isolate destructive
 - **Why it matters:** mis-click risk on Clear Cohort; 8 peer buttons.

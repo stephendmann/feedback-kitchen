@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11, post-INS-3): Safe to implement now: 4 (FK-04, FK-05, FK-06 + FK-09 per its Column field) · Needs inspection: 6 · Backlog: 3 · Ready to document: 3 · others: 0
+Column counts (2026-06-11, post-FK-05): Safe to implement now: 3 (FK-04, FK-06 + FK-09 per its Column field) · Needs inspection: 6 · Backlog: 3 · Ready to document: 4 · others: 0
 
 ---
 
@@ -45,7 +45,9 @@ Column counts (2026-06-11, post-INS-3): Safe to implement now: 4 (FK-04, FK-05, 
 - **Dependencies:** INS-9 **resolved 2026-06-11 — no positional lookups remain**; focus nav is criterion-index based and order-independent. Remaining coupled items: rail markup order (~427–434) must be re-sequenced manually. ~~Letter-keyed focus CSS is FK-02's re-key job~~ — **done 2026-06-11: FK-02 re-keyed `data-rail` to section slugs (`student`/`rubric`/`focus`/`adjust`/…), so the focus CSS is now order- and letter-independent; FK-05's only remaining rail task is re-sequencing the link markup.**
 - **Risk:** Downgraded to Low-Medium per INS-9 — runtime validation still mandatory.
 - **DoD:** New order live; focus-mode Previous/Next/Exit, expand/collapse-all, and nav strip all work in dev server; lettering/naming (FK-02) consistent with new order.
-- **Column:** Safe to implement now. **Priority:** P1. **Effort:** S–M.
+- **Done 2026-06-11:** `#sec-adjust` block (58 lines incl. comment) moved below the focus-workspace section; DOM order now student → rubric → focus → adjust → feedback → notes → (hidden ai) → export → cohort. **The rail needed no re-sequencing** — FK-02 had left it pre-ordered for exactly this layout (verified, not edited). Banner bullets swapped to match (Focus before Penalty), preserving FK-02's banner-matches-page-order DoD. Rider: three leftover letter comments FK-02's grep pattern missed (`─ C.`, `─ D.`, "sections B + D") de-lettered.
+- **Validated:** INS-9 re-greps still zero positional lookups; dev server: focus Previous/Next (criterion 1↔2), exit/re-enter focus, collapse-all/expand-all, grade→penalty→recalculate→sticky-bar chain (A → 23.1, −10 penalty → 13.1, chip "1 of 5 graded"); console clean; Jest 98/98; a11y baseline diff: zero new violations on all three pages.
+- **Column:** Ready to document (2026-06-11). **Priority:** P1. **Effort:** S–M (actual: S).
 
 ### FK-06 · Demote/guard "Clear Cohort"; group cohort actions visually
 - **Rationale:** Destructive action sits at equal weight among 8 peer buttons. *Partial* fix only — merging/renaming the "Moderation Export…" / "Export for Moderation" pair stays gated on INS-2.
@@ -153,7 +155,7 @@ Column counts (2026-06-11, post-INS-3): Safe to implement now: 4 (FK-04, FK-05, 
 
 ## Ready to document
 
-*FK-02 and FK-03 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
+*FK-02, FK-03, and FK-05 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
 
 ### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale — DONE 2026-06-11
 - **Outcome:** `js/score-grade.test.js` — 75 characterization tests; full suite 98/98 green. Zero source changes needed (both functions already exported on `window.SA`, shared.js:1201). Surprises S-1…S-5 recorded in INS-4; none fixed in the test commit (no-silent-fixes rule held). D-01 validation outcome recorded.
