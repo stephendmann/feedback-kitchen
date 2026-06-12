@@ -66,26 +66,22 @@ task running; INS-3 status ☑ with findings.
 
 **Exit:** engine module consumed by scorer with green characterization + edge suites; a marker can re-open and re-export a record without duplication; draft-pane go/no-go decided from prototype.
 
-> **Phase 2 progress (2026-06-13):** 2.1 FK-09 ✓ shipped (PR #27, 140/140 green) ·
-> 2.2 FK-08 ✓ shipped (PR #28 merged — labels/titles, identifier-tuple hint, both
-> states runtime-verified) · 2.3 FK-07 ✓ shipped (PR #29 merged; full DoD battery
-> in dev + production deploy verified carrying the loader/Open/guard code) ·
-> 2.4 FK-14 not started. **Exit lines 1–2 satisfied; Phase 2 closes when the
-> FK-14 draft-pane go/no-go is decided from a prototype.** The post-Phase-2
-> promotion checkpoint (FK-07 outcome → ROADMAP.md; FK-09 → fk-decisions.md
-> addendum) fires when FK-14 resolves.
+> **✅ PHASE 2 EXIT SATISFIED 2026-06-13.** 2.1 FK-09 ✓ shipped (PR #25, 140/140
+> green; production-verified → Addendum F.4) · 2.2 FK-08 ✓ shipped (PR #28 —
+> labels/titles, identifier-tuple hint, both states runtime-verified) · 2.3 FK-07
+> ✓ shipped (PR #29; full DoD battery in dev + production) · 2.4 FK-14 ✓ GO
+> decided from prototype and shipped same sitting (PR #30; D-04 outcome recorded;
+> night-mode dark-variant follow-up PR #31). All three exit lines hold.
 
-> **Session sequencing decided 2026-06-13 (user; triage slot confirmed same day):**
-> **Next session** = FK-14 prototype + implementation in one sitting — build
-> enough of the collapsed draft pane to make the go/no-go call (self-test
-> across a full 5-criterion mark per the card's DoD), record the decision,
-> close Phase 2.
-> **Then** = FK-20 "ROADMAP truth pass + stalled-PR triage" (Backlog card
-> carries the full DoD) — that session doubles as the post-Phase-2 promotion
-> checkpoint: reconcile public ROADMAP.md (merged PRs marked merged; FK-07
-> entry; FK-09 → fk-decisions.md addendum) and resolve stalled PRs #12/#13/#16
-> per the card (re-implement-from-intent as FK-21/FK-22; no rebases).
-> **Then** = Phase-3 kickoff: design INS-5 (synthetic 300-record cohort
+> **✅ FK-20 PROMOTION CHECKPOINT EXECUTED 2026-06-13** (two-stage PR sequencing,
+> user-directed): **Stage 1** = public truth pass — ROADMAP.md reconciled (merged
+> PRs marked merged, duplicate/stale tables pruned, FK-07 + FK-14 outcome entries)
+> + fk-decisions.md **Addendum G** (G.1 FK-07/D-03 · G.2 FK-14/D-04). **Stage 2**
+> = full planning snapshot refresh at `docs/planning-202606/` (including
+> PHASE0-PROMPT.md, per user). PRs #12/#16 closed with comments → FK-21/FK-22;
+> #13 was already closed. FK-21 (draft persistence v2, after INS-5/FK-10) and
+> FK-22 (homepage/dark-mode residuals incl. PR #31 follow-ups) created on the board.
+> **Next session** = Phase-3 kickoff: design INS-5 (synthetic 300-record cohort
 > measurement + quota-error-handling audit) and run the first measurement
 > pass → FK-10 audit verdict. FK-21 lands after this, informed by it.
 
@@ -113,6 +109,12 @@ Re-read planning/README.md promotion rule. Candidates for promotion at first che
 - FK-09 outcome → fk-decisions.md addendum (engine module + order-of-operations spec)
 - FK-07 outcome → ROADMAP.md entry + PR notes
 - Resolved INS findings worth keeping → fold into fk-project-overview.md, then prune here
+
+> **✅ First checkpoint executed 2026-06-13** (the FK-20 session — see Phase 2
+> block above). FK-09 had already been promoted early with its production
+> verification (Addendum F.4, 2026-06-13); the checkpoint added Addendum G
+> (FK-07/D-03, FK-14/D-04), the ROADMAP truth pass, and the snapshot refresh.
+> Second checkpoint fires after Phase 3.
 
 ## Explicit non-goals (re-affirmed from assessment)
 - No framework adoption (React/Vue) — no-framework constraint serves privacy/portability.

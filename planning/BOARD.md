@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, post-FK-07 + triage card): Safe to implement now: 0 · Needs inspection: 4 · Backlog: 5 (FK-14 Phase-2 remainder · FK-15 · FK-16 · FK-19 · FK-20 triage session) · Shipped: 12 · others: 0. Next free card ID: FK-23 (FK-21/FK-22 reserved by FK-20's outputs).
+Column counts (2026-06-13, post-FK-20 promotion checkpoint): Safe to implement now: 0 · Needs inspection: 4 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Shipped: 14 · others: 0. Next free card ID: FK-23.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -14,7 +14,7 @@ Column counts (2026-06-13, post-FK-07 + triage card): Safe to implement now: 0 �
 
 ## Safe to implement now
 
-*(empty — sequencing decided 2026-06-13: next session FK-14 prototype→go/no-go; session after that INS-5/FK-10 as Phase-3 kickoff. See ROADMAP-PHASES.md.)*
+*(empty — FK-14 ✓ and FK-20 ✓ both closed 2026-06-13; next session = Phase-3 kickoff: design + run INS-5, then FK-10 audit verdict. See ROADMAP-PHASES.md.)*
 
 
 ---
@@ -57,13 +57,22 @@ Column counts (2026-06-13, post-FK-07 + triage card): Safe to implement now: 0 �
 
 ## Backlog
 
-### FK-14 · Persistent collapsed draft pane in focus mode
-- **Rationale:** Student-facing draft accumulates behind "Open full draft"; tone/repetition issues surface only if the marker remembers to open it. (Backlog rather than Safe-now because the focus block is freshly merged and screen-space cost needs a prototype, not because evidence is lacking.)
-- **Evidence:** O — focus block UI + "written straight into the full feedback draft" caption.
-- **Dependencies:** none hard; prototype against the demo scorer. Sequencing: section layout settled by FK-05 (shipped).
-- **Risk:** Medium — focus mode exists to *reduce* on-screen noise; a draft pane works against that. Collapsed-by-default with a live line-count/preview is the mitigation hypothesis.
-- **DoD:** collapsed pane showing draft tail/preview, expandable inline, live-updating; keyboard reachable; self-test across a full 5-criterion mark.
-- **Column:** Backlog. **Priority:** P1. **Effort:** M.
+### FK-21 · Draft persistence v2 (re-implement PR #12's intent)
+- **Rationale:** Closing or refreshing the tab mid-mark silently loses the in-progress student. PR #12 solved this pre-programme but its branch predates FK-02…09/17/18/FK-07 scorer.html — decided 2026-06-13 (user + external review): re-implement from intent, never rebase. Its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits dead in main — remove or absorb on contact.
+- **Evidence:** O — dead scaffolding in scorer.html; PR #12 acceptance criteria (preserved in the closed PR + git history) are the intent spec.
+- **Dependencies:** **INS-5/FK-10 first** — this card adds another localStorage writer; the storage capacity/failure-mode audit must inform key design and quota handling. Must reconcile with FK-07's session fingerprint + unsaved-work guard and the `beforeunload` handler (fire only when a draft has ≥1 graded criterion).
+- **Risk:** Medium — autosave interacting with FK-07's load/merge ordering (generate-baseline-then-restore) and the cohort store's `sid:`/`name:` keying; quota exhaustion at cohort scale.
+- **DoD:** mid-mark refresh offers Resume/Discard restoring all fields exactly; export and New-student clear the draft; no interference with FK-07 re-entry or existing localStorage keys; quota-exceeded path per FK-10 findings; runtime-validated against the demo scorer.
+- **Column:** Backlog (sequenced after INS-5/FK-10). **Priority:** P1. **Effort:** M.
+
+### FK-22 · Homepage/dark-mode residuals (re-implement PR #16's intent + accumulated theme escapes)
+- **Rationale:** Small, real, user-visible residuals with no inspection dependency; batched to one S-effort card. PR #16 closed 2026-06-13 (stale base; re-implement from intent).
+- **Scope (from PR #16):** fonts.gstatic preconnect; logo `img` width/height (layout shift); hero-CTA clickable affordance; `renderLineDiff` hardcoded hex (`#fee2e2`/`#dcfce7`) → tokens/classes per the FK-16 migration policy.
+- **Scope (added post-PR #31, 2026-06-13):** (a) remove/resolve scorer.html's dead `?cinematic=1` easter-egg link to `/css/dark-scorer.css` (file doesn't exist — 404s when enabled); (b) sweep remaining light Tailwind tint chips in dark mode (amber `Display: exact` rounding label, `bg-slate-100` rounding buttons, kbd/code chips) — PR #31 scoped its remaps to `.grade-badge`/`.tier-pill` only.
+- **Dependencies:** none hard. Honour FK-16 policy: new styles → tokens/Tailwind only; run `build:css` before committing the artifact.
+- **Risk:** Low — cosmetic; screenshot baselines + a11y harness cover regressions.
+- **DoD:** PR #16's four items landed in current markup; cinematic link resolved; dark-mode sweep shows no near-white computed backgrounds outside deliberate accents; axe battery clean.
+- **Column:** Backlog. **Priority:** P2. **Effort:** S.
 
 ### FK-15 · Incremental scorer decomposition (ES modules + state→render)
 - **Rationale:** ~5,000 lines / 20 inline script blocks / 261 functions / DOM- and text-anchored cross-feature lookups. Strangler-fig extraction, not rewrite.
@@ -80,18 +89,6 @@ Column counts (2026-06-13, post-FK-07 + triage card): Safe to implement now: 0 �
 - **Risk:** Low-medium — visual drift during migration; screenshot baselines + full-coverage a11y harness mitigate.
 - **DoD:** watch task ✓ (slice shipped 2026-06-12, PR #21); migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch; run `build:css` before committing the artifact — watch output is unminified); screenshot diffs clean.
 - **Column:** Backlog. **Priority:** P3. **Effort:** M amortized.
-
-### FK-20 · ROADMAP.md truth pass + stalled-PR triage (planning session, code-light)
-- **Rationale:** public ROADMAP.md on main is wrong — it lists PRs #14/#15 as Open (both merged) and carries an unchecked pre-sprint "PR Sequence" table. Three pre-programme PRs are stalled: #12 (draft persistence — its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits DEAD in main's scorer.html, defined but never called), #13 (lazy-load SheetJS — superseded by merged #15, which shipped `loadSheetJS()`; ☑ closed by user 2026-06-13, no card), #16 (homepage perf/dark-mode — partially overtaken by #11 + FK-17/18).
-- **Decision (2026-06-13, user + external review concur):** do NOT rebase the stale branches against post-FK-02…09/17/18/FK-07 scorer.html — re-implement from intent via new cards.
-- **Session outputs (DoD):**
-  1. ROADMAP.md updated: merged PRs marked merged, stale tables pruned, FK-07 outcome entry added per promotion rules (FK-09 → fk-decisions.md addendum, next free letter after F).
-  2. New card **FK-21 · Draft persistence v2** (re-implement #12's intent): reconcile with FK-07's session fingerprint + the dead scaffolding + `beforeunload`; **sequenced after INS-5/FK-10** (adds another localStorage writer — needs the storage audit's findings first).
-  3. New card **FK-22 · Homepage/dark-mode residuals** (S): fonts.gstatic preconnect, logo `img` width/height, hero-CTA affordance, `renderLineDiff` hardcoded hex → tokens (ties into FK-16 migration policy). **Added 2026-06-13 post-PR #31** (night-mode white-box fix; user + external review concur on deferral): (a) remove/resolve scorer.html's dead `?cinematic=1` easter-egg link to `/css/dark-scorer.css` (file doesn't exist — 404s when enabled); (b) sweep remaining light Tailwind tint chips in dark mode (e.g. amber `Display: exact` rounding label, `bg-slate-100` rounding buttons, kbd/code chips) — PR #31 scoped its remaps to `.grade-badge`/`.tier-pill` only.
-  4. PRs #12 and #16 closed with comments pointing at FK-21/FK-22. (#13 ☑ already closed 2026-06-13.)
-- **ID hygiene note:** external review suggested "FK-12 re-implementation" — FK-12 is TAKEN (drift indicators). New cards use next free IDs as reserved above; never reuse.
-- **Dependencies:** FK-14 done (Phase 2 closed — this session IS the promotion checkpoint). **Risk:** none (docs/board only).
-- **Column:** Backlog (scheduled: the session right after FK-14, before Phase-3/INS-5 kickoff). **Priority:** P1 (public roadmap is factually wrong). **Effort:** S.
 
 ### FK-19 · Moodle offline-grading-worksheet round-trip (batch import/export)
 - **Rationale:** Moodle assignments support an offline grading worksheet (download CSV → mark → re-upload grades + feedback as a batch). Supporting that format kills the per-student copy/paste step at both ends: import pre-seeds the cohort queue from a real roster; export writes grades + feedback back in one upload. Natural extension of FK-07; perfect local-first fit (file in/out, no backend). SheetJS already in-stack.
@@ -118,7 +115,7 @@ Column counts (2026-06-13, post-FK-07 + triage card): Safe to implement now: 0 �
 
 ## Shipped
 
-Full card history in git and `docs/planning-202606/` (snapshot predates FK-17/18).
+Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06-13 at the FK-20 promotion checkpoint — covers Phases 0–2).
 
 | ID | Title | PR | Shipped |
 |---|---|---|---|
@@ -131,8 +128,10 @@ Full card history in git and `docs/planning-202606/` (snapshot predates FK-17/18
 | FK-16-slice | CSS watch task wired into dev workflow (`--watch=always`, README) | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
 | FK-17 | WCAG AA pass — 84 nodes → 0 at full coverage (+ harness coverage fix) | [#22](https://github.com/stephendmann/feedback-kitchen/pull/22), [#23](https://github.com/stephendmann/feedback-kitchen/pull/23) | 2026-06-12 |
 | FK-18 | Section-rail sticky containment fix (header boundary; pin assertion now permanent battery item) | [#24](https://github.com/stephendmann/feedback-kitchen/pull/24) | 2026-06-12 |
-| FK-09 | Scoring-engine boundary hardening: guards, adapter, 40-test edge suite (140/140 green) | [#27](https://github.com/stephendmann/feedback-kitchen/pull/27) | 2026-06-12 |
+| FK-09 | Scoring-engine boundary hardening: guards, adapter, 40-test edge suite (140/140 green) | [#25](https://github.com/stephendmann/feedback-kitchen/pull/25) | 2026-06-12 |
 | FK-08 | Moderation-export button trio: label/title polish + identifier-tuple hint in settings modal | [#28](https://github.com/stephendmann/feedback-kitchen/pull/28) | 2026-06-13 |
 | FK-07 | Record re-entry: `loadCohortRecordIntoSession` + View-list Open + unsaved-work guard + drift cross-check (production-verified; name-rename sibling edge ledgered to FK-19) | [#29](https://github.com/stephendmann/feedback-kitchen/pull/29) | 2026-06-13 |
+| FK-14 | Persistent collapsed draft pane in focus mode (D-04 GO; collapsed-by-default contract; + PR #31 night-mode dark-variant follow-up) | [#30](https://github.com/stephendmann/feedback-kitchen/pull/30), [#31](https://github.com/stephendmann/feedback-kitchen/pull/31) | 2026-06-13 |
+| FK-20 | ROADMAP truth pass + stalled-PR triage = Phase-2 promotion checkpoint (Addendum G; snapshot refresh; #12/#16 closed → FK-21/FK-22) | [#32](https://github.com/stephendmann/feedback-kitchen/pull/32), [#33](https://github.com/stephendmann/feedback-kitchen/pull/33) | 2026-06-13 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed.

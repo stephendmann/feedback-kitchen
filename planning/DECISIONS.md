@@ -33,6 +33,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
   - ~~Promote to ☑ once FK-02 lands consistent with this and passes Validate in runtime.~~ **☑ 2026-06-11 (later session): FK-02 landed consistent with de-letter and passed runtime validation (focus-mode nav, rail, banner) with a clean a11y baseline diff. Ready to promote to fk-decisions.md.**
 
 ## D-03 ☑ Build the class-list queue (workbench model)
+*(Promoted 2026-06-13 → fk-decisions.md **Addendum G.1**, via the FK-20 promotion checkpoint.)*
 - **Why it matters:** biggest workflow gap vs ideal; cohort invisible during marking.
 - **Evidence:** O — single-record UI; U — record round-trip.
 - **Depends on assumption:** records can be made re-loadable from the cohort store.
@@ -40,13 +41,14 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** INS-1.
 - **Outcome:** **☑ 2026-06-12 — GO, at reduced cost.** INS-1 resolved: no re-edit path exists (the queue is genuinely missing), but the assumption "records can be made re-loadable" held *better than assumed* — the store is already full-fidelity and update-in-place keyed (`sid:`/`name:`), live-verified. Neither failure mode fired: there is no hidden re-edit path to duplicate, and no store rework to underestimate. FK-07 rescoped to M (one inverse load function + View-list "Open" + unsaved-work guard; class-list import as stretch).
 
-## D-04 ☐ Persistent draft pane in focus mode
+## D-04 ☑ Persistent draft pane in focus mode
+*(Promoted 2026-06-13 → fk-decisions.md **Addendum G.2**, via the FK-20 promotion checkpoint.)*
 - **Why it matters:** student-facing artifact accumulates unseen; errors caught only at Copy time.
 - **Evidence:** O — draft behind "Open full draft". Impact unmeasured.
 - **Depends on assumption:** markers don't habitually open the draft anyway; pane doesn't defeat focus mode's noise-reduction purpose.
 - **Risk if wrong:** screen-space cost for no gain; undermines a freshly-shipped feature.
 - **First validation step:** prototype collapsed pane; self-test a full 5-criterion mark on the demo scorer; record notes.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-13 — GO, prototype-validated and shipped same day (PR #30).** Self-test across a full 5-criterion mark on the demo scorer: live line/word counts verified against the actual draft; tail preview updates per keystroke; mirror never stale. The noise-reduction assumption held via the mitigation contract — collapsed by default on *every* focus-mode entry, open state per-look (excluded from section-state persistence and Expand/Collapse-all), collapsed cost ≈35px vs ~672px workspace (≈5%). Jest 140/140; a11y battery 0 violations. One calibration note: word counts can stay flat across a grading (outro re-words as the tier changes) — coarse signal, not precision. Night-mode follow-up: the disabled pane state exposed the `#focus-body[disabled]` white-box specificity bug, fixed in PR #31.
 
 ## D-05 ☑ Reorder sections to task sequence
 *(Promoted 2026-06-12 → fk-decisions.md **Addendum F.3**, via PR branch `phase0-trust-ux-fixes`.)*
