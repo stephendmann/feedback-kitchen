@@ -1180,11 +1180,11 @@
             <button id="btn-insights" class="btn btn-ghost hidden" onclick="S.showCohortInsights()" title="View cohort analytics: grade distribution, marking patterns, distribution shape, and formative prompts.">Cohort Insights <span id="btn-insights-new" class="hidden ml-1 text-[10px] bg-teal-100 text-teal-700 border border-teal-300 px-1.5 py-0.5 rounded font-semibold">NEW</span></button>
             <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">View list</button>
             <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">Rename</button>
-            <!-- Moderation Export group (labels/behaviour unchanged — semantics gated on INS-2) -->
+            <!-- Moderation Export group: configure (always visible, self-relabels when enabled) / run / disable (both hidden until opted in) — lifecycle split is deliberate, do not consolidate (INS-2/FK-08) -->
             <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center" aria-hidden="true"></span>
-            <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Lecturer/coordinator opt-in for the privacy-reduced Moderation Export. Hidden by default.">Moderation Export…</button>
-            <button id="btn-modexport-run" class="btn btn-ghost hidden" onclick="S.runModExport()" title="Generate the privacy-reduced Moderation Export workbook (no student/tutor names).">Export for Moderation</button>
-            <button id="btn-modexport-disable" class="btn btn-ghost hidden text-slate-500" onclick="S.disableModExport()" title="Disable the Moderation Export for this paper. Existing files are unaffected.">Disable mod-export</button>
+            <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Open moderation export settings. Set paper code, cohort ID, and assessment ID to enable the privacy-reduced export for this paper.">Moderation Export…</button>
+            <button id="btn-modexport-run" class="btn btn-ghost hidden" onclick="S.runModExport()" title="Generate the moderation export workbook. Privacy-reduced — no student or tutor names. Requires at least 15 students.">Export for Moderation</button>
+            <button id="btn-modexport-disable" class="btn btn-ghost hidden text-slate-500" onclick="S.disableModExport()" title="Disable moderation export for this paper. Future exports are blocked; files already generated are unaffected.">Disable moderation export</button>
             <!-- Destructive action: right-isolated with danger styling; double-confirm guard in confirmClearCohort() -->
             <button class="btn btn-danger ml-auto" onclick="S.confirmClearCohort()" title="Delete all locally-stored cohort data for this scorer. Asks for confirmation twice.">Clear cohort</button>
           </div>
@@ -4636,6 +4636,10 @@
             class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
         </div>
       </div>
+
+      <p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+        Moderation export is tied to this exact combination of paper code, cohort ID, and assessment ID. If you change any of these after enabling, the export will appear disabled until you re-open settings and save again.
+      </p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <div>
