@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, FK-09 closed): Done: 1 (FK-09 — merged PR #25, production-verified) · Safe to implement now: 0 · Needs inspection: 6 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
+Column counts (2026-06-13, Phase 1 inspections closed): Done: 1 (FK-09 — merged PR #25, production-verified) · Safe to implement now: 2 (FK-08, FK-07 — INS-1/INS-2 resolved) · Needs inspection: 4 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
 
 ---
 
@@ -68,19 +68,19 @@ Column counts (2026-06-13, FK-09 closed): Done: 1 (FK-09 — merged PR #25, prod
 
 ### FK-07 · Class-list queue + record re-entry (the workbench upgrade)
 - **Rationale:** Largest workflow gap vs ideal: no visible way to see who's marked, jump to a student, or re-open a record. Converts "form you reset" into "workbench you work through".
-- **Evidence:** O — single-record model in screenshots ("0 of 5 graded", New Student reset). U — whether cohort records already round-trip (View list may allow re-edit).
-- **Dependencies:** **INS-1** (cohort store round-trip). Scope forks on the answer: re-edit exists → IA/discoverability work (M); append-only → data-model + UI work (L).
-- **Risk:** High if started blind — could rebuild a path that exists, or underestimate a store rework.
-- **DoD (provisional, re-write after INS-1):** marker can import/paste a class list, see per-student status, open any record back into the marking session, and re-export without duplicate cohort rows.
-- **Column:** Needs inspection. **Priority:** P1. **Effort:** M–L (fork).
+- **Evidence:** O — INS-1 ☑ (2026-06-13): records are full-fidelity (per-criterion grades+overrides+provenance, penaltyIdx, override letter, feedback, notes); upsert updates in place keyed studentId-else-name; **no load-back path exists anywhere** (View list = render + Remove only; `record.grades` consumed only by exports/insights).
+- **Dependencies:** INS-1 ☑ — fork resolved to the **favourable middle branch**: store and upsert already support re-entry (no data-model rework), but the hydrate path must be built from scratch. FK-07 = `loadRecordIntoSession(record)` + queue/status IA. Two identity hazards to design around (INS-1 Q3): key drift (name-only save → ID added later → duplicate) and same-name/no-ID silent overwrite — a class-list import that pre-seeds IDs neutralises both. Decide whether to stamp rounding mode per record (currently config-level; recompute-on-load can differ if rounding changed since save).
+- **Risk:** Medium (down from High — blind-start risk retired by INS-1; remaining risk is hydrate-path correctness, mitigated by recomputing through the FK-09 engine rather than trusting stored `scoreResult`).
+- **DoD:** marker can import/paste a class list, see per-student status, open any record back into the marking session (hydrate from `grades`+`penaltyIdx`+`overrideGrade`, recompute via engine), and re-export without duplicate cohort rows (identity hazards handled or surfaced).
+- **Column:** Needs inspection → **Safe to implement now** (INS-1 resolved). **Priority:** P1. **Effort:** M (fork resolved; was M–L).
 
 ### FK-08 · Resolve the moderation-export button pair
-- **Rationale:** "Moderation Export…" and "Export for Moderation" read as duplicates; may be configure-vs-run. Consolidate or relabel.
-- **Evidence:** O — both buttons in screenshot 2. U — behaviors.
-- **Dependencies:** **INS-2** (read both handlers + `docs/fk_moderation_export_v1.md`).
-- **Risk:** Medium — hiding a step moderators rely on.
-- **DoD:** Either one button + clear secondary, or two distinctly-named actions whose labels state the difference; doc page matches.
-- **Column:** Needs inspection. **Priority:** P1. **Effort:** S–M after inspection.
+- **Rationale (rescoped 2026-06-13 per INS-2 ☑):** ~~may be configure-vs-run~~ — confirmed configure-vs-run, **not** duplication: "Moderation Export…" = lecturer opt-in/settings modal (accountability record); "Export for Moderation" = gated workbook generation (hidden until opt-in active; n≥15 gate; suppression inside the file). The split is load-bearing — FK-08 is a **relabel/grouping job, not a consolidation**. The real defect is that neither label states its role and a fresh user sees one mystery ellipsis button.
+- **Evidence:** O — INS-2 ☑ Q1/Q2 (2026-06-13): handlers scorer.html:2889–3074; tri-state (hidden → enabled w/ banner+run+disable, opt-in button relabels to "settings…" → disabled clears record).
+- **Dependencies:** INS-2 ☑. Unblocked.
+- **Risk:** Low (down from Medium — no behaviour change needed; labels/tooltips/grouping only). One caveat to mention in the pass: `_activeOptInRecord`'s cohort-slug fallback (:2930) means renaming a cohort can silently detach/attach an opt-in record.
+- **DoD:** Two distinctly-named actions whose labels state the difference (e.g. configure vs generate); tri-state remains intact; `docs/fk_moderation_export_v1.md` matches the final labels; cohort-rename caveat documented or surfaced.
+- **Column:** Needs inspection → **Safe to implement now** (INS-2 resolved). **Priority:** P1. **Effort:** S (was S–M).
 
 ### FK-09 · Harden the scoring-engine boundary (test what's extracted; wrap the DOM glue)
 - **Rationale (rescoped 2026-06-11 per INS-3 ☑):** ~~the high-stakes arithmetic lives inline in the monolith~~ — INS-3 found the arithmetic core **already lives in shared.js as pure functions** (`computeScores` :325, `applyGradeOverride` :194, `scoreToGrade[FromScale]` :158/:167, `formatScore` :1188 — no DOM, no storage). What remains inline in scorer.html is orchestration: `recalculate()` reads two authoritative inputs *from the DOM* (`#grade-override` letter, `#late-penalty-select` index) and fans results out to ~20 DOM writes. FK-09 is therefore: (a) add input-validation guards at the engine boundary (INS-4 S-1 empty-scale crash, S-4 string tolerance decision, S-5 no-cap contract); (b) lift the DOM-read glue into a thin explicit-args adapter so the pipeline is callable headless; (c) edge-case test suite over the existing engine. Rounding mode is an **engine input**, not a view preference (INS-4 S-6).
