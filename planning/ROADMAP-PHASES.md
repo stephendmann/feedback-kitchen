@@ -66,6 +66,11 @@ task running; INS-3 status ☑ with findings.
 
 **Exit:** engine module consumed by scorer with green characterization + edge suites; a marker can re-open and re-export a record without duplication; draft-pane go/no-go decided from prototype.
 
+> **Phase 2 progress (2026-06-13):** 2.1 FK-09 ✓ shipped (PR #27, 140/140 green) ·
+> 2.2 FK-08 ✓ done (PR #28 — labels/titles, identifier-tuple hint, both states
+> runtime-verified; doc cross-check clean, no doc changes needed) · 2.3 FK-07
+> in progress · 2.4 FK-14 not started. Exit line 1 satisfied; line 2 is FK-07's DoD.
+
 ## Phase 3 — Consistency + data integrity
 | Order | Item | Notes |
 |---|---|---|
