@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, post-FK-08): Safe to implement now: 1 (FK-07) · Needs inspection: 4 · Backlog: 3 · Shipped: 11 · others: 0
+Column counts (2026-06-13, FK-07 kickoff): Safe to implement now: 0 · In progress: 1 (FK-07) · Needs inspection: 4 · Backlog: 3 · Shipped: 11 · others: 0
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -27,7 +27,7 @@ Column counts (2026-06-13, post-FK-08): Safe to implement now: 1 (FK-07) · Need
 - **Evidence:** O — INS-1 findings + live probes (INSPECTION.md).
 - **Dependencies:** INS-1 ✓. **Risk:** Medium (was High-if-blind) — store risk eliminated; remaining risk is session-restore completeness.
 - **DoD:** from View list, marker can open any saved record into the session (all fields restored; recalculated totals match stored), edit, re-save → updates in place (no duplicate row, live-verified), re-export reflects the edit; unsaved-work guard confirmed in runtime; focus mode works on a loaded record; full runtime battery + scrolled-pin check; surprises → INS-4.
-- **Column:** Safe to implement now. **Priority:** P1 (Phase-2 centerpiece). **Effort:** M (was M–L fork).
+- **Column:** In progress (2026-06-13). **Priority:** P1 (Phase-2 centerpiece). **Effort:** M (was M–L fork).
 
 
 ---
