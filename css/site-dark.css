@@ -263,6 +263,8 @@ html.fk-dark tr:hover td {
 /* Destructive (red) buttons */
 html.fk-dark .btn-red { background: #450a0a; color: #fca5a5; }
 html.fk-dark .btn-red:hover { background: #5a0e0e; }
+html.fk-dark .btn-danger { background: #2d0a0a; color: #fca5a5; border-color: #7f1d1d; }
+html.fk-dark .btn-danger:hover { background: #450a0a; }
 
 /* Ghost and utility buttons */
 html.fk-dark .btn-ghost {
@@ -305,6 +307,32 @@ html.fk-dark details[open] > summary {
 /* Step badges — already emerald in light mode; keep consistent in dark */
 html.fk-dark .step-badge {
   background: #059669;
+}
+
+/* Grade badge + tier pill: JS assigns light-mode Tailwind tint classes
+   (-100/-200 backgrounds with -800/-900 text) per grade/tier — remap each
+   combination to a dark equivalent. Scoped to the two components; a global
+   tint-class audit belongs to the FK-16/FK-22 token migration. */
+html.fk-dark .grade-badge.bg-green-100   { background-color: #0a2615; color: #86efac; }
+html.fk-dark .grade-badge.bg-emerald-100 { background-color: #0a2615; color: #6ee7b7; }
+html.fk-dark .grade-badge.bg-blue-100    { background-color: #0c1d36; color: #93c5fd; }
+html.fk-dark .grade-badge.bg-yellow-100  { background-color: #241a03; color: #fde047; }
+html.fk-dark .grade-badge.bg-orange-100  { background-color: #2a1505; color: #fdba74; }
+html.fk-dark .grade-badge.bg-red-100     { background-color: #2d0a0a; color: #fca5a5; }
+html.fk-dark .grade-badge.bg-slate-100   { background-color: #1e293b; color: #94a3b8; }
+html.fk-dark .tier-pill.bg-blue-200      { background-color: #0c1d36; color: #93c5fd; }
+html.fk-dark .tier-pill.bg-green-200     { background-color: #0a2615; color: #86efac; }
+html.fk-dark .tier-pill.bg-amber-200     { background-color: #241a03; color: #fcd34d; }
+html.fk-dark .tier-pill.bg-orange-200    { background-color: #2a1505; color: #fdba74; }
+html.fk-dark .tier-pill.bg-red-200       { background-color: #2d0a0a; color: #fca5a5; }
+
+/* Focus mode: ungraded criterion's disabled feedback box. The inline
+   #focus-body[disabled] ID rule in scorer.html out-specifies the
+   .input-field override above, so it needs its own dark variant —
+   slightly darker than enabled inputs so "inactive" still reads. */
+html.fk-dark #focus-body[disabled] {
+  background-color: #16202f;
+  color: #64748b;
 }
 
 /* Input placeholders */
