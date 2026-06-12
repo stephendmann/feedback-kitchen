@@ -1180,7 +1180,7 @@
             <button id="btn-insights" class="btn btn-ghost hidden" onclick="S.showCohortInsights()" title="View cohort analytics: grade distribution, marking patterns, distribution shape, and formative prompts.">Cohort Insights <span id="btn-insights-new" class="hidden ml-1 text-[10px] bg-teal-100 text-teal-700 border border-teal-300 px-1.5 py-0.5 rounded font-semibold">NEW</span></button>
             <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">View list</button>
             <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">Rename</button>
-            <!-- Moderation Export group (labels/behaviour unchanged — semantics gated on INS-2) -->
+            <!-- Moderation Export group: configure (always visible, self-relabels when enabled) / run / disable (both hidden until opted in) — lifecycle split is deliberate, do not consolidate (INS-2/FK-08) -->
             <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center" aria-hidden="true"></span>
             <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Open moderation export settings. Set paper code, cohort ID, and assessment ID to enable the privacy-reduced export for this paper.">Moderation Export…</button>
             <button id="btn-modexport-run" class="btn btn-ghost hidden" onclick="S.runModExport()" title="Generate the moderation export workbook. Privacy-reduced — no student or tutor names. Requires at least 15 students.">Export for Moderation</button>
