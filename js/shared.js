@@ -163,8 +163,19 @@
   }
 
   // scoreToGrade using a custom gradeScale array
-  // Sorts by bandLow descending so highest band matches first
+  // Sorts by bandLow descending so highest band matches first.
+  // Boundary contract (FK-09 / INS-4 S-1): an empty, null, or non-array
+  // gradeScale previously threw mid-marking. It now FALLS BACK to the NZ
+  // default thresholds — the same safe-default philosophy computeScores
+  // uses (its useCustomScale check). The fallback path is deliberate,
+  // audited by dedicated tests ("S-1 guard" in js/score-grade.test.js),
+  // and keeps the assessor moving rather than failing closed. Partially
+  // malformed *entries* inside a non-empty scale are still tolerated
+  // row-wise (entries without bandLow never match, fall through), unchanged.
   function scoreToGradeFromScale(score, gradeScale) {
+    if (!Array.isArray(gradeScale) || gradeScale.length === 0) {
+      return scoreToGrade(score);
+    }
     const sorted = gradeScale.slice().sort((a, b) => b.bandLow - a.bandLow);
     for (const entry of sorted) {
       if (score >= entry.bandLow) return entry.grade;
