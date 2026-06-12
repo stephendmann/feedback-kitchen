@@ -4,91 +4,22 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, Phase 1 inspections closed): Done: 1 (FK-09 — merged PR #25, production-verified) · Safe to implement now: 2 (FK-08, FK-07 — INS-1/INS-2 resolved) · Needs inspection: 4 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
+Column counts (2026-06-13, post-FK-20 promotion checkpoint): Safe to implement now: 0 · Needs inspection: 4 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Shipped: 14 · others: 0. Next free card ID: FK-23.
+
+> Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
+> tombstones in **Shipped** below. Full card history: git log of this file and
+> `docs/planning-202606/` on main.
 
 ---
 
 ## Safe to implement now
 
-### FK-02 · Fix section-lettering / onboarding-banner mismatch
-- **Rationale:** Banner teaches A·Student, B·Rubric, C·Penalty, D·Feedback, E·Notes; the page has decayed further than first observed. First-run users are directed by an incomplete map.
-- **Evidence:** O (refined 2026-06-11, code read) — banner lists A–E only (scorer.html:344–348); page actually has **nine** lettered/badged blocks: A Student (465), B Rubric (498), C Penalty (547), ◎ Focus (610), D Feedback draft (705), E Notes (869), **F Wording assistant (883) AND F Finish (1115) — duplicate letter F**, G Cohort (1139). B/D are hidden *in focus mode only* (CSS 118–120), not gone. Focus-mode CSS keys off letters: `[data-rail="B"]/[data-rail="D"]` (120–122) — load-bearing, must be re-keyed when de-lettering.
-- **Dependencies:** D-02 **resolved 2026-06-11: de-letter** (see DECISIONS.md for grep evidence). Coordinate with FK-05 (section reorder) to avoid touching the rail twice; re-key the focus-mode CSS selectors in the same change.
-- **Risk:** Low. Banner copy, section badges, rail labels, and four CSS selectors.
-- **DoD:** Banner list matches on-page sections 1:1 (including Focus, wording assistant, Finish, Cohort); nav strip matches; `data-rail` selectors re-keyed (no letter-valued `data-rail` left); README "Section F" wording (lines 164, 231) reworded; REVIEW.md:21 stale rail checklist updated; no stale letter references (`grep -n "· Student\|· Rubric\|· Penalty\|· Feedback\|· Notes" scorer.html` returns nothing letter-prefixed); checked in dev server.
-- **DoD deviation (recorded per conflict rule):** banner matches *visible* sections 1:1 — the wording-assistant section is omitted from the banner because `sec-ai` is legacy and hidden by default behind "Show advanced wording tools" (scorer.html:880, `display:none`); teaching a hidden section in onboarding would mislead. All other DoD lines met as written.
-- **Done 2026-06-11:** focus CSS re-keyed to section slugs (`data-rail="rubric"` etc.) before markup changes; all nine step-badges de-lettered (◎ Focus glyph kept); banner rewritten to 8 visible sections in page order; rail labels plain names; JS cohort rail label writer updated; unused badge colour variant CSS removed; README/REVIEW.md reworded. Runtime-validated in dev server: focus enter/exit hides Rubric+Feedback rail entries and dims secondaries, Previous/Next navigates criteria, console clean. A11y baseline diff: **zero new violations, one pre-existing color-contrast violation removed.**
-- **Column:** Ready to document (2026-06-11). **Priority:** P0. **Effort:** S (actual: S).
+*(empty — FK-14 ✓ and FK-20 ✓ both closed 2026-06-13; next session = Phase-3 kickoff: design + run INS-5, then FK-10 audit verdict. See ROADMAP-PHASES.md.)*
 
-### FK-03 · Copy/casing consistency pass
-- **Rationale:** "New Student" (header) vs "New student" (footer); duplicate "Exact" rounding badges. Minor, but the repo has a brand-canon process this drifts from.
-- **Evidence:** O — both screenshots.
-- **Dependencies:** none. Cheap rider on FK-02's PR.
-- **Risk:** Negligible.
-- **DoD:** One casing rule applied; brand-voice-canon.md consulted for the rule; visual check in dev server.
-- **Done 2026-06-11:** canon had **no** casing rule — added "§7 UI Control Casing — Sentence Case" to brand-voice-canon.md, then applied: "New Student" → "New student" (header button, banner closing line, modal comment, README §5); duplicate "Exact" disambiguated — the read-only status chip now reads "Display: exact" (markup + the JS writer at ~3166 that overwrites it), nav-bar button unchanged. Visual check in dev server (screenshot).
-- **Residuals (recorded, not scope-crept):** `index.html:323` "New Student" (outside this session's agreed file scope); field labels still Title Case ("Student Name", "Late Submission Penalty", "Grade Override", "Score Rounding") — normalise on next touch per the canon rule's "on next touch" convention.
-- **Column:** Ready to document (2026-06-11). **Priority:** P3. **Effort:** S (actual: S).
-
-### FK-04 · Non-color signal + legend for yellow "awaiting input" fields
-- **Rationale:** Empty/required state appears to be conveyed by yellow fill alone; colorblind/low-vision markers lose the signal. (Meaning of yellow is inferred — confirm while implementing.)
-- **Evidence:** O (refined 2026-06-11) — yellow is the static class `.cell-yellow` (`background:#fefce8 !important`, scorer.html:51) applied to exactly 5 inputs: student-name (473), student-id (478), student-tutor (483), late-penalty-select (555), grade-override (594). It is **always-on for marker-input fields**, not a dynamic empty/awaiting state — i.e. yellow means "you type here", which still fails colour-only signalling. I — that markers read it as "awaiting input". Note: the existing "Wording key" button (408) is the AI-assistant *credentials* dialog, NOT a legend — the legend in this card's DoD must be new UI, do not overload that term.
-- **Dependencies:** none.
-- **Risk:** Low. If yellow means something else, the fix is renamed, not removed.
-- **DoD:** Each `.cell-yellow` field also carries a non-color cue (icon/text/border treatment) and the state is explained once on screen in a small legend (named something other than "wording key"); axe run shows no new violations.
-- **Done 2026-06-11:** meaning re-confirmed (static marker-input convention, all 5 fields, no dynamic usage). Cue: 3px amber left border on `.cell-yellow` (inline CSS, `!important` so it survives `:focus` recolouring — verified). Legend: "✎ Tinted fields are marker inputs." appended to the Student section's intro line (amber text, ✎ aria-hidden). Dark mode verified: existing `.fk-dark` overrides keep tint + legend visible; the amber border persists.
-- **Observation (recorded, no action):** `.grade-select` / `.override-input` in rubric rows share the yellow convention but already carry full amber borders of their own — covered by the legend's wording, no extra cue added.
-- **Validated:** computed-style checks (cue 3px solid #d97706, survives focus), a11y baseline diff zero new violations on all pages, Jest 98/98.
-- **Column:** Ready to document (2026-06-11). **Priority:** P3. **Effort:** S (actual: S).
-
-### FK-05 · Reorder sections to task sequence (Student → Rubric/Focus → Penalty → Feedback → Notes → Wording assistant → Finish → Cohort)
-- **Rationale:** Penalty & override currently renders above the marking block; marker task order is score-then-penalise. Forces a per-student visual skip and risks anchoring.
-- **Scope note 2026-06-11:** earlier order shorthand ("Student → Marking → Penalty → Notes → Finish → Cohort") omitted the Feedback-draft and Wording-assistant sections, which exist on the page. Full target order recorded above; the only *move* is Penalty (`#sec-adjust`) from before the rubric/focus blocks to after them — everything else already sits in task order.
-- **Evidence:** O — screenshot 1 order + code read (section `<details>` blocks at 463/496/545/~600/703/867/~880/~1110/1134). Impact magnitude unmeasured (Medium confidence).
-- **Dependencies:** INS-9 **resolved 2026-06-11 — no positional lookups remain**; focus nav is criterion-index based and order-independent. Remaining coupled items: rail markup order (~427–434) must be re-sequenced manually. ~~Letter-keyed focus CSS is FK-02's re-key job~~ — **done 2026-06-11: FK-02 re-keyed `data-rail` to section slugs (`student`/`rubric`/`focus`/`adjust`/…), so the focus CSS is now order- and letter-independent; FK-05's only remaining rail task is re-sequencing the link markup.**
-- **Risk:** Downgraded to Low-Medium per INS-9 — runtime validation still mandatory.
-- **DoD:** New order live; focus-mode Previous/Next/Exit, expand/collapse-all, and nav strip all work in dev server; lettering/naming (FK-02) consistent with new order.
-- **Done 2026-06-11:** `#sec-adjust` block (58 lines incl. comment) moved below the focus-workspace section; DOM order now student → rubric → focus → adjust → feedback → notes → (hidden ai) → export → cohort. **The rail needed no re-sequencing** — FK-02 had left it pre-ordered for exactly this layout (verified, not edited). Banner bullets swapped to match (Focus before Penalty), preserving FK-02's banner-matches-page-order DoD. Rider: three leftover letter comments FK-02's grep pattern missed (`─ C.`, `─ D.`, "sections B + D") de-lettered.
-- **Validated:** INS-9 re-greps still zero positional lookups; dev server: focus Previous/Next (criterion 1↔2), exit/re-enter focus, collapse-all/expand-all, grade→penalty→recalculate→sticky-bar chain (A → 23.1, −10 penalty → 13.1, chip "1 of 5 graded"); console clean; Jest 98/98; a11y baseline diff: zero new violations on all three pages.
-- **Column:** Ready to document (2026-06-11). **Priority:** P1. **Effort:** S–M (actual: S).
-
-### FK-06 · Demote/guard "Clear Cohort"; group cohort actions visually
-- **Rationale:** Destructive action sits at equal weight among 8 peer buttons. *Partial* fix only — merging/renaming the "Moderation Export…" / "Export for Moderation" pair stays gated on INS-2.
-- **Evidence:** O (refined 2026-06-11) — screenshot 2 button row; **Clear Cohort already double-confirms** (`confirmClearCohort()` scorer.html:2640–2652, two `confirm()` dialogs naming the student count). Empty-cohort path clears silently (2642–2646, harmless). One other `SA.clearCohort` call at 2853 inside a modal flow — verify its guard during implementation. See INS-2 findings (Q3).
-- **Dependencies:** none for the demote/guard portion.
-- **Risk:** Low. Scope is now visual-only: demote/group; the guard exists and just needs runtime verification.
-- **DoD:** Clear Cohort visually separated (danger styling or overflow), existing double-confirmation verified in runtime (incl. the 2853 path); primary actions (Export, Insights, View list) visually primary; runtime check.
-- **Done 2026-06-11:** button row regrouped — primaries first, moderation trio behind a divider (labels/behaviour untouched, INS-2 still gates semantics), Clear cohort right-isolated (`ml-auto`) with new `.btn-danger` class. **Discovery:** the old `text-red-600` utility never actually applied — the inline `.btn-ghost` rules load after Tailwind and win the cascade, so the button was plain grey all along; `.btn-danger` lives in the same inline block so it wins deterministically. Label sentence-cased "Clear cohort" per canon §7 (the on-next-touch moment). "2853 path" identified as `wipeCohortAfterExport` — export-gated (only offered after a successful export, scorer.html:2632) and confirmed via a proper modal (4546–4560); safe by design.
-- **Validated (runtime, stubbed `confirm`):** empty cohort → 0 dialogs, non-destructive no-op; cancel at first dialog → nothing deleted; accept-then-cancel → nothing deleted; accept both → cohort cleared. Danger styling computed-verified (red-50 bg / red-700 text / red-200 border); Clear cohort focusable and last in tab order; a11y baseline diff: zero new violations; Jest 98/98.
-- **Column:** Ready to document (2026-06-11). **Priority:** P1. **Effort:** S (actual: S).
 
 ---
 
 ## Needs inspection
-
-### FK-07 · Class-list queue + record re-entry (the workbench upgrade)
-- **Rationale:** Largest workflow gap vs ideal: no visible way to see who's marked, jump to a student, or re-open a record. Converts "form you reset" into "workbench you work through".
-- **Evidence:** O — INS-1 ☑ (2026-06-13): records are full-fidelity (per-criterion grades+overrides+provenance, penaltyIdx, override letter, feedback, notes); upsert updates in place keyed studentId-else-name; **no load-back path exists anywhere** (View list = render + Remove only; `record.grades` consumed only by exports/insights).
-- **Dependencies:** INS-1 ☑ — fork resolved to the **favourable middle branch**: store and upsert already support re-entry (no data-model rework), but the hydrate path must be built from scratch. FK-07 = `loadRecordIntoSession(record)` + queue/status IA. Two identity hazards to design around (INS-1 Q3): key drift (name-only save → ID added later → duplicate) and same-name/no-ID silent overwrite — a class-list import that pre-seeds IDs neutralises both. Decide whether to stamp rounding mode per record (currently config-level; recompute-on-load can differ if rounding changed since save).
-- **Risk:** Medium (down from High — blind-start risk retired by INS-1; remaining risk is hydrate-path correctness, mitigated by recomputing through the FK-09 engine rather than trusting stored `scoreResult`).
-- **DoD:** marker can import/paste a class list, see per-student status, open any record back into the marking session (hydrate from `grades`+`penaltyIdx`+`overrideGrade`, recompute via engine), and re-export without duplicate cohort rows (identity hazards handled or surfaced).
-- **Column:** Needs inspection → **Safe to implement now** (INS-1 resolved). **Priority:** P1. **Effort:** M (fork resolved; was M–L).
-
-### FK-08 · Resolve the moderation-export button pair
-- **Rationale (rescoped 2026-06-13 per INS-2 ☑):** ~~may be configure-vs-run~~ — confirmed configure-vs-run, **not** duplication: "Moderation Export…" = lecturer opt-in/settings modal (accountability record); "Export for Moderation" = gated workbook generation (hidden until opt-in active; n≥15 gate; suppression inside the file). The split is load-bearing — FK-08 is a **relabel/grouping job, not a consolidation**. The real defect is that neither label states its role and a fresh user sees one mystery ellipsis button.
-- **Evidence:** O — INS-2 ☑ Q1/Q2 (2026-06-13): handlers scorer.html:2889–3074; tri-state (hidden → enabled w/ banner+run+disable, opt-in button relabels to "settings…" → disabled clears record).
-- **Dependencies:** INS-2 ☑. Unblocked.
-- **Risk:** Low (down from Medium — no behaviour change needed; labels/tooltips/grouping only). One caveat to mention in the pass: `_activeOptInRecord`'s cohort-slug fallback (:2930) means renaming a cohort can silently detach/attach an opt-in record.
-- **DoD:** Two distinctly-named actions whose labels state the difference (e.g. configure vs generate); tri-state remains intact; `docs/fk_moderation_export_v1.md` matches the final labels; cohort-rename caveat documented or surfaced.
-- **Column:** Needs inspection → **Safe to implement now** (INS-2 resolved). **Priority:** P1. **Effort:** S (was S–M).
-
-### FK-09 · Harden the scoring-engine boundary (test what's extracted; wrap the DOM glue)
-- **Rationale (rescoped 2026-06-11 per INS-3 ☑):** ~~the high-stakes arithmetic lives inline in the monolith~~ — INS-3 found the arithmetic core **already lives in shared.js as pure functions** (`computeScores` :325, `applyGradeOverride` :194, `scoreToGrade[FromScale]` :158/:167, `formatScore` :1188 — no DOM, no storage). What remains inline in scorer.html is orchestration: `recalculate()` reads two authoritative inputs *from the DOM* (`#grade-override` letter, `#late-penalty-select` index) and fans results out to ~20 DOM writes. FK-09 is therefore: (a) add input-validation guards at the engine boundary (INS-4 S-1 empty-scale crash, S-4 string tolerance decision, S-5 no-cap contract); (b) lift the DOM-read glue into a thin explicit-args adapter so the pipeline is callable headless; (c) edge-case test suite over the existing engine. Rounding mode is an **engine input**, not a view preference (INS-4 S-6).
-- **Evidence:** O — INS-3 findings (caller table, state inventory, DOM-as-state note, two-rounding-systems doc) in INSPECTION.md.
-- **Dependencies:** FK-01 ✓ (regression net in place); INS-3 ✓. Unblocked — ready to schedule (Phase 2 per roadmap).
-- **Risk:** Low-Medium (down from Medium) — no verbatim-extraction step for the core remains; behaviour-change risk now concentrated in the adapter lift and the guard semantics (guards change S-1/S-4 behaviour deliberately, each in its own commit with the characterization tests updated alongside).
-- **DoD:** engine boundary takes explicit args (no DOM reads in the score path); guards added with tests; characterization suite green pre/post; edge-case tests added (override × penalty × each rounding mode); no behavior diff in dev server on the demo scorer. **Flag — not silently dropped:** the original DoD's "D5 ±1 drift" test item is untestable in this repo (D5 lives in the CD-side rubric-editor preview component, absent here — INS-3 Q4); decide at FK-09 kickoff whether to drop it formally or gate it on that component's integration.
-- **Column:** Needs inspection → Safe to implement now → **Done** (merged PR #25; production-verified 2026-06-13 by agentic-browser run — fixture scores, S-4 alpha-rejection, S-5 no-cap, and S-1 NZ-default inference all confirmed live; zero console errors. Record: fk-decisions.md F.4).
 
 ### FK-10 · localStorage capacity & failure-mode audit
 - **Rationale:** localStorage is the sole store (53 refs in scorer.html, zero IndexedDB anywhere). Quota risk at cohort scale is plausible but unquantified — measure before deciding to migrate.
@@ -116,8 +47,8 @@ Column counts (2026-06-13, Phase 1 inspections closed): Done: 1 (FK-09 — merge
 
 ### FK-13 · ARIA/validation centralization audit
 - **Rationale:** Commit history ("remove aria-invalid from out-of-band override warning") suggests per-widget ARIA tuning; thin evidence (one commit). Audit before judging.
-- **Evidence:** I — single commit. U — actual aria usage breadth.
-- **Dependencies:** **INS-8**; meaningful fix lands with/after FK-15 state model.
+- **Evidence:** I — single commit. U — actual aria usage breadth. INS-8 is ◐: the 2026-06-12 axe audits supplied (and FK-17/18 cleared) the *violation* inventory; the centralization questions (validation state set centrally? aria-live coverage for score updates / focus nav?) remain the open gate.
+- **Dependencies:** **INS-8** (remaining questions); meaningful fix lands with/after FK-15 state model.
 - **Risk:** Low — audit only.
 - **DoD:** inventory of aria-invalid/aria-describedby/aria-live usage in scorer.html with a verdict: ad-hoc (→ backlog card to derive from validation model) or fine as-is (→ drop).
 - **Column:** Needs inspection. **Priority:** P3. **Effort:** S.
@@ -126,30 +57,48 @@ Column counts (2026-06-13, Phase 1 inspections closed): Done: 1 (FK-09 — merge
 
 ## Backlog
 
-### FK-14 · Persistent collapsed draft pane in focus mode
-- **Rationale:** Student-facing draft accumulates behind "Open full draft"; tone/repetition issues surface only if the marker remembers to open it. (Backlog rather than Safe-now because the focus block is freshly merged and screen-space cost needs a prototype, not because evidence is lacking.)
-- **Evidence:** O — focus block UI + "written straight into the full feedback draft" caption.
-- **Dependencies:** none hard; prototype against the demo scorer. Sequencing: after FK-05 settles section layout.
-- **Risk:** Medium — focus mode exists to *reduce* on-screen noise; a draft pane works against that. Collapsed-by-default with a live line-count/preview is the mitigation hypothesis.
-- **DoD:** collapsed pane showing draft tail/preview, expandable inline, live-updating; keyboard reachable; self-test across a full 5-criterion mark.
-- **Column:** Backlog. **Priority:** P1. **Effort:** M.
+### FK-21 · Draft persistence v2 (re-implement PR #12's intent)
+- **Rationale:** Closing or refreshing the tab mid-mark silently loses the in-progress student. PR #12 solved this pre-programme but its branch predates FK-02…09/17/18/FK-07 scorer.html — decided 2026-06-13 (user + external review): re-implement from intent, never rebase. Its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits dead in main — remove or absorb on contact.
+- **Evidence:** O — dead scaffolding in scorer.html; PR #12 acceptance criteria (preserved in the closed PR + git history) are the intent spec.
+- **Dependencies:** **INS-5/FK-10 first** — this card adds another localStorage writer; the storage capacity/failure-mode audit must inform key design and quota handling. Must reconcile with FK-07's session fingerprint + unsaved-work guard and the `beforeunload` handler (fire only when a draft has ≥1 graded criterion).
+- **Risk:** Medium — autosave interacting with FK-07's load/merge ordering (generate-baseline-then-restore) and the cohort store's `sid:`/`name:` keying; quota exhaustion at cohort scale.
+- **DoD:** mid-mark refresh offers Resume/Discard restoring all fields exactly; export and New-student clear the draft; no interference with FK-07 re-entry or existing localStorage keys; quota-exceeded path per FK-10 findings; runtime-validated against the demo scorer.
+- **Column:** Backlog (sequenced after INS-5/FK-10). **Priority:** P1. **Effort:** M.
+
+### FK-22 · Homepage/dark-mode residuals (re-implement PR #16's intent + accumulated theme escapes)
+- **Rationale:** Small, real, user-visible residuals with no inspection dependency; batched to one S-effort card. PR #16 closed 2026-06-13 (stale base; re-implement from intent).
+- **Scope (from PR #16):** fonts.gstatic preconnect; logo `img` width/height (layout shift); hero-CTA clickable affordance; `renderLineDiff` hardcoded hex (`#fee2e2`/`#dcfce7`) → tokens/classes per the FK-16 migration policy.
+- **Scope (added post-PR #31, 2026-06-13):** (a) remove/resolve scorer.html's dead `?cinematic=1` easter-egg link to `/css/dark-scorer.css` (file doesn't exist — 404s when enabled); (b) sweep remaining light Tailwind tint chips in dark mode (amber `Display: exact` rounding label, `bg-slate-100` rounding buttons, kbd/code chips) — PR #31 scoped its remaps to `.grade-badge`/`.tier-pill` only.
+- **Dependencies:** none hard. Honour FK-16 policy: new styles → tokens/Tailwind only; run `build:css` before committing the artifact.
+- **Risk:** Low — cosmetic; screenshot baselines + a11y harness cover regressions.
+- **DoD:** PR #16's four items landed in current markup; cinematic link resolved; dark-mode sweep shows no near-white computed backgrounds outside deliberate accents; axe battery clean.
+- **Column:** Backlog. **Priority:** P2. **Effort:** S.
 
 ### FK-15 · Incremental scorer decomposition (ES modules + state→render)
-- **Rationale:** 4,975 lines / 20 inline script blocks / 261 functions / DOM- and text-anchored cross-feature lookups (per the index-anchored hardening commit). Strangler-fig extraction, not rewrite.
-- **Evidence:** O — structure + commit history (one hardening commit = thin trend evidence; see validation gate).
-- **Dependencies:** FK-09 is the first extraction and the template for the rest; INS-3 informs boundaries — **INS-3 ☑ 2026-06-11: the boundary picture is better than assumed.** Module-level score state is small and single-writer-dominated (`scoreResult`/`latePenaltyIdx` written only by `recalculate`); the coupling hot-spots are (1) DOM-as-state inputs (`#grade-override`, `#late-penalty-select`) and (2) the feedback-draft splice state (`lastScoreResult`/`lastGeneratedText`). Extract-on-contact should target those two seams first; the arithmetic core needs no extraction (already shared.js). **Validation gate before committing to the full program:** tag the next ~5 scorer bugs by cause; proceed broadly only if coupling-related bugs recur.
+- **Rationale:** ~5,000 lines / 20 inline script blocks / 261 functions / DOM- and text-anchored cross-feature lookups. Strangler-fig extraction, not rewrite.
+- **Evidence:** O — structure + commit history; **D-07 bug tally now 1/≥2** (FK-18 sticky-containment regression, cause: structural coupling).
+- **Dependencies:** FK-09 is the first extraction and the template for the rest; INS-3 informs boundaries — **INS-3 ☑ 2026-06-11: the boundary picture is better than assumed.** Module-level score state is small and single-writer-dominated (`scoreResult`/`latePenaltyIdx` written only by `recalculate`); the coupling hot-spots are (1) DOM-as-state inputs (`#grade-override`, `#late-penalty-select`) and (2) the feedback-draft splice state (`lastScoreResult`/`lastGeneratedText`). Extract-on-contact should target those two seams first; the arithmetic core needs no extraction (already shared.js). **Validation gate before committing to the full program:** tag the next ~5 scorer bugs by cause; proceed broadly only if coupling-related bugs recur (tally in DECISIONS.md D-07).
 - **Risk:** Medium — refactor churn without user-visible payoff if the monolith is actually stable.
-- **DoD (program-level):** each touched feature extracted as a module on contact; scorer.html line count monotonically decreasing (tracked per PR); no Date-of-big-bang rewrite.
+- **DoD (program-level):** each touched feature extracted as a module on contact; scorer.html line count monotonically decreasing (tracked per PR); no big-bang rewrite.
 - **Column:** Backlog. **Priority:** P2. **Effort:** L (amortized).
 
-### FK-16 · Styling consolidation onto token/Tailwind build + CSS watch task
-- **Rationale:** Three coexisting systems (tailwind.out.css, shared.css, inline workaround styles — the stale-build footgun is documented in working memory). Consolidate on the token build the ADR work already invested in.
-- **Evidence:** O — css/ contents; memory note on build staleness.
-- **Dependencies:** none hard; do opportunistically alongside FK-15 contact-extractions. The watch task is a same-day standalone win — **and is already half-done: `watch:css` exists in package.json:7** (2026-06-11 read). The slice reduces to wiring it into the dev workflow: a combined `dev` script (watch:css + `node dev-server.js` concurrently) and a README/dev-notes line, killing the stale-build footgun.
-- **Risk:** Low-medium — visual drift during migration; existing screenshot baselines mitigate.
-- **DoD:** watch task running with dev server ✓ (slice done 2026-06-11); migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch); screenshot diffs clean.
-- **Watch-task slice done 2026-06-11:** `npm run dev` script added (dev-server.js); `watch:css` hardened to `--watch=always` (the bare `--watch` exits when stdin closes — non-TTY contexts silently got no watcher); README gained a "Local Development" section documenting the two-terminal workflow and the stale-build footgun explicitly. Verified: watcher rebuilds tailwind.out.css on source change while the dev server runs. **Residual noted:** watch output is unminified (only `build:css` passes `--minify`) — run `npm run build:css` before committing the artifact; folded into the future migration-policy text.
-- **Column:** Backlog (watch-task slice: **done**; remaining scope is the styling migration). **Priority:** P3. **Effort:** M amortized.
+### FK-16 · Styling consolidation onto token/Tailwind build (watch slice shipped)
+- **Rationale:** Three coexisting systems (tailwind.out.css, shared.css, inline workaround styles). Consolidate on the token build the ADR work already invested in. The cascade hazard is proven: Tailwind utilities silently fail on `.btn`-classed elements (inline styles win — FK-06 discovery).
+- **Evidence:** O — css/ contents; FK-06/FK-17 cascade findings.
+- **Dependencies:** none hard; do opportunistically alongside FK-15 contact-extractions.
+- **Risk:** Low-medium — visual drift during migration; screenshot baselines + full-coverage a11y harness mitigate.
+- **DoD:** watch task ✓ (slice shipped 2026-06-12, PR #21); migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch; run `build:css` before committing the artifact — watch output is unminified); screenshot diffs clean.
+- **Column:** Backlog. **Priority:** P3. **Effort:** M amortized.
+
+### FK-19 · Moodle offline-grading-worksheet round-trip (batch import/export)
+- **Rationale:** Moodle assignments support an offline grading worksheet (download CSV → mark → re-upload grades + feedback as a batch). Supporting that format kills the per-student copy/paste step at both ends: import pre-seeds the cohort queue from a real roster; export writes grades + feedback back in one upload. Natural extension of FK-07; perfect local-first fit (file in/out, no backend). SheetJS already in-stack.
+- **Evidence:** I — Moodle worksheet flow is standard, but FK-side specifics are Unknown (see INS-10). O — cohort store keying (`sid:`) maps naturally onto Moodle's Identifier column (INS-1).
+- **Dependencies:** **FK-07 core first** (re-entry + queue is the foundation; this card supersedes FK-07's class-list-import stretch). **INS-10** (worksheet format + round-trip semantics — needs one real worksheet from the user's Moodle). **FK-10/INS-5 is a soft prerequisite:** roster import means identified student data in localStorage at cohort scale on day one — the capacity audit should land first or alongside.
+- **Risk:** Medium — schema/version drift across Moodle instances; grade-scale mapping (FK /100 + letter vs assignment max-grade); re-upload row-rejection semantics.
+- **Hard product constraint (DoD line, not implementation detail):** the exported "Feedback comments" column carries `feedbackText` only — **never `markerNotes`** (promised private to the marker) and never moderation data.
+- **INS-10 ◐ update (2026-06-12, real worksheet analysed):** schema is friendly — 14 fixed columns, only Grade + Feedback comments editable; `ID number` is the 7-digit institutional student ID on every row (**maps 1:1 onto FK's `sid:` keying**; Moodle's own `Participant NNNNNNN` Identifier stored alongside for export); this instance is numeric /100 (v1: support max=100 only, warn otherwise); feedback cell holds ≥8k chars of plain text. Remaining unknowns are Q5 only (upload rejection semantics, multi-line feedback round-trip, Moodle version) — closable with a controlled fake-data test at kickoff. **Effort narrows: M.** Sample CSV is real student data — gitignored, never commit; replace with a fake fixture at build time.
+- **DoD (provisional, refine after INS-10 Q5):** import a Moodle grading worksheet → cohort queue pre-seeded keyed `sid:<ID number>` with `moodleIdentifier` retained (No-submission rows marked non-markable; pre-graded rows: explicit skip/warn decision); mark via FK-07 workbench; export a Moodle-uploadable worksheet (header/columns/BOM byte-preserved except Grade + Feedback comments; grade = stored penalisedScore, max=100 enforced); round-trip verified against a real Moodle assignment with fake data; **markerNotes exclusion tested**.
+- **Column:** Backlog. **Priority:** P2. **Effort:** M (was M–L; narrowed by INS-10).
 
 ---
 
@@ -160,13 +109,29 @@ Column counts (2026-06-13, Phase 1 inspections closed): Done: 1 (FK-09 — merge
 *(empty)*
 
 ## Ready to document
+*(empty — see Shipped)*
 
-*FK-02, FK-03, FK-04, FK-05, and FK-06 are also in this column as of 2026-06-11 — their full cards (with Done/Residual notes) remain in place under "Safe to implement now" above; the **Column** field on each card is authoritative.*
+---
 
-### FK-01 · Characterization tests for scoreToGrade / scoreToGradeFromScale — DONE 2026-06-11
-- **Outcome:** `js/score-grade.test.js` — 75 characterization tests; full suite 98/98 green. Zero source changes needed (both functions already exported on `window.SA`, shared.js:1201). Surprises S-1…S-5 recorded in INS-4; none fixed in the test commit (no-silent-fixes rule held). D-01 validation outcome recorded.
-- **DoD check:** all grade-band boundaries (±0.01 each floor) ✓ · both functions ✓ · default thresholds + custom scale (shuffled NZ-mirror, sparse 3-band, floored) ✓ · malformed input (null, undefined, NaN, negative, >100, numeric/non-numeric/empty strings, empty/null scale) ✓ · suite green ✓ · surprises → INS-4 ✓.
-- **Column note:** skipped *Validate in runtime* — test-only card, no runtime surface; suite green is the validation.
-- **Was:** Safe to implement now. **Priority:** P0. **Effort:** S (actual: S).
+## Shipped
 
-*(promotion rule in README.md applies)*
+Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06-13 at the FK-20 promotion checkpoint — covers Phases 0–2).
+
+| ID | Title | PR | Shipped |
+|---|---|---|---|
+| FK-01 | Characterization tests for scoreToGrade / scoreToGradeFromScale | [#20](https://github.com/stephendmann/feedback-kitchen/pull/20) | 2026-06-12 |
+| FK-02 | De-letter sections / onboarding banner (D-02) | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
+| FK-03 | Copy/casing pass + canon §7 sentence-case rule | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
+| FK-04 | Non-color cue + legend for marker-input fields | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
+| FK-05 | Section reorder to marking task sequence (D-05) | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
+| FK-06 | Clear-cohort demote + cohort action grouping (`.btn-danger`) | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
+| FK-16-slice | CSS watch task wired into dev workflow (`--watch=always`, README) | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
+| FK-17 | WCAG AA pass — 84 nodes → 0 at full coverage (+ harness coverage fix) | [#22](https://github.com/stephendmann/feedback-kitchen/pull/22), [#23](https://github.com/stephendmann/feedback-kitchen/pull/23) | 2026-06-12 |
+| FK-18 | Section-rail sticky containment fix (header boundary; pin assertion now permanent battery item) | [#24](https://github.com/stephendmann/feedback-kitchen/pull/24) | 2026-06-12 |
+| FK-09 | Scoring-engine boundary hardening: guards, adapter, 40-test edge suite (140/140 green) | [#25](https://github.com/stephendmann/feedback-kitchen/pull/25) | 2026-06-12 |
+| FK-08 | Moderation-export button trio: label/title polish + identifier-tuple hint in settings modal | [#28](https://github.com/stephendmann/feedback-kitchen/pull/28) | 2026-06-13 |
+| FK-07 | Record re-entry: `loadCohortRecordIntoSession` + View-list Open + unsaved-work guard + drift cross-check (production-verified; name-rename sibling edge ledgered to FK-19) | [#29](https://github.com/stephendmann/feedback-kitchen/pull/29) | 2026-06-13 |
+| FK-14 | Persistent collapsed draft pane in focus mode (D-04 GO; collapsed-by-default contract; + PR #31 night-mode dark-variant follow-up) | [#30](https://github.com/stephendmann/feedback-kitchen/pull/30), [#31](https://github.com/stephendmann/feedback-kitchen/pull/31) | 2026-06-13 |
+| FK-20 | ROADMAP truth pass + stalled-PR triage = Phase-2 promotion checkpoint (Addendum G; snapshot refresh; #12/#16 closed → FK-21/FK-22) | [#32](https://github.com/stephendmann/feedback-kitchen/pull/32), [#33](https://github.com/stephendmann/feedback-kitchen/pull/33) | 2026-06-13 |
+
+Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed.

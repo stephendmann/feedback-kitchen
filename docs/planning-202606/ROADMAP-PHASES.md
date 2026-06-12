@@ -46,13 +46,13 @@ task running; INS-3 status ☑ with findings.
 **Exit:** INS-1/INS-2 resolved → FK-07/FK-08 rescoped and moved out of Needs inspection.
 *(FK-05/FK-06 moved to Phase 0 — see scope change note above.)*
 
-> **✅ PHASE 1 EXIT SATISFIED 2026-06-13.** INS-1 ☑: records full-fidelity, upsert
-> in place (studentId-else-name key), no load-back path exists — FK-07 fork resolved
-> to "build hydrate path + queue IA, no store rework" (effort M, risk down to Medium).
-> INS-2 ☑: configure-vs-run confirmed, tri-state mapped — FK-08 rescoped to
-> relabel/grouping only (effort S, risk Low). Findings on INSPECTION.md; cards moved
-> to Safe to implement now. Phase 2 remaining: FK-08 (2.2, warm-up) → FK-07 (2.3,
-> centerpiece) → FK-14 (2.4, after FK-07 settles layout). FK-09 (2.1) already Done.
+> **✅ PHASE 1 EXIT SATISFIED 2026-06-12.** INS-1 ☑ (full-fidelity update-in-place
+> store, no load path — FK-07 rescoped to M, Safe to implement now) · INS-2 ☑
+> (configure-vs-run confirmed, consolidation off the table — FK-08 rescoped to
+> copy polish, S/P2, Safe to implement now) · D-03 GO recorded · D-06 resolved.
+> Phase 2 next: FK-09 → FK-08 → FK-07 per the table; FK-07 stays the
+> centerpiece, now cheaper than planned. (Note: 2.1's "verbatim-extract" wording
+> predates INS-3 — FK-09's card carries the current boundary-hardening scope.)
 
 ## Phase 2 — Engine extraction + queue (the two big wins)
 **Goal:** provably-correct scoring module; cohort visible and editable during marking.
@@ -65,6 +65,25 @@ task running; INS-3 status ☑ with findings.
 | 2.4 | FK-14 draft pane prototype | After FK-05 layout settles; prototype before committing |
 
 **Exit:** engine module consumed by scorer with green characterization + edge suites; a marker can re-open and re-export a record without duplication; draft-pane go/no-go decided from prototype.
+
+> **✅ PHASE 2 EXIT SATISFIED 2026-06-13.** 2.1 FK-09 ✓ shipped (PR #25, 140/140
+> green; production-verified → Addendum F.4) · 2.2 FK-08 ✓ shipped (PR #28 —
+> labels/titles, identifier-tuple hint, both states runtime-verified) · 2.3 FK-07
+> ✓ shipped (PR #29; full DoD battery in dev + production) · 2.4 FK-14 ✓ GO
+> decided from prototype and shipped same sitting (PR #30; D-04 outcome recorded;
+> night-mode dark-variant follow-up PR #31). All three exit lines hold.
+
+> **✅ FK-20 PROMOTION CHECKPOINT EXECUTED 2026-06-13** (two-stage PR sequencing,
+> user-directed): **Stage 1** = public truth pass — ROADMAP.md reconciled (merged
+> PRs marked merged, duplicate/stale tables pruned, FK-07 + FK-14 outcome entries)
+> + fk-decisions.md **Addendum G** (G.1 FK-07/D-03 · G.2 FK-14/D-04). **Stage 2**
+> = full planning snapshot refresh at `docs/planning-202606/` (including
+> PHASE0-PROMPT.md, per user). PRs #12/#16 closed with comments → FK-21/FK-22;
+> #13 was already closed. FK-21 (draft persistence v2, after INS-5/FK-10) and
+> FK-22 (homepage/dark-mode residuals incl. PR #31 follow-ups) created on the board.
+> **Next session** = Phase-3 kickoff: design INS-5 (synthetic 300-record cohort
+> measurement + quota-error-handling audit) and run the first measurement
+> pass → FK-10 audit verdict. FK-21 lands after this, informed by it.
 
 ## Phase 3 — Consistency + data integrity
 | Order | Item | Notes |
@@ -90,6 +109,12 @@ Re-read planning/README.md promotion rule. Candidates for promotion at first che
 - FK-09 outcome → fk-decisions.md addendum (engine module + order-of-operations spec)
 - FK-07 outcome → ROADMAP.md entry + PR notes
 - Resolved INS findings worth keeping → fold into fk-project-overview.md, then prune here
+
+> **✅ First checkpoint executed 2026-06-13** (the FK-20 session — see Phase 2
+> block above). FK-09 had already been promoted early with its production
+> verification (Addendum F.4, 2026-06-13); the checkpoint added Addendum G
+> (FK-07/D-03, FK-14/D-04), the ROADMAP truth pass, and the snapshot refresh.
+> Second checkpoint fires after Phase 3.
 
 ## Explicit non-goals (re-affirmed from assessment)
 - No framework adoption (React/Vue) — no-framework constraint serves privacy/portability.
