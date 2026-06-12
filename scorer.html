@@ -130,6 +130,16 @@
     #focus-toggle.is-on { color: #047857; background: #d1fae5; }
     #focus-body[disabled] { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
     #focus-save-chip { transition: opacity 0.4s; }
+    /* FK-14: persistent collapsed draft pane. Plain CSS (no build:css needed). The
+       global details>summary rule supplies flex + justify-between; tighten padding
+       to a strip and let the tail preview flex-shrink with an ellipsis. */
+    #focus-draft-pane > summary { padding: 0.5rem 0.75rem; }
+    #focus-draft-pane[open] > summary { border-bottom: 1px solid #e2e8f0; }
+    #focus-draft-tail { min-width: 0; flex: 1; text-align: left; }
+    #focus-draft-pane[open] #focus-draft-tail { visibility: hidden; }
+    #focus-draft-caret { display: inline-block; transition: transform 0.15s ease; margin-right: 2px; }
+    #focus-draft-pane[open] #focus-draft-caret { transform: rotate(90deg); }
+    #focus-draft-pane > summary:focus-visible { box-shadow: 0 0 0 2px #94a3b8; border-radius: 0.75rem; outline: none; }
     .focus-card-grid { display: grid; gap: 1rem; }
     @media (min-width: 768px) { .focus-card-grid { grid-template-columns: minmax(0,18rem) 1fr; } }
     @media print {
@@ -614,19 +624,25 @@
           <!-- Navigation -->
           <div class="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-slate-100">
             <button id="focus-prev" onclick="S.focusPrev()" class="btn btn-ghost text-sm" title="Previous criterion (Page Up)">← Previous</button>
-            <button onclick="S.focusToggleFullDraft()" class="btn btn-ghost text-xs" title="Peek at the whole assembled feedback draft without leaving Focus mode.">Open full draft</button>
             <button id="focus-next" onclick="S.focusNext()" class="btn btn-blue text-sm" title="Next criterion (Page Down)">Next →</button>
           </div>
 
-          <!-- Full-draft peek (read-only mirror of the main feedback textarea) -->
-          <div id="focus-full-draft" class="hidden mt-4 panel panel-light border border-slate-200 rounded-xl">
-            <div class="flex items-center justify-between px-3 py-2">
-              <span class="text-xs font-semibold text-slate-600">Full assembled draft (read-only)</span>
-              <button onclick="S.focusToggleFullDraft()" class="text-xs text-slate-500 hover:text-slate-700">Close</button>
-            </div>
+          <!-- FK-14: persistent draft pane. Always-visible collapsed strip with live
+               line/word counts and a tail preview of the accumulating student-facing
+               draft; expands inline to the read-only mirror of the main feedback
+               textarea. Replaces the old "Open full draft" button + hidden peek panel
+               so tone/repetition drift is glanceable without the marker remembering
+               to look. Collapsed by default on every focus-mode entry (deliberate —
+               focus mode exists to reduce noise; see BOARD.md FK-14 risk note). -->
+          <details id="focus-draft-pane" class="mt-4 border border-slate-200 rounded-xl bg-slate-50">
+            <summary title="Expand to read the whole assembled feedback draft without leaving Focus mode.">
+              <span class="text-xs font-semibold text-slate-600 whitespace-nowrap"><span id="focus-draft-caret" aria-hidden="true">▸</span> Full draft</span>
+              <span id="focus-draft-tail" class="text-[11px] text-slate-500 truncate" aria-hidden="true"></span>
+              <span id="focus-draft-stats" class="text-[11px] font-semibold text-slate-500 whitespace-nowrap"></span>
+            </summary>
             <textarea id="focus-full-draft-text" class="input-field w-full text-xs m-0 rounded-t-none" rows="10" readonly></textarea>
-            <p class="text-[11px] text-slate-600 px-3 py-2">To edit the intro, totals or outro, exit Focus mode and use the full feedback editor.</p>
-          </div>
+            <p class="text-[11px] text-slate-600 px-3 py-2">Read-only mirror — per-criterion edits land via the box above. To edit the intro, totals or outro, exit Focus mode and use the full feedback editor.</p>
+          </details>
         </div>
       </section>
 
@@ -2022,6 +2038,10 @@
         const a = document.activeElement;
         const id = a && a.id;
         if (id !== 'focus-override' && id !== 'focus-body') focusRenderCard();
+        // FK-14: an override edit regenerates the draft's score lines without a
+        // card re-render — keep the pane's counts/mirror current even on the
+        // caret-preserving skip path (focus-body writes refresh it themselves).
+        else if (id === 'focus-override') focusRefreshDraftPane();
       }
     }
 
@@ -2211,8 +2231,11 @@
         if (ws && ws.scrollIntoView) ws.scrollIntoView({ block: 'start', behavior: 'auto' });
       } else {
         if (secAdj) secAdj.open = !!_focusSavedAdjOpen;
-        const fd = document.getElementById('focus-full-draft');
-        if (fd) fd.classList.add('hidden');
+        // FK-14: re-collapse the draft pane so every focus-mode entry starts
+        // from the low-noise default (the pane being open is a per-look choice,
+        // not a persisted preference — see BOARD.md FK-14 risk note).
+        const pane = document.getElementById('focus-draft-pane');
+        if (pane) pane.open = false;
       }
     }
 
@@ -2313,12 +2336,8 @@
         }
       }
 
-      // Keep the peek panel in sync if it is open.
-      const fd = el('focus-full-draft');
-      if (fd && !fd.classList.contains('hidden')) {
-        const mirror = el('focus-full-draft-text');
-        if (mirror) mirror.value = el('feedback-text').value;
-      }
+      // Keep the persistent draft pane (FK-14) in sync.
+      focusRefreshDraftPane();
     }
 
     // Delegate a grade change to the hidden rubric row, then refresh the card.
@@ -2444,23 +2463,49 @@
       lastGeneratedText = rebuilt;   // keep merge logic from clobbering this manual edit
       refreshStickySummary();
       refreshStatusChips();
-      // Mirror into the peek panel if it is open.
-      const fd = el('focus-full-draft');
-      if (fd && !fd.classList.contains('hidden')) {
-        const mirror = el('focus-full-draft-text');
-        if (mirror) mirror.value = rebuilt;
-      }
+      // Live-update the persistent draft pane (FK-14) as the marker types.
+      focusRefreshDraftPane(rebuilt);
     }
 
-    function focusToggleFullDraft() {
-      const fd = el('focus-full-draft');
-      if (!fd) return;
-      const willShow = fd.classList.contains('hidden');
-      fd.classList.toggle('hidden', !willShow);
-      if (willShow) {
-        const mirror = el('focus-full-draft-text');
-        if (mirror) mirror.value = el('feedback-text').value;
+    // FK-14: refresh the persistent draft pane — live line/word counts in the
+    // collapsed strip, tail preview of the criterion-blocks region, and the
+    // read-only mirror. The tail is taken from above "TOTAL SCORE:" because the
+    // lines below it (total + outro) are static once generated — the accumulating
+    // part the marker should glance at is the last criterion block written.
+    // Cheap (string split on a few-KB draft), so it runs on every draft write.
+    function focusRefreshDraftPane(fullText) {
+      const pane = el('focus-draft-pane');
+      if (!pane) return;
+      const full = (fullText != null) ? fullText : (el('feedback-text').value || '');
+      const trimmed = full.trim();
+      const statsEl = el('focus-draft-stats');
+      const tailEl = el('focus-draft-tail');
+      if (!trimmed) {
+        if (statsEl) statsEl.textContent = 'empty';
+        if (tailEl) tailEl.textContent = 'Nothing drafted yet — grade a criterion to start.';
+      } else {
+        const lines = trimmed.split('\n');
+        const nonEmpty = lines.filter(function (l) { return l.trim(); });
+        if (statsEl) {
+          statsEl.textContent = nonEmpty.length + (nonEmpty.length === 1 ? ' line · ' : ' lines · ')
+            + trimmed.split(/\s+/).length + ' words';
+        }
+        if (tailEl) {
+          let cut = lines.length;
+          for (let k = 0; k < lines.length; k++) {
+            if (lines[k].startsWith('TOTAL SCORE:')) { cut = k; break; }
+          }
+          let tail = '';
+          for (let k = cut - 1; k >= 0; k--) {
+            if (lines[k].trim()) { tail = lines[k].trim(); break; }
+          }
+          tailEl.textContent = tail ? '…' + tail : '';
+        }
       }
+      // Mirror unconditionally (not just when open) so expanding the pane never
+      // shows stale text and needs no toggle handler.
+      const mirror = el('focus-full-draft-text');
+      if (mirror) mirror.value = full;
     }
 
     function regenerateFeedback() {
@@ -4144,6 +4189,7 @@
 
     function setAllDetails(open) {
       document.querySelectorAll('main details').forEach(function (d) {
+        if (d.id === 'focus-draft-pane') return;   // FK-14: per-look toggle, not a section
         d.open = !!open;
       });
       persistSectionState();
@@ -4154,7 +4200,7 @@
     function persistSectionState() {
       const state = {};
       document.querySelectorAll('main details').forEach(function (d) {
-        if (!d.id) return;
+        if (!d.id || d.id === 'focus-draft-pane') return;   // FK-14: never persist the pane
         state[d.id] = !!d.open;
       });
       try { localStorage.setItem(SECTION_STATE_KEY, JSON.stringify(state)); } catch (e) {}
@@ -4170,7 +4216,7 @@
       if (!state || Object.keys(state).length === 0) return;
 
       document.querySelectorAll('main details').forEach(function (d) {
-        if (!d.id) return;
+        if (!d.id || d.id === 'focus-draft-pane') return;   // FK-14: always starts collapsed
         if (d.id in state) d.open = !!state[d.id];
       });
     }
@@ -4648,7 +4694,7 @@
              // Focus mode (criterion-by-criterion workspace)
              toggleFocusMode, focusPrev, focusNext, focusOnGrade, focusOnOverride,
              focusOnOverridePrime, focusOnOverrideKeydown,
-             focusOnBodyInput, focusToggleFullDraft,
+             focusOnBodyInput,
              // Modal accessibility (PR #14)
              openModal, closeModal };
   })();
