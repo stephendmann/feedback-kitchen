@@ -82,13 +82,13 @@ Column counts (2026-06-13, post-FK-07 + triage card): Safe to implement now: 0 �
 - **Column:** Backlog. **Priority:** P3. **Effort:** M amortized.
 
 ### FK-20 · ROADMAP.md truth pass + stalled-PR triage (planning session, code-light)
-- **Rationale:** public ROADMAP.md on main is wrong — it lists PRs #14/#15 as Open (both merged) and carries an unchecked pre-sprint "PR Sequence" table. Three pre-programme PRs are stalled: #12 (draft persistence — its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits DEAD in main's scorer.html, defined but never called), #13 (lazy-load SheetJS — superseded by merged #15, which shipped `loadSheetJS()`; still open, close during this session's triage with a "replaced by #15" comment, no card), #16 (homepage perf/dark-mode — partially overtaken by #11 + FK-17/18).
+- **Rationale:** public ROADMAP.md on main is wrong — it lists PRs #14/#15 as Open (both merged) and carries an unchecked pre-sprint "PR Sequence" table. Three pre-programme PRs are stalled: #12 (draft persistence — its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits DEAD in main's scorer.html, defined but never called), #13 (lazy-load SheetJS — superseded by merged #15, which shipped `loadSheetJS()`; ☑ closed by user 2026-06-13, no card), #16 (homepage perf/dark-mode — partially overtaken by #11 + FK-17/18).
 - **Decision (2026-06-13, user + external review concur):** do NOT rebase the stale branches against post-FK-02…09/17/18/FK-07 scorer.html — re-implement from intent via new cards.
 - **Session outputs (DoD):**
   1. ROADMAP.md updated: merged PRs marked merged, stale tables pruned, FK-07 outcome entry added per promotion rules (FK-09 → fk-decisions.md addendum, next free letter after F).
   2. New card **FK-21 · Draft persistence v2** (re-implement #12's intent): reconcile with FK-07's session fingerprint + the dead scaffolding + `beforeunload`; **sequenced after INS-5/FK-10** (adds another localStorage writer — needs the storage audit's findings first).
   3. New card **FK-22 · Homepage/dark-mode residuals** (S): fonts.gstatic preconnect, logo `img` width/height, hero-CTA affordance, `renderLineDiff` hardcoded hex → tokens (ties into FK-16 migration policy).
-  4. PRs #12 and #16 closed with comments pointing at FK-21/FK-22; #13 closed as "replaced by #15".
+  4. PRs #12 and #16 closed with comments pointing at FK-21/FK-22. (#13 ☑ already closed 2026-06-13.)
 - **ID hygiene note:** external review suggested "FK-12 re-implementation" — FK-12 is TAKEN (drift indicators). New cards use next free IDs as reserved above; never reuse.
 - **Dependencies:** FK-14 done (Phase 2 closed — this session IS the promotion checkpoint). **Risk:** none (docs/board only).
 - **Column:** Backlog (scheduled: the session right after FK-14, before Phase-3/INS-5 kickoff). **Priority:** P1 (public roadmap is factually wrong). **Effort:** S.
