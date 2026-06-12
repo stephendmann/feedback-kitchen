@@ -1,4 +1,7 @@
-# Real student data — never commit, never push (INS-10 source artefact).
-# Structural findings live in planning/INSPECTION.md; delete or anonymise
-# this CSV once FK-19's controlled-upload test has its fake-data replacement.
-*.csv
+# The original worksheet download stays ignored even though it has been
+# anonymised (names/emails synthetic, feedback wiped) — its 7-digit ID
+# numbers may still be real institutional IDs. Never commit it.
+Grades-*.csv
+
+# fixture-moodle-worksheet-fake.csv is fully synthetic (names, emails,
+# IDs, feedback all generated) and IS committed — it's FK-19's test fixture.
