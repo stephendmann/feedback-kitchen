@@ -177,6 +177,22 @@ describe('scoreToGradeFromScale — custom gradeScale', () => {
     });
   });
 
+  describe('S-4 guard (FK-09): explicit Number() coercion at the boundary', () => {
+    // Behaviour-identical to pre-FK-09 for every characterization case;
+    // the one deliberate tightening: Infinity banded as the TOP grade via
+    // relational coercion, garbage now always lands at the bottom.
+    test('Infinity → bottom grade (was A+ pre-FK-09)', () => {
+      expect(SA.scoreToGrade(Infinity)).toBe('D');
+      expect(SA.scoreToGradeFromScale(Infinity, SPARSE_SCALE)).toBe('Fail');
+    });
+    test('-Infinity → bottom grade', () => {
+      expect(SA.scoreToGrade(-Infinity)).toBe('D');
+    });
+    test('whitespace-padded numeric string " 80 " → A- (Number() semantics)', () => {
+      expect(SA.scoreToGrade(' 80 ')).toBe('A-');
+    });
+  });
+
   describe('input is not mutated', () => {
     test('scale array order is unchanged after the call (slice() before sort)', () => {
       const copy = NZ_MIRROR_SCALE_SHUFFLED.map(e => e.grade);
