@@ -75,14 +75,19 @@ task running; INS-3 status ☑ with findings.
 > promotion checkpoint (FK-07 outcome → ROADMAP.md; FK-09 → fk-decisions.md
 > addendum) fires when FK-14 resolves.
 
-> **Session sequencing decided 2026-06-13 (user):**
+> **Session sequencing decided 2026-06-13 (user; triage slot confirmed same day):**
 > **Next session** = FK-14 prototype + implementation in one sitting — build
 > enough of the collapsed draft pane to make the go/no-go call (self-test
 > across a full 5-criterion mark per the card's DoD), record the decision,
-> close Phase 2, and run the promotion checkpoint.
-> **Session after** = Phase-3 kickoff: design INS-5 (synthetic 300-record
-> cohort measurement + quota-error-handling audit) and run the first
-> measurement pass → FK-10 audit verdict.
+> close Phase 2.
+> **Then** = FK-20 "ROADMAP truth pass + stalled-PR triage" (Backlog card
+> carries the full DoD) — that session doubles as the post-Phase-2 promotion
+> checkpoint: reconcile public ROADMAP.md (merged PRs marked merged; FK-07
+> entry; FK-09 → fk-decisions.md addendum) and resolve stalled PRs #12/#13/#16
+> per the card (re-implement-from-intent as FK-21/FK-22; no rebases).
+> **Then** = Phase-3 kickoff: design INS-5 (synthetic 300-record cohort
+> measurement + quota-error-handling audit) and run the first measurement
+> pass → FK-10 audit verdict. FK-21 lands after this, informed by it.
 
 ## Phase 3 — Consistency + data integrity
 | Order | Item | Notes |
