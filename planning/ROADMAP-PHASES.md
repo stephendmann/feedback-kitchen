@@ -46,6 +46,14 @@ task running; INS-3 status ☑ with findings.
 **Exit:** INS-1/INS-2 resolved → FK-07/FK-08 rescoped and moved out of Needs inspection.
 *(FK-05/FK-06 moved to Phase 0 — see scope change note above.)*
 
+> **✅ PHASE 1 EXIT SATISFIED 2026-06-12.** INS-1 ☑ (full-fidelity update-in-place
+> store, no load path — FK-07 rescoped to M, Safe to implement now) · INS-2 ☑
+> (configure-vs-run confirmed, consolidation off the table — FK-08 rescoped to
+> copy polish, S/P2, Safe to implement now) · D-03 GO recorded · D-06 resolved.
+> Phase 2 next: FK-09 → FK-08 → FK-07 per the table; FK-07 stays the
+> centerpiece, now cheaper than planned. (Note: 2.1's "verbatim-extract" wording
+> predates INS-3 — FK-09's card carries the current boundary-hardening scope.)
+
 ## Phase 2 — Engine extraction + queue (the two big wins)
 **Goal:** provably-correct scoring module; cohort visible and editable during marking.
 
