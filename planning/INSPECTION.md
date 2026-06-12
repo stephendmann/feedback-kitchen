@@ -200,6 +200,17 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - **Harness coverage gap found:** bbp-a11y-tests.mjs tests `/scorer.html` with no `?id=` — the no-config page — so all prior local baselines covered only a fraction of the real marking UI. Fixing the harness URL is step 1 of any remediation (→ FK-17).
   - Remediation scoped as **FK-17** on the board. INS-8 stays open for the centralization questions, which still gate FK-13's verdict.
 
+## INS-10 ☐ Moodle grading-worksheet format + round-trip semantics
+- **Gates:** FK-19. Scope/effort can't be set until this resolves.
+- **Method:** user downloads one real offline grading worksheet from their Moodle instance (assignment with "offline grading worksheet" enabled) + notes the Moodle version. Then map and answer:
+- **Questions:**
+  1. Exact column set and formats (Identifier, Full name, Email?, Status, Grade, Maximum grade, Last modified, Feedback comments — confirm against the real file; encoding; CSV vs xlsx acceptance on upload).
+  2. Round-trip key: is the Identifier (`Participant NNNN`) stable per student per assignment, and how should it map onto cohort `studentMatchKey` (likely a new `moodle:` key prefix vs reusing `sid:`)?
+  3. Grade mapping: assignment max-grade vs FK's /100 + letter — scale, round, or both? Where do FK's display-rounding settings interact (INS-4 S-6: rounding changes stored totals)?
+  4. Re-upload semantics: how does Moodle treat rows whose "Last modified" predates a Moodle-side change — silent skip, error, overwrite? What must FK preserve verbatim for the upload to be accepted?
+  5. Feedback comments cell: plain text vs HTML; length limits; newline handling (FK feedback is multi-paragraph).
+- **Findings:** _(pending — blocked on a sample worksheet file)_
+
 ## INS-9 ☑ Pre-flight for section reorder (FK-05) — positional lookups
 - **Gates:** none (FK-05 is safe-now with this as its first task, not a blocker).
 - **Method (greps run 2026-06-11):**

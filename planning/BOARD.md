@@ -21,7 +21,7 @@ Column counts (2026-06-12, post-Phase-1): Safe to implement now: 3 (FK-07, FK-08
   1. `loadCohortRecordIntoSession(key)` — inverse of `saveCurrentStudentToCohort`: restore name/ID/tutor/date inputs, `studentGrades` + per-row grade selects and override inputs, penalty select, feedback textarea, marker notes; then `recalculate()` and assert displayed totals match the stored `scoreResult`.
   2. "Open" action on each View-list row (rows already show grade · score · savedAt — that's the per-student status).
   3. Unsaved-work guard: opening a record while the current session has ungraded→graded changes must confirm first.
-- **Scope (stretch, may split to its own card):** paste/import a class list to pre-seed the queue with ungraded entries.
+- **Scope (stretch — SUPERSEDED 2026-06-12):** ~~paste/import a class list to pre-seed the queue~~ → absorbed by **FK-19** (Moodle worksheet round-trip); the Moodle import *is* the class-list import with a real format and key. Don't build a generic paste path separately.
 - **Known edges (record, handle, or ledger to INS-4 during build):** `penaltyIdx` is positional — config penalty edits between save and load can shift meaning; key fallback means renaming a no-ID student creates a sibling record rather than updating; feedback-draft restore guard (scorer.html ~1244) interplay; `focusIdx` reset on load.
 - **Evidence:** O — INS-1 findings + live probes (INSPECTION.md).
 - **Dependencies:** INS-1 ✓. **Risk:** Medium (was High-if-blind) — store risk eliminated; remaining risk is session-restore completeness.
@@ -110,6 +110,15 @@ Column counts (2026-06-12, post-Phase-1): Safe to implement now: 3 (FK-07, FK-08
 - **Risk:** Low-medium — visual drift during migration; screenshot baselines + full-coverage a11y harness mitigate.
 - **DoD:** watch task ✓ (slice shipped 2026-06-12, PR #21); migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch; run `build:css` before committing the artifact — watch output is unminified); screenshot diffs clean.
 - **Column:** Backlog. **Priority:** P3. **Effort:** M amortized.
+
+### FK-19 · Moodle offline-grading-worksheet round-trip (batch import/export)
+- **Rationale:** Moodle assignments support an offline grading worksheet (download CSV → mark → re-upload grades + feedback as a batch). Supporting that format kills the per-student copy/paste step at both ends: import pre-seeds the cohort queue from a real roster; export writes grades + feedback back in one upload. Natural extension of FK-07; perfect local-first fit (file in/out, no backend). SheetJS already in-stack.
+- **Evidence:** I — Moodle worksheet flow is standard, but FK-side specifics are Unknown (see INS-10). O — cohort store keying (`sid:`) maps naturally onto Moodle's Identifier column (INS-1).
+- **Dependencies:** **FK-07 core first** (re-entry + queue is the foundation; this card supersedes FK-07's class-list-import stretch). **INS-10** (worksheet format + round-trip semantics — needs one real worksheet from the user's Moodle). **FK-10/INS-5 is a soft prerequisite:** roster import means identified student data in localStorage at cohort scale on day one — the capacity audit should land first or alongside.
+- **Risk:** Medium — schema/version drift across Moodle instances; grade-scale mapping (FK /100 + letter vs assignment max-grade); re-upload row-rejection semantics.
+- **Hard product constraint (DoD line, not implementation detail):** the exported "Feedback comments" column carries `feedbackText` only — **never `markerNotes`** (promised private to the marker) and never moderation data.
+- **DoD (provisional, refine after INS-10):** import a Moodle grading worksheet → cohort queue pre-seeded (ungraded entries, keyed by Identifier); mark via FK-07 workbench; export a Moodle-uploadable worksheet (grades scaled correctly + feedback comments); round-trip verified against a real Moodle assignment; markerNotes exclusion tested.
+- **Column:** Backlog. **Priority:** P2. **Effort:** M–L (narrow after INS-10).
 
 ---
 
