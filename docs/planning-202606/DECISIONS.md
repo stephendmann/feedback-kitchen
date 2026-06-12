@@ -6,7 +6,8 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 
 ---
 
-## D-01 ◐ Test the scoring engine before any feature work
+## D-01 ☑ Test the scoring engine before any feature work
+*(Promoted 2026-06-12 → fk-decisions.md **Addendum F.1**, via PR branch `phase0-trust-ux-fixes`.)*
 - **Why it matters:** Grade arithmetic is the product's licence to exist; a bug ships wrong grades to transcripts.
 - **Evidence:** O — shared.test.js covers only AI-wording QA; D5 rounding-drift math is non-trivial; penalty/rounding handlers inline in monolith.
 - **Depends on assumption:** the math is extractable/testable without behavior change.
@@ -15,6 +16,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Outcome:** **Validation run 2026-06-11.** FK-01 implemented (`js/score-grade.test.js`, 75 characterization tests, suite 98/98 green). Surprise count: **5** (INS-4 S-1…S-5) — one latent crash (empty/null scale, unreachable in normal flow), four benign/intended coercion or boundary behaviours. **No surprises affect grade correctness on the normal path** — the assumption "math is testable without behavior change" held; zero source changes were needed (both functions were already exported). Decision validated; promote alongside FK-09's ADR.
 
 ## D-02 ☑ De-letter vs re-letter the section badges
+*(Promoted 2026-06-12 → fk-decisions.md **Addendum F.2**, via PR branch `phase0-trust-ux-fixes`.)*
 - **Why it matters:** FK-02 needs a direction; letters keep decaying as sections evolve (B and D already gone).
 - **Evidence:** O — current mismatch is the second drift (focus mode replaced B·Rubric).
 - **Depends on assumption:** letters carry no load-bearing references in exports/docs/how-to page.
@@ -30,23 +32,26 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
   - Risk assumption held: no letter references in exports/docs that would break. De-letter is safe.
   - ~~Promote to ☑ once FK-02 lands consistent with this and passes Validate in runtime.~~ **☑ 2026-06-11 (later session): FK-02 landed consistent with de-letter and passed runtime validation (focus-mode nav, rail, banner) with a clean a11y baseline diff. Ready to promote to fk-decisions.md.**
 
-## D-03 ☐ Build the class-list queue (workbench model)
+## D-03 ☑ Build the class-list queue (workbench model)
+*(Promoted 2026-06-13 → fk-decisions.md **Addendum G.1**, via the FK-20 promotion checkpoint.)*
 - **Why it matters:** biggest workflow gap vs ideal; cohort invisible during marking.
 - **Evidence:** O — single-record UI; U — record round-trip.
 - **Depends on assumption:** records can be made re-loadable from the cohort store.
 - **Risk if wrong:** large effort misdirected if a hidden re-edit path exists, or store rework underestimated.
 - **First validation step:** INS-1.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-12 — GO, at reduced cost.** INS-1 resolved: no re-edit path exists (the queue is genuinely missing), but the assumption "records can be made re-loadable" held *better than assumed* — the store is already full-fidelity and update-in-place keyed (`sid:`/`name:`), live-verified. Neither failure mode fired: there is no hidden re-edit path to duplicate, and no store rework to underestimate. FK-07 rescoped to M (one inverse load function + View-list "Open" + unsaved-work guard; class-list import as stretch).
 
-## D-04 ☐ Persistent draft pane in focus mode
+## D-04 ☑ Persistent draft pane in focus mode
+*(Promoted 2026-06-13 → fk-decisions.md **Addendum G.2**, via the FK-20 promotion checkpoint.)*
 - **Why it matters:** student-facing artifact accumulates unseen; errors caught only at Copy time.
 - **Evidence:** O — draft behind "Open full draft". Impact unmeasured.
 - **Depends on assumption:** markers don't habitually open the draft anyway; pane doesn't defeat focus mode's noise-reduction purpose.
 - **Risk if wrong:** screen-space cost for no gain; undermines a freshly-shipped feature.
 - **First validation step:** prototype collapsed pane; self-test a full 5-criterion mark on the demo scorer; record notes.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-13 — GO, prototype-validated and shipped same day (PR #30).** Self-test across a full 5-criterion mark on the demo scorer: live line/word counts verified against the actual draft; tail preview updates per keystroke; mirror never stale. The noise-reduction assumption held via the mitigation contract — collapsed by default on *every* focus-mode entry, open state per-look (excluded from section-state persistence and Expand/Collapse-all), collapsed cost ≈35px vs ~672px workspace (≈5%). Jest 140/140; a11y battery 0 violations. One calibration note: word counts can stay flat across a grading (outro re-words as the tier changes) — coarse signal, not precision. Night-mode follow-up: the disabled pane state exposed the `#focus-body[disabled]` white-box specificity bug, fixed in PR #31.
 
 ## D-05 ☑ Reorder sections to task sequence
+*(Promoted 2026-06-12 → fk-decisions.md **Addendum F.3**, via PR branch `phase0-trust-ux-fixes`.)*
 - **Why it matters:** per-student friction; override UI before grading invites anchoring.
 - **Evidence:** O — current order A, C, Focus.
 - **Depends on assumption:** section order isn't load-bearing for index-anchored lookups.
@@ -54,13 +59,13 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** INS-9 grep before moving anything.
 - **Outcome:** **☑ 2026-06-11.** INS-9 ran first (resolved: zero positional lookups; focus nav criterion-indexed). FK-05 then landed: `#sec-adjust` moved below the focus block, banner re-matched, rail verified already-ordered. Assumption held — section order was not load-bearing for any lookup; full runtime battery + a11y baseline diff clean (see FK-05 card). Ready to promote alongside the Phase 0 bundle.
 
-## D-06 ☐ Consolidate cohort actions; isolate destructive
+## D-06 ☑ Consolidate cohort actions; isolate destructive
 - **Why it matters:** mis-click risk on Clear Cohort; 8 peer buttons.
 - **Evidence:** O — button row. U — moderation pair semantics.
 - **Depends on assumption:** the moderation pair is partially redundant.
 - **Risk if wrong:** hiding a step moderators rely on.
 - **First validation step:** INS-2 (read both handlers + moderation doc).
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-12 — assumption FALSIFIED, decision resolved the right way anyway.** INS-2: the moderation pair is configure-vs-run by design (not redundant), so the "consolidate" half is off the table — the feared risk (hiding a step moderators rely on) is exactly what consolidation would have done. The "isolate destructive" half already shipped (FK-06, PR #21: `.btn-danger`, right-isolation, divider grouping). Remainder is FK-08 copy polish (S). Evidence trail: INS-2 findings.
 
 ## D-07 ☐ Incremental decomposition of scorer.html (strangler-fig, no rewrite)
 - **Why it matters:** DOM/text-anchored coupling has already produced a hardening fix; 261 functions share one scope.
@@ -68,7 +73,9 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Depends on assumption:** coupling-related defects will recur.
 - **Risk if wrong:** refactor churn with no user-visible payoff.
 - **First validation step:** tag the next ~5 scorer bugs by root cause; proceed broadly only if ≥2 are coupling-related. (FK-09 extraction proceeds regardless — it's justified by D-01, not this.)
-- **Outcome:** _(pending)_
+- **Bug tally (running):**
+  1. **2026-06-12 — rail sticky-pinning regression (FK-18).** Cause: **structural coupling** — wrapping page chrome in `<header>` (FK-17 landmarks) silently changed the rail's sticky containing block; a cross-feature CSS/structure dependency no test caught. Coupling-related: **yes (1 of the ≥2 needed to trigger the gate).**
+- **Outcome:** _(pending — gate triggers at ≥2 coupling-related of ~5)_
 
 ## D-08 ☐ Measure before migrating off localStorage
 - **Why it matters:** avoids a heavy migration on an unquantified risk — and avoids dismissing a real data-loss risk.
