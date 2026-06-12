@@ -801,7 +801,7 @@ refers to. Planning trail snapshot: `docs/planning-202606/` (DECISIONS.md,
 BOARD.md, INSPECTION.md).
 **Status:** recorded, solo-maintainer track. Each decision below ran its
 planning-register validation step before promotion; outcomes are quoted. No
-new global D-numbers — subsections are addendum-scoped (F.1–F.3) to avoid
+new global D-numbers — subsections are addendum-scoped (F.1–F.4) to avoid
 colliding with the legacy D-series.
 
 ### F.1 — Characterise the scoring functions before any feature work *(planning D-01)*
@@ -874,3 +874,44 @@ all, penalty → recalculate → sticky bar) and a11y baseline diff clean.
 need only the INS-9 grep set re-run as a guard.
 
 **Refs.** planning D-05 · FK-05 · INS-9, INS-3.
+
+### F.4 — Harden the scoring-engine boundary *(FK-09)*
+
+**Decision.** The scoring engine takes explicit args — one DOM-read site
+(`readScoringInputs()`) feeds it; no DOM reads remain in the score path.
+Boundary guards land the INS-4 contract items deliberately: S-1 invalid/empty
+`gradeScale` falls back to NZ defaults (was: TypeError); S-4 numeric override
+is `Number()`-coerced explicitly, non-numeric strings rejected; S-5 no upper
+cap on numeric override is the **documented contract**, not an omission.
+
+**Validation outcome — local (2026-06).** Merged via PR #25
+(`fk09-engine-boundary`). `js/score-engine.test.js`: 40 headless edge-case
+tests over the engine (override × penalty × rounding modes); characterization
+suite green pre/post each guard commit.
+
+**Validation outcome — production (2026-06-13, agentic-browser run).** Full
+fixture entered on the live scorer; every value read back from the DOM:
+
+- *Weighted scores* (read from `#weighted-0`…`#weighted-4`, the WEIGHTED
+  column — note `final-score-X` is the FINAL /100 midpoint column, a
+  read-back trap for future probes): 23.1 / 15.9 / 11.6 / 15.9 / 13.9 — all
+  match the validated local run. Per-criterion numeric override (58 on
+  Organisation & structure) applied correctly.
+- *Totals:* pre-penalty 80.4/100; after 2-day late penalty 60.4; final letter
+  grade B with override applied. Production-identical to local.
+- *Guard S-4:* alpha string ("XXXX") in the override input rejected silently —
+  value reverted to empty, grade midpoint used, total held at 80.4. Numeric
+  999 accepted without clamp and total rose to 307.1, no crash — confirming
+  the S-5 no-cap contract as documented.
+- *Guard S-1 (inferred):* engine state not introspectable in production
+  (module pattern, no global); A midpoint 92.5 and B midpoint 79.5 observed,
+  consistent with NZ default thresholds in effect.
+- *UI sanity:* Regenerate feedback and View list both functional; zero
+  console errors across the entire run.
+
+**Consequences.** FK-09 closes: merged, locally tested, production-verified.
+The S-5 no-cap behaviour is now observed in production as well as documented —
+any future decision to clamp is a contract change, not a bug fix. Production
+DOM probes should target `#weighted-N` for weighted scores.
+
+**Refs.** PR #25 · FK-09 · INS-3, INS-4 (S-1, S-4, S-5) · F.1.
