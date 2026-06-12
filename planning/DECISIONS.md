@@ -32,13 +32,13 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
   - Risk assumption held: no letter references in exports/docs that would break. De-letter is safe.
   - ~~Promote to ☑ once FK-02 lands consistent with this and passes Validate in runtime.~~ **☑ 2026-06-11 (later session): FK-02 landed consistent with de-letter and passed runtime validation (focus-mode nav, rail, banner) with a clean a11y baseline diff. Ready to promote to fk-decisions.md.**
 
-## D-03 ☐ Build the class-list queue (workbench model)
+## D-03 ☑ Build the class-list queue (workbench model)
 - **Why it matters:** biggest workflow gap vs ideal; cohort invisible during marking.
 - **Evidence:** O — single-record UI; U — record round-trip.
 - **Depends on assumption:** records can be made re-loadable from the cohort store.
 - **Risk if wrong:** large effort misdirected if a hidden re-edit path exists, or store rework underestimated.
 - **First validation step:** INS-1.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-12 — GO, at reduced cost.** INS-1 resolved: no re-edit path exists (the queue is genuinely missing), but the assumption "records can be made re-loadable" held *better than assumed* — the store is already full-fidelity and update-in-place keyed (`sid:`/`name:`), live-verified. Neither failure mode fired: there is no hidden re-edit path to duplicate, and no store rework to underestimate. FK-07 rescoped to M (one inverse load function + View-list "Open" + unsaved-work guard; class-list import as stretch).
 
 ## D-04 ☐ Persistent draft pane in focus mode
 - **Why it matters:** student-facing artifact accumulates unseen; errors caught only at Copy time.
@@ -57,13 +57,13 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** INS-9 grep before moving anything.
 - **Outcome:** **☑ 2026-06-11.** INS-9 ran first (resolved: zero positional lookups; focus nav criterion-indexed). FK-05 then landed: `#sec-adjust` moved below the focus block, banner re-matched, rail verified already-ordered. Assumption held — section order was not load-bearing for any lookup; full runtime battery + a11y baseline diff clean (see FK-05 card). Ready to promote alongside the Phase 0 bundle.
 
-## D-06 ☐ Consolidate cohort actions; isolate destructive
+## D-06 ☑ Consolidate cohort actions; isolate destructive
 - **Why it matters:** mis-click risk on Clear Cohort; 8 peer buttons.
 - **Evidence:** O — button row. U — moderation pair semantics.
 - **Depends on assumption:** the moderation pair is partially redundant.
 - **Risk if wrong:** hiding a step moderators rely on.
 - **First validation step:** INS-2 (read both handlers + moderation doc).
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-12 — assumption FALSIFIED, decision resolved the right way anyway.** INS-2: the moderation pair is configure-vs-run by design (not redundant), so the "consolidate" half is off the table — the feared risk (hiding a step moderators rely on) is exactly what consolidation would have done. The "isolate destructive" half already shipped (FK-06, PR #21: `.btn-danger`, right-isolation, divider grouping). Remainder is FK-08 copy polish (S). Evidence trail: INS-2 findings.
 
 ## D-07 ☐ Incremental decomposition of scorer.html (strangler-fig, no rewrite)
 - **Why it matters:** DOM/text-anchored coupling has already produced a hardening fix; 261 functions share one scope.

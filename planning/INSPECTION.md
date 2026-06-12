@@ -6,16 +6,20 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
 
 ---
 
-## INS-1 ☐ Does a cohort record round-trip back into the marking session?
+## INS-1 ☑ Does a cohort record round-trip back into the marking session?
 - **Gates:** FK-07 (queue/re-entry) — scope forks on the answer.
 - **Where to look:** scorer.html cohort-store functions (search: `cohort`, `View list` handler, whatever populates "0 students saved"); `js/moderation-schema.js` for record shape; try it live in dev server: save a student, open View list, attempt re-edit.
 - **Questions:**
   1. Are saved records full-fidelity (per-criterion levels + overrides + feedback slots + notes), or flattened/export-shaped?
   2. Is there any existing load-record-into-session code path, even unexposed?
   3. Does re-saving create a duplicate row or update in place (keyed how — name? ID? timestamp)?
-- **Findings:** _(pending)_
+- **Findings (☑ 2026-06-12, code read + live verification):**
+  1. **Full-fidelity.** `saveCurrentStudentToCohort` (scorer.html ~2550) stores: name/studentId/tutor/date, deep-copied `grades` (per-criterion grade + numeric override + flags), `penaltyIdx`, full `scoreResult` via `cloneScoreResultForStorage` (~2598: totals, penalty, override-audit object, per-row grade/midpoint/override/finalScore/weightedScore/tier/descriptor), `feedbackText`, `markerNotes`, `overrideGrade`. Only reduction: each row's `criterion` is `{name, weight}` — rubric text lives in config; rows align with `config.criteria` by index. Live-verified field list on a stored record.
+  2. **No load path exists, even unexposed.** View-list rows offer only Remove (~2686); the only readers of `cohort.students` are export, insights, list render, counts/warnings, and clear paths. Greps for any load/restore/reopen pattern and any non-export reader of `record.grades`: zero hits.
+  3. **Update in place.** `addToCohort` (shared.js ~1143) keys by `studentMatchKey` (shared.js:1102): `sid:<studentId>` lowercased, fallback `name:<name>`; same key → replace, else push. Live-verified: re-save with same studentId → `replaced:true`, count stable, content updated. **Edge:** a no-ID student whose name is edited gets a new key → sibling record, not an update (FK-07 known-edge).
+- **Consequence:** FK-07's fork lands between its arms, on the cheap side — the store needs zero rework; the gap is one inverse function + a View-list "Open" action + an unsaved-work guard. Card rescoped (M), moved to Safe to implement now.
 
-## INS-2 ◐ What do "Moderation Export…" and "Export for Moderation" each do?
+## INS-2 ☑ What do "Moderation Export…" and "Export for Moderation" each do?
 - **Gates:** FK-08.
 - **Where to look:** both button handlers in scorer.html; `js/moderation-export.js`, `js/moderation-optin.js`, `js/moderation-suppression.js`; `docs/fk_moderation_export_v1.md`.
 - **Questions:**
@@ -25,7 +29,12 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
 - **Findings:** _(Q1/Q2 pending — Q3 answered 2026-06-11, Phase 0 kickoff)_
   - **Q3: YES — double confirmation already exists.** `confirmClearCohort()` scorer.html:2640–2652: two sequential `confirm()` dialogs (2647, 2648), the first naming the student count and warning "cannot be undone… export first". Caveat: when the cohort is **empty**, it clears silently with no dialog (2642–2646) — harmless but worth knowing. A separate unguarded `SA.clearCohort` call exists at 2853 — appears to be inside a modal-confirm flow; FK-06 implementation should verify that path's guard.
   - O — button markup observed: Clear Cohort is `btn-ghost text-red-600` (1175), last of 8 buttons in one flex row (1166–1176); already partially differentiated by colour but at equal visual weight. Primary candidates per BOARD: Export cohort (btn-blue, 1167), Cohort Insights (1168, hidden until data), View list (1169).
-  - FK-06 scope consequence: the "add confirmation" half of the DoD is already satisfied — remaining work is visual demotion/grouping only. Q1/Q2 (moderation pair semantics) still gate FK-08 and stay open.
+  - FK-06 scope consequence: the "add confirmation" half of the DoD is already satisfied — remaining work is visual demotion/grouping only. ~~Q1/Q2 still gate FK-08 and stay open.~~
+- **Findings — Q1/Q2 (☑ 2026-06-12, handlers + modules + doc read; state machine live-verified):**
+  - **Q1: configure-vs-run, NOT duplication.** Three lifecycle verbs on one feature: "Moderation Export…" = `showModExportOptIn` (lecturer opt-in/settings modal; always visible; **self-relabels to "Moderation Export settings…" when enabled** — `refreshModExportUI` ~2941); "Export for Moderation" = `runModExport` (builds the privacy-reduced workbook; hidden unless an active opt-in record exists); "Disable mod-export" = `disableModExport` (confirm-guarded opt-out; hidden unless enabled). **Do not consolidate.**
+  - **Q2: two persistent states + an in-run privacy gate — not a tri-state.** Opt-in records live in `FK_MOD_EXPORT_OPTINS` keyed `paper::cohort::assessment` (js/moderation-optin.js). Not-opted-in → only the opt-in button shows; opted-in → banner + run + disable appear. Within the enabled state, `runModExport` blocks below `COHORT_MIN_N` (15) with a modal and **no file** — live-verified (block modal shown, count 0). "Suppression" (js/moderation-suppression.js) is the **in-export privacy engine** — pure functions: row shuffling, R-labels, threshold suppression — not a UI state. Doc (`docs/fk_moderation_export_v1.md`, locked 2026-05-08) matches observed behaviour: two-export model, no student/tutor identifiers, complements (not replaces) the identified export.
+  - **UX observation (→ FK-08 optional scope):** `_activeOptInRecord` (~2905) matches on the *slug tuple* of cohort label / course name / assessment title — editing any of these silently reverts the UI to not-opted-in. Reads as lost settings to a lecturer; one inline hint in the settings modal defuses it.
+- **Consequence:** FK-08 rescoped to copy/affordance polish (S, P2); consolidation explicitly off the table. D-06 validation outcome recorded.
 
 ## INS-3 ☑ Map the scoring calculation surface in scorer.html
 - **Gates:** FK-09 (engine extraction); informs FK-15 boundaries. **Inspection only — changes no code.** Findings shape FK-09's eventual module boundary (Phase 2), not FK-01.
