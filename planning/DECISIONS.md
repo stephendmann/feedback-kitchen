@@ -71,7 +71,9 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Depends on assumption:** coupling-related defects will recur.
 - **Risk if wrong:** refactor churn with no user-visible payoff.
 - **First validation step:** tag the next ~5 scorer bugs by root cause; proceed broadly only if ≥2 are coupling-related. (FK-09 extraction proceeds regardless — it's justified by D-01, not this.)
-- **Outcome:** _(pending)_
+- **Bug tally (running):**
+  1. **2026-06-12 — rail sticky-pinning regression (FK-18).** Cause: **structural coupling** — wrapping page chrome in `<header>` (FK-17 landmarks) silently changed the rail's sticky containing block; a cross-feature CSS/structure dependency no test caught. Coupling-related: **yes (1 of the ≥2 needed to trigger the gate).**
+- **Outcome:** _(pending — gate triggers at ≥2 coupling-related of ~5)_
 
 ## D-08 ☐ Measure before migrating off localStorage
 - **Why it matters:** avoids a heavy migration on an unquantified risk — and avoids dismissing a real data-loss risk.

@@ -10,6 +10,19 @@ Column counts (2026-06-12, post-FK-17): Safe to implement now: 1 (FK-09) · Need
 
 ## Safe to implement now
 
+### FK-18 · Restore section-rail sticky pinning (regression from FK-17 landmark wrap)
+- **Symptom:** since PR #22, the scorer rail no longer stays pinned when scrolling — it scrolls away with the page chrome. Production-affected.
+- **Investigation findings (2026-06-12, DevTools-style pass on the merged code):**
+  - (a) The rail is **neither removed, hidden, clipped, nor covered**: `display:block`, `visibility:visible`, `position:sticky; top:56px; z-30` all intact; every ancestor has `overflow:visible`, no clip-path; nothing occupies its pin position (no z-index contender).
+  - (b) **Responsible rule: none new — it's containment geometry.** A sticky element pins only within its containing block. FK-17's landmark slice wrapped the rail in the new `<header>` (height ≈213px); the rail can now stick only inside that 213px box and exits the viewport with it (at scrollY=1200 the header's bottom is −582px). Pre-FK-17 the containing block was `#app` (≈3,100px), so it pinned for the whole page.
+  - (c) **Tied to FK-17's structural/landmark work** (commit `3222b92`, PR #22) — NOT the #23 background change (opacity has no effect on sticky), not unrelated.
+  - Dark mode adds nothing: identical computed position values under `.fk-dark`.
+- **Recommended fix:** move `<nav id="section-rail">` out of the `<header>` to be its **sibling** (between `</header>` and `<main>`). A labelled `<nav>` is its own landmark, so the `region` rule stays satisfied; sticky containment reverts to `#app`. One-move change; do NOT use `display:contents` on the header (flaky landmark semantics in AT).
+- **Validation for the fix:** scrolled-pin check (scroll ≥1000px, assert rail rect top ≈56px and visible) — **add this assertion to the runtime battery permanently; the battery missed this because it tested rail behaviour, not pinned geometry after scroll.** Plus the standard set: harness 0 violations (watch `region` specifically), focus battery, Jest.
+- **Evidence:** O — computed-style/geometry probes on merged code.
+- **Dependencies:** none. **Risk:** Low.
+- **Column:** Safe to implement now. **Priority:** P1 (production UX regression). **Effort:** S.
+
 ### FK-17 · WCAG AA pass: contrast, programmatic labels, landmarks (from 2026-06-12 production axe audit)
 - **Rationale:** Full-coverage production axe run (demo-loaded scorer — see INS-8 findings) surfaced 4 rule IDs / 78 nodes, all pre-existing: `text-slate-400` hint/label text fails 4.5:1 across all three pages; `btn-blue`/`btn-green`/`bg-emerald-600` are white-on-#059669 ≈3.9:1; 5 form fields are `title`-labelled only (`for=` missing); no landmark structure (`region` ×17); Ko-fi link colour-only. Evidence + per-node selectors: `planning/Axe test after PR20/` (report + raw JSON).
 - **Evidence:** O — axe 4.10.2 vs production 2026-06-12; triaged zero-new vs PR #20/#21.
