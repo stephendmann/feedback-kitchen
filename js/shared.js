@@ -154,22 +154,51 @@
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
   }
 
-  // Default scoreToGrade using hardcoded NZ thresholds (fallback only)
+  // Default scoreToGrade using hardcoded NZ thresholds (fallback only).
+  // Boundary contract (FK-09 / INS-4 S-4 + S-5):
+  // - Input is coerced explicitly via Number(); non-finite values (NaN,
+  //   Infinity, non-numeric strings, undefined) band as the bottom grade.
+  //   Numeric strings remain accepted (deterministic, no longer relying on
+  //   JS relational coercion). Note one tightening vs pre-FK-09: Infinity
+  //   previously banded as the TOP grade via coercion; garbage now always
+  //   lands at the bottom.
+  // - S-5: there is deliberately NO upper cap — any finite score ≥ the top
+  //   floor returns the top grade. Range enforcement (0–100) is the
+  //   caller's contract; penalty math clamps the floor at 0 upstream.
   function scoreToGrade(score) {
+    const n = Number(score);
+    if (!Number.isFinite(n)) return 'D';
     for (const [floor, grade] of GRADE_THRESHOLDS) {
-      if (score >= floor) return grade;
+      if (n >= floor) return grade;
     }
     return 'D';
   }
 
   // scoreToGrade using a custom gradeScale array
-  // Sorts by bandLow descending so highest band matches first
+  // Sorts by bandLow descending so highest band matches first.
+  // Boundary contract (FK-09 / INS-4 S-1): an empty, null, or non-array
+  // gradeScale previously threw mid-marking. It now FALLS BACK to the NZ
+  // default thresholds — the same safe-default philosophy computeScores
+  // uses (its useCustomScale check). The fallback path is deliberate,
+  // audited by dedicated tests ("S-1 guard" in js/score-grade.test.js),
+  // and keeps the assessor moving rather than failing closed. Partially
+  // malformed *entries* inside a non-empty scale are still tolerated
+  // row-wise (entries without bandLow never match, fall through), unchanged.
   function scoreToGradeFromScale(score, gradeScale) {
-    const sorted = gradeScale.slice().sort((a, b) => b.bandLow - a.bandLow);
-    for (const entry of sorted) {
-      if (score >= entry.bandLow) return entry.grade;
+    if (!Array.isArray(gradeScale) || gradeScale.length === 0) {
+      return scoreToGrade(score);
     }
-    // If below all bands, return the lowest grade in the scale
+    // S-4: explicit coercion; non-finite input banding is deterministic
+    // (falls through every band to the lowest grade) instead of relying
+    // on JS relational coercion. Same Infinity tightening as scoreToGrade.
+    const n = Number(score);
+    const sorted = gradeScale.slice().sort((a, b) => b.bandLow - a.bandLow);
+    if (Number.isFinite(n)) {
+      for (const entry of sorted) {
+        if (n >= entry.bandLow) return entry.grade;
+      }
+    }
+    // Below all bands (or non-finite): return the lowest grade in the scale
     return sorted[sorted.length - 1].grade;
   }
 
