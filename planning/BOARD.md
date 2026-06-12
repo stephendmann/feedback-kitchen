@@ -14,7 +14,7 @@ Column counts (2026-06-13, post-FK-07): Safe to implement now: 0 · Needs inspec
 
 ## Safe to implement now
 
-*(empty — next candidates come from FK-14 (Backlog, Phase-2 remainder) or the Needs-inspection gates)*
+*(empty — sequencing decided 2026-06-13: next session FK-14 prototype→go/no-go; session after that INS-5/FK-10 as Phase-3 kickoff. See ROADMAP-PHASES.md.)*
 
 
 ---

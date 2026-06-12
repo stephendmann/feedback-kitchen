@@ -75,6 +75,15 @@ task running; INS-3 status ☑ with findings.
 > promotion checkpoint (FK-07 outcome → ROADMAP.md; FK-09 → fk-decisions.md
 > addendum) fires when FK-14 resolves.
 
+> **Session sequencing decided 2026-06-13 (user):**
+> **Next session** = FK-14 prototype + implementation in one sitting — build
+> enough of the collapsed draft pane to make the go/no-go call (self-test
+> across a full 5-criterion mark per the card's DoD), record the decision,
+> close Phase 2, and run the promotion checkpoint.
+> **Session after** = Phase-3 kickoff: design INS-5 (synthetic 300-record
+> cohort measurement + quota-error-handling audit) and run the first
+> measurement pass → FK-10 audit verdict.
+
 ## Phase 3 — Consistency + data integrity
 | Order | Item | Notes |
 |---|---|---|
