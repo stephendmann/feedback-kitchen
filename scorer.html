@@ -1869,14 +1869,29 @@
     }
 
     /* ── Recalculate ─────────────────────────────────────── */
+    // FK-09 boundary adapter: ALL scoring inputs the engine consumes are
+    // gathered here, in one place, and nowhere else in the score path.
+    // The two DOM-as-state inputs (INS-3: penalty select, letter-override
+    // input) live only in the DOM until save — this function is the single
+    // bridge. recalculate() and any future headless caller consume the
+    // returned object; nothing between here and the SA.* engine calls
+    // touches the DOM for input.
+    function readScoringInputs() {
+      return {
+        studentGrades: studentGrades,
+        latePenaltyIdx: parseInt(document.getElementById('late-penalty-select').value || '0', 10),
+        overrideGrade: normaliseGradeInput(el('grade-override').value)
+      };
+    }
+
     function recalculate() {
-      latePenaltyIdx = parseInt(document.getElementById('late-penalty-select').value || '0', 10);
-      scoreResult    = SA.computeScores(config, studentGrades, latePenaltyIdx);
+      const inputs   = readScoringInputs();
+      latePenaltyIdx = inputs.latePenaltyIdx;
+      scoreResult    = SA.computeScores(config, inputs.studentGrades, inputs.latePenaltyIdx);
 
       // Apply marker grade override (snaps total UP to band minimum of new grade).
       // Per-criterion rows always come from the original scoreResult.
-      const overrideGrade = normaliseGradeInput(el('grade-override').value);
-      const effective     = SA.applyGradeOverride(config, scoreResult, overrideGrade);
+      const effective = SA.applyGradeOverride(config, scoreResult, inputs.overrideGrade);
       const { rows } = scoreResult;
       const { weightedTotal, penalisedScore, suggestedGrade, latePenalty, isFail } = effective;
 
@@ -2565,7 +2580,8 @@
       ensureCohortInitialised(function (cohort) {
         if (!cohort) return;  // dismissed during silent save — no-op
         // Persist the overridden scoreResult so Excel exports reflect the marker bump.
-        const overrideRaw = normaliseGradeInput(el('grade-override').value);
+        // FK-09: inputs come from the single boundary adapter, not ad-hoc DOM reads.
+        const overrideRaw = readScoringInputs().overrideGrade;
         const effectiveForSave = SA.applyGradeOverride(config, scoreResult, overrideRaw);
         const record = {
           name:         studentName,
