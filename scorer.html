@@ -1494,6 +1494,7 @@
       wireSectionStatePersistence();
       wireExplainerPersistence();
       bindKeyboardShortcuts();
+      _markSessionClean();
     }
 
     /* ── No-config screen (with list if scorers exist) ───── */
@@ -2601,6 +2602,7 @@
           return;
         }
         refreshCohortUI();
+        _markSessionClean();
         if (!opts.silent) {
           showCohortToast(
             (result.replaced ? 'Updated ' : 'Added ') + (studentName || studentId) +
@@ -2699,6 +2701,7 @@
                 '<div class="font-medium text-slate-700 truncate">' + (i + 1) + '. ' + escHtml(s.name || '(no name)') + (s.studentId ? ' <span class="text-slate-600">· ' + escHtml(s.studentId) + '</span>' : '') + '</div>' +
                 '<div class="text-xs text-slate-600">' + escHtml(sr.suggestedGrade || '—') + ' · ' + score + '/100 · saved ' + (s.savedAt ? new Date(s.savedAt).toLocaleString('en-NZ') : '—') + '</div>' +
               '</div>' +
+              '<button class="text-xs font-semibold text-indigo-600 hover:text-indigo-800" onclick="S.openCohortRecord(\'' + s.key.replace(/'/g, "\\'") + '\')" title="Load this record back into the marking session to review or edit. Re-saving updates it in place.">Open</button>' +
               '<button class="text-xs text-red-500 hover:text-red-700" onclick="S.removeCohortStudent(\'' + s.key.replace(/'/g, "\\'") + '\')">Remove</button>' +
             '</li>';
           }).join('') + '</ul>';
@@ -2711,6 +2714,161 @@
       SA.removeFromCohort(config.id, key);
       refreshCohortUI();
       viewCohortList();
+    }
+
+    /* ── Record re-entry (FK-07) ─────────────────────────────
+       loadCohortRecordIntoSession is the inverse of
+       saveCurrentStudentToCohort: it restores every field that function
+       persists, then recalculates and cross-checks the recomputed totals
+       against the stored scoreResult snapshot. Re-saving an opened record
+       updates it in place via the same studentMatchKey upsert. */
+
+    // Fingerprint of marker-entered session state. Used only to decide
+    // whether opening a record needs an "unsaved work" confirmation.
+    let _sessionCleanFingerprint = '';
+
+    function _sessionFingerprint() {
+      const v = id => { const x = el(id); return x ? x.value : ''; };
+      return JSON.stringify({
+        g: studentGrades,
+        p: v('late-penalty-select') || '0',
+        o: v('grade-override'),
+        n: v('student-name'),
+        i: v('student-id'),
+        f: v('feedback-text'),
+        m: v('additional-comments')
+      });
+    }
+
+    function _markSessionClean() {
+      _sessionCleanFingerprint = _sessionFingerprint();
+    }
+
+    // Unsaved work = at least one criterion graded AND something changed
+    // since the last save / load / new-student reset.
+    function _sessionHasUnsavedWork() {
+      if (!(studentGrades || []).some(g => g && g.grade)) return false;
+      return _sessionFingerprint() !== _sessionCleanFingerprint;
+    }
+
+    function loadCohortRecordIntoSession(key) {
+      const cohort = SA.getCohort(config.id);
+      const rec = cohort && (cohort.students || []).find(s => s.key === key);
+      if (!rec) {
+        showCohortToast('Could not find that record — it may have been removed.', 'amber');
+        return false;
+      }
+
+      // Student fields (date restored as saved; tutor may differ from session)
+      el('student-name').value  = rec.name || '';
+      el('student-id').value    = rec.studentId || '';
+      el('student-tutor').value = rec.tutor || '';
+      if (rec.date) el('student-date').value = rec.date;
+
+      // Grades: rebuild state array against the CURRENT criteria list, then
+      // mirror into the table selects/override inputs. Extra saved rows are
+      // dropped; missing rows stay ungraded (config may have changed).
+      const savedGrades = rec.grades || [];
+      studentGrades = config.criteria.map((_, i) => {
+        const g = savedGrades[i] || {};
+        return {
+          grade: g.grade || '',
+          override: (g.override == null ? null : g.override),
+          overrideManual: !!g.overrideManual,
+          autoFilled: !!g.autoFilled
+        };
+      });
+      config.criteria.forEach((_, i) => {
+        const sel = el('grade-sel-' + i);
+        if (sel) sel.value = studentGrades[i].grade || '';
+        const ovr = el('override-' + i);
+        if (ovr) ovr.value = (studentGrades[i].override == null ? '' : studentGrades[i].override);
+      });
+      if (savedGrades.length !== config.criteria.length) {
+        showCohortToast('Rubric has changed since this record was saved — review each row.', 'amber');
+      }
+      _bulkFillSnapshot = null;
+      const bulkSel = el('bulk-fill-grade');
+      if (bulkSel) bulkSel.value = '';
+      _refreshAllAutoPills();
+
+      // Late penalty (positional index — clamp if the penalty list changed)
+      let penaltyIdx = parseInt(rec.penaltyIdx, 10) || 0;
+      if (penaltyIdx && !(config.latePenalties && config.latePenalties[penaltyIdx])) {
+        showCohortToast('Saved late-penalty option no longer exists — penalty cleared. Re-apply if needed.', 'amber');
+        penaltyIdx = 0;
+      }
+      el('late-penalty-select').value = String(penaltyIdx);
+
+      // Overall letter override
+      el('grade-override').value = rec.overrideGrade || '';
+      _renderOverrideStatus();
+
+      // Recalculate with the feedback-merge state reset and the textarea
+      // empty: updateFeedback() takes its full-replace path and leaves
+      // lastGeneratedText = the generated baseline for this score state.
+      lastScoreResult = null;
+      lastGeneratedText = '';
+      const fbEl = el('feedback-text');
+      if (fbEl) fbEl.value = '';
+      if (focusMode) focusIdx = 0;
+      recalculate();
+
+      // Restore the SAVED feedback over the generated baseline. Because
+      // lastGeneratedText still holds the generated text, any manual edits
+      // in the saved draft survive future grade changes via the merge path.
+      if (fbEl) {
+        fbEl.value = rec.feedbackText || '';
+        fbEl.dispatchEvent(new Event('input'));
+      }
+      const notesEl = el('additional-comments');
+      if (notesEl) {
+        notesEl.value = rec.markerNotes || '';
+        notesEl.dispatchEvent(new Event('input'));
+      }
+
+      // AI assistant panel state is not part of the record — clear it.
+      const aiIn  = el('ai-manual-suggestion');
+      const aiOut = el('ai-suggestion');
+      if (aiIn)  { aiIn.value  = ''; aiIn.dispatchEvent(new Event('input')); }
+      if (aiOut) { aiOut.value = ''; aiOut.dispatchEvent(new Event('input')); }
+      const aiDiff = el('ai-diff-box');
+      if (aiDiff) { aiDiff.innerHTML = ''; aiDiff.classList.add('hidden'); }
+      const aiPrompt = el('ai-prompt-preview');
+      if (aiPrompt) { aiPrompt.textContent = ''; aiPrompt.classList.add('hidden'); }
+      setAIState('idle');
+
+      // Integrity cross-check: recomputed effective totals vs the stored
+      // snapshot. A mismatch means config (rubric/penalties/scale) changed
+      // since save — surface it, don't block.
+      const saved = rec.scoreResult || {};
+      if (saved.penalisedScore != null && scoreResult) {
+        const eff = SA.applyGradeOverride(config, scoreResult, readScoringInputs().overrideGrade);
+        const drift = Math.abs((eff.penalisedScore || 0) - saved.penalisedScore) >= 0.005
+                   || eff.suggestedGrade !== saved.suggestedGrade;
+        if (drift) {
+          showCohortToast(
+            'Recalculated score (' + SA.formatScore(eff.penalisedScore, _displayRounding) + ' ' + eff.suggestedGrade +
+            ') differs from the saved record (' + SA.formatScore(saved.penalisedScore, _displayRounding) + ' ' + (saved.suggestedGrade || '—') +
+            '). The rubric or penalties may have changed since this student was saved.', 'amber');
+        }
+      }
+
+      refreshStatusChips();
+      _markSessionClean();
+      return true;
+    }
+
+    function openCohortRecord(key) {
+      if (_sessionHasUnsavedWork()
+          && !confirm('You have unsaved marking in the current session.\n\nOpening a saved record will replace everything on screen. Save the current student to the cohort first if you want to keep it.\n\nOpen anyway?')) {
+        return;
+      }
+      if (!loadCohortRecordIntoSession(key)) return;
+      closeModal('cohort-list-modal');
+      const who = el('student-name').value || el('student-id').value || 'record';
+      showCohortToast('Opened ' + who + ' — re-saving updates this record in place.', 'green');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function hideCohortListModal() { closeModal('cohort-list-modal'); }
@@ -3171,6 +3329,7 @@
       if (focusMode) focusIdx = 0;
       recalculate();
       refreshStatusChips();
+      _markSessionClean();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -4474,6 +4633,7 @@
              usageTrack,
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
+             openCohortRecord, loadCohortRecordIntoSession,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
              // Moderation Export — opt-in & gating (issue #2)
