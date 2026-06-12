@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-12, post-Phase-1): Safe to implement now: 3 (FK-07, FK-08, FK-09) · Needs inspection: 4 · Backlog: 3 · Shipped: 9 · others: 0
+Column counts (2026-06-13, post-FK-08): Safe to implement now: 1 (FK-07) · Needs inspection: 4 · Backlog: 3 · Shipped: 11 · others: 0
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -29,27 +29,6 @@ Column counts (2026-06-12, post-Phase-1): Safe to implement now: 3 (FK-07, FK-08
 - **DoD:** from View list, marker can open any saved record into the session (all fields restored; recalculated totals match stored), edit, re-save → updates in place (no duplicate row, live-verified), re-export reflects the edit; unsaved-work guard confirmed in runtime; focus mode works on a loaded record; full runtime battery + scrolled-pin check; surprises → INS-4.
 - **Column:** Safe to implement now. **Priority:** P1 (Phase-2 centerpiece). **Effort:** M (was M–L fork).
 
-### FK-08 · Moderation-export pair: copy/affordance polish (consolidation OFF the table)
-- **Rescoped 2026-06-12 per INS-2 ☑ — the pair is configure-vs-run by design, not duplication.** "Moderation Export…" opens the lecturer opt-in/settings modal (always visible; **already self-relabels to "Moderation Export settings…" when enabled**); "Export for Moderation" generates the privacy-reduced workbook (hidden unless opted in; blocks below COHORT_MIN_N=15 — live-verified); "Disable mod-export" is a confirm-guarded opt-out (hidden unless enabled). Suppression is the in-export privacy engine (row shuffle, R-labels, thresholds), not a UI state. **Do not consolidate** — the original "hiding a step moderators rely on" risk is real and the lifecycle split is correct.
-- **Remaining scope (small):**
-  1. Copy polish: "Disable mod-export" → sentence-cased, self-explanatory label (canon §7); title-text pass over the trio so each states its lifecycle role.
-  2. Doc cross-check: `docs/fk_moderation_export_v1.md` matches observed behaviour (two-export model, min-N block, settings relabel).
-  3. **Optional (recommended):** an inline hint in the settings modal about identifier-tuple sensitivity — changing the cohort label / course name / assessment title silently reverts the UI to not-opted-in (`_activeOptInRecord` matches on the slug tuple; scorer.html ~2901–2925). Looks like lost settings to a lecturer; one sentence of UI copy defuses it.
-- **Evidence:** O — INS-2 findings, handlers read, state machine + min-N gate live-verified.
-- **Dependencies:** INS-2 ✓. **Risk:** Low (was Medium — consolidation is off the table, so nothing can be hidden).
-- **DoD:** labels distinct and self-describing in both states (runtime check both states); doc page matches behaviour; identifier-sensitivity hint decision recorded (added or explicitly declined).
-- **Column:** Safe to implement now. **Priority:** P2 (was P1 — premise mostly already shipped). **Effort:** S.
-
-### FK-09 · Harden the scoring-engine boundary (test what's extracted; wrap the DOM glue)
-- **Rationale (rescoped 2026-06-11 per INS-3 ☑):** ~~the high-stakes arithmetic lives inline in the monolith~~ — INS-3 found the arithmetic core **already lives in shared.js as pure functions** (`computeScores` :325, `applyGradeOverride` :194, `scoreToGrade[FromScale]` :158/:167, `formatScore` :1188 — no DOM, no storage). What remains inline in scorer.html is orchestration: `recalculate()` reads two authoritative inputs *from the DOM* (`#grade-override` letter, `#late-penalty-select` index) and fans results out to ~20 DOM writes. FK-09 is therefore: (a) add input-validation guards at the engine boundary (INS-4 S-1 empty-scale crash, S-4 string tolerance decision, S-5 no-cap contract); (b) lift the DOM-read glue into a thin explicit-args adapter so the pipeline is callable headless; (c) edge-case test suite over the existing engine. Rounding mode is an **engine input**, not a view preference (INS-4 S-6).
-- **Evidence:** O — INS-3 findings (caller table, state inventory, DOM-as-state note, two-rounding-systems doc) in INSPECTION.md.
-- **Dependencies:** FK-01 ✓ (regression net in place); INS-3 ✓.
-- **Risk:** Low-Medium (down from Medium) — no verbatim-extraction step for the core remains; behaviour-change risk now concentrated in the adapter lift and the guard semantics (guards change S-1/S-4 behaviour deliberately, each in its own commit with the characterization tests updated alongside).
-- **DoD:** engine boundary takes explicit args (no DOM reads in the score path); guards added with tests; characterization suite green pre/post; edge-case tests added (override × penalty × each rounding mode); no behavior diff in dev server on the demo scorer. ~~Flag: D5 ±1 drift tests~~ — **decided at kickoff 2026-06-12: DROPPED formally.** Rationale: INS-3 Q4 established the D5 redistribution math exists only in the CD-side rubric-editor preview component, absent from this repo; a test here would test nothing. If that component ever integrates, its own card carries the property tests (note to add at integration time).
-- **Guard contracts decided at kickoff (per review):** S-1 → **fall back to NZ default thresholds** on empty/null/invalid gradeScale (matches computeScores' fallback philosophy; never bricks a marking session; auditable via function comment + dedicated tests). S-4 → explicit `Number()` coercion, non-finite ⇒ bottom grade (deterministic boundary handling; behaviour-identical for every existing characterization case). S-5 → no-cap documented as caller's contract, no behaviour change.
-- **Done 2026-06-12 (four commits):** `2748323` S-1 guard (invalid scale → NZ-defaults fallback; the two TypeError characterization tests replaced in the same commit) · `07686c1` S-4/S-5 (explicit `Number()` coercion, non-finite → bottom grade; one deliberate tightening asserted in tests: Infinity was top-grade, garbage now always bottoms; no-cap contract documented) · `9e13386` `readScoringInputs()` boundary adapter (single DOM-read site; recalc + cohort-save both consume it) · `a8372ee` headless edge suite (40 tests: rounding modes incl. rounded-row summation proof, penalties, snap-up-only override with deduction preservation, 24-case invariant matrix).
-- **Validated:** Jest **140/140** (was 98); demo-scorer fixture case identical pre/post (A/B/C/B/A + crit-3 override 58 + 2-day penalty + letter-override B → 80.4 / 60.4 / B, rows [23.1, 15.9, 11.6, 15.9, 13.9]); no other characterization test needed changing (the referee held); runtime battery green incl. scrolled-pin; harness 0 violations; console clean. One test-authoring error caught by the engine (59.5 bands C not C+ — test fixed, engine right).
-- **Column:** Ready to document (2026-06-12). **Priority:** P0. **Effort:** S–M (actual: S–M).
 
 ---
 
@@ -153,5 +132,7 @@ Full card history in git and `docs/planning-202606/` (snapshot predates FK-17/18
 | FK-16-slice | CSS watch task wired into dev workflow (`--watch=always`, README) | [#21](https://github.com/stephendmann/feedback-kitchen/pull/21) | 2026-06-12 |
 | FK-17 | WCAG AA pass — 84 nodes → 0 at full coverage (+ harness coverage fix) | [#22](https://github.com/stephendmann/feedback-kitchen/pull/22), [#23](https://github.com/stephendmann/feedback-kitchen/pull/23) | 2026-06-12 |
 | FK-18 | Section-rail sticky containment fix (header boundary; pin assertion now permanent battery item) | [#24](https://github.com/stephendmann/feedback-kitchen/pull/24) | 2026-06-12 |
+| FK-09 | Scoring-engine boundary hardening: guards, adapter, 40-test edge suite (140/140 green) | [#27](https://github.com/stephendmann/feedback-kitchen/pull/27) | 2026-06-12 |
+| FK-08 | Moderation-export button trio: label/title polish + identifier-tuple hint in settings modal | — | 2026-06-13 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed.
