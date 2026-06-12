@@ -419,11 +419,13 @@
     </nav>
 
     <!-- Brand-voice sub-headline (BBP v0.1) -->
-    <!-- Page chrome landmark (FK-17): positioning line + rail + title band + note -->
+    <!-- Page chrome landmark (FK-17; boundary tightened FK-18 so the sticky
+         rail's containing block is #app, not this header) -->
     <header>
     <p class="no-print max-w-5xl mx-auto px-4 pt-2 text-xs text-slate-500 italic">
       Not an autograder — you choose the grades, the tool drafts the feedback.
     </p>
+    </header>
 
     <!-- Section rail (v2.2) -->
     <nav id="section-rail" aria-label="Sections"
@@ -447,7 +449,8 @@
       </div>
     </nav>
 
-    <!-- Title band (was <header>; now a div inside the page-chrome <header>, FK-17) -->
+    <!-- Title band + positioning note: named section = region landmark (FK-18) -->
+    <section aria-label="Assessment title">
     <div class="text-white px-4 py-6 no-print" style="background:#0c1527; border-bottom:1px solid #1e3050;">
       <div class="max-w-5xl mx-auto">
         <h1 class="font-bold text-xl" id="hdr-title"></h1>
@@ -461,7 +464,7 @@
         <span class="text-slate-500">Not an autograder &mdash; you choose the grades and author the feedback. Student data stays on your device by default.</span>
       </div>
     </div>
-    </header>
+    </section>
 
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 print-full">
       <h1 class="sr-only">Mark a student</h1>
