@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-11, Phase 0 closeout): Safe to implement now: 1 (FK-09, per its Column field) · Needs inspection: 6 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
+Column counts (2026-06-13, FK-09 closed): Done: 1 (FK-09 — merged PR #25, production-verified) · Safe to implement now: 0 · Needs inspection: 6 · Backlog: 3 (FK-16 watch slice done) · Ready to document: 6 · others: 0
 
 ---
 
@@ -88,7 +88,7 @@ Column counts (2026-06-11, Phase 0 closeout): Safe to implement now: 1 (FK-09, p
 - **Dependencies:** FK-01 ✓ (regression net in place); INS-3 ✓. Unblocked — ready to schedule (Phase 2 per roadmap).
 - **Risk:** Low-Medium (down from Medium) — no verbatim-extraction step for the core remains; behaviour-change risk now concentrated in the adapter lift and the guard semantics (guards change S-1/S-4 behaviour deliberately, each in its own commit with the characterization tests updated alongside).
 - **DoD:** engine boundary takes explicit args (no DOM reads in the score path); guards added with tests; characterization suite green pre/post; edge-case tests added (override × penalty × each rounding mode); no behavior diff in dev server on the demo scorer. **Flag — not silently dropped:** the original DoD's "D5 ±1 drift" test item is untestable in this repo (D5 lives in the CD-side rubric-editor preview component, absent here — INS-3 Q4); decide at FK-09 kickoff whether to drop it formally or gate it on that component's integration.
-- **Column:** Needs inspection → **Safe to implement now** (gating inspection resolved). **Priority:** P0. **Effort:** S–M (down from M).
+- **Column:** Needs inspection → Safe to implement now → **Done** (merged PR #25; production-verified 2026-06-13 by agentic-browser run — fixture scores, S-4 alpha-rejection, S-5 no-cap, and S-1 NZ-default inference all confirmed live; zero console errors. Record: fk-decisions.md F.4).
 
 ### FK-10 · localStorage capacity & failure-mode audit
 - **Rationale:** localStorage is the sole store (53 refs in scorer.html, zero IndexedDB anywhere). Quota risk at cohort scale is plausible but unquantified — measure before deciding to migrate.
