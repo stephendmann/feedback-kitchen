@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, FK-07 kickoff): Safe to implement now: 0 · In progress: 1 (FK-07) · Needs inspection: 4 · Backlog: 3 · Shipped: 11 · others: 0
+Column counts (2026-06-13, FK-07 PR open): Safe to implement now: 0 · Validate in runtime: 1 (FK-07, PR #29) · Needs inspection: 4 · Backlog: 3 · Shipped: 11 · others: 0
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -14,20 +14,7 @@ Column counts (2026-06-13, FK-07 kickoff): Safe to implement now: 0 · In progre
 
 ## Safe to implement now
 
-### FK-07 · Record re-entry + cohort queue (the workbench upgrade)
-- **Rationale:** Largest workflow gap vs ideal: no visible way to re-open a saved record or work a cohort as a queue. Converts "form you reset" into "workbench you work through".
-- **Rescoped 2026-06-12 per INS-1 ☑ — the fork landed between its two arms, on the cheap side.** No re-edit path exists anywhere (View list offers only Remove; zero loader functions), **but** the store needs no rework: records are full-fidelity (per-criterion `grades` incl. overrides, full `scoreResult` clone with rows + override audit, `feedbackText`, `markerNotes`, `penaltyIdx`) and re-saving **updates in place** keyed `sid:<studentId>` (fallback `name:<name>`) — live-verified (`replaced:true`, count stable). The missing piece is purely UI + one inverse function.
-- **Scope (core):**
-  1. `loadCohortRecordIntoSession(key)` — inverse of `saveCurrentStudentToCohort`: restore name/ID/tutor/date inputs, `studentGrades` + per-row grade selects and override inputs, penalty select, feedback textarea, marker notes; then `recalculate()` and assert displayed totals match the stored `scoreResult`.
-  2. "Open" action on each View-list row (rows already show grade · score · savedAt — that's the per-student status).
-  3. Unsaved-work guard: opening a record while the current session has ungraded→graded changes must confirm first.
-- **Scope (stretch — SUPERSEDED 2026-06-12):** ~~paste/import a class list to pre-seed the queue~~ → absorbed by **FK-19** (Moodle worksheet round-trip); the Moodle import *is* the class-list import with a real format and key. Don't build a generic paste path separately.
-- **Known edges (record, handle, or ledger to INS-4 during build):** `penaltyIdx` is positional — config penalty edits between save and load can shift meaning; key fallback means renaming a no-ID student creates a sibling record rather than updating; feedback-draft restore guard (scorer.html ~1244) interplay; `focusIdx` reset on load.
-- **Queue-design facts from INS-10 (design Moodle-aware now, at zero cost):** rosters arrive with **No-submission rows** (queue needs a distinct non-markable state) and possibly **already-graded rows**; the durable student key is the 7-digit `sid:` (Moodle `ID number`), with a per-course `moodleIdentifier` riding alongside when FK-19 lands.
-- **Evidence:** O — INS-1 findings + live probes (INSPECTION.md).
-- **Dependencies:** INS-1 ✓. **Risk:** Medium (was High-if-blind) — store risk eliminated; remaining risk is session-restore completeness.
-- **DoD:** from View list, marker can open any saved record into the session (all fields restored; recalculated totals match stored), edit, re-save → updates in place (no duplicate row, live-verified), re-export reflects the edit; unsaved-work guard confirmed in runtime; focus mode works on a loaded record; full runtime battery + scrolled-pin check; surprises → INS-4.
-- **Column:** In progress (2026-06-13). **Priority:** P1 (Phase-2 centerpiece). **Effort:** M (was M–L fork).
+*(empty — FK-07 moved to Validate in runtime)*
 
 
 ---
@@ -110,7 +97,24 @@ Column counts (2026-06-13, FK-07 kickoff): Safe to implement now: 0 · In progre
 *(empty)*
 
 ## Validate in runtime
-*(empty)*
+
+### FK-07 · Record re-entry + cohort queue (the workbench upgrade)
+- **Rationale:** Largest workflow gap vs ideal: no visible way to re-open a saved record or work a cohort as a queue. Converts "form you reset" into "workbench you work through".
+- **Rescoped 2026-06-12 per INS-1 ☑ — the fork landed between its two arms, on the cheap side.** No re-edit path exists anywhere (View list offers only Remove; zero loader functions), **but** the store needs no rework: records are full-fidelity (per-criterion `grades` incl. overrides, full `scoreResult` clone with rows + override audit, `feedbackText`, `markerNotes`, `penaltyIdx`) and re-saving **updates in place** keyed `sid:<studentId>` (fallback `name:<name>`) — live-verified (`replaced:true`, count stable). The missing piece is purely UI + one inverse function.
+- **Scope (core):**
+  1. `loadCohortRecordIntoSession(key)` — inverse of `saveCurrentStudentToCohort`: restore name/ID/tutor/date inputs, `studentGrades` + per-row grade selects and override inputs, penalty select, feedback textarea, marker notes; then `recalculate()` and assert displayed totals match the stored `scoreResult`.
+  2. "Open" action on each View-list row (rows already show grade · score · savedAt — that's the per-student status).
+  3. Unsaved-work guard: opening a record while the current session has ungraded→graded changes must confirm first.
+- **Scope (stretch — SUPERSEDED 2026-06-12):** ~~paste/import a class list to pre-seed the queue~~ → absorbed by **FK-19** (Moodle worksheet round-trip); the Moodle import *is* the class-list import with a real format and key. Don't build a generic paste path separately.
+- **Known edges (record, handle, or ledger to INS-4 during build):** `penaltyIdx` is positional — config penalty edits between save and load can shift meaning; key fallback means renaming a no-ID student creates a sibling record rather than updating; feedback-draft restore guard (scorer.html ~1244) interplay; `focusIdx` reset on load.
+- **Queue-design facts from INS-10 (design Moodle-aware now, at zero cost):** rosters arrive with **No-submission rows** (queue needs a distinct non-markable state) and possibly **already-graded rows**; the durable student key is the 7-digit `sid:` (Moodle `ID number`), with a per-course `moodleIdentifier` riding alongside when FK-19 lands.
+- **Evidence:** O — INS-1 findings + live probes (INSPECTION.md).
+- **Dependencies:** INS-1 ✓. **Risk:** Medium (was High-if-blind) — store risk eliminated; remaining risk is session-restore completeness.
+- **DoD:** from View list, marker can open any saved record into the session (all fields restored; recalculated totals match stored), edit, re-save → updates in place (no duplicate row, live-verified), re-export reflects the edit; unsaved-work guard confirmed in runtime; focus mode works on a loaded record; full runtime battery + scrolled-pin check; surprises → INS-4.
+- **Done 2026-06-13 (core scope, [PR #29](https://github.com/stephendmann/feedback-kitchen/pull/29), one commit `8dd9a89`):** `loadCohortRecordIntoSession(key)` (inverse loader: student fields, grades+overrides rebuilt against *current* criteria with rubric-change warning, penaltyIdx clamped with warning, letter override, feedback, notes) · View-list "Open" action · unsaved-work guard via session fingerprint (clean-marked at init/save/load/new-student) · integrity cross-check on load (recomputed vs stored totals → amber drift warning, non-blocking).
+- **Known-edge handling:** feedback-merge interplay solved by generate-baseline-then-restore-saved-draft (manual edits survive later grade changes via merge path — live-verified); penaltyIdx positional drift → clamp+warn; rubric-length change → warn; name-rename sibling-record edge unchanged (ledgered, FK-19 territory).
+- **Validated (dev battery):** all fields restored, totals match stored exactly (70.4/B); edit+re-save in place (count stable); manual edit survives round-trip; guard cancel/accept both verified; focus mode on loaded record ✓; drift warning fires on doctored snapshot, re-save repairs; Jest 140/140; console clean; JS-only diff (pin geometry untouched).
+- **Column:** Validate in runtime (PR #29 open; production check after merge). **Priority:** P1 (Phase-2 centerpiece). **Effort:** M (actual: S–M).
 
 ## Ready to document
 *(empty — see Shipped)*
