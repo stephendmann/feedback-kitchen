@@ -141,13 +141,25 @@ describe('scoreToGradeFromScale — custom gradeScale', () => {
     });
   });
 
+  describe('S-1 guard (FK-09): invalid scale falls back to NZ defaults', () => {
+    // Contract change, deliberate: pre-FK-09 these threw TypeError
+    // (ledgered as INS-4 S-1). The boundary now falls back to the NZ
+    // default thresholds instead of failing mid-marking.
+    test('empty scale [] → NZ fallback (75 → B+)', () => {
+      expect(SA.scoreToGradeFromScale(75, [])).toBe('B+');
+    });
+    test('null scale → NZ fallback (75 → B+)', () => {
+      expect(SA.scoreToGradeFromScale(75, null)).toBe('B+');
+    });
+    test('undefined scale → NZ fallback (50 → C-)', () => {
+      expect(SA.scoreToGradeFromScale(50, undefined)).toBe('C-');
+    });
+    test('non-array scale → NZ fallback (90 → A+)', () => {
+      expect(SA.scoreToGradeFromScale(90, { not: 'an array' })).toBe('A+');
+    });
+  });
+
   describe('malformed input (characterization — current behaviour)', () => {
-    test('empty scale [] → throws TypeError (no guard on sorted[length-1])', () => {
-      expect(() => SA.scoreToGradeFromScale(75, [])).toThrow(TypeError);
-    });
-    test('null scale → throws TypeError (calls .slice() on null)', () => {
-      expect(() => SA.scoreToGradeFromScale(75, null)).toThrow(TypeError);
-    });
     test('NaN score → lowest band grade (all comparisons false, falls to floor)', () => {
       expect(SA.scoreToGradeFromScale(NaN, NZ_MIRROR_SCALE_SHUFFLED)).toBe('D');
     });
