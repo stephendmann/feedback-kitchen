@@ -18,11 +18,14 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 - [Feedback Wording Assistant](#feedback-wording-assistant)
 - [Personal Snippets](#personal-snippets)
 - [Marker's Notes](#markers-notes)
+- [Cohort Workbench](#cohort-workbench)
 - [Exporting Your Work](#exporting-your-work)
 - [Sharing Scorers with Colleagues](#sharing-scorers-with-colleagues)
 - [Technical Architecture](#technical-architecture)
 - [Privacy & Data Handling Disclosure](#privacy--data-handling-disclosure)
 - [Deployment](#deployment)
+- [Local Development](#local-development)
+- [Planning & Decision Records](#planning--decision-records)
 - [How I use Pull Requests for FK](#how-i-use-pull-requests-for-fk)
 - [Acknowledgements](#acknowledgements)
 
@@ -70,7 +73,7 @@ Click Build a New Scorer from the home page to open the 6-step configuration wiz
 | 1 — Details | Assessment name, course code, institution, default tutor name |
 | 2 — Grade Scale | Choose a preset or define a fully custom scale with your own grade labels and score bands |
 | 3 — Criteria | Define each criterion and its percentage weighting. Weights must total exactly 100% |
-| 4 — Rubric | Write the descriptor shown in feedback for each grade tier × criterion combination. Four tiers per criterion: Excellent, Proficient, Developing, Unsatisfactory |
+| 4 — Rubric | Write the descriptor shown in feedback for each grade tier × criterion combination. Up to five tiers per criterion (Excellent, Proficient, Developing, Satisfactory, Unsatisfactory); the default NZ scale uses four |
 | 5 — Feedback | Write the intro and outro paragraphs for each individual grade level (e.g. A+, A, A–). These frame the per-criterion rubric commentary |
 | 6 — Review & Save | Summary of all configuration before saving |
 
@@ -129,10 +132,16 @@ The weighted score is mapped to an overall grade using the scale defined in the 
 
 Click ↺ New student to reset all grades, scores, feedback, and Marker's notes. Your tutor name is retained.
 
+### Focus marking mode
+
+The ◎ Focus toggle in the nav bar switches to a criterion-by-criterion workspace: one criterion's grade controls and its feedback block at a time, with Previous/Next navigation (Page Up / Page Down). It is an alternative view over the same data — all scoring, merge, and export logic is unchanged.
+
+A collapsed **Full draft** strip below the navigation shows live line/word counts and a preview of the last feedback block written; expand it inline to read the whole assembled draft without leaving focus mode. It re-collapses each time you enter focus mode, keeping the workspace quiet by default.
+
 ---
 
 ## Late Penalties
-
+Late penalties are configured per Scorer in the builder — they can be disabled entirely, or the bands customised. The defaults:
 | Band | Deduction |
 |---|---|
 | On time | 0% |
@@ -183,8 +192,22 @@ Snippets are stored locally in your browser — they are personal to you, not sh
 
 The Marker's Notes panel is a private scratchpad — use it to record marking rationale, flag concerns, or note patterns across the cohort.
 
-- Notes are not included in the copied student feedback
-- Notes are included in the Excel download, making them part of the formal marking record and available for moderation
+- Notes are never copied into the student feedback
+- Notes are included in the single-student Marker's Record (Excel) and the Cohort Workbook, making them part of the formal marking record and available for moderation
+- If you use the Feedback Wording Assistant, notes are used as context to shape suggestions — avoid pasting real identifiers into them
+
+---
+## Cohort Workbench
+
+The Cohort section turns a marking session into a running class record — it builds itself as you mark. Students are auto-added when you Copy feedback or Finalise & Export (a first-use prompt asks you to name the cohort; records need a student name or ID).
+
+- **View list → Open** re-loads any saved student back into the session for re-marking or fixing — grades, overrides, feedback edits, and notes are restored, with an unsaved-work guard before replacing what's on screen. Re-saving updates the record in place (no duplicates).
+- **Export cohort (Excel)** produces one workbook for the whole cohort: Student Feedback, Grade Matrix, Cohort Summary, plus the Rubric and Grade Feedback reference sheets.
+- **Cohort Insights** shows grade distribution, marking patterns, and formative prompts once enough students are saved.
+- **Moderation Export** is a separate, opt-in, privacy-reduced export for paper-level moderation — it omits student and tutor names and requires at least 15 students. A lecturer configures it per paper (paper code, cohort ID, assessment ID); tutors see a banner when it is enabled.
+- **Clear cohort** (double-confirmed) deletes all locally stored cohort data for the Scorer.
+
+Cohort records are cached in your browser's localStorage on this device only — a banner reminds you to export to Excel for a permanent copy, since clearing browser storage deletes them.
 
 ---
 
@@ -192,8 +215,10 @@ The Marker's Notes panel is a private scratchpad — use it to record marking ra
 
 | Button | Output | Best used for |
 |---|---|---|
-| Copy Feedback | Assembled feedback text to clipboard | Pasting into Moodle, Turnitin, or your grading system |
-| Marker's Record (Excel) | Workbook with scores, weightings, feedback, and Marker's Notes | Moderation, audit trails, record-keeping |
+| Copy feedback | Assembled feedback text to clipboard (also auto-saves the student to the cohort) | Pasting into Moodle, Turnitin, or your grading system |
+| Finalise & Export | Single-student Marker's Record (Excel): scores, weightings, feedback, Marker's Notes | Moderation, audit trails, record-keeping |
+| Export cohort (Excel) | Whole-cohort workbook (see [Cohort Workbench](#cohort-workbench)) | Class records, end-of-marking wrap-up |
+| Export for Moderation | Privacy-reduced cohort workbook — no student or tutor names (opt-in, ≥15 students) | Paper-level moderation |
 | Print Page | Formatted print/PDF snapshot of the full session | Paper records |
 
 The Excel workbook contains three sheets:
@@ -228,16 +253,17 @@ Feedback Kitchen is a fully static application. There is no database, no server-
 
 **Storage model:**
 
-All data is held in `localStorage`. No student data is transmitted to any server. Explainer and assistant panel preferences (for example, whether the wording assistant's explainer panels are expanded or collapsed) are also stored in localStorage, so your preferred layout is remembered on that device only. These settings never include student-identifiable data and can be safely reset by clearing your browser data.
+All data is held in `localStorage`, on your device. No data is transmitted to any server.
 
 | Key | Contents |
 |---|---|
 | `SA_CONFIGS` | JSON array of all saved Scorer configuration objects |
 | `SA_ACTIVE` | ID of the currently active Scorer |
 | `SA_SNIPPETS` | JSON array of personal snippet objects (label + text) |
-| `SA_WELCOME_DISMISSED` | Flag set when the first-run welcome banner is dismissed |
+| `SA_COHORT_<scorerId>` | Cohort records for that Scorer — one entry per saved student (name/ID, grades, scores, feedback, Marker's Notes), updated in place on re-save |
+| `SA_SCORER_SETTINGS_V1`, `SA_SECTION_STATE_V1`, `fk-theme`, … | UI preferences: scorer settings, which sections are expanded, dark mode, focus-mode state, wording-assistant panel layout, dismissed-banner flags |
 
-Each Scorer configuration object contains: assessment details, grade scale definition, criteria (name, weight, rubric descriptors per tier), and feedback templates (intro/outro per grade). Student session data — grades, scores, overrides, Marker's Notes — is held only in memory and is never written to storage.
+Each Scorer configuration object contains: assessment details, grade scale definition, criteria (name, weight, rubric descriptors per tier), and feedback templates (intro/outro per grade). The *current* marking session lives in memory; a student's record is written to the cohort store when you Copy feedback or Finalise & Export (see [Cohort Workbench](#cohort-workbench)), and can be re-opened from there. UI-preference keys never contain student-identifiable data.
 
 ---
 
@@ -245,12 +271,13 @@ Each Scorer configuration object contains: assessment details, grade scale defin
 
 No data leaves your device. Feedback Kitchen runs entirely in the browser — there is no server, no account, and no telemetry. All Scorer configurations and personal snippets are stored in your browser's localStorage and remain on your machine. If the Feedback Wording Assistant is used, only the assembled feedback text is sent to the external AI provider, with all student names and IDs automatically stripped before transmission.
 
-Student data (names, IDs, grades, scores, and assembled feedback) is held only in memory during a marking session and is never written to localStorage or transmitted anywhere.
+Student data (names, IDs, grades, scores, assembled feedback, and Marker's Notes) is held in memory during a marking session and — when you Copy feedback or Finalise & Export — saved into the cohort store in your browser's localStorage, **on this device only**. It is never transmitted anywhere. The Cohort section shows a banner whenever student records are cached locally, and Clear cohort (double-confirmed) deletes them.
 
 **Practical implications:**
 
-- Clearing browser data will remove saved Scorers and snippets — export your Scorers as JSON for backup
-- Scorers are device-specific unless shared via JSON export
+- Clearing browser data will remove saved Scorers, snippets, **and cohort records** — export Scorers as JSON and cohorts to Excel for permanent copies
+- Scorers and cohorts are device-specific; share Scorers via JSON export, cohorts via the Excel workbook
+- On a shared or lab machine, use Clear cohort at the end of a marking session if student records should not persist on that device
 - Using Feedback Kitchen in a private/incognito window means nothing is saved between sessions
 
 ---
@@ -285,6 +312,22 @@ Run the test suite with `npx jest`; the accessibility harness is `bash run-bbp-a
 
 ---
 
+## Planning & Decision Records
+
+Since June 2026, development runs as a phased improvement programme planned on a private card board, with the public record kept in three places:
+
+| Where | What it holds |
+|---|---|
+| [`ROADMAP.md`](ROADMAP.md) | Outcomes, not plans — what shipped (with PR links), what was closed, what's next |
+| [`fk-decisions.md`](fk-decisions.md) | Architecture decision records. The improvement programme's locked choices are Addenda **F** (Phase 0) and **G** (Phase 2) — e.g. the scoring-engine boundary contract and the cohort-loader ordering contract |
+| [`docs/planning-202606/`](docs/planning-202606/) | Point-in-time snapshots of the planning board, decision register, inspection ledger, and phase gates — frozen history, refreshed at promotion checkpoints |
+
+The working conventions, briefly: work items are cards (FK-xx) that move through inspection gates before implementation; phases close on exit criteria, not calendars; decisions run a validation step before being promoted to an ADR; and stalled branches are never rebased onto the heavily-refactored codebase — their intent is re-implemented from scratch via new cards (see PRs #12/#16, closed at the 2026-06-13 triage).
+
+Quality gates before merging UI changes: the Jest suite (`npx jest` — characterization + engine edge tests) and the accessibility battery (`bash run-bbp-a11y.sh` — axe scans + keyboard smoke tests across home, builder, and the demo-loaded scorer).
+
+---
+
 ## How I use Pull Requests for FK
 
 For this project I use **one pull request per feature**. A pull request is just a page on GitHub where I review a set of changes before they become the new “official” version of the app.
@@ -304,7 +347,7 @@ These changes live on their own branch (for example `feat/modexport-optin-ui`) u
 Each feature follows the same simple pattern:
 
 1. Create a new branch from `main`.
-2. Make and commit changes on that branch, and test locally.
+2. Make and commit changes on that branch, and test locally (Jest + the a11y battery for UI changes — see [Planning & Decision Records](#planning--decision-records))
 3. Push the branch to GitHub.
 4. On GitHub, click **Compare & pull request**, check that `base` is `main` and `compare` is my feature branch.
 5. Add a short title and a brief description of what changed and why (including any privacy/marking notes).
