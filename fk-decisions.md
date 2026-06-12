@@ -915,3 +915,79 @@ any future decision to clamp is a contract change, not a bug fix. Production
 DOM probes should target `#weighted-N` for weighted scores.
 
 **Refs.** PR #25 · FK-09 · INS-3, INS-4 (S-1, S-4, S-5) · F.1.
+
+## Addendum G — Improvement-programme Phase 2 outcomes (2026-06)
+
+**Track:** same 2026-06 improvement programme as Addendum F; promoted at the
+post-Phase-2 checkpoint (FK-20 session, 2026-06-13). Planning trail snapshot
+refreshed the same day: `docs/planning-202606/`. Addendum-scoped numbering
+(G.1–G.2); no new global D-numbers. FK-09, Phase 2's first item, was promoted
+early with its production verification — see **F.4**.
+
+### G.1 — Cohort records re-open into the live session *(FK-07, planning D-03)*
+
+**Decision.** The cohort is a workbench, not a write-only log. One inverse
+load function (`loadCohortRecordIntoSession`) restores a saved record into the
+marking session; the View list gains a per-record **Open** action; an
+unsaved-work guard prompts before replacing a session that has ungraded-out
+work. **Loader ordering contract:** generate the baseline feedback from the
+restored grades *first*, then restore the saved draft text over it — this is
+what lets manual feedback edits survive the merge path. The ordering is
+load-bearing; do not "simplify" it.
+
+**Rationale.** The biggest workflow gap vs the ideal marking loop: records
+were exportable but not re-enterable, so any post-save fix meant re-keying the
+student. INS-1 established there was no hidden re-edit path to conflict with,
+and that the store was already full-fidelity and update-in-place keyed
+(`sid:`/`name:`) — so re-entry cost one function, not a store rework.
+
+**Validation outcome (2026-06-13).** PR #29 merged; full DoD battery in dev
+(load → edit → re-save → no duplication; guard paths; drift cross-check
+between record and live rubric) and verified on the production deploy. One
+edge ledgered, not fixed: renaming a student whose sibling shares the
+identifier tuple — carried on FK-19's card.
+
+**Consequences.** FK-19 (Moodle offline-grading-worksheet round-trip) builds
+directly on this queue and supersedes FK-07's class-list-import stretch goal.
+Draft persistence (FK-21) must reconcile with the loader ordering contract and
+the session fingerprint.
+
+**Refs.** planning D-03 · FK-07 · INS-1 · PR #29.
+
+### G.2 — Persistent collapsed draft pane in focus mode *(FK-14, planning D-04)*
+
+**Decision.** Focus mode always shows the assembled student-facing draft as a
+**collapsed single-line strip** below the criterion navigation: live line/word
+counts plus a tail preview of the last criterion block written (taken from
+above `TOTAL SCORE:` — everything below it is static once generated). It
+expands inline to a read-only mirror. **Collapsed-by-default contract:** the
+pane re-collapses on every focus-mode entry; its open state is a per-look
+choice — deliberately excluded from section-state persistence and from
+Expand/Collapse-all. Making the open state persistent is a design change that
+revisits this entry, not a tweak.
+
+**Rationale.** The draft accumulated invisibly behind an "Open full draft"
+button; tone/repetition drift surfaced only if the marker remembered to look.
+The recorded risk was that any pane works against focus mode's
+noise-reduction purpose — the mitigation hypothesis (collapsed by default,
+glanceable signal, expansion on demand) was validated by prototype before the
+go decision.
+
+**Validation outcome (2026-06-13).** Prototype self-test across a full
+5-criterion mark on the demo scorer: counts verified against the actual draft
+text; tail updates per keystroke; mirror never stale (synced unconditionally);
+re-collapse on exit/re-entry and survival of Expand-all confirmed; collapsed
+cost ≈35 px against a ~672 px workspace. Jest 140/140; a11y battery 0
+violations. GO decided same sitting; PR #30 merged + production-verified.
+Calibration note: the word count can stay flat across a grading because the
+outro re-words as the overall tier changes — the counts are a coarse signal,
+not a precision one.
+
+**Consequences.** The old peek button/panel is gone (`focusToggleFullDraft`
+removed from the public `S` surface). Night-mode follow-up PR #31 fixed the
+`#focus-body[disabled]` white-box (inline ID selector out-specifying the dark
+sheet's class rules) and added dark variants for grade-badge/tier-pill tint
+classes and `.btn-danger`; remaining light tint chips and the dead
+`?cinematic=1` stylesheet link are carried on FK-22's card.
+
+**Refs.** planning D-04 · FK-14 · PR #30, PR #31 · F.3 (section layout) · F.4.
