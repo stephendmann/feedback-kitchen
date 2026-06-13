@@ -160,15 +160,49 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - Triage: **intended (caller's responsibility)** — penalty math clamps at 0 but nothing clamps high; overrides could exceed 100 upstream.
   - Action: none; note for FK-09 interface contract.
 
-## INS-5 ☐ localStorage capacity and failure-mode measurement
+## INS-5 ◐ localStorage capacity and failure-mode measurement
 - **Gates:** FK-10; outcome decides whether a migration card gets created at all.
 - **Method:**
   1. Mark 2–3 demo students fully; measure serialized bytes per record (`JSON.stringify` length of the relevant keys).
   2. Extrapolate to 100/300-record cohorts; compare against ~5MB/origin.
   3. Grep scorer.html/shared.js for `try`/`catch` around `setItem` — is QuotaExceededError handled? Surfaced to the user or silent?
   4. Note what else shares the origin's quota (scorers, snippets, cohort).
-- **Decision rule:** if a 300-record cohort projects under ~40% of quota AND quota errors are surfaced, no migration card; otherwise open FK-17 (IndexedDB behind a SessionStore interface).
-- **Findings:** _(pending)_
+- **Decision rule:** if a 300-record cohort projects under ~40% of quota AND quota errors are surfaced, no migration card; otherwise open a migration/hardening card (IndexedDB behind a SessionStore interface). **⚠ ID-collision correction (2026-06-13):** the original rule said "open FK-17" — but FK-17 was reused for the WCAG/axe remediation (shipped PR #22/#23). The card this rule spawns is **FK-24** (see BOARD). Old "FK-17 = IndexedDB" wording is dead; do not revive it.
+
+- **Findings (◐ 2026-06-13, Phase-3 kickoff — Method steps 1–4 worked; step-1 bytes/record is analytical from the exact stored schema, live confirmation is the one item left to ☑):**
+
+  **Step 3 · Failure-mode audit — DISPOSITIVE, fully resolved by code-read.** The three heavy writers persist with a bare `localStorage.setItem` and **no try/catch**:
+  | Writer | Line | Guarded? |
+  |---|---|---|
+  | `saveCohort` (every cohort add/update/remove routes here) | shared.js:1149 | **No** |
+  | `saveAllConfigs` (rubric configs; `saveConfig`→here; `setRounding` persists each toggle) | shared.js:309 | **No** |
+  | `saveSnippets` (feedback snippet bank) | scorer.html:3244 | **No** |
+
+  Only the *small* auxiliary writers are guarded (draft 1273, focus 2196, section-state 4001, AI-explainer 4034, AI-log shared.js:1105, theme 366, demo-onboarding 366) — i.e. exactly the low-byte keys are protected while the unbounded-growth keys are not. **QuotaExceededError on a cohort/config/snippet write throws uncaught and is never surfaced.** This alone fails the decision rule's second conjunct regardless of cohort size.
+  - **Concrete data-loss path (not hypothetical):** `downloadExcel` (scorer.html:2544–2548) calls `saveCurrentStudentToCohort` *after* `SAExcel.exportToExcel`. On quota exhaustion the marker sees a **successful .xlsx download**, then an uncaught throw, and the student is **silently absent from the cohort** — the export they trust as the canonical save did not persist the record. `getCohort` (shared.js:1140) also swallows a corrupt/oversized blob to `null` (catch → null), which downstream reads as "empty cohort".
+
+  **Steps 1–2 · Capacity model — analytical, derived from the exact stored record shape** (`saveCurrentStudentToCohort` scorer.html:2586–2597 + `cloneScoreResultForStorage` 2615–2646; `studentGrades` row shape `{grade,override,overrideManual,autoFilled}` 1437):
+  - Structural (everything except free text), 8-criterion rubric: metadata ~0.25 KB + `grades` 8×~55 B ~0.44 KB + `scoreResult` scalars/penalty/override ~0.42 KB + `rows` 8×~0.3 KB (each carries `criterion{name,weight}` + grade/midpoint/override/finalScore/weightedScore/tier/**descriptor**, the level-descriptor text being the biggest row contributor) ~2.4 KB ≈ **~3.4 KB/record structural**.
+  - Free text dominates: `feedbackText` is multi-paragraph (INS-10 measured real values to **7,975 chars**); `markerNotes` 0–~1.5 KB.
+  - Per-record: light ~4.5 KB · **typical ~6–7 KB** · heavy ~13 KB.
+  - Extrapolation (chars ≈ bytes; note localStorage stores **UTF-16 internally**, so true footprint and several browsers' quota accounting run ~2×): **100 records** ~0.6–1.3 MB · **300 records ~1.9–3.9 MB**.
+
+  **Step 4 · Shared-origin load:** the cohort is **not alone** under the ~5 MB origin cap. Same-origin keys (all `SA_*` / `scorer.usage.*`): `SA_CONFIGS` (rubric configs — unbounded), `SA_SNIPPETS`, `SA_AI_LOG` (capped at `AI_LOG_MAX`), per-scorer `SA_COHORT_<id>` (**one per rubric** — a marker with several rubrics carries several cohorts), plus credentials/usage/section/focus/draft/theme. Configs + multiple cohorts are the two unbounded consumers competing for the same budget.
+
+  **Quota basis (the decisive uncertainty):** spec floor ~5 MB/origin, but Chromium-family accounting counts UTF-16 bytes (~2 B/char ⇒ effective ~2.5M chars). Against that conservative basis a 300-record **typical** cohort (~2.0M chars) is **~80%** of quota and a **heavy** one (~3.9M) **exceeds it and throws**; against the optimistic 5M-char basis, typical ≈ 40% (right on the threshold) and heavy ≈ 78%. Either way the 40% line is at-or-over once feedback is long and a second cohort/config load is present.
+
+  **Verdict (feeds FK-10):** decision rule → **GO on a card**, but the dispositive trigger is the *unhandled-quota* half, and the right remedy is **split** to avoid INS-5's own "wasted migration" risk:
+  - **FK-24 (new, P1, S) — storage-write quota hardening, now.** Wrap the three heavy writers in try/catch; on `QuotaExceededError` surface a blocking, actionable message ("Storage full — export your cohort to free space") and an escape hatch; fix the `downloadExcel` ordering so a save failure is reported, not masked by the just-completed download. Independent of cohort size — fixes a present data-loss bug.
+  - **IndexedDB migration — deferred/conditional, NOT carded yet.** Only justified if real cohorts approach the size band; revisit if/when a live cohort crosses ~150 records or a quota event is observed in the field. Behind a `SessionStore` interface if taken (FK-15 extract-on-contact seam).
+
+  **One item left to ☑ (does not block the FK-10 verdict):** live bytes/record confirmation. 60-second harness — on the demo scorer with a few students saved, paste into devtools console:
+  ```js
+  const k = Object.keys(localStorage).find(k => k.startsWith('SA_COHORT_'));
+  const c = JSON.parse(localStorage.getItem(k));
+  const total = localStorage.getItem(k).length;
+  console.log({records: c.students.length, totalChars: total, perRecord: Math.round(total / c.students.length)});
+  ```
+  Expect perRecord ≈ 6–7k for realistic feedback. If it lands far from the model, reopen the verdict; the failure-mode half stands regardless.
 
 ## INS-6 ☐ When is rubric_version_hash computed?
 - **Gates:** FK-11.

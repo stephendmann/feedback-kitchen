@@ -88,11 +88,27 @@ task running; INS-3 status ☑ with findings.
 ## Phase 3 — Consistency + data integrity
 | Order | Item | Notes |
 |---|---|---|
-| 3.1 | INS-5 storage measurement → FK-10 audit verdict | Migration card only if decision rule triggers |
+| 3.1 | INS-5 storage measurement → FK-10 audit verdict | **◐ kickoff done 2026-06-13** — see note below |
 | 3.2 | INS-6 → FK-11 version stamping/warning | Scope forks on stamping semantics |
 | 3.3 | INS-7 → FK-12 drift indicator behind toggle | Self-pilot before any default-on |
 
 **Exit:** storage go/no-go documented; mixed-version cohorts warn at export (or stamping landed); one drift indicator toggleable.
+
+> **3.1 KICKOFF EXECUTED 2026-06-13 (planning/inspection only, frosty-babbage).**
+> INS-5 run: failure-mode half **fully resolved by code-read** (the three heavy
+> writers — `saveCohort`/`saveAllConfigs`/`saveSnippets` — `setItem` with no
+> try/catch ⇒ QuotaExceededError uncaught and never surfaced; `downloadExcel`
+> saves the cohort *after* the export, so a quota throw is masked by a successful
+> download = silent cohort omission). Capacity half **analytical** from the exact
+> stored schema (~6–7 KB/record typical ⇒ 300-record cohort ~1.9–3.9 MB vs a
+> shared, conservatively-accounted ~5 MB origin). **FK-10 verdict: GO on a card,
+> split** — **FK-24** write-hardening (P1/S) now; full IndexedDB migration
+> deferred/conditional (not carded; honours the "wasted migration" caution).
+> INS-5 left **◐**: one 60-second live bytes/record confirmation remains
+> (non-blocking). Corrected the decision-rule's stale "open FK-17 (IndexedDB)"
+> ID-collision → the spawned card is **FK-24**. FK-21 (draft persistence v2) lands
+> after FK-24 and routes through the same `safeSetItem` seam. **All implementation
+> (FK-23, FK-24) belongs in a feature worktree → main via PR, not frosty-babbage.**
 
 ## Phase 4 — Structural hygiene (amortized, runs alongside 2–3)
 | Item | Notes |

@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-23 from the ROADMAP review): Safe to implement now: 1 (FK-23 CI wiring) · Needs inspection: 4 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Shipped: 14 · others: 0. Next free card ID: FK-24.
+Column counts (2026-06-13, + Phase-3 INS-5→FK-10 kickoff: FK-10 audited, FK-24 spawned): Safe to implement now: 1 (FK-23 CI wiring) · Needs inspection: 3 (FK-11 · FK-12 · FK-13) · Backlog: 6 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22 · FK-24) · Ready to document: 1 (FK-10) · Shipped: 14 · others: 0. Next free card ID: FK-25.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -24,20 +24,12 @@ Column counts (2026-06-13, + FK-23 from the ROADMAP review): Safe to implement n
 - **DoD:** `ci.yml` fails on a Jest regression; the lazy-load guard fails if an eager SheetJS tag is reintroduced; README Local Development / Planning sections already describe the suites, so no doc drift.
 - **Column:** Safe to implement now (parallel to Phase 3 — off-theme, does not gate INS-5/FK-10). **Priority:** P1 (the regression net is currently decorative in CI). **Effort:** S.
 
-*(FK-14 ✓ and FK-20 ✓ closed 2026-06-13; next session = Phase-3 kickoff: design + run INS-5, then FK-10 audit verdict. FK-23 can be picked up any time in parallel. See ROADMAP-PHASES.md.)*
+*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict recorded (GO, split) → **FK-24** spawned (write-hardening, P1/S). One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-6→FK-11, then INS-7→FK-12. FK-23 + FK-24 are implementation cards for a feature worktree, not this one. See ROADMAP-PHASES.md §3.)*
 
 
 ---
 
 ## Needs inspection
-
-### FK-10 · localStorage capacity & failure-mode audit
-- **Rationale:** localStorage is the sole store (53 refs in scorer.html, zero IndexedDB anywhere). Quota risk at cohort scale is plausible but unquantified — measure before deciding to migrate.
-- **Evidence:** O — grep results. U — per-record payload size, quota error handling, autosave existence.
-- **Dependencies:** **INS-5** (synthetic 300-record cohort measurement + error-handling audit).
-- **Risk:** Acting without measuring risks either a wasted migration or dismissed real data loss.
-- **DoD (this card = the audit, not the migration):** measured bytes/record and bytes/300-record cohort recorded in INSPECTION.md; quota-exceeded behavior documented (caught? silent?); go/no-go recommendation written for a possible FK-14 migration card.
-- **Column:** Needs inspection. **Priority:** P2. **Effort:** S–M.
 
 ### FK-11 · Rubric-version stamping verification + mixed-version warning
 - **Rationale:** `rubric_version_hash` exists in `js/moderation-schema.js:82` — but a warning at export is only meaningful if the hash is stamped per record at mark time, not computed once at export.
@@ -66,6 +58,16 @@ Column counts (2026-06-13, + FK-23 from the ROADMAP review): Safe to implement n
 ---
 
 ## Backlog
+
+### FK-24 · Storage-write quota hardening (surface QuotaExceededError on the heavy writers)
+- **Rationale:** Spawned by FK-10/INS-5. The three unbounded writers — `saveCohort` (shared.js:1149), `saveAllConfigs` (shared.js:309), `saveSnippets` (scorer.html:3244) — `setItem` with no try/catch, so a full origin throws uncaught and the failure is never shown. Dispositive trigger for the FK-10 GO; independent of cohort size (a present bug, not a scale projection).
+- **Evidence:** O — INS-5 writer table; `downloadExcel` ordering (scorer.html:2544–2548) saves to the cohort *after* the Excel file is generated, so a quota throw is masked by a successful download ⇒ student silently omitted from the cohort. `getCohort` (shared.js:1140) swallows a corrupt/oversized blob to `null`.
+- **Scope:** wrap the three writers in try/catch; on `QuotaExceededError` (and Safari's `QUOTA_EXCEEDED_ERR` / name variants) surface a blocking, actionable message ("Storage full — export your cohort to free space") with an escape hatch; make `saveCurrentStudentToCohort`/`downloadExcel` report a save failure rather than let the prior download imply success. Consider one shared `safeSetItem(key, value)` helper so the fix is centralized (FK-15 seam).
+- **Out of scope:** IndexedDB migration (deferred/conditional per FK-10); changing record shape; quota *measurement* (done — INS-5).
+- **Dependencies:** none hard. Coordinate with **FK-21** (adds another writer — it should route through the same `safeSetItem`). **Implementation belongs in a feature worktree/branch → main via PR, not in frosty-babbage.**
+- **Risk:** Low — additive guards; no arithmetic or record-shape change. Test with a deliberately-filled localStorage (fill a junk key near quota, then attempt a cohort save).
+- **DoD:** a cohort/config/snippet save at quota shows the marker a clear, actionable error instead of throwing; `downloadExcel` no longer implies a successful save when the cohort write failed; a regression test simulates QuotaExceeded on the cohort path; INS-5 verdict reflected (live bytes/record check optionally folded in).
+- **Column:** Backlog (sequenced before/with FK-21). **Priority:** P1. **Effort:** S.
 
 ### FK-21 · Draft persistence v2 (re-implement PR #12's intent)
 - **Rationale:** Closing or refreshing the tab mid-mark silently loses the in-progress student. PR #12 solved this pre-programme but its branch predates FK-02…09/17/18/FK-07 scorer.html — decided 2026-06-13 (user + external review): re-implement from intent, never rebase. Its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits dead in main — remove or absorb on contact.
@@ -119,7 +121,15 @@ Column counts (2026-06-13, + FK-23 from the ROADMAP review): Safe to implement n
 *(empty)*
 
 ## Ready to document
-*(empty — see Shipped)*
+
+### FK-10 · localStorage capacity & failure-mode audit ✅ AUDIT COMPLETE (verdict recorded)
+- **Rationale:** localStorage is the sole store (53 refs in scorer.html, zero IndexedDB anywhere). Quota risk at cohort scale is plausible but unquantified — measure before deciding to migrate.
+- **Evidence:** O — INS-5 code-read (writers + record schema). The three heavy writers (`saveCohort` shared.js:1149, `saveAllConfigs` shared.js:309, `saveSnippets` scorer.html:3244) all `setItem` with **no try/catch**; capacity model ~6–7 KB/record typical ⇒ 300-record cohort ~1.9–3.9 MB against a shared, conservatively-accounted ~5 MB origin.
+- **Dependencies:** **INS-5 ◐ 2026-06-13** — failure-mode half fully resolved (dispositive); capacity half analytical, one live-confirmation item open (doesn't block this verdict).
+- **Risk:** Acting without measuring risks either a wasted migration or dismissed real data loss.
+- **DoD (this card = the audit, not the migration):** ☑ bytes/record + 300-record projection recorded in INSPECTION.md INS-5; ☑ quota-exceeded behavior documented (**unhandled/silent** — uncaught throw, masked by the prior Excel download in `downloadExcel` scorer.html:2544–2548 ⇒ silent cohort omission); ☑ go/no-go written.
+- **Verdict:** **GO on a card — split.** Trigger is the unhandled-quota half, not raw size. (1) **FK-24** (write-hardening, P1/S) lands now — fixes a present data-loss bug independent of scale. (2) **Full IndexedDB migration deferred/conditional — not carded** (honours INS-5's "wasted migration" caution); revisit only if a live cohort crosses ~150 records or a quota event is seen in the field.
+- **Next step to fully close:** promotion-checkpoint fold (INS-5 finding → fk-project-overview.md; this verdict → fk-decisions.md addendum) at the Phase-3 checkpoint. **Priority:** P2. **Effort:** S–M. *(Reopen only if the live bytes/record check contradicts the model.)*
 
 ---
 
