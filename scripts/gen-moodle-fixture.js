@@ -126,7 +126,37 @@ function buildWorksheet(opts) {
   return BOM + lines.join(eol) + eol;
 }
 
-module.exports = { buildWorksheet, HEADER, csvField, BOM };
+/* Poisoned variants for FK-19's dry-run validator (Q5.2 error handling).
+   Each returns a deliberately malformed worksheet so the validator's error
+   reporting can be tested against synthetic data — never the real file. */
+function corruptWorksheet(kind, opts) {
+  const base = buildWorksheet(opts);
+  const recs = base.replace(/^﻿/, '').split('\r\n'); // record terminators only (field-internal \n stay)
+  switch (kind) {
+    case 'no-bom':
+      return base.replace(/^﻿/, '');
+    case 'lf-only':
+      return base.replace(/\r\n/g, '\n');
+    case 'no-header':
+      recs.shift();
+      return BOM + recs.join('\r\n');
+    case 'wrong-header':                       // a renamed column → header mismatch
+      return base.replace('Feedback comments', 'Comments');
+    case 'extra-col':                          // 15th column appended to header only
+      return base.replace('Feedback comments', 'Feedback comments,Rogue column');
+    case 'short-row': {                         // drop the last field of the first data row
+      recs[1] = recs[1].replace(/,[^,]*$/, '');
+      return BOM + recs.join('\r\n');
+    }
+    case 'bad-quote':                          // unterminated quoted field at EOF
+      return base + 'Participant 8889999,Broken Row,9999999,broken@example.edu,' +
+        STATUS_OK + ',,,,100.00,Released,Yes,' + STAMP + ',-,"unterminated feedback\r\n';
+    default:
+      return base;
+  }
+}
+
+module.exports = { buildWorksheet, corruptWorksheet, HEADER, csvField, BOM };
 
 // ── CLI ────────────────────────────────────────────────────────────────
 if (require.main === module) {
