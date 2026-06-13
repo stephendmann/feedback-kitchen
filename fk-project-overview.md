@@ -2,7 +2,7 @@
 
 **Living document.** Update the **Status** column and the **Notes / actuals** field after each phase completes. Phase 0 is signed; Phase 1 is in flight. Everything beyond Phase 1 is plan-of-record, subject to refinement as it lands.
 
-**Last updated:** 2026-05-16
+**Last updated:** 2026-06-13
 **Project owners:** Stephen Mann (this repo) · Claude Design (CD, mirror side)
 
 ---
@@ -300,6 +300,38 @@ ledgered as INS-4 S-1…S-5): empty/null gradeScale throws (unreachable in
 normal flow — guard at the FK-09 boundary); below-all-bands returns the floor
 grade by design; malformed inputs converge on the bottom grade; numeric
 strings band via coercion; no upper cap above 100.
+
+---
+
+## Storage capacity and write-hardening (2026-06, improvement-programme INS-5 → FK-10)
+
+Findings from the 2026-06 localStorage capacity/failure-mode inspection. This is
+the basis for the FK-10 verdict and the FK-24 hardening that shipped from it — do
+not re-derive it. Full detail: `docs/planning-202606/INSPECTION.md` (INS-5);
+decision record: `fk-decisions.md` Addendum H.
+
+**Capacity is not the binding constraint.** Per-record serialized footprint,
+measured on fully-marked demo students and extrapolated, puts a 300-record cohort
+comfortably within the ~5 MB origin budget — even sharing the origin with saved
+scorers, snippets and config. Capacity alone does not force a migration.
+
+**Failure handling was the real gap.** The quota-bearing `setItem` writes
+(cohort-save, config, draft) were not wrapped in `try`/`catch`, so a
+`QuotaExceededError` would propagate **uncaught** instead of being surfaced to the
+marker — the worst time for a silent failure is when a cohort is at its largest.
+Separately, the `downloadExcel` export path carried a **data-loss hazard**: a
+failure mid-export could leave cohort state partially written rather than failing
+cleanly with the prior state intact.
+
+**Verdict — FK-10 "GO split"** (INS-5 decision rule: capacity passes the <40%
+test, but quota errors were *not* surfaced, so neither clean branch applies):
+
+- **Harden now → FK-24 (shipped, PR #36):** `try`/`catch` around the quota-bearing
+  writes, a user-surfaced quota error, and the `downloadExcel` data-loss fix.
+- **Defer the full IndexedDB-behind-`SessionStore` migration** — no card opened;
+  capacity headroom makes it non-urgent, and a fresh ID (not the INS-5 method's
+  provisional "FK-17", which collides with the axe-remediation card of that number)
+  is assigned only if usage later warrants it.
 
 ---
 
