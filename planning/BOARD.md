@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 4 (FK-15 · FK-16 · FK-19 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-21 draft persistence v2 — IN REVIEW, PR #46) · Shipped: 21 · others: 0. Next free card ID: FK-27. *(Latest: FK-21 in review PR #46. FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 4 (FK-15 · FK-16 · FK-19 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 22 · others: 0. Next free card ID: FK-27. *(Latest: FK-21 shipped PR #46. FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -66,14 +66,7 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-
-### FK-21 · Draft persistence v2 — IN REVIEW (PR #46)
-- **Status:** implemented on `feat/fk21-draft-persistence`, **PR [#46](https://github.com/stephendmann/feedback-kitchen/pull/46) open**. Re-implements PR #12's intent from scratch; replaces the dead `SA_DRAFT_V1` scaffolding.
-- **Decisions (locked before code):** debounced autosave (1s) + flush on pagehide; non-blocking Resume/Discard banner.
-- **What shipped:** per-scorer key `SA_DRAFT_V1_<id>` via **`SA.safeSetItem`** (FK-24, quota swallowed); autosave gated on FK-07 `_sessionHasUnsavedWork()`; `#draft-resume-banner` with `_draftReady` init-clobber guard; clears on save-to-cohort + New-student; 8 structural tests.
-- **DoD evidence:** mid-mark refresh → banner → Resume restores all fields exactly (incl. feedback-regeneration-order fix); export/New-student clear; **quota-full stub confirmed marking continues uninterrupted**; no FK-07/key interference. Jest 243/243; axe 0 violations all pages.
-- **Out of scope (held):** class-list import / Moodle round-trip → FK-19. **Priority:** P1. **Effort:** M.
-- **On merge:** move to Shipped; post-merge sync.
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -118,5 +111,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-26 | Moderation Export characterization tests (= GitHub issue #4): `moderation-suppression.test.js` + `moderation-privacy.test.js` (SENTINEL-PII cohort → real export → `writeFile` intercept → cell-level leak guard via vendored SheetJS; 44 tests, exporter confirmed non-leaking; no new dep) | [#42](https://github.com/stephendmann/feedback-kitchen/pull/42) | 2026-06-14 |
 | FK-13 | Score-result `aria-live` region (`#score-result-live`, debounced + de-duped announce of recomputed score/grade on `recalculate()`; WCAG 2.1 AA 4.1.3) + hard-invalid/soft-warn validation-convention note at both setters; regression guard `js/score-result-live-region.test.js`; axe Scorer 0/51 | [#43](https://github.com/stephendmann/feedback-kitchen/pull/43) | 2026-06-14 |
 | FK-12 | Ambient cohort scale-use consistency indicator (D-10): pure `CohortInsights.scaleUseSignal()` (reuses `cohortMetrics`, small-N suppressed) → `#cohort-consistency-badge` behind a **default-off** Scorer-settings toggle; saved-cohort-only, no `recalculate()` touch; 8 unit tests; axe 0/51. *(Docs maintenance note + code cross-ref in follow-up PR #45.)* | [#44](https://github.com/stephendmann/feedback-kitchen/pull/44) | 2026-06-14 |
+| FK-21 | Draft persistence v2: debounced autosave (1s) + pagehide flush of the in-progress student to per-scorer `SA_DRAFT_V1_<id>` via `safeSetItem` (quota-safe); FK-07 `_sessionHasUnsavedWork()` gate; non-blocking `#draft-resume-banner` (Resume/Discard, `_draftReady` clobber-guard); clears on save-to-cohort + New-student; 8 structural tests; quota-full runtime-verified | [#46](https://github.com/stephendmann/feedback-kitchen/pull/46) | 2026-06-14 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · **FK-11 doc-drift NOT fixed in PR #37** — `docs/fk_moderation_export_v1.md:71` still says the hash covers "criterion order and maxima" (wrong: it's names+weights+all tier descriptors; correct gloss at `js/moderation-readme.js:123`); fold into the next moderation-touching PR.
