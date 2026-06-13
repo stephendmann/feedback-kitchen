@@ -204,14 +204,25 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   ```
   Expect perRecord ≈ 6–7k for realistic feedback. If it lands far from the model, reopen the verdict; the failure-mode half stands regardless.
 
-## INS-6 ☐ When is rubric_version_hash computed?
+## INS-6 ☑ When is rubric_version_hash computed?
 - **Gates:** FK-11.
 - **Where to look:** `js/moderation-schema.js:82` and wherever that field is populated (moderation-export.js, scorer cohort-save path).
 - **Questions:**
   1. Stamped per record at mark/save time, or computed once at export from the *current* rubric?
   2. What feeds the hash (full rubric JSON? weights only?) — does editing a statement bank change it?
   3. Is `fk_version` (line 91) app version or schema version?
-- **Findings:** _(pending)_
+- **Findings (☑ 2026-06-13, Phase-3 kickoff — code read; `moderation-schema.js` only *declares* the field name, the hash is built in `moderation-export.js`):**
+
+  **Q1 · Computed ONCE at export, from the current rubric — NOT stamped per record. Dispositive for FK-11.** `_rubricHash(config)` is called exactly once (`moderation-export.js:120`), against the single currently-loaded scorer `config`, and the *same* `rubricHash` value is written to **every** row (`:188`). The cohort store holds **no** hash — INS-1's full record schema confirms it (metadata + grades + scoreResult + feedback/notes/override; no version field), and the only `_rubricHash` caller anywhere is the export engine. **Consequence:** every row of a given export carries an *identical* hash — the hash of whatever rubric happens to be loaded at export time, not the rubric each student was actually marked against. **Mixed-version detection is therefore impossible from the current design.** If a marker edits the rubric mid-cohort, the export silently shows one uniform hash and the divergence is invisible. FK-11's "warn on mixed hashes" cannot be built without first adding per-record stamping at mark/save time ⇒ FK-11 takes the **M (grows) fork**, not S.
+
+  **Q2 · Fed by criteria names + weights + all five tier descriptors — not weights-only, not full JSON.** `_rubricHash` (`moderation-export.js:30–46`) maps each `config.criteria[k]` to `[name, weight, rubric.excellent, rubric.proficient, rubric.developing, rubric.satisfactory, rubric.unsatisfactory]`, joins fields with `\x00` and criteria with `\x01`, then djb2 (`h = 5381; (h<<5)+h+char | 0`) → `(h>>>0).toString(16).padStart(8,'0')` = stable **8-char lowercase hex**.
+    - **Editing a rubric *tier descriptor* (the per-level statement text) DOES change the hash** — descriptors are hashed in full. So does renaming a criterion, changing a weight, or adding/removing/reordering criteria (order is positional in the join).
+    - **NOT fed by:** `gradeScale`, `tierLabels`, `latePenalties`, `scoreRounding`, config metadata (paper/course/assessment), or the **feedback snippet bank** (`SA_SNIPPETS` is separate from rubric tier descriptors — editing saved feedback snippets does *not* move the hash).
+    - **Doc drift flagged (not fixed):** `docs/fk_moderation_export_v1.md:71` describes the field as "stable hash of rubric criterion order and maxima" — **wrong on both counts** (maxima aren't in the hash; weights + all descriptor text are). The accurate description is the one in `js/moderation-readme.js:123` ("criteria names, weights, and all tier descriptors"). Fix the spec line when FK-11 (or a docs-touch card) next opens that file.
+
+  **Q3 · `fk_version` = APP version, not schema version.** Populated from `SA.getFKVersion()` → `FK_VERSION = '2.5.1'` (`shared.js:299–300`), which mirrors `newConfig().appVersion = '2.5.1'` (`shared.js:278`) — i.e. "which FK build generated this artefact" (provenance). The **schema** version is a *separate* field: `MOD_EXPORT_SCHEMA_VERSION = 'modexport-v1'` (`moderation-schema.js:12`), surfaced as `schema_version` in the 90_manifest (`moderation-export.js:246`) and on the 20_methods sheet — never as `fk_version`. The two are independent: an app bump moves `fk_version`; a moderation-format change moves `schema_version`.
+
+- **Consequence (feeds FK-11):** FK-11 confirmed on the **grow-to-M fork**. Build order: (1) compute the hash at **mark/save time** and store it on the cohort record — the `_rubricHash` body must move out of `moderation-export.js` to a shared location (e.g. `shared.js` next to `getFKVersion`, or a `FKModSchema` helper) so `saveCurrentStudentToCohort` can call it; (2) export reads each record's *stored* hash (fall back to live `_rubricHash(config)` for legacy records with none) and emits a mixed-version warning when stored hashes differ; (3) unit-test the export path on a mixed-hash cohort. Interactions to honour: FK-07 re-entry (a re-saved record re-stamps under the then-current rubric — intended), FK-19 import (imported rows have no stamp ⇒ legacy-fallback path must not false-warn), and FK-24/FK-15 (the hash extraction is a natural shared-seam candidate; the new write does **not** add a localStorage key — it rides the existing cohort record, so no new quota surface).
 
 ## INS-7 ☐ What does cohort-insights.js already compute?
 - **Gates:** FK-12.

@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + Phase-3 INS-5→FK-10 kickoff: FK-10 audited, FK-24 spawned): Safe to implement now: 1 (FK-23 CI wiring) · Needs inspection: 3 (FK-11 · FK-12 · FK-13) · Backlog: 6 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22 · FK-24) · Ready to document: 1 (FK-10) · Shipped: 14 · others: 0. Next free card ID: FK-25.
+Column counts (2026-06-13, + Phase-3 INS-6→FK-11 kickoff: INS-6 ☑, FK-11 ungated → Safe-to-implement, M fork confirmed): Safe to implement now: 2 (FK-23 CI wiring · FK-11 version stamping) · Needs inspection: 2 (FK-12 · FK-13) · Backlog: 6 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22 · FK-24) · Ready to document: 1 (FK-10) · Shipped: 14 · others: 0. Next free card ID: FK-25.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -24,20 +24,22 @@ Column counts (2026-06-13, + Phase-3 INS-5→FK-10 kickoff: FK-10 audited, FK-24
 - **DoD:** `ci.yml` fails on a Jest regression; the lazy-load guard fails if an eager SheetJS tag is reintroduced; README Local Development / Planning sections already describe the suites, so no doc drift.
 - **Column:** Safe to implement now (parallel to Phase 3 — off-theme, does not gate INS-5/FK-10). **Priority:** P1 (the regression net is currently decorative in CI). **Effort:** S.
 
-*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict recorded (GO, split) → **FK-24** spawned (write-hardening, P1/S). One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-6→FK-11, then INS-7→FK-12. FK-23 + FK-24 are implementation cards for a feature worktree, not this one. See ROADMAP-PHASES.md §3.)*
+### FK-11 · Rubric-version stamping (per-record) + mixed-version warning at export
+- **Rationale:** `rubric_version_hash` exists and is emitted per row, but INS-6 (☑ 2026-06-13) proved it's computed **once at export** from the currently-loaded rubric and written identically to every row — the cohort record stores no hash. A marker who edits the rubric mid-cohort gets one uniform hash and the divergence is invisible. The whole point of the field (detecting a moved rubric) is currently undeliverable.
+- **Evidence:** O — `_rubricHash(config)` called once (`moderation-export.js:120`), same value on every row (`:188`); INS-1 record schema carries no hash; INS-6 Q1/Q2/Q3 findings.
+- **Dependencies:** ~~INS-6~~ ☑ resolved — **fork landed on the grow side: per-record stamping must be added first.** Touches the cohort-save path; coordinate seam with FK-15 (extract `_rubricHash` to shared) and is adjacent to FK-24's `safeSetItem` work (no *new* key, though — the stamp rides the existing cohort record).
+- **Scope:** (1) move `_rubricHash` out of `moderation-export.js` to a shared home (`shared.js` by `getFKVersion`, or a `FKModSchema` helper) and stamp the record at `saveCurrentStudentToCohort` time; (2) export reads each record's *stored* hash, falling back to live `_rubricHash(config)` for legacy/imported records with none; (3) warn when stored hashes differ across the cohort. Re-saving a record re-stamps under the then-current rubric (intended). FK-19-imported rows have no stamp → legacy-fallback must not false-warn.
+- **Out of scope:** changing what feeds the hash (criteria names+weights+all tier descriptors stays — see INS-6 Q2); the doc-drift fix at `docs/fk_moderation_export_v1.md:71` ("…order and maxima" is wrong) is a cheap ride-along, not the core.
+- **Risk:** Low–medium — adds a field to the stored record (forward-compatible; absence handled by the fallback) and one export-time comparison. No arithmetic change.
+- **DoD:** records stamped with the rubric hash at save time; export warns on mixed hashes (with legacy/no-stamp rows handled, not false-flagged); unit test on the export path covering a mixed-hash cohort + a legacy-record cohort; spec line `:71` corrected. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
+- **Column:** Safe to implement now (INS-6 cleared the gate). **Priority:** P2. **Effort:** M (fork resolved to the grow side).
+
+*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed (per-record stamping required; hash is export-time-only today), moved to Safe-to-implement. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-7→FK-12, then INS-8 remainder→FK-13. FK-11 + FK-23 + FK-24 are implementation cards for a feature worktree, not this one. See ROADMAP-PHASES.md §3.)*
 
 
 ---
 
 ## Needs inspection
-
-### FK-11 · Rubric-version stamping verification + mixed-version warning
-- **Rationale:** `rubric_version_hash` exists in `js/moderation-schema.js:82` — but a warning at export is only meaningful if the hash is stamped per record at mark time, not computed once at export.
-- **Evidence:** O — schema field. U — stamping semantics, UI surfacing.
-- **Dependencies:** **INS-6**.
-- **Risk:** Low — worst case the warning needs per-record stamping added first (scope grows to M).
-- **DoD:** stamping semantics documented; if per-record: export warns on mixed hashes; if not: per-record stamping added then warning; covered by a unit test on the export path.
-- **Column:** Needs inspection. **Priority:** P2. **Effort:** S–M (fork).
 
 ### FK-12 · Ambient drift indicators during marking
 - **Rationale:** Consistency signals are destination-only (Cohort Insights). One small ambient indicator (e.g. criterion band histogram chip) could surface drift in-flow.
