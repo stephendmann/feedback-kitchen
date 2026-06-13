@@ -68,7 +68,7 @@ Sheets are created in the order above.
 - `paper_code`
 - `cohort_id`
 - `assessment_id`
-- `rubric_version_hash` — stable hash of rubric criterion order and maxima
+- `rubric_version_hash` — 8-character hex hash of the rubric definition (criteria names, weights, and all five tier descriptors) in force when the record was scored, stamped per record at save time (see `js/moderation-readme.js` data dictionary)
 - `tutor_label` — T1 to Tn within cohort, or T_other if that tutor's n < 5
 - `criterion_<k>_score`
 - `criterion_<k>_max`
