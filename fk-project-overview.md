@@ -335,6 +335,12 @@ test, but quota errors were *not* surfaced, so neither clean branch applies):
 
 ---
 
+## Cohort metrics & ambient signals (2026-06, improvement-programme INS-7 → FK-12)
+
+`js/cohort-insights.js` (`window.CohortInsights`) is the reusable cohort-metrics engine; `CohortInsights.scaleUseSignal()` is the pure detector behind the **FK-12** ambient *cohort scale-use* badge — a default-off, opt-in marking-consistency cue that reuses `cohortMetrics` (same thresholds, small-N suppressed) and deliberately reports spread, not a running mean, to limit anchoring.
+
+---
+
 ## Critical-path summary
 
 ```
