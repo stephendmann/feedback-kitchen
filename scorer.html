@@ -2637,6 +2637,10 @@
           grades:       JSON.parse(JSON.stringify(studentGrades || [])),
           penaltyIdx:   parseInt(el('late-penalty-select').value, 10) || 0,
           scoreResult:  cloneScoreResultForStorage(effectiveForSave),
+          // FK-11: stamp the rubric version in force at save time, so the
+          // moderation export can report per-record rubric provenance even if
+          // the rubric is edited mid-cohort. Re-saving re-stamps (correct).
+          rubricVersionHash: SA.rubricVersionHash(config),
           feedbackText: el('feedback-text').value || '',
           markerNotes:  el('additional-comments').value || '',
           overrideGrade: (el('grade-override').value || '').trim()

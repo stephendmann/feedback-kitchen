@@ -120,7 +120,7 @@
     M.push(['paper_code',            'string',  'Course/paper code from the opt-in form.']);
     M.push(['cohort_id',             'string',  'Cohort identifier from the opt-in form.']);
     M.push(['assessment_id',         'string',  'Assessment identifier from the opt-in form.']);
-    M.push(['rubric_version_hash',   'string',  '8-character lowercase hex hash of the rubric definition (criteria names, weights, and all tier descriptors). Changes whenever the rubric changes.']);
+    M.push(['rubric_version_hash',   'string',  '8-character lowercase hex hash of the rubric definition (criteria names, weights, and all tier descriptors) IN FORCE WHEN THIS RECORD WAS SCORED. Stamped per record at save time, so rows scored against different rubric versions carry different hashes. The 90_manifest rubric_version_hash is the single shared value when all rows agree, or "mixed" when they do not — see rubric_versions in 90_manifest for the full list.']);
     M.push(['tutor_label',           'string',  'Anonymous tutor label T1…Tn. Tutors with fewer than ' + (t.TUTOR_MIN_N || 5) + ' students are relabelled T_other. Sorted alphabetically for determinism within one export.']);
     M.push(['criterion_<k>_score',   'number',  'Raw score (0–100) for criterion k. Uses the grade midpoint, or the marker’s numeric override if set. Empty string if criterion was not graded.']);
     M.push(['criterion_<k>_max',     'number',  'Maximum possible raw score for criterion k (always 100). Divide score/max to obtain a percentage.']);

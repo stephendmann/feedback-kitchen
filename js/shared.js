@@ -1211,6 +1211,34 @@
     return Math.floor(ms / (1000 * 60 * 60 * 24));
   }
 
+  /* ── Rubric version hash ──────────────────────────────────────
+     djb2-derived 32-bit hash of all criteria names, weights, and
+     tier descriptors. Changes when the rubric changes. Produces a
+     stable 8-character lowercase hex string.
+
+     Single source of truth: the scorer stamps this onto each cohort
+     record at save time (FK-11), and the moderation export reads the
+     per-record stamp. Both paths MUST hash identically — keep this the
+     only implementation. (js/moderation-export.js keeps a byte-identical
+     fallback only for its decoupled load order.) */
+  function rubricVersionHash(config) {
+    const str = ((config && config.criteria) || []).map(function (c) {
+      return [
+        c.name, c.weight,
+        (c.rubric && c.rubric.excellent)      || '',
+        (c.rubric && c.rubric.proficient)     || '',
+        (c.rubric && c.rubric.developing)     || '',
+        (c.rubric && c.rubric.satisfactory)   || '',
+        (c.rubric && c.rubric.unsatisfactory) || ''
+      ].join('\x00');
+    }).join('\x01');
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    }
+    return (h >>> 0).toString(16).padStart(8, '0');
+  }
+
   /* ── Score formatting helper ──────────────────────────────── */
   // Rounds and formats a numeric score according to the scorer's rounding preference.
   // rounding: 'none' (1 d.p.), 'half' (nearest 0.5), 'whole' (nearest integer)
@@ -1230,7 +1258,7 @@
     uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
-    computeScores, generateFeedbackText, formatScore,
+    computeScores, generateFeedbackText, formatScore, rubricVersionHash,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
     validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS,
