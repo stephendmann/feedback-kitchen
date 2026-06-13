@@ -584,6 +584,10 @@
           </div>
           <!-- Screen-reader announcement of the current criterion on navigation. -->
           <span id="focus-live" class="sr-only" aria-live="polite"></span>
+          <!-- FK-13: announces the recomputed weighted total + banded grade to
+               assistive tech on recalculate() (WCAG 2.1 AA 4.1.3). The visible
+               total/grade cells are plain textContent outside any live region. -->
+          <span id="score-result-live" class="sr-only" aria-live="polite" aria-atomic="true"></span>
         </div>
         <div class="px-5 py-4">
           <div class="focus-card-grid">
@@ -1808,6 +1812,11 @@
         .trim()
         .toUpperCase();
     }
+    // VALIDATION CONVENTION (FK-13 / INS-8): the overall grade override is a
+    // HARD INVALID — an off-scale value sets aria-invalid='true' below and is
+    // not applied. This is intentionally different from the per-criterion
+    // override inputs in recalculate(), where out-of-band is a SOFT WARNING
+    // (aria-invalid stays 'false'). Keep the two models distinct; do not flatten.
     function _renderOverrideStatus() {
       const inp = document.getElementById('grade-override');
       const out = document.getElementById('grade-override-status');
@@ -1907,6 +1916,27 @@
       };
     }
 
+    // FK-13 (WCAG 2.1 AA 4.1.3 Status Messages): debounced, de-duplicated
+    // announcer for the recomputed result. The visible weighted-total / grade
+    // cells are written with plain textContent outside any live region, so a
+    // screen-reader user changing a grade would otherwise hear nothing about
+    // the outcome. Debounced so rapid successive recalculations announce only
+    // the settled result, not every intermediate keystroke.
+    let _scoreAnnounceTimer = null;
+    let _lastScoreAnnouncement = '';
+    function _announceScoreResult(msg) {
+      const liveEl = el('score-result-live');
+      if (!liveEl) return;
+      if (msg === _lastScoreAnnouncement) return;   // suppress chatty repeats
+      _lastScoreAnnouncement = msg;
+      if (_scoreAnnounceTimer) clearTimeout(_scoreAnnounceTimer);
+      if (!msg) { liveEl.textContent = ''; return; }
+      _scoreAnnounceTimer = setTimeout(function () {
+        liveEl.textContent = '';     // clear first so an unchanged string still re-announces
+        liveEl.textContent = msg;
+      }, 500);
+    }
+
     function recalculate() {
       const inputs   = readScoringInputs();
       latePenaltyIdx = inputs.latePenaltyIdx;
@@ -1946,6 +1976,13 @@
             const bandLow  = scaleEntry ? scaleEntry.bandLow  : (SA.GRADE_MIDPOINTS[row.grade] - 6);
             const bandHigh = scaleEntry ? scaleEntry.bandHigh : (SA.GRADE_MIDPOINTS[row.grade] + 6);
             const oob = row.override < bandLow || row.override > bandHigh;
+            // VALIDATION CONVENTION (FK-13 / INS-8) — DELIBERATE, do not "fix":
+            // a per-criterion override outside the grade band is a SOFT WARNING,
+            // not an error. It is surfaced visually via the `.out-of-band` class
+            // only; aria-invalid stays 'false' because the value is still
+            // accepted and scored. Contrast the overall #grade-override, which is
+            // a HARD INVALID (aria-invalid='true' when off-scale) in
+            // _renderOverrideStatus — that input rejects out-of-scale values.
             overInp.className = 'override-input' + (oob ? ' out-of-band' : '');
             overInp.setAttribute('aria-invalid', 'false');
           } else {
@@ -1996,6 +2033,21 @@
         'C-': 'bg-yellow-100 text-yellow-800','D':  'bg-red-100 text-red-800'
       });
       gradeBadge.className = 'grade-badge text-2xl px-4 py-1 ' + (gradeColours[suggestedGrade] || 'bg-slate-100 text-slate-600');
+
+      // FK-13: announce the recomputed result to assistive tech (4.1.3).
+      if (hasGrades || isFail) {
+        const _resultBand = (config.gradeScale || []).find(g => g.grade === suggestedGrade);
+        const _bandLabel  = _resultBand ? SA.getTierLabel(config, _resultBand.tier) : '';
+        let _msg = isFail
+          ? 'Result: fail. Score 0 out of 100. Grade ' + suggestedGrade + '.'
+          : 'Score ' + SA.formatScore(penalisedScore, _displayRounding) + ' out of 100. Grade ' +
+            suggestedGrade + (_bandLabel ? ' (' + _bandLabel + ')' : '') + '.';
+        if (latePenalty && latePenalty.deduction > 0 && !isFail) _msg += ' Late penalty applied.';
+        if (effective.override) _msg += ' Marker override in effect.';
+        _announceScoreResult(_msg);
+      } else {
+        _announceScoreResult('');
+      }
 
       // Override + non-fail penalty info note
       const infoNote = el('penalty-override-info');
