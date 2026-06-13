@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + merge reconciliation: FK-23/FK-24/FK-11 confirmed merged to main → Shipped): Safe to implement now: 1 (FK-12 ambient drift indicator) · Needs inspection: 1 (FK-13) · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · Shipped: 17 · others: 0. Next free card ID: FK-25.
+Column counts (2026-06-13, + Phase-3 INS-8→FK-13 kickoff: INS-8 ☑, FK-13 rescoped to score-result live region → Safe-to-implement; Needs-inspection now empty): Safe to implement now: 2 (FK-12 ambient drift indicator · FK-13 score-result live region) · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · Shipped: 17 · others: 0. Next free card ID: FK-25.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -26,20 +26,23 @@ Column counts (2026-06-13, + merge reconciliation: FK-23/FK-24/FK-11 confirmed m
 - **DoD:** one indicator behind a settings toggle; reuses `CohortInsights.cohortMetrics` (no duplicate computation); small-N suppression honoured (engine already blanks shape stats below n≈12); self-pilot notes recorded **before any default-on decision**. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
 - **Column:** Safe to implement now (INS-7 cleared the technical gate; the anchoring question rides as a default-off + self-pilot DoD, not an inspection blocker). **Priority:** P2. **Effort:** S (existing-aggregate fork) – M (per-criterion fork).
 
-*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed. INS-7 run → FK-12 ungated (metrics engine is pure/reusable; per-criterion histogram is the one signal not pre-computed; anchoring risk handled by default-off toggle + self-pilot). **FK-23 (PR #35), FK-24 (PR #36), FK-11 (PR #37) all merged to main 2026-06-13 → Shipped.** FK-12 is the only remaining Safe-to-implement card and is the last open implementation card for a feature worktree, not this one. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-8 remainder → FK-13 (last Phase-3 row), then the 2nd promotion checkpoint. See ROADMAP-PHASES.md §3.)*
+### FK-13 · Score-result live region + validation-convention note *(was: ARIA/validation centralization audit)*
+- **Rationale:** INS-8 (☑ 2026-06-13) resolved the centralization questions and **retired the "centralize all ARIA" framing.** The per-widget `aria-invalid` tuning is *deliberate*, not sprawl: `#grade-override` signals a HARD invalid (not-in-scale → `aria-invalid='true'`, scorer.html:1788–1815) while the per-criterion `override-<i>` inputs treat out-of-band as a SOFT warning (`.out-of-band` class only, `aria-invalid` forced `'false'`, 1916–1931) — that *is* the commit FK-13 was named after, and flattening it into one model would be a regression. The one real user-facing gap: **the recomputed total/grade is never announced** (`weighted-total-cell`/`penalised-score-display` are plain `.textContent`, 1949/1952, outside any live region) ⇒ a screen-reader marker changing a grade hears nothing about the result. Focus-mode nav, by contrast, *is* announced (`#focus-live`, 570 → 2256–2260).
+- **Evidence:** O — INS-8 Q1/Q2 ARIA grep + JS setter read (two divergent validation setters; score writes outside live regions; `#focus-live` healthy; 11 modals + 2 landmark regions + toast all wired). Maps to **WCAG 2.1 AA 4.1.3 Status Messages**.
+- **Dependencies:** ~~INS-8~~ ☑ resolved. The validation-*model* centralization is **folded into FK-15** (the override inputs are already on FK-15's DOM-as-state seam list — INS-3); do not build a separate validation card.
+- **Scope:** (1) add an sr-only `aria-live='polite'` (or `role='status'`) region announcing the recomputed weighted total + banded grade (and fail/penalty outcome) on `recalculate()`; (2) optional ride-alongs same card — `aria-describedby` linking each override input to its status text, and a note flagging the inline-hex-vs-class border inconsistency for FK-16. (3) document the deliberate hard-invalid / soft-warn convention (one paragraph / code comment) so the intentional `aria-invalid='false'` on out-of-band overrides isn't "fixed" later.
+- **Out of scope:** any validation-model refactor (→ FK-15); re-announcing focus-mode nav (already covered); colour/contrast (FK-17 cleared).
+- **Risk:** Low — additive sr-only region + a doc note; no refactor, no arithmetic, no visual change. Verify the announcement isn't chatty (debounce/throttle if `recalculate` fires rapidly).
+- **DoD:** a grade change announces the new total + grade to AT; the override-status association is programmatic (if ride-along taken); hard/soft validation convention written down; axe battery (demo scorer `?id=demo-written-response-v2`) stays clean + a regression assertion for the new live region. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
+- **Column:** Safe to implement now (INS-8 cleared the gate; rescoped to the concrete a11y fix). **Priority:** P2 (WCAG 4.1.3-adjacent). **Effort:** S.
+
+*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed. INS-7 run → FK-12 ungated (metrics engine is pure/reusable; per-criterion histogram is the one signal not pre-computed; anchoring risk handled by default-off toggle + self-pilot). **FK-23 (PR #35), FK-24 (PR #36), FK-11 (PR #37) all merged to main 2026-06-13 → Shipped.** INS-8 run → FK-13 ungated, **rescoped from "centralization audit" to "score-result aria-live region + validation-convention note"** (the per-widget hard-invalid/soft-warn split is intentional; the validation-*model* centralization folds into FK-15; the real gap is the unannounced recomputed score — WCAG 4.1.3). **Phase-3 inspection sweep now complete (INS-5/6/7/8).** FK-12 + FK-13 are the two open Safe-to-implement cards, both for a feature worktree, not this one. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. **Next: the 2nd promotion checkpoint** (planned milestone — see ROADMAP-PHASES.md §3 / Promotion checkpoint). See ROADMAP-PHASES.md §3.)*
 
 
 ---
 
 ## Needs inspection
-
-### FK-13 · ARIA/validation centralization audit
-- **Rationale:** Commit history ("remove aria-invalid from out-of-band override warning") suggests per-widget ARIA tuning; thin evidence (one commit). Audit before judging.
-- **Evidence:** I — single commit. U — actual aria usage breadth. INS-8 is ◐: the 2026-06-12 axe audits supplied (and FK-17/18 cleared) the *violation* inventory; the centralization questions (validation state set centrally? aria-live coverage for score updates / focus nav?) remain the open gate.
-- **Dependencies:** **INS-8** (remaining questions); meaningful fix lands with/after FK-15 state model.
-- **Risk:** Low — audit only.
-- **DoD:** inventory of aria-invalid/aria-describedby/aria-live usage in scorer.html with a verdict: ad-hoc (→ backlog card to derive from validation model) or fine as-is (→ drop).
-- **Column:** Needs inspection. **Priority:** P3. **Effort:** S.
+*(empty — all Phase-3 inspection gates resolved 2026-06-13: INS-5/6/7/8 ☑/◐-non-blocking; FK-13 rescoped + moved to Safe-to-implement. INS-10 remains ◐ but gates FK-19 in Backlog, not this column.)*
 
 ---
 

@@ -163,13 +163,38 @@ task running; INS-3 status ☑ with findings.
 > ride-along (`docs/fk_moderation_export_v1.md:71` — "order and maxima" is wrong) was
 > **not** landed in PR #37; fold into the next moderation-touching PR (see BOARD residuals).
 
+> **§3.4 KICKOFF EXECUTED 2026-06-13 (planning/inspection only, frosty-babbage).**
+> INS-8 → FK-13. *(Numbering note: INS-8/FK-13 is formally the **Phase 4** "ARIA audit
+> → card or drop" line, not a Phase-3 table row; it's run here at the Phase-3 close to
+> finish the inspection sweep, so it's logged as §3.4 by sequence and the Phase-4 row
+> is marked done below.)* INS-8 run → **☑**. Full ARIA grep + JS-setter read of
+> scorer.html (54 ARIA occurrences): **Q1 — validation is per-widget but the divergence
+> is deliberate.** `#grade-override` signals a HARD invalid (not-in-scale →
+> `aria-invalid='true'`, `_renderOverrideStatus` scorer.html:1788–1815); the
+> per-criterion `override-<i>` inputs treat out-of-band as a SOFT warning (`.out-of-band`
+> class only, `aria-invalid` forced `'false'`, 1916–1931) — **that is the very commit
+> FK-13 was named after**; flattening the two into one model would be a regression.
+> **Q2 — focus-mode nav IS announced** (`#focus-live` sr-only/polite, 570 → 2256–2260)
+> **but the recomputed score is NOT** (`weighted-total-cell`/`penalised-score-display`
+> are plain `.textContent`, 1949/1952, outside any live region) ⇒ a screen-reader marker
+> changing a grade hears nothing about the result — **WCAG 2.1 AA 4.1.3 Status Messages**
+> gap. **Verdict: SPLIT.** Drop the "centralize all ARIA" framing (the per-widget tuning
+> is intentional); fold the validation-*model* centralization into **FK-15** (override
+> inputs already on its DOM-as-state seam, INS-3); **rescope FK-13** from "centralization
+> audit" to **"add a score-result aria-live region + document the hard-invalid/soft-warn
+> convention"** (S, P2, additive, independently testable). FK-13 moved Needs-inspection →
+> Safe-to-implement; **Needs-inspection column now empty.** No new card (FK-25 stays
+> free). **Phase-3 inspection sweep complete: INS-5 ◐(non-blocking) · INS-6 ☑ · INS-7 ☑
+> · INS-8 ☑.** **Implementation belongs in a feature worktree → main via PR, not
+> frosty-babbage.**
+
 ## Phase 4 — Structural hygiene (amortized, runs alongside 2–3)
 | Item | Notes |
 |---|---|
 | ~~FK-16 watch-task slice~~ | Pulled forward to Phase 0 (0.8) — scope change 2026-06-11 |
 | FK-15 decomposition program | Gated on the bug-tagging validation (5 bugs tagged by cause); extract-on-contact policy |
 | FK-16 styling migration policy | Freeze shared.css, shrink-on-touch |
-| FK-13/INS-8 ARIA audit → card or drop | |
+| FK-13/INS-8 ARIA audit → card or drop | **✅ INS-8 ☑ 2026-06-13 (§3.4 kickoff above).** Verdict: neither pure "drop" nor "centralize" — **rescoped** to a score-result `aria-live` region (WCAG 4.1.3) + a validation-convention note; per-widget hard/soft `aria-invalid` split is intentional; validation-model centralization folded into FK-15. FK-13 now Safe-to-implement (S, P2). |
 
 **Exit:** decomposition go/no-go decided from bug evidence; styling policy written; scorer.html line count trending down if program is on.
 
@@ -184,6 +209,25 @@ Re-read planning/README.md promotion rule. Candidates for promotion at first che
 > verification (Addendum F.4, 2026-06-13); the checkpoint added Addendum G
 > (FK-07/D-03, FK-14/D-04), the ROADMAP truth pass, and the snapshot refresh.
 > Second checkpoint fires after Phase 3.
+
+> **🟡 SECOND CHECKPOINT — PLANNED MILESTONE, NOT YET EXECUTED (queued after the
+> INS-8/FK-13 kickoff, 2026-06-13).** Phase-3's inspection sweep is now complete
+> (INS-5/6/7/8) and its three implementation cards shipped (FK-23 #35, FK-24 #36,
+> FK-11 #37), so the second checkpoint is the next planning action. **Promotion set
+> to fold (via a docs-promotion PR to main — NOT from frosty-babbage):**
+> - **INS-5 findings** (localStorage capacity model + the unhandled-quota failure
+>   mode) → `fk-project-overview.md`.
+> - **FK-10 verdict** (GO-split: FK-24 shipped, IndexedDB deferred/conditional) →
+>   a `fk-decisions.md` **addendum** (next free addendum letter after G = **H**;
+>   keep planning D-numbers out of it per the ID-hazard rule).
+> - Candidates also worth a line if kept: INS-6→FK-11 (rubric-hash provenance) and
+>   INS-7→FK-12 (cohort-insights engine is the reusable metrics surface), INS-8→FK-13
+>   (deliberate hard/soft validation convention). Then prune the folded INS findings
+>   from INSPECTION.md and refresh the `docs/planning-202606/` snapshot.
+> - **One open item before/with the checkpoint:** the INS-5 live bytes/record console
+>   check (flips INS-5 ◐→☑; non-blocking — the FK-10 verdict stands regardless).
+> Sequencing: do this checkpoint as its own session/PR; FK-12 + FK-13 implementation
+> happen in feature worktrees independently of it.
 
 ## Explicit non-goals (re-affirmed from assessment)
 - No framework adoption (React/Vue) — no-framework constraint serves privacy/portability.
