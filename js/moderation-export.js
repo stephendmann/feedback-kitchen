@@ -26,8 +26,17 @@
   /* ── Rubric version hash ─────────────────────────────────────
      djb2-derived 32-bit hash of all criteria names, weights,
      and tier descriptors. Changes when the rubric changes.
-     Produces a stable 8-character lowercase hex string. */
+     Produces a stable 8-character lowercase hex string.
+
+     FK-11: the canonical implementation lives in shared.js
+     (SA.rubricVersionHash) and is stamped onto each record at save
+     time; we delegate to it so the live-config fallback hash is
+     byte-identical to the per-record stamps. The inline copy below
+     is retained only as a defence against load-order surprises. */
   function _rubricHash(config) {
+    if (window.SA && typeof window.SA.rubricVersionHash === 'function') {
+      return window.SA.rubricVersionHash(config);
+    }
     const str = (config.criteria || []).map(function (c) {
       return [
         c.name, c.weight,
@@ -182,10 +191,14 @@
         ? supp.buildSuppressionFlags({ tutorLabel: tutorLabel, gradeBandCount: bandCount, isExtreme: isExtreme })
         : '';
 
+      // FK-11: prefer the rubric hash stamped on the record at save time;
+      // fall back to the live-config hash only for legacy records saved
+      // before per-record stamping existed.
+      const rowRubricHash = r.s.rubricVersionHash || rubricHash;
       const row = [
         labels[i],
         optInRecord.paper_code, optInRecord.cohort_id, optInRecord.assessment_id,
-        rubricHash, tutorLabel
+        rowRubricHash, tutorLabel
       ];
       criteria.forEach(function (_, k) {
         const srRow = r.srRows[k] || {};
@@ -235,10 +248,23 @@
     const suppressedBands = Object.keys(bandCounts)
       .filter(function (b) { return bandCounts[b] < THRESHOLDS.GRADE_BAND_MIN_N; });
     const tOtherPresent  = Object.values(tutorMap).some(function (v) { return v === 'T_other'; });
+
+    /* ── FK-11: rubric-version provenance ────────────────────────
+       Distinct per-record rubric hashes (with the live-config
+       fallback for legacy unstamped records). One value → the cohort
+       was marked against a single rubric version; more than one →
+       the rubric changed mid-cohort and the manifest must say so. */
+    const rubricVersions = Array.from(new Set(students.map(function (s) {
+      return s.rubricVersionHash || rubricHash;
+    }))).sort();
+    const rubricMixed = rubricVersions.length > 1;
+    const manRubricHash = rubricMixed ? 'mixed' : (rubricVersions[0] || rubricHash);
+
     const suppNotes = [
       tOtherPresent     ? 'TUTOR_LT_5_COLLAPSED applied'                                 : '',
       suppressedBands.length ? 'GRADE_BAND_LT_5_SUPPRESSED: ' + suppressedBands.join(', ') : '',
-      extremeCount          ? 'EXTREME_ROW_FLAGGED: ' + extremeCount + ' row(s)'           : ''
+      extremeCount          ? 'EXTREME_ROW_FLAGGED: ' + extremeCount + ' row(s)'           : '',
+      rubricMixed           ? 'RUBRIC_VERSION_MIXED: ' + rubricVersions.length + ' versions' : ''
     ].filter(Boolean).join('; ') || '';
 
     const MAN_KV = [
@@ -246,7 +272,8 @@
       ['schema_version',       schema.MOD_EXPORT_SCHEMA_VERSION || 'modexport-v1'],
       ['fk_version',           fkVersion],
       ['export_timestamp',     exportTs],
-      ['rubric_version_hash',  rubricHash],
+      ['rubric_version_hash',  manRubricHash],
+      ['rubric_versions',      rubricVersions.join('; ')],
       ['paper_code',           optInRecord.paper_code   || ''],
       ['cohort_id',            optInRecord.cohort_id    || ''],
       ['assessment_id',        optInRecord.assessment_id || ''],
