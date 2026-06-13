@@ -224,24 +224,19 @@ Re-read planning/README.md promotion rule. Candidates for promotion at first che
 > (FK-07/D-03, FK-14/D-04), the ROADMAP truth pass, and the snapshot refresh.
 > Second checkpoint fires after Phase 3.
 
-> **🟡 SECOND CHECKPOINT — PLANNED MILESTONE, NOT YET EXECUTED (queued after the
-> INS-8/FK-13 kickoff, 2026-06-13).** Phase-3's inspection sweep is now complete
-> (INS-5/6/7/8) and its three implementation cards shipped (FK-23 #35, FK-24 #36,
-> FK-11 #37), so the second checkpoint is the next planning action. **Promotion set
-> to fold (via a docs-promotion PR to main — NOT from frosty-babbage):**
-> - **INS-5 findings** (localStorage capacity model + the unhandled-quota failure
->   mode) → `fk-project-overview.md`.
-> - **FK-10 verdict** (GO-split: FK-24 shipped, IndexedDB deferred/conditional) →
->   a `fk-decisions.md` **addendum** (next free addendum letter after G = **H**;
->   keep planning D-numbers out of it per the ID-hazard rule).
-> - Candidates also worth a line if kept: INS-6→FK-11 (rubric-hash provenance) and
->   INS-7→FK-12 (cohort-insights engine is the reusable metrics surface), INS-8→FK-13
->   (deliberate hard/soft validation convention). Then prune the folded INS findings
->   from INSPECTION.md and refresh the `docs/planning-202606/` snapshot.
-> - **One open item before/with the checkpoint:** the INS-5 live bytes/record console
->   check (flips INS-5 ◐→☑; non-blocking — the FK-10 verdict stands regardless).
-> Sequencing: do this checkpoint as its own session/PR; FK-12 + FK-13 implementation
-> happen in feature worktrees independently of it.
+> **✅ SECOND CHECKPOINT EXECUTED 2026-06-13 (PR #38 `docs/phase3-promotion`,
+> merged to main).** Confirmed on main 2026-06-14: **fk-decisions.md Addendum H**
+> ("Improvement-programme Phase 3 outcomes" — FK-10 GO-split verdict: FK-24 shipped,
+> IndexedDB deferred/conditional) · **INS-5 findings** ("Storage capacity and
+> write-hardening" section) folded into `fk-project-overview.md` · `docs/planning-202606/INSPECTION.md`
+> updated. PR #38 stat: fk-decisions.md +47, fk-project-overview.md +34,
+> INSPECTION.md +45. The INS-6→FK-11 / INS-7→FK-12 / INS-8→FK-13 "worth a line"
+> candidates rode along in the same addendum. **Two carried-forward items remain
+> (both non-blocking, not part of the checkpoint):**
+> - INS-5 ◐→☑: the live bytes/record console check still open (FK-10 verdict stands regardless).
+> - FK-11 doc-drift at `docs/fk_moderation_export_v1.md:71` — fold into the next moderation-touching PR.
+> FK-12 + FK-13 implementation happen in feature worktrees, independently of this
+> now-closed checkpoint.
 
 ## Explicit non-goals (re-affirmed from assessment)
 - No framework adoption (React/Vue) — no-framework constraint serves privacy/portability.
