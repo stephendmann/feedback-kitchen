@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + Phase-3 INS-8→FK-13 kickoff: INS-8 ☑, FK-13 rescoped to score-result live region → Safe-to-implement; Needs-inspection now empty): Safe to implement now: 2 (FK-12 ambient drift indicator · FK-13 score-result live region) · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · Shipped: 17 · others: 0. Next free card ID: FK-25.
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 2 (FK-12 ambient *consistency* indicator · FK-13 score-result live region) · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · Shipped: 18 · others: 0. Next free card ID: FK-26.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -15,6 +15,7 @@ Column counts (2026-06-13, + Phase-3 INS-8→FK-13 kickoff: INS-8 ☑, FK-13 res
 ## Safe to implement now
 
 ### FK-12 · Ambient drift indicators during marking
+> **Disambiguation (2026-06-13):** this card is the **cohort-consistency / anchoring** indicator (reuse `cohortMetrics`; decision **D-10**). Do **not** confuse it with the **rubric-version** drift indicator that shipped in PR #39 — that was a separate feature (decision **D-09**, built on FK-11's per-record stamp) and is carded as **FK-25 (Shipped)** below. PR #39's "FK-12" label was a misnomer; this card remains **unbuilt**.
 - **Rationale:** Consistency signals are destination-only (Cohort Insights modal). One small ambient indicator could surface drift in-flow. INS-7 (☑ 2026-06-13) confirmed the metrics engine is reusable: `cohortMetrics`/`detectState` are **pure functions on `window.CohortInsights`**, but their only in-app caller is `renderInsights` from the insights modal (scorer.html:3104) — destination-only in practice, not by design.
 - **Evidence:** O — `js/cohort-insights.js:110–252` (`cohortMetrics` returns 23 cohort-level fields: spread/distribution + behaviour + Cronbach α); sole consumer at scorer.html:3104; INS-7 Q1/Q2 findings. U (now bounded): whether an ambient signal helps or *causes* anchoring — answerable only by the self-pilot, not by inspection.
 - **Dependencies:** ~~INS-7~~ ☑ resolved — **technical gate cleared.** FK-07 (cohort visible during marking) helps but is not a hard blocker. Adjacent to the Cohort Insights modal code in scorer.html.
@@ -135,5 +136,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-23 | Wire Jest + lazy-load grep guard into CI (`ci.yml`, `package.json`, `scripts/check-lazy-load.js`; scope-A only — Lighthouse/bundle-budget stayed deferred) | [#35](https://github.com/stephendmann/feedback-kitchen/pull/35) | 2026-06-13 |
 | FK-24 | Storage-write quota hardening — `safeSetItem` on the 3 heavy writers; QuotaExceeded surfaced; `downloadExcel` ordering fixed (+129 tests) | [#36](https://github.com/stephendmann/feedback-kitchen/pull/36) | 2026-06-13 |
 | FK-11 | Rubric per-record version stamping (`SA.rubricVersionHash`) + mixed-version warning at export (legacy live-config fallback; manifest `rubric_versions`; 12 new tests) | [#37](https://github.com/stephendmann/feedback-kitchen/pull/37) | 2026-06-13 |
+| FK-25 | Rubric-version drift indicator — ambient in-app badge (`SA.detectRubricDrift`) when the open cohort's stamped rubric (FK-11) ≠ the loaded rubric; mirrors the export manifest's `mixed`/fallback semantics so badge and `90_manifest` can't disagree; 15 new tests (*shipped under the "FK-12" label; in-app surface of D-09, distinct from the FK-12 consistency card*) | [#39](https://github.com/stephendmann/feedback-kitchen/pull/39) | 2026-06-13 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · **FK-11 doc-drift NOT fixed in PR #37** — `docs/fk_moderation_export_v1.md:71` still says the hash covers "criterion order and maxima" (wrong: it's names+weights+all tier descriptors; correct gloss at `js/moderation-readme.js:123`); fold into the next moderation-touching PR.

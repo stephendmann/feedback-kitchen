@@ -205,7 +205,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   Expect perRecord ≈ 6–7k for realistic feedback. If it lands far from the model, reopen the verdict; the failure-mode half stands regardless.
 
 ## INS-6 ☑ When is rubric_version_hash computed?
-- **Gates:** FK-11.
+- **Gates:** FK-11 (per-record stamp + export warning, PR #37) and **FK-25** (the in-app ambient *rubric-version* drift indicator, PR #39 — both shipped 2026-06-13). **Note:** FK-25 shipped under the label "FK-12", but it is the rubric-version feature gated here, **not** the FK-12 cohort-consistency indicator (which INS-7 gates).
 - **Where to look:** `js/moderation-schema.js:82` and wherever that field is populated (moderation-export.js, scorer cohort-save path).
 - **Questions:**
   1. Stamped per record at mark/save time, or computed once at export from the *current* rubric?
@@ -225,7 +225,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
 - **Consequence (feeds FK-11):** FK-11 confirmed on the **grow-to-M fork**. Build order: (1) compute the hash at **mark/save time** and store it on the cohort record — the `_rubricHash` body must move out of `moderation-export.js` to a shared location (e.g. `shared.js` next to `getFKVersion`, or a `FKModSchema` helper) so `saveCurrentStudentToCohort` can call it; (2) export reads each record's *stored* hash (fall back to live `_rubricHash(config)` for legacy records with none) and emits a mixed-version warning when stored hashes differ; (3) unit-test the export path on a mixed-hash cohort. Interactions to honour: FK-07 re-entry (a re-saved record re-stamps under the then-current rubric — intended), FK-19 import (imported rows have no stamp ⇒ legacy-fallback path must not false-warn), and FK-24/FK-15 (the hash extraction is a natural shared-seam candidate; the new write does **not** add a localStorage key — it rides the existing cohort record, so no new quota surface).
 
 ## INS-7 ☑ What does cohort-insights.js already compute?
-- **Gates:** FK-12.
+- **Gates:** FK-12 — the cohort-**consistency / anchoring** ambient indicator (D-10), still open. (The rubric-version drift indicator that shipped as PR #39 is a different feature, carded as FK-25 under D-09 / INS-6 — it does not touch `cohort-insights.js`.)
 - **Where to look:** `js/cohort-insights.js` (610 lines).
 - **Questions:**
   1. Available stats (distributions? per-criterion? per-tutor?).
@@ -278,7 +278,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   1. **Drop the "centralize all ARIA/validation" framing.** The per-widget `aria-invalid` tuning is *mostly intentional* (hard-invalid vs soft-warn). A standalone "validation centralization" card is **not** warranted; the right home for a shared validation→render model is **FK-15**'s state→render extraction (the override inputs are already on FK-15's DOM-as-state seam list — INS-3), where it falls out for free. Fold it there; do **not** spawn a separate card.
   2. **FK-13 rescopes to the one real user-facing gap: a score-result live region.** Add an sr-only `aria-live='polite'` (or `role='status'`) region announcing the recomputed total + banded grade on `recalculate()` (and the fail/penalty outcome), so AT users get the marking feedback loop. S-effort, additive, no refactor, independently testable; the axe battery already loads the demo scorer (`?id=demo-written-response-v2`) so a regression assertion has a home. Ride-alongs (optional, same card): add `aria-describedby` linking each override input to its status text; note the inline-hex-vs-class inconsistency for FK-16.
   3. **Document the deliberate hard-invalid / soft-warn convention** (one paragraph, planning-layer or a code comment when the card lands) so future widgets don't "fix" the intentional `aria-invalid='false'` on out-of-band overrides.
-  - **Net:** INS-8 ☑; FK-13 moves Needs-inspection → Safe-to-implement-now, **rescoped from "centralization audit" to "score-result live region + validation-convention note"**, P2 (WCAG 4.1.3-adjacent), S; centralization-into-a-model folded into FK-15; no new card (FK-25 stays free).
+  - **Net:** INS-8 ☑; FK-13 moves Needs-inspection → Safe-to-implement-now, **rescoped from "centralization audit" to "score-result live region + validation-convention note"**, P2 (WCAG 4.1.3-adjacent), S; centralization-into-a-model folded into FK-15; INS-8 spawned no new card (next free ID was FK-25 then — since used for the rubric-version drift indicator split, so next free is now FK-26).
 
 ## INS-10 ◐ Moodle grading-worksheet format + round-trip semantics
 - **Gates:** FK-19. Scope/effort can't be set until this resolves.

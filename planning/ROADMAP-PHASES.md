@@ -163,6 +163,18 @@ task running; INS-3 status ☑ with findings.
 > ride-along (`docs/fk_moderation_export_v1.md:71` — "order and maxima" is wrong) was
 > **not** landed in PR #37; fold into the next moderation-touching PR (see BOARD residuals).
 
+> **FK-25 SPLIT 2026-06-13 (post-implementation reconciliation).** A "FK-12" implementation
+> session shipped **PR #39** — but what it built is a **rubric-version** drift indicator
+> (`SA.detectRubricDrift`: ambient badge when the open cohort's per-record rubric stamp
+> from FK-11 ≠ the loaded rubric), which is the *in-app surface of D-09*, **not** the
+> FK-12 cohort-consistency/anchoring indicator (D-10) described on the board. The label
+> was a misnomer. Reconciled (user-directed): carded the shipped feature as **FK-25 ·
+> Rubric-version drift indicator → Shipped (PR #39)**; **FK-12 stays open** as the
+> unbuilt consistency indicator. Decision map: **D-09 → FK-11 + FK-25** (both shipped);
+> **D-10 → FK-12** (pending self-pilot). Next free card ID is now **FK-26**. The 3.3
+> row below ("INS-7 → FK-12 drift indicator") still refers to the **consistency**
+> indicator — unchanged and still open.
+
 > **§3.4 KICKOFF EXECUTED 2026-06-13 (planning/inspection only, frosty-babbage).**
 > INS-8 → FK-13. *(Numbering note: INS-8/FK-13 is formally the **Phase 4** "ARIA audit
 > → card or drop" line, not a Phase-3 table row; it's run here at the Phase-3 close to
@@ -183,8 +195,10 @@ task running; INS-3 status ☑ with findings.
 > inputs already on its DOM-as-state seam, INS-3); **rescope FK-13** from "centralization
 > audit" to **"add a score-result aria-live region + document the hard-invalid/soft-warn
 > convention"** (S, P2, additive, independently testable). FK-13 moved Needs-inspection →
-> Safe-to-implement; **Needs-inspection column now empty.** No new card (FK-25 stays
-> free). **Phase-3 inspection sweep complete: INS-5 ◐(non-blocking) · INS-6 ☑ · INS-7 ☑
+> Safe-to-implement; **Needs-inspection column now empty.** INS-8 spawned no new card
+> (next free ID was FK-25 at the time — since used for the rubric-version drift
+> indicator split, so the next free ID is now **FK-26**; see the FK-25 SPLIT note above).
+> **Phase-3 inspection sweep complete: INS-5 ◐(non-blocking) · INS-6 ☑ · INS-7 ☑
 > · INS-8 ☑.** **Implementation belongs in a feature worktree → main via PR, not
 > frosty-babbage.**
 

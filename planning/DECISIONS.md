@@ -85,15 +85,17 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **First validation step:** INS-5 measurement + decision rule.
 - **Outcome:** _(pending)_
 
-## D-09 ☐ Surface rubric-version warnings at export
+## D-09 ☑ Surface rubric-version warnings at export — and in-app
+*(Cards: **FK-11** export-time warning + per-record stamping, **PR #37**; **FK-25** in-app ambient indicator, **PR #39**. Both shipped 2026-06-13. Ready to promote → fk-decisions.md next addendum.)*
 - **Why it matters:** mixed-version cohorts silently break comparability at moderation.
 - **Evidence:** O — `rubric_version_hash` exists in moderation schema.
 - **Depends on assumption:** hash is (or can be) stamped per record at mark time.
 - **Risk if wrong:** warning is meaningless if computed once at export.
 - **First validation step:** INS-6.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-13 — assumption FALSIFIED then fixed; decision realised in two cards.** INS-6 found the hash was computed *once at export* from the live config and stamped identically on every row (no per-record stamp) — so the export-time warning the assumption relied on was indeed meaningless as-built. **FK-11 (PR #37)** added the missing piece: canonical `SA.rubricVersionHash`, stamped per record at save time (re-save re-stamps), export reads the stored stamp with a live-config fallback for legacy rows, and the `90_manifest` reports `mixed` + a `rubric_versions` list when stamps disagree. **FK-25 (PR #39)** then surfaced the same signal *in-app*: `SA.detectRubricDrift` mirrors the export's per-record fallback exactly (so the ambient badge and the manifest can never disagree) and renders an amber "Rubric drift"/"Mixed rubric" badge + cohort-section tint when the open cohort's stamps ≠ the loaded rubric. Note FK-25 shipped under the label "FK-12" (a misnomer — it is **not** the D-10 consistency indicator; see D-10 / BOARD FK-12 disambiguation).
 
 ## D-10 ☐ Ambient drift indicators — pilot behind a toggle, default off
+*(Card: **FK-12** · still open / unbuilt. This is the **cohort-consistency / anchoring** indicator — distinct from the rubric-version indicator shipped as FK-25 under D-09. The "FK-12" label on PR #39 was a misnomer; this decision and its self-pilot remain pending.)*
 - **Why it matters:** consistency is a stated product goal; signals are currently destination-only.
 - **Evidence:** O — insights module exists separately. Benefit assumption is literature-based, untested here.
 - **Depends on assumption:** ambient signals improve consistency without biasing markers toward the mean.
