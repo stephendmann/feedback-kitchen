@@ -119,6 +119,11 @@
        records marked against a different rubric than the one loaded. */
     #cohort-drift-badge { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
     #sec-cohort.fk-cohort-drift { border-color: #fcd34d; box-shadow: inset 0 0 0 1px #fde68a; }
+    /* FK-12: ambient cohort scale-use consistency badge (default-off; opt-in
+       via Scorer settings). Process-quality signal, not a running mean. */
+    #cohort-consistency-badge { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    #cohort-consistency-badge[data-state="compressed"] { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    #cohort-consistency-badge[data-state="wide"] { background: #e0f2fe; color: #075985; border-color: #7dd3fc; }
     /* ── Focus mode (criterion-by-criterion workspace) ───────── */
     /* Plain CSS (not Tailwind utilities) so it applies without re-running build:css. */
     #focus-workspace { display: none; }
@@ -1173,7 +1178,7 @@
         <summary>
           <div class="flex items-center justify-between gap-3 flex-wrap w-full">
             <div>
-              <h2 class="step-title mb-0">Cohort<span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span><span id="cohort-drift-badge" class="hidden ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle" role="status" title="">⚠ Rubric drift</span></h2>
+              <h2 class="step-title mb-0">Cohort<span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span><span id="cohort-drift-badge" class="hidden ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle" role="status" title="">⚠ Rubric drift</span><span id="cohort-consistency-badge" class="hidden ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle" role="status" data-state="" title=""></span></h2>
             </div>
             <div class="text-right text-sm">
               <div class="text-slate-600 text-xs">Cohort label</div>
@@ -3001,8 +3006,10 @@
       if (banner) banner.classList.toggle('hidden', count === 0);
       // Keep moderation-export visibility in lockstep with cohort changes.
       try { refreshModExportUI(); } catch (e) { /* module may not be loaded in tests */ }
-      // FK-12: ambient rubric-drift signal stays in lockstep with the cohort too.
+      // FK-25: ambient rubric-drift signal stays in lockstep with the cohort too.
       try { refreshRubricDriftUI(cohort); } catch (e) { /* SA.detectRubricDrift may be absent in tests */ }
+      // FK-12: ambient cohort scale-use consistency signal (default-off; opt-in).
+      try { refreshCohortConsistencyUI(cohort); } catch (e) { /* CohortInsights may be absent in tests */ }
       refreshStatusChips();
     }
 
@@ -3037,6 +3044,47 @@
         : 'All ' + d.total + ' records in this cohort were marked against an earlier rubric version (' +
           (d.versions[0] || '—') + '); the rubric loaded now is ' + d.currentHash +
           '. Re-saving a record re-stamps it with the current rubric.';
+    }
+
+    /* ── Cohort consistency indicator (FK-12) ────────────────────
+       Ambient, opt-in (default OFF), saved-cohort-only signal: shows
+       how much of the score range the open cohort spans, reusing
+       CohortInsights.scaleUseSignal (which wraps cohortMetrics — no
+       duplicate computation, same thresholds as the Insights panel).
+       Deliberately a consistency signal, not a running mean, and it
+       excludes the in-progress student, to minimise anchoring. Hidden
+       unless the marker enables it in Scorer settings and the cohort
+       is large enough (n >= 12) to read scale use meaningfully. */
+    function refreshCohortConsistencyUI(cohort) {
+      const badge = el('cohort-consistency-badge');
+      if (!badge) return;
+      const enabled = !!getSetting('showCohortConsistency', false);
+      cohort = cohort || (config && SA.getCohort(config.id));
+      const students = (cohort && cohort.students) || [];
+      let sig = null;
+      if (enabled && window.CohortInsights && typeof CohortInsights.scaleUseSignal === 'function') {
+        try { sig = CohortInsights.scaleUseSignal(config, students); } catch (e) { sig = null; }
+      }
+      if (!enabled || !sig) {
+        badge.classList.add('hidden');
+        badge.setAttribute('data-state', '');
+        badge.title = '';
+        return;
+      }
+      badge.classList.remove('hidden');
+      badge.setAttribute('data-state', sig.state);
+      badge.textContent = '⚖ Scale use ' + sig.pct;
+      badge.title = sig.note + ' (Cohort of ' + sig.n + '. Shown because you enabled the consistency indicator in Scorer settings.)';
+    }
+    function applyCohortConsistencyVisibility() {
+      const cb = el('setting-show-cohort-consistency');
+      if (cb) cb.checked = !!getSetting('showCohortConsistency', false);
+      try { refreshCohortConsistencyUI(); } catch (e) {}
+    }
+    function setShowCohortConsistency(on) {
+      setSetting('showCohortConsistency', !!on);
+      if (on) usageTrack('cohort_consistency_enabled');
+      applyCohortConsistencyVisibility();
     }
 
     /* ── Status chips (live UI state) ─────────────────────── */
@@ -4770,6 +4818,7 @@
     document.addEventListener('DOMContentLoaded', function () {
       maybeRenderDiagUsage();
       applyAdvancedToolsVisibility();
+      try { applyCohortConsistencyVisibility(); } catch (e) {} // FK-12: sync settings checkbox + badge
     });
 
     /* ── Wrap legacy advanced-tool calls so we instrument them ── */
@@ -4806,8 +4855,10 @@
              disableModExport, runModExport,
              showModExportBlock, hideModExportBlock,
              refreshModExportUI,
-             // Rubric drift indicator (FK-12)
+             // Rubric drift indicator (FK-25)
              refreshRubricDriftUI,
+             // Cohort consistency indicator (FK-12)
+             refreshCohortConsistencyUI, applyCohortConsistencyVisibility, setShowCohortConsistency,
              // Cohort Insights (Phase 1)
              showCohortInsights, hideCohortInsights, copyCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
@@ -5262,6 +5313,15 @@
         <span class="text-sm text-slate-700">
           <strong>Show advanced wording tools</strong>
           <span class="block text-xs text-slate-500 mt-1">Enables manual fallback, prompt builder, and the local run log inside the wording assistant. Off by default.</span>
+        </span>
+      </label>
+      <label class="flex items-start gap-3 cursor-pointer mb-4">
+        <input type="checkbox" id="setting-show-cohort-consistency"
+               class="mt-1"
+               onchange="S.setShowCohortConsistency(this.checked)">
+        <span class="text-sm text-slate-700">
+          <strong>Show cohort consistency indicator</strong>
+          <span class="block text-xs text-slate-500 mt-1">An ambient badge on the Cohort section showing how much of the score range your saved cohort spans (a marking-consistency cue, not the average). Saved cohort only; hidden for fewer than 12 scripts. Off by default.</span>
         </span>
       </label>
       <div class="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-2">
