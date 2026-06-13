@@ -39,7 +39,7 @@ the full planning trail (board, decision register, inspection ledger, phase gate
 
 Backlog highlights (board cards, not yet scheduled): FK-19 Moodle
 offline-grading-worksheet round-trip · FK-21 draft persistence v2 · FK-22
-homepage/dark-mode residuals · FK-15 incremental scorer decomposition ·
+homepage/dark-mode residuals · FK-23 CI wiring (Jest + lazy-load grep) · FK-15 incremental scorer decomposition ·
 FK-16 styling consolidation.
 
 ## Tooling / CI
@@ -49,8 +49,7 @@ FK-16 styling consolidation.
   permanent scrolled-pin assertion. Run manually before merging UI changes; not
   yet wired into CI.
 - **Jest** — ✅ 140 tests (characterization + engine edge suites + wording QA).
-- **Lighthouse CI** and a **bundle-size check** remain recommended; neither is
-  set up. The lazy-load invariant (#15) currently has no automated guard.
+- **CI** (`ci.yml`) runs on push/PR — `npm run build` (CSS) only; the existing Jest suite (140 tests) and axe-core battery exist but neither is wired into CI. The lazy-load invariant (#15) has no automated guard. **FK-23** will wire Jest + a lazy-load grep into `ci.yml`; Lighthouse CI deferred to Phase 4/backlog.
 
 ## UI Polish and Branding Safety — Parked Items
 
