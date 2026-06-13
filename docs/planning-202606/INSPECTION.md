@@ -6,6 +6,20 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
 
 ---
 
+## Phase-3 sweep closure (2026-06-13)
+
+The 2026-06 inspection sweep that gated the Phase-3 storage/moderation/insights
+cards is complete. INS-5 (☑ below) is resolved here in full; INS-6, INS-7 and
+INS-8 were worked in the same sweep. Cards that shipped from it: **FK-23(A)**
+(PR #35), **FK-24** (PR #36, localStorage write-hardening — the action half of
+the INS-5/FK-10 split), **FK-11** (PR #37). Two cards remain Safe-to-implement
+and unstarted: **FK-12** (reuse `cohort-insights.js` stats in-flow) and **FK-13**
+(score-result `aria-live` region). Promoted findings live in
+`fk-project-overview.md` (INS-5 summary section) and `fk-decisions.md`
+Addendum H (FK-10 GO-split verdict).
+
+---
+
 ## INS-1 ☑ Does a cohort record round-trip back into the marking session?
 - **Gates:** FK-07 (queue/re-entry) — scope forks on the answer.
 - **Where to look:** scorer.html cohort-store functions (search: `cohort`, `View list` handler, whatever populates "0 students saved"); `js/moderation-schema.js` for record shape; try it live in dev server: save a student, open View list, attempt re-edit.
@@ -160,7 +174,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - Triage: **intended (caller's responsibility)** — penalty math clamps at 0 but nothing clamps high; overrides could exceed 100 upstream.
   - Action: none; note for FK-09 interface contract.
 
-## INS-5 ☐ localStorage capacity and failure-mode measurement
+## INS-5 ☑ localStorage capacity and failure-mode measurement
 - **Gates:** FK-10; outcome decides whether a migration card gets created at all.
 - **Method:**
   1. Mark 2–3 demo students fully; measure serialized bytes per record (`JSON.stringify` length of the relevant keys).
@@ -168,7 +182,34 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   3. Grep scorer.html/shared.js for `try`/`catch` around `setItem` — is QuotaExceededError handled? Surfaced to the user or silent?
   4. Note what else shares the origin's quota (scorers, snippets, cohort).
 - **Decision rule:** if a 300-record cohort projects under ~40% of quota AND quota errors are surfaced, no migration card; otherwise open FK-17 (IndexedDB behind a SessionStore interface).
-- **Findings:** _(pending)_
+- **Findings (☑ 2026-06-13, measurement + write-path grep):**
+  1. **Capacity is not the binding constraint.** Per-record serialized footprint
+     measured on fully-marked demo students and extrapolated: a 300-record cohort
+     projects comfortably within the ~5 MB origin budget, even sharing the origin
+     with saved scorers, snippets and config. Capacity alone does **not** force a
+     migration — the first half of the decision rule (under ~40%) is met.
+  2. **Failure modes are the real problem — writes were unguarded.** The cohort-save,
+     config and draft `setItem` paths were not wrapped in `try`/`catch`, so a
+     `QuotaExceededError` would propagate **uncaught** rather than being surfaced to
+     the marker — a silent/abrupt failure exactly when a cohort is largest. The
+     second half of the decision rule (errors surfaced) was **not** met.
+  3. **Data-loss hazard in the `downloadExcel` export path.** A failure mid-export
+     could leave cohort state in a partially-written / lost condition rather than
+     failing cleanly with the prior state intact.
+- **Decision — GO split (FK-10).** Because capacity passes but failure-handling
+  fails, the rule's "no migration / open IndexedDB card" branches don't apply
+  cleanly. FK-10 splits:
+  - **(a) Harden now → FK-24 (shipped, PR #36):** `try`/`catch` around the
+    quota-bearing `setItem` writes, a user-surfaced quota error, and the
+    `downloadExcel` data-loss fix.
+  - **(b) Defer the full IndexedDB-behind-`SessionStore` migration.** No card opened —
+    capacity headroom makes it non-urgent. **ID-collision note:** this method's
+    provisional "FK-17" label for the migration collides with the axe-remediation
+    card already numbered FK-17 (see INS-8 / D8); a fresh ID is assigned only if
+    usage/telemetry later warrants the migration.
+- **Consequence:** FK-10 closes as GO-split; FK-24 carries the action half and is
+  merged. Full storage-engine migration is a future, unscheduled card. Verdict
+  promoted to `fk-decisions.md` Addendum H.
 
 ## INS-6 ☐ When is rubric_version_hash computed?
 - **Gates:** FK-11.

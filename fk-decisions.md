@@ -991,3 +991,50 @@ classes and `.btn-danger`; remaining light tint chips and the dead
 `?cinematic=1` stylesheet link are carried on FK-22's card.
 
 **Refs.** planning D-04 · FK-14 · PR #30, PR #31 · F.3 (section layout) · F.4.
+
+## Addendum H — Improvement-programme Phase 3 outcomes (2026-06)
+
+**Track:** same 2026-06 improvement programme as Addenda F and G; promoted at the
+second promotion checkpoint (2026-06-13). Planning trail snapshot:
+`docs/planning-202606/` (INSPECTION.md INS-5–8). Addendum-scoped numbering (H.1);
+no new global D-numbers. The Phase-3 sweep also shipped FK-23(A) (PR #35) and
+FK-11 (PR #37), and left FK-12 / FK-13 Safe-to-implement; this addendum records
+the one item that resolved to a *decision* — FK-10's storage verdict. FK-24, the
+action half of that verdict, is captured under H.1.
+
+### H.1 — localStorage: harden the writes, defer the migration *(FK-10, gated by INS-5)*
+
+**Decision.** FK-10 resolves **GO split**, not as a single migration. localStorage
+stays the v1 storage backend; the quota-bearing writes are hardened now, and the
+larger IndexedDB migration is deferred rather than carded.
+
+- **Harden now → FK-24 (shipped, PR #36):** `try`/`catch` around the cohort-save /
+  config / draft `setItem` writes; `QuotaExceededError` surfaced to the marker
+  instead of propagating uncaught; and the `downloadExcel` export path fixed so a
+  mid-export failure no longer risks losing cohort state.
+- **Defer → full IndexedDB-behind-`SessionStore` migration.** No card opened —
+  capacity headroom makes it non-urgent. A fresh ID is assigned only if usage or
+  telemetry later warrants. **ID-collision note:** INS-5's method text named a
+  provisional "FK-17" for this migration, but FK-17 is already the
+  axe-remediation card (see D8 / INS-8); the migration must **not** reuse that ID.
+
+**Rationale.** INS-5 measured both halves of its decision rule and they disagreed:
+capacity *passes* (a 300-record cohort projects comfortably under the ~5 MB origin
+budget, so the "<40% of quota" test is met), but failure-handling *fails* — the
+`setItem` writes were unguarded, so a quota error would surface as an uncaught
+throw, and `downloadExcel` carried a data-loss hazard on mid-export failure.
+Because capacity alone doesn't force a migration but the failure modes were
+genuinely unsafe, the right move was to fix the safety gap immediately and defer
+the storage-engine change until there's a usage reason for it.
+
+**Validation outcome (2026-06-13).** Capacity figures and the unguarded-write /
+`downloadExcel` hazards established in INS-5 (`docs/planning-202606/INSPECTION.md`).
+FK-24 merged via PR #36 with the three hardening changes above; FK-10 closes as
+GO-split.
+
+**Consequences.** localStorage is confirmed as the v1 backend with hardened writes.
+The IndexedDB/`SessionStore` migration is a future, unscheduled card needing a
+fresh ID (not FK-17). Any later decision to migrate revisits this entry.
+
+**Refs.** FK-10 · FK-24 (PR #36) · INS-5 · D8 / INS-8 (FK-17 collision) ·
+`fk-project-overview.md` § Storage capacity and write-hardening.
