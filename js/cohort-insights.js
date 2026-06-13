@@ -604,7 +604,43 @@
       '</div>';
   }
 
+  /* ── FK-12: Ambient scale-use consistency signal ──────────────
+     Pure, saved-cohort-only. Reuses cohortMetrics (no duplicate
+     computation) and the SAME scale_compressed / scale_wide
+     thresholds the Cohort Insights panel uses, so the ambient badge
+     and the panel can never disagree.
+
+     Deliberately a CONSISTENCY signal, not a running mean: it reports
+     how much of the range the cohort spans, never where the current
+     script should land — minimising the anchoring risk that gates
+     this feature (ships behind a default-off toggle).
+
+     Returns null (caller hides the badge) when there are too few
+     scripts to read scale use meaningfully (n < VERY_SMALL_N) or
+     when there is no usable cohort. */
+  function scaleUseSignal(config, students) {
+    if (!students || students.length < TH.VERY_SMALL_N) return null;
+    var m = cohortMetrics(config, students);
+    if (!m) return null;
+    var ratio = m.scale_use_ratio;
+    var state, label, note;
+    if (ratio < TH.scale_compressed) {
+      state = 'compressed';
+      label = 'narrow spread';
+      note  = 'This cohort’s marks span ' + pct(ratio) + ' of the available range — anchor papers can help check whether top and bottom work is spread enough.';
+    } else if (ratio > TH.scale_wide) {
+      state = 'wide';
+      label = 'wide spread';
+      note  = 'This cohort’s marks span ' + pct(ratio) + ' of the range — worth confirming the extreme scripts are clearly evidenced in your Notes.';
+    } else {
+      state = 'healthy';
+      label = 'healthy spread';
+      note  = 'This cohort’s marks span ' + pct(ratio) + ' of the available range.';
+    }
+    return { n: m.n, ratio: ratio, pct: pct(ratio), state: state, label: label, note: note };
+  }
+
   /* ── Public API ─────────────────────────────────────────────── */
-  window.CohortInsights = { cohortMetrics: cohortMetrics, detectState: detectState, renderInsights: renderInsights };
+  window.CohortInsights = { cohortMetrics: cohortMetrics, detectState: detectState, renderInsights: renderInsights, scaleUseSignal: scaleUseSignal };
 
 })();
