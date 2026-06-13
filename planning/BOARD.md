@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, post-FK-20 promotion checkpoint): Safe to implement now: 0 · Needs inspection: 4 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Shipped: 14 · others: 0. Next free card ID: FK-23.
+Column counts (2026-06-13, + FK-23 from the ROADMAP review): Safe to implement now: 1 (FK-23 CI wiring) · Needs inspection: 4 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Shipped: 14 · others: 0. Next free card ID: FK-24.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -14,7 +14,17 @@ Column counts (2026-06-13, post-FK-20 promotion checkpoint): Safe to implement n
 
 ## Safe to implement now
 
-*(empty — FK-14 ✓ and FK-20 ✓ both closed 2026-06-13; next session = Phase-3 kickoff: design + run INS-5, then FK-10 audit verdict. See ROADMAP-PHASES.md.)*
+### FK-23 · Wire the existing test nets into CI + guard the lazy-load invariant
+- **Rationale:** `ci.yml` already runs on push/PR but only does `npm run build` (CSS). The FK-01 Jest regression net (140 tests) and the FK-17/18 axe battery exist but neither runs in CI — the nets Phase 0 built don't actually fire on PRs. Separately, #15's lazy-load of SheetJS has no guard: re-adding an eager `<script src=".../xlsx.full.min.js">` to `<head>` would silently restore ~930 KB on the critical path with zero test failure. (Discovered at the 2026-06-13 ROADMAP review — the original Tooling note implied no CI existed; it does, it just runs nothing protective.)
+- **Evidence:** O — `.github/workflows/ci.yml` (build step only); `loadSheetJS()` at scorer.html:2542 (injects `/js/xlsx.full.min.js`, no static head tag); `package.json` has no `test` script.
+- **Scope (A) — this card, S-effort, no gate:** add a `test` script + `npx jest` step to `ci.yml`; add a grep/CI assertion that `xlsx.full.min.js` appears only inside `loadSheetJS()` and never as a static `<head>` script tag.
+- **Scope (B) — deferred, NOT this card:** Lighthouse CI + bundle-size budget → Phase 4/backlog. For a static local-first tool the only material perf-regression vector is the SheetJS payload, which (A)'s grep covers far more cheaply; lean toward dropping Lighthouse, keep at most a byte-budget assertion.
+- **Stretch (medium):** run the axe battery in CI too — needs a headless browser + dev server up in the workflow; do after (A) lands.
+- **Risk:** Low — CI/test-harness only; no app code. Watch puppeteer/browser setup cost if the a11y stretch is taken.
+- **DoD:** `ci.yml` fails on a Jest regression; the lazy-load guard fails if an eager SheetJS tag is reintroduced; README Local Development / Planning sections already describe the suites, so no doc drift.
+- **Column:** Safe to implement now (parallel to Phase 3 — off-theme, does not gate INS-5/FK-10). **Priority:** P1 (the regression net is currently decorative in CI). **Effort:** S.
+
+*(FK-14 ✓ and FK-20 ✓ closed 2026-06-13; next session = Phase-3 kickoff: design + run INS-5, then FK-10 audit verdict. FK-23 can be picked up any time in parallel. See ROADMAP-PHASES.md.)*
 
 
 ---
