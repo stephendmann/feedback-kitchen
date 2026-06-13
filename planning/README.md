@@ -35,3 +35,9 @@ Nothing leaves this directory until:
 Then, per item, rewrite as: ADR addendum (fk-decisions.md) for locked design choices;
 GitHub issue for deferred work; PR-ready notes for implemented work. Strip all
 working-plan language (confidence levels stay in ADRs; board mechanics do not).
+
+> **Workflow note (2026-06-14):** the original `promotion/` staging folder is retired
+> and lives under `_archive/promotion-phase0/`. Since Phase 2 the mechanics are:
+> PR bodies → `%TEMP%\fk-pr-bodies\`; docs/decision promotion → a dedicated docs
+> branch (e.g. `docs/phase3-promotion` = PR #38) + `docs/planning-202606/` snapshots
+> on main. Don't recreate `promotion/`. See `_archive/README.md`.
