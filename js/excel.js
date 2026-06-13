@@ -148,7 +148,14 @@
     /* ── Write file ────────────────────────────────────────── */
     const safeName    = (student.name || 'Student').replace(/[^a-zA-Z0-9 ]/g, '_').trim();
     const safeCourse  = (config.courseName || 'Assessment').replace(/[^a-zA-Z0-9]/g, '_');
-    XLSX.writeFile(wb, `${safeName}_${safeCourse}_Feedback.xlsx`);
+    // FK-24: a failed download (quota/serialisation) must not pass silently.
+    try {
+      XLSX.writeFile(wb, `${safeName}_${safeCourse}_Feedback.xlsx`);
+    } catch (e) {
+      alert('Could not generate the Excel file. Your browser may be low on memory or storage — close other tabs and try again.');
+      return false;
+    }
+    return true;
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -408,7 +415,14 @@
     const safeLabel  = (cohort.label || 'Cohort').replace(/[^a-zA-Z0-9 _-]/g, '_').trim();
     const safeCourse = (config.courseName || 'Assessment').replace(/[^a-zA-Z0-9]/g, '_');
     const filename   = `${safeCourse}_${safeLabel}_Cohort.xlsx`;
-    XLSX.writeFile(wb, filename);
+    // FK-24: on a failed write, return false so the caller does NOT offer to
+    // wipe the cohort — we must never prompt to delete data we failed to export.
+    try {
+      XLSX.writeFile(wb, filename);
+    } catch (e) {
+      alert('Could not generate the cohort workbook. Your browser may be low on memory or storage — close other tabs and try again. Your cohort has not been changed.');
+      return false;
+    }
     return filename;
   }
 

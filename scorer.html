@@ -2643,7 +2643,12 @@
         };
         const result = SA.addToCohort(config.id, record);
         if (!result.saved) {
-          showCohortToast('Could not save — please add a name or student ID.', 'amber');
+          // FK-24: distinguish a storage quota/write failure (data at risk)
+          // from the benign "needs an identifier" case.
+          const msg = (result.reason === 'quota' || result.reason === 'write-error')
+            ? (result.message || 'Could not save — this browser’s storage is full. Export your cohort, then try again.')
+            : 'Could not save — please add a name or student ID.';
+          showCohortToast(msg, 'amber');
           return;
         }
         refreshCohortUI();
@@ -2710,7 +2715,12 @@
       const next = prompt('Rename cohort label:', cohort.label || '');
       if (next === null) return;
       cohort.label = next.trim() || cohort.label;
-      SA.saveCohort(cohort);
+      try {
+        SA.saveCohort(cohort);
+      } catch (e) {
+        showCohortToast(e && e.message ? e.message : 'Could not rename — this browser’s storage may be full.', 'amber');
+        return;
+      }
       refreshCohortUI();
     }
 
@@ -3420,7 +3430,11 @@
       _displayRounding = val;
       if (config) {
         config.scoreRounding = val;
-        SA.saveConfig(config);
+        try {
+          SA.saveConfig(config);
+        } catch (e) {
+          alert(e && e.message ? e.message : 'Could not save the rounding setting — this browser’s storage may be full.');
+        }
       }
       highlightRoundingBtn(val);
       recalculate();
@@ -3445,9 +3459,17 @@
     }
 
     function saveSnippets() {
-      localStorage.setItem(SNIPPETS_KEY, JSON.stringify(snippets));
+      // FK-24: surface quota/write failures instead of throwing silently.
+      try {
+        if (SA && SA.safeSetItem) SA.safeSetItem(SNIPPETS_KEY, JSON.stringify(snippets));
+        else localStorage.setItem(SNIPPETS_KEY, JSON.stringify(snippets));
+      } catch (e) {
+        alert(e && e.message ? e.message : 'Could not save snippets — this browser’s storage may be full.');
+        return false;
+      }
       renderSnippetsDropdown();
       renderSnippetsList();
+      return true;
     }
 
     function renderSnippetsDropdown() {

@@ -299,6 +299,38 @@
   const FK_VERSION = '2.5.1';
   function getFKVersion() { return FK_VERSION; }
 
+  /* ── Storage write hardening (FK-24) ─────────────────────────
+     localStorage.setItem throws QuotaExceededError once the origin's
+     storage budget is exhausted. Left unhandled, that silently aborts a
+     cohort / config / snippet save and the marker loses work with no
+     warning. safeSetItem normalises any write failure into a tagged
+     StorageWriteError (with a .quota flag and a user-readable .message)
+     so callers can surface it; isQuotaError recognises the quota
+     variants across browser engines.
+  ───────────────────────────────────────────────────────────── */
+  function isQuotaError(e) {
+    if (!e) return false;
+    return e.name === 'QuotaExceededError' ||
+           e.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||  // Firefox
+           e.code === 22   ||                          // most engines
+           e.code === 1014;                            // older Firefox
+  }
+
+  function safeSetItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      const quota = isQuotaError(e);
+      const err = new Error(quota
+        ? 'Storage limit reached — this browser has no room left for Feedback Kitchen data. Export your cohort to free up space, then try again.'
+        : 'Could not save to this browser’s storage.');
+      err.name  = 'StorageWriteError';
+      err.quota = quota;
+      err.cause = e;
+      throw err;
+    }
+  }
+
   /* ── Persistence ─────────────────────────────────────────── */
   function loadAllConfigs() {
     try { return JSON.parse(localStorage.getItem(CONFIGS_KEY) || '[]'); }
@@ -306,7 +338,7 @@
   }
 
   function saveAllConfigs(configs) {
-    localStorage.setItem(CONFIGS_KEY, JSON.stringify(configs));
+    safeSetItem(CONFIGS_KEY, JSON.stringify(configs));
   }
 
   function saveConfig(config) {
@@ -344,7 +376,7 @@
   }
 
   function getActiveId()    { return localStorage.getItem(ACTIVE_KEY); }
-  function setActiveId(id)  { localStorage.setItem(ACTIVE_KEY, id); }
+  function setActiveId(id)  { safeSetItem(ACTIVE_KEY, id); }
   function loadActiveConfig() {
     const id = getActiveId();
     return id ? loadConfig(id) : null;
@@ -1146,7 +1178,7 @@
   function saveCohort(cohort) {
     if (!cohort || !cohort.scorerId) return;
     cohort.updatedAt = new Date().toISOString();
-    localStorage.setItem(cohortKey(cohort.scorerId), JSON.stringify(cohort));
+    safeSetItem(cohortKey(cohort.scorerId), JSON.stringify(cohort));
   }
 
   function initCohort(scorerId, label, multiMarker) {
@@ -1189,7 +1221,15 @@
       studentRecord.createdAt = studentRecord.savedAt;
       cohort.students.push(studentRecord);
     }
-    saveCohort(cohort);
+    // FK-24: a quota/write failure here would otherwise throw and lose the
+    // record silently. Catch it and report back so the caller can warn the
+    // marker. The in-memory `cohort` is discarded (getCohort re-reads from
+    // storage next call), so no rollback is needed.
+    try {
+      saveCohort(cohort);
+    } catch (e) {
+      return { saved: false, reason: e.quota ? 'quota' : 'write-error', message: e.message };
+    }
     return { saved: true, replaced: replaced, count: cohort.students.length };
   }
 
@@ -1228,6 +1268,7 @@
     getTierLabel, migrateConfig,
     GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
     uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
+    isQuotaError, safeSetItem,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
     computeScores, generateFeedbackText, formatScore,

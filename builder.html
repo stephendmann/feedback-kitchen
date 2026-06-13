@@ -1179,8 +1179,14 @@
         showEl('err-save', 'Criteria weights must total 100% (Step 3).'); return;
       }
       show('err-save', false);
-      SA.saveConfig(config);
-      SA.setActiveId(config.id);
+      // FK-24: a quota/write failure must not look like a successful save.
+      try {
+        SA.saveConfig(config);
+        SA.setActiveId(config.id);
+      } catch (e) {
+        showEl('err-save', e && e.message ? e.message : 'Could not save — this browser’s storage is full. Free up space and try again.');
+        return;
+      }
       updateSaveStatus('Saved ✓');
       window.location.href = 'scorer.html?id=' + config.id;
     }
