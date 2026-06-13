@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · In progress: 1 (FK-12 cohort-consistency indicator — IN REVIEW, PR #44) · Shipped: 20 (+FK-13 score-result live region, PR #43) (+FK-26 modexport tests, PR #42 / GH issue #4 closed) · others: 0. Next free card ID: FK-27.
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 21 · others: 0. Next free card ID: FK-27. *(Latest: FK-12 shipped PR #44; docs follow-up PR #45 open. FK-13 #43, FK-26 #42 also shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -74,14 +74,7 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-
-### FK-12 · Ambient cohort-consistency indicator (D-10) — IN REVIEW (PR #44)
-- **Status:** implemented on `feat/fk12-cohort-consistency-indicator`, **PR [#44](https://github.com/stephendmann/feedback-kitchen/pull/44) open**, CI running (Vercel pass). The unbuilt cohort-consistency indicator — distinct from the shipped FK-25 rubric-version badge.
-- **Forks taken (the two the card deferred):** **(1) signal = scale-use** (`scale_use_ratio`) — a consistency cue, deliberately *not* a running mean, to minimise anchoring; reuses an existing aggregate, **no engine change**. **(2) dataset = saved-cohort-only** — does not touch `recalculate()`.
-- **What shipped in the PR:** pure `CohortInsights.scaleUseSignal()` (wraps `cohortMetrics`, same `scale_compressed`/`scale_wide` thresholds, small-N suppressed below n=12); ambient `#cohort-consistency-badge` (`role=status`) in the Cohort header behind a **default-off** Scorer-settings toggle; 8 unit tests; 3 stale "FK-12"→FK-25 comments corrected.
-- **DoD evidence:** indicator behind a default-off toggle ✓; reuses `cohortMetrics` (no duplicate compute) ✓; small-N suppression ✓; **self-pilot precedes any default-on** (honoured by shipping default-off) ✓. Jest 235/235; axe Scorer 0/51; runtime-verified (hidden by default, "⚖ Scale use 70% · healthy" when enabled, checkbox syncs).
-- **Out of scope (held):** per-tutor signals (needs `renderInsights` `currentTutor` wiring); per-criterion histogram (M fork). **Priority:** P2. **Effort:** S.
-- **On merge:** move to Shipped; run post-merge sync.
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -125,5 +118,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-25 | Rubric-version drift indicator — ambient in-app badge (`SA.detectRubricDrift`) when the open cohort's stamped rubric (FK-11) ≠ the loaded rubric; mirrors the export manifest's `mixed`/fallback semantics so badge and `90_manifest` can't disagree; 15 new tests (*PR #39 was titled "FK-12" — provenance; in-app surface of D-09*) | [#39](https://github.com/stephendmann/feedback-kitchen/pull/39) | 2026-06-13 |
 | FK-26 | Moderation Export characterization tests (= GitHub issue #4): `moderation-suppression.test.js` + `moderation-privacy.test.js` (SENTINEL-PII cohort → real export → `writeFile` intercept → cell-level leak guard via vendored SheetJS; 44 tests, exporter confirmed non-leaking; no new dep) | [#42](https://github.com/stephendmann/feedback-kitchen/pull/42) | 2026-06-14 |
 | FK-13 | Score-result `aria-live` region (`#score-result-live`, debounced + de-duped announce of recomputed score/grade on `recalculate()`; WCAG 2.1 AA 4.1.3) + hard-invalid/soft-warn validation-convention note at both setters; regression guard `js/score-result-live-region.test.js`; axe Scorer 0/51 | [#43](https://github.com/stephendmann/feedback-kitchen/pull/43) | 2026-06-14 |
+| FK-12 | Ambient cohort scale-use consistency indicator (D-10): pure `CohortInsights.scaleUseSignal()` (reuses `cohortMetrics`, small-N suppressed) → `#cohort-consistency-badge` behind a **default-off** Scorer-settings toggle; saved-cohort-only, no `recalculate()` touch; 8 unit tests; axe 0/51. *(Docs maintenance note + code cross-ref in follow-up PR #45.)* | [#44](https://github.com/stephendmann/feedback-kitchen/pull/44) | 2026-06-14 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · **FK-11 doc-drift NOT fixed in PR #37** — `docs/fk_moderation_export_v1.md:71` still says the hash covers "criterion order and maxima" (wrong: it's names+weights+all tier descriptors; correct gloss at `js/moderation-readme.js:123`); fold into the next moderation-touching PR.
