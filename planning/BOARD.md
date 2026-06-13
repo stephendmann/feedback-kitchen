@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 21 · others: 0. Next free card ID: FK-27. *(Latest: FK-12 shipped PR #44; docs follow-up PR #45 open. FK-13 #43, FK-26 #42 also shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 21 · others: 0. Next free card ID: FK-27. *(Latest: FK-12 shipped PR #44 + docs/cross-ref follow-up PR #45 (both merged 2026-06-14). FK-13 #43, FK-26 #42 also shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
