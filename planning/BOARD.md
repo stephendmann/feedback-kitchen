@@ -4,7 +4,9 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + Phase-3 INS-6→FK-11 kickoff: INS-6 ☑, FK-11 ungated → Safe-to-implement, M fork confirmed): Safe to implement now: 2 (FK-23 CI wiring · FK-11 version stamping) · Needs inspection: 2 (FK-12 · FK-13) · Backlog: 6 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22 · FK-24) · Ready to document: 1 (FK-10) · Shipped: 14 · others: 0. Next free card ID: FK-25.
+Column counts (2026-06-13, + Phase-3 INS-7→FK-12 kickoff: INS-7 ☑, FK-12 ungated → Safe-to-implement, S–M fork): Safe to implement now: 3 (FK-23 CI wiring · FK-11 version stamping · FK-12 ambient drift indicator) · Needs inspection: 1 (FK-13) · Backlog: 6 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22 · FK-24) · Ready to document: 1 (FK-10) · Shipped: 14 · others: 0. Next free card ID: FK-25.
+>
+> ⚠ Board-staleness flag (2026-06-13, INS-7 session): prior-session context says **FK-23(A) and FK-24 merged to main**, but no merge commit/PR is visible in this worktree and both still sit pre-shipped above (FK-23 in Safe-to-implement, FK-24 in Backlog). Not reconciled here — needs PR numbers + dates to move them to Shipped. Flagged to the user.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -34,20 +36,24 @@ Column counts (2026-06-13, + Phase-3 INS-6→FK-11 kickoff: INS-6 ☑, FK-11 ung
 - **DoD:** records stamped with the rubric hash at save time; export warns on mixed hashes (with legacy/no-stamp rows handled, not false-flagged); unit test on the export path covering a mixed-hash cohort + a legacy-record cohort; spec line `:71` corrected. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
 - **Column:** Safe to implement now (INS-6 cleared the gate). **Priority:** P2. **Effort:** M (fork resolved to the grow side).
 
-*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed (per-record stamping required; hash is export-time-only today), moved to Safe-to-implement. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-7→FK-12, then INS-8 remainder→FK-13. FK-11 + FK-23 + FK-24 are implementation cards for a feature worktree, not this one. See ROADMAP-PHASES.md §3.)*
+### FK-12 · Ambient drift indicators during marking
+- **Rationale:** Consistency signals are destination-only (Cohort Insights modal). One small ambient indicator could surface drift in-flow. INS-7 (☑ 2026-06-13) confirmed the metrics engine is reusable: `cohortMetrics`/`detectState` are **pure functions on `window.CohortInsights`**, but their only in-app caller is `renderInsights` from the insights modal (scorer.html:3104) — destination-only in practice, not by design.
+- **Evidence:** O — `js/cohort-insights.js:110–252` (`cohortMetrics` returns 23 cohort-level fields: spread/distribution + behaviour + Cronbach α); sole consumer at scorer.html:3104; INS-7 Q1/Q2 findings. U (now bounded): whether an ambient signal helps or *causes* anchoring — answerable only by the self-pilot, not by inspection.
+- **Dependencies:** ~~INS-7~~ ☑ resolved — **technical gate cleared.** FK-07 (cohort visible during marking) helps but is not a hard blocker. Adjacent to the Cohort Insights modal code in scorer.html.
+- **Scope (two forks, decide in the feature worktree):**
+  1. **Indicator-source fork.** Reuse an *existing* aggregate (scale-use badge / `grade_bands` sparkline / `total_score_sd` / `within_student_sd_pct` / running mean) → **S, no engine change**; OR add the per-criterion tally the original "criterion band histogram chip" example needs → **M** — a small additive pass on rows already iterated for SD/α (`:142–150`, `:218–224`). The card's example is the *one* signal `cohortMetrics` does **not** already emit (it reads per-criterion rows but only folds them into within-student SD and α).
+  2. **Dataset fork.** Saved-cohort-only (trivial — `cohortMetrics(config, cohort.students)`) vs live-augmented (append a synthetic record from the in-progress `scoreResult` before computing, touching the recalculate path). The in-progress student is **not** in `cohort.students` until save, so saved-only shows nothing for the student being marked.
+- **Out of scope:** per-tutor ambient signals — INS-7 free finding: `renderInsights` is hard-wired `currentTutor=''`, so the State-B tutor-subset path is dead in the app today; per-tutor would need that wiring first. Cross-cohort / role labels stay deferred to the "Coordinator Dashboard" (not in this repo).
+- **Risk:** Medium-high **product** risk: an always-visible running-mean/distribution chip can bias markers toward the mean — the exact vector the existing module hedges against in every rendered string (`:582` disclaimer). Mitigation unchanged: behind a settings toggle, **default off**, self-pilot first.
+- **DoD:** one indicator behind a settings toggle; reuses `CohortInsights.cohortMetrics` (no duplicate computation); small-N suppression honoured (engine already blanks shape stats below n≈12); self-pilot notes recorded **before any default-on decision**. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
+- **Column:** Safe to implement now (INS-7 cleared the technical gate; the anchoring question rides as a default-off + self-pilot DoD, not an inspection blocker). **Priority:** P2. **Effort:** S (existing-aggregate fork) – M (per-criterion fork).
+
+*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed, moved to Safe-to-implement. INS-7 run → FK-12 ungated (metrics engine is pure/reusable; per-criterion histogram is the one signal not pre-computed; anchoring risk handled by default-off toggle + self-pilot), moved to Safe-to-implement. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-8 remainder → FK-13 (last Phase-3 row). FK-11 + FK-12 + FK-23 + FK-24 are implementation cards for a feature worktree, not this one. See ROADMAP-PHASES.md §3.)*
 
 
 ---
 
 ## Needs inspection
-
-### FK-12 · Ambient drift indicators during marking
-- **Rationale:** Consistency signals are destination-only (Cohort Insights). One small ambient indicator (e.g. criterion band histogram chip) could surface drift in-flow.
-- **Evidence:** O — absence in screenshots; `js/cohort-insights.js` exists (610 lines). U — what stats it computes; whether ambient signals help or *cause* anchoring.
-- **Dependencies:** **INS-7** (read cohort-insights.js); FK-07 helps (cohort visible during marking) but is not a hard blocker.
-- **Risk:** Medium-high product risk: could bias markers toward the mean. Ship behind a toggle, default off, self-pilot first.
-- **DoD:** one indicator behind a settings toggle; reuses insights stats (no duplicate computation); self-pilot notes recorded before any default-on decision.
-- **Column:** Needs inspection. **Priority:** P2. **Effort:** M.
 
 ### FK-13 · ARIA/validation centralization audit
 - **Rationale:** Commit history ("remove aria-invalid from out-of-band override warning") suggests per-widget ARIA tuning; thin evidence (one commit). Audit before judging.

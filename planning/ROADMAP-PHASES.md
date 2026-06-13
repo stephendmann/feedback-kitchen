@@ -89,8 +89,8 @@ task running; INS-3 status ☑ with findings.
 | Order | Item | Notes |
 |---|---|---|
 | 3.1 | INS-5 storage measurement → FK-10 audit verdict | **◐ kickoff done 2026-06-13** — see note below |
-| 3.2 | INS-6 → FK-11 version stamping/warning | Scope forks on stamping semantics |
-| 3.3 | INS-7 → FK-12 drift indicator behind toggle | Self-pilot before any default-on |
+| 3.2 | INS-6 → FK-11 version stamping/warning | **☑ kickoff done 2026-06-13** — INS-6 ☑, FK-11 ungated (M, per-record stamping); see §3.2 note |
+| 3.3 | INS-7 → FK-12 drift indicator behind toggle | **☑ kickoff done 2026-06-13** — INS-7 ☑, FK-12 ungated (S–M); self-pilot before any default-on; see §3.3 note |
 
 **Exit:** storage go/no-go documented; mixed-version cohorts warn at export (or stamping landed); one drift indicator toggleable.
 
@@ -109,6 +109,49 @@ task running; INS-3 status ☑ with findings.
 > ID-collision → the spawned card is **FK-24**. FK-21 (draft persistence v2) lands
 > after FK-24 and routes through the same `safeSetItem` seam. **All implementation
 > (FK-23, FK-24) belongs in a feature worktree → main via PR, not frosty-babbage.**
+
+> **3.2 KICKOFF EXECUTED 2026-06-13 (planning/inspection only, frosty-babbage).**
+> INS-6 run → **☑**. `rubric_version_hash` is computed **once at export** from the
+> currently-loaded rubric (`_rubricHash(config)`, `moderation-export.js:120`) and
+> written identically to every row (`:188`) — the cohort record stores **no** hash,
+> so a mid-cohort rubric edit is invisible and mixed-version detection is impossible
+> as built. Hash = 8-char djb2 over criteria names + weights + all five tier
+> descriptors; `fk_version` = app version (`2.5.1`) not schema version
+> (`modexport-v1`). **FK-11 verdict: ungated, takes the grow-to-M fork** — per-record
+> stamping at mark/save time must land first (move `_rubricHash` to a shared home so
+> `saveCurrentStudentToCohort` can call it), then export reads each record's stored
+> hash (live-`_rubricHash` fallback for legacy/imported rows) and warns on mixed
+> hashes. Doc-drift flagged at `docs/fk_moderation_export_v1.md:71` (cheap ride-along).
+> FK-11 moved to Safe-to-implement. **Implementation belongs in a feature worktree →
+> main via PR, not frosty-babbage.**
+
+> **3.3 KICKOFF EXECUTED 2026-06-13 (planning/inspection only, frosty-babbage).**
+> INS-7 run → **☑**. `js/cohort-insights.js` `cohortMetrics(config, students)` and
+> `detectState(cohort, currentTutor)` are **pure functions exported on
+> `window.CohortInsights`** — fully reusable in-flow, but the **only** in-app caller
+> is `renderInsights` from the Cohort Insights modal (scorer.html:3104, always
+> `currentTutor=''`), so the engine is destination-only *in practice, not by design*.
+> `cohortMetrics` emits 23 cohort-level fields (spread/distribution: mean, min, max,
+> SD, range, scale-use ratio, skew, kurtosis, bimodality, grade-band histogram, fail
+> rate; behaviour: within-student SD, late/override counts, notes completion, feedback
+> word counts; reliability: Cronbach α). **No standing per-criterion or per-tutor
+> breakdown** — per-criterion rows are read but only folded into within-student SD and
+> α, so the card's "criterion band histogram chip" example is the one signal **not**
+> pre-computed (a cheap additive pass on rows already iterated). **FK-10/INS-5-style
+> verdict: GO, ungated** — technical gate cleared, two scope forks travel to the
+> feature worktree: (1) **indicator-source** — reuse an existing aggregate (S, no
+> engine change) vs add per-criterion tally (M); (2) **dataset** — saved-cohort-only
+> (trivial) vs live-augment with the in-progress `scoreResult` (touches recalculate).
+> The anchoring product risk is **not** an inspection blocker — it rides as the card's
+> existing DoD (behind a settings toggle, **default off**, self-pilot before any
+> default-on); the "does an ambient signal help or cause anchoring" question is
+> answerable only by that self-pilot. Free finding: `renderInsights`' hard-wired
+> `currentTutor=''` makes the State-B per-tutor subset dead in the app today —
+> per-tutor ambient signals would need that wiring first. FK-12 moved to
+> Safe-to-implement. **Implementation belongs in a feature worktree → main via PR, not
+> frosty-babbage.** **Phase-3 inspection sweep now complete (3.1/3.2/3.3 all run);
+> next Phase-3 work is the INS-8 remainder → FK-13, plus the second promotion
+> checkpoint.**
 
 ## Phase 4 — Structural hygiene (amortized, runs alongside 2–3)
 | Item | Notes |
