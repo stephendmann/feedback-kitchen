@@ -39,7 +39,7 @@ the full planning trail (board, decision register, inspection ledger, phase gate
 
 Backlog highlights (board cards, not yet scheduled): FK-19 Moodle
 offline-grading-worksheet round-trip · FK-21 draft persistence v2 · FK-22
-homepage/dark-mode residuals · FK-23 CI wiring (Jest + lazy-load grep) · FK-15 incremental scorer decomposition ·
+homepage/dark-mode residuals · FK-15 incremental scorer decomposition ·
 FK-16 styling consolidation.
 
 ## Tooling / CI
@@ -49,7 +49,7 @@ FK-16 styling consolidation.
   permanent scrolled-pin assertion. Run manually before merging UI changes; not
   yet wired into CI.
 - **Jest** — ✅ 140 tests (characterization + engine edge suites + wording QA).
-- **CI** (`ci.yml`) runs on push/PR — `npm run build` (CSS) only; the existing Jest suite (140 tests) and axe-core battery exist but neither is wired into CI. The lazy-load invariant (#15) has no automated guard. **FK-23** will wire Jest + a lazy-load grep into `ci.yml`; Lighthouse CI deferred to Phase 4/backlog.
+- **CI** (`ci.yml`) runs on push/PR — `npm run build` (CSS), the **lazy-load guard** (`npm run guard:lazy-load`), then the **Jest suite** (`npm test`, 140 tests). **FK-23** wired Jest + the lazy-load guard into CI: the guard (`scripts/check-lazy-load.js`) enforces the #15 invariant by failing the build if a static SheetJS/`xlsx` `<script src>` tag reappears in production HTML (`_snapshots/` excluded). The axe-core battery is still run manually (needs headless browser + dev server — separate setup); Lighthouse CI deferred to Phase 4/backlog.
 
 ## UI Polish and Branding Safety — Parked Items
 
