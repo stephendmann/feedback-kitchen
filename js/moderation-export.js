@@ -294,7 +294,14 @@
     const filename = schema.buildModExportFilename
       ? schema.buildModExportFilename(optInRecord.paper_code, optInRecord.cohort_id, optInRecord.assessment_id)
       : 'FK_ModExport.xlsx';
-    XLSX.writeFile(wb, filename);
+    // FK-24: surface a failed download instead of returning a filename for a
+    // workbook that never saved.
+    try {
+      XLSX.writeFile(wb, filename);
+    } catch (e) {
+      alert('Could not generate the moderation export. Your browser may be low on memory or storage — close other tabs and try again.');
+      return false;
+    }
     return filename;
   }
 

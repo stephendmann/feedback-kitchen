@@ -250,3 +250,132 @@ describe('locale gating', () => {
     expect(output).toContain('organised');
   });
 });
+
+/* ════════════════════════════════════════════════════════════
+   FK-24 — storage write hardening (localStorage quota errors)
+   ════════════════════════════════════════════════════════════ */
+describe('FK-24 storage write hardening', () => {
+  // Builds a browser-style QuotaExceededError.
+  function quotaError() {
+    const e = new Error('The quota has been exceeded.');
+    e.name = 'QuotaExceededError';
+    e.code = 22;
+    return e;
+  }
+
+  // Forces every localStorage.setItem to throw `err` until restored.
+  function failWritesWith(err) {
+    return jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw err; });
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    jest.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('isQuotaError', () => {
+    test('recognises quota variants across engines', () => {
+      const SA = loadShared();
+      expect(SA.isQuotaError(quotaError())).toBe(true);
+      expect(SA.isQuotaError({ name: 'NS_ERROR_DOM_QUOTA_REACHED' })).toBe(true);
+      expect(SA.isQuotaError({ code: 1014 })).toBe(true);
+      expect(SA.isQuotaError({ code: 22 })).toBe(true);
+    });
+
+    test('does not flag unrelated errors or nullish input', () => {
+      const SA = loadShared();
+      expect(SA.isQuotaError(new Error('boom'))).toBe(false);
+      expect(SA.isQuotaError(null)).toBe(false);
+      expect(SA.isQuotaError(undefined)).toBe(false);
+    });
+  });
+
+  describe('safeSetItem', () => {
+    test('writes through when storage is available', () => {
+      const SA = loadShared();
+      SA.safeSetItem('FK24_K', 'v');
+      expect(localStorage.getItem('FK24_K')).toBe('v');
+    });
+
+    test('throws a tagged StorageWriteError with .quota on quota failure', () => {
+      const SA = loadShared();
+      failWritesWith(quotaError());
+      let caught;
+      try { SA.safeSetItem('FK24_K', 'v'); } catch (e) { caught = e; }
+      expect(caught).toBeDefined();
+      expect(caught.name).toBe('StorageWriteError');
+      expect(caught.quota).toBe(true);
+      expect(caught.message).toMatch(/storage limit reached/i);
+    });
+
+    test('tags non-quota write errors with quota=false', () => {
+      const SA = loadShared();
+      failWritesWith(new Error('disk on fire'));
+      let caught;
+      try { SA.safeSetItem('FK24_K', 'v'); } catch (e) { caught = e; }
+      expect(caught.name).toBe('StorageWriteError');
+      expect(caught.quota).toBe(false);
+    });
+  });
+
+  describe('heavy writers surface quota failures', () => {
+    test('saveAllConfigs throws StorageWriteError on quota', () => {
+      const SA = loadShared();
+      failWritesWith(quotaError());
+      expect(() => SA.saveAllConfigs([{ id: '1' }])).toThrow(/storage limit reached/i);
+    });
+
+    test('saveConfig propagates the quota failure to its caller', () => {
+      const SA = loadShared();
+      failWritesWith(quotaError());
+      let caught;
+      try { SA.saveConfig({ id: 'abc', name: 'X' }); } catch (e) { caught = e; }
+      expect(caught && caught.quota).toBe(true);
+    });
+
+    test('saveCohort throws StorageWriteError on quota', () => {
+      const SA = loadShared();
+      failWritesWith(quotaError());
+      expect(() => SA.saveCohort({ scorerId: 's1', students: [] }))
+        .toThrow(/storage limit reached/i);
+    });
+  });
+
+  describe('addToCohort does not throw on quota — reports failure instead', () => {
+    test('returns {saved:false, reason:"quota"} when the write fails', () => {
+      const SA = loadShared();
+      // Seed an existing cohort while writes still work, so addToCohort takes
+      // the upsert path rather than re-initialising.
+      SA.initCohort('s1', 'Test cohort', false);
+      failWritesWith(quotaError());
+
+      let result;
+      expect(() => {
+        result = SA.addToCohort('s1', { name: 'Ada Lovelace', studentId: 'A1' });
+      }).not.toThrow();
+      expect(result.saved).toBe(false);
+      expect(result.reason).toBe('quota');
+      expect(result.message).toMatch(/storage limit reached/i);
+    });
+
+    test('still reports the no-identifier case distinctly', () => {
+      const SA = loadShared();
+      SA.initCohort('s2', 'Test cohort', false);
+      const result = SA.addToCohort('s2', { name: '', studentId: '' });
+      expect(result.saved).toBe(false);
+      expect(result.reason).toBe('no-identifier');
+    });
+
+    test('saves normally when storage is available', () => {
+      const SA = loadShared();
+      SA.initCohort('s3', 'Test cohort', false);
+      const result = SA.addToCohort('s3', { name: 'Grace Hopper', studentId: 'G1' });
+      expect(result.saved).toBe(true);
+      expect(result.count).toBe(1);
+    });
+  });
+});
