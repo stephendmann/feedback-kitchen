@@ -233,8 +233,8 @@ Re-read planning/README.md promotion rule. Candidates for promotion at first che
 > INSPECTION.md +45. The INS-6→FK-11 / INS-7→FK-12 / INS-8→FK-13 "worth a line"
 > candidates rode along in the same addendum. **Two carried-forward items remain
 > (both non-blocking, not part of the checkpoint):**
-> - INS-5 ◐→☑: the live bytes/record console check still open (FK-10 verdict stands regardless).
-> - FK-11 doc-drift at `docs/fk_moderation_export_v1.md:71` — fold into the next moderation-touching PR.
+> - ~~INS-5 ◐→☑: the live bytes/record console check still open~~ **DONE 2026-06-14** — live measurement (typical 7,178 / heavy 13,797 chars/record) confirmed the analytical model; INS-5 now ☑. FK-10 verdict unchanged.
+> - ~~FK-11 doc-drift at `docs/fk_moderation_export_v1.md:71`~~ **fixed 2026-06-14** on branch `docs/fk11-rubric-hash-gloss` (corrected gloss: names + weights + all tier descriptors).
 > FK-12 + FK-13 implementation happen in feature worktrees, independently of this
 > now-closed checkpoint.
 

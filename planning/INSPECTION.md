@@ -160,7 +160,7 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - Triage: **intended (caller's responsibility)** — penalty math clamps at 0 but nothing clamps high; overrides could exceed 100 upstream.
   - Action: none; note for FK-09 interface contract.
 
-## INS-5 ◐ localStorage capacity and failure-mode measurement
+## INS-5 ☑ localStorage capacity and failure-mode measurement
 - **Gates:** FK-10; outcome decides whether a migration card gets created at all.
 - **Method:**
   1. Mark 2–3 demo students fully; measure serialized bytes per record (`JSON.stringify` length of the relevant keys).
@@ -195,14 +195,14 @@ Status: ☐ Open · ◐ Partially resolved · ☑ Resolved · ✕ Dropped
   - **FK-24 (new, P1, S) — storage-write quota hardening, now.** Wrap the three heavy writers in try/catch; on `QuotaExceededError` surface a blocking, actionable message ("Storage full — export your cohort to free space") and an escape hatch; fix the `downloadExcel` ordering so a save failure is reported, not masked by the just-completed download. Independent of cohort size — fixes a present data-loss bug.
   - **IndexedDB migration — deferred/conditional, NOT carded yet.** Only justified if real cohorts approach the size band; revisit if/when a live cohort crosses ~150 records or a quota event is observed in the field. Behind a `SessionStore` interface if taken (FK-15 extract-on-contact seam).
 
-  **One item left to ☑ (does not block the FK-10 verdict):** live bytes/record confirmation. 60-second harness — on the demo scorer with a few students saved, paste into devtools console:
-  ```js
-  const k = Object.keys(localStorage).find(k => k.startsWith('SA_COHORT_'));
-  const c = JSON.parse(localStorage.getItem(k));
-  const total = localStorage.getItem(k).length;
-  console.log({records: c.students.length, totalChars: total, perRecord: Math.round(total / c.students.length)});
-  ```
-  Expect perRecord ≈ 6–7k for realistic feedback. If it lands far from the model, reopen the verdict; the failure-mode half stands regardless.
+  **Live confirmation ☑ (2026-06-14) — model verified, flips INS-5 ◐→☑.** Run against the real save path (dev-server → scorer.html on a freshly-built 8-criterion rubric with realistic ~219-char tier descriptors; records produced by `S.copyFeedback` → `saveCurrentStudentToCohort` → `SA.addToCohort`, not hand-built). Two records measured:
+  | Record | feedbackText | markerNotes | bytes/record (`JSON.stringify`) |
+  |---|---|---|---|
+  | Typical | 2,631 | 206 | **7,178** (cohort key 7,341 incl. wrapper) |
+  | Heavy | 8,000 (≈ INS-10 real max 7,975) | 1,500 | **13,797** |
+  - **Structural floor** (record minus free text) ≈ **4.3 KB** both rows — slightly above the analytical ~3.4 KB because the *stored* record carries four store-added keys the model didn't list (`key`, `savedAt`, `id`, `createdAt`) plus per-field JSON punctuation. Full live schema: `name, studentId, tutor, date, grades, penaltyIdx, scoreResult, rubricVersionHash, feedbackText, markerNotes, overrideGrade` + the four store keys.
+  - **300-record projection:** typical ~2.15 MB, heavy ~4.1 MB — inside the model's 1.9–3.9 MB band (heavy nudges the top). **Conclusion: capacity model CONFIRMED (live runs marginally *heavier* than analytical, i.e. the model was conservative). The FK-10 GO-split verdict stands unchanged — the dispositive trigger remains the unhandled-quota half, not raw size.**
+  - **Cross-confirmation:** `rubricVersionHash` was stamped per record live (`0a7610d8`), independently re-confirming INS-6/FK-11 per-record stamping on the real save path.
 
 ## INS-6 ☑ When is rubric_version_hash computed?
 - **Gates:** FK-11 (per-record stamp + export warning, PR #37) and **FK-25** (the in-app ambient *rubric-version* drift indicator, PR #39 — both shipped 2026-06-13). **Note:** FK-25 shipped under the label "FK-12", but it is the rubric-version feature gated here, **not** the FK-12 cohort-consistency indicator (which INS-7 gates).
