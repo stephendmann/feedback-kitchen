@@ -153,6 +153,16 @@ task running; INS-3 status ☑ with findings.
 > next Phase-3 work is the INS-8 remainder → FK-13, plus the second promotion
 > checkpoint.**
 
+> **MERGE RECONCILIATION 2026-06-13 (post-INS-7 session).** Three Phase-3 implementation
+> cards confirmed merged to main and moved to Shipped on the board: **FK-23** (Jest +
+> lazy-load guard in CI) = **PR #35**; **FK-24** (storage write-hardening / `safeSetItem`)
+> = **PR #36**; **FK-11** (rubric per-record version stamping + mixed-version warning) =
+> **PR #37**. The `frosty-babbage` planning branch deliberately never pulls main's
+> commits, so this was a planning-doc edit, not a merge. FK-12 (this session's card) is
+> now the **only** open Safe-to-implement card. Carried residual: FK-11's doc-drift
+> ride-along (`docs/fk_moderation_export_v1.md:71` — "order and maxima" is wrong) was
+> **not** landed in PR #37; fold into the next moderation-touching PR (see BOARD residuals).
+
 ## Phase 4 — Structural hygiene (amortized, runs alongside 2–3)
 | Item | Notes |
 |---|---|

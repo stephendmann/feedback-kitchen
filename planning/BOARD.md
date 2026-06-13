@@ -4,9 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + Phase-3 INS-7→FK-12 kickoff: INS-7 ☑, FK-12 ungated → Safe-to-implement, S–M fork): Safe to implement now: 3 (FK-23 CI wiring · FK-11 version stamping · FK-12 ambient drift indicator) · Needs inspection: 1 (FK-13) · Backlog: 6 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22 · FK-24) · Ready to document: 1 (FK-10) · Shipped: 14 · others: 0. Next free card ID: FK-25.
->
-> ⚠ Board-staleness flag (2026-06-13, INS-7 session): prior-session context says **FK-23(A) and FK-24 merged to main**, but no merge commit/PR is visible in this worktree and both still sit pre-shipped above (FK-23 in Safe-to-implement, FK-24 in Backlog). Not reconciled here — needs PR numbers + dates to move them to Shipped. Flagged to the user.
+Column counts (2026-06-13, + merge reconciliation: FK-23/FK-24/FK-11 confirmed merged to main → Shipped): Safe to implement now: 1 (FK-12 ambient drift indicator) · Needs inspection: 1 (FK-13) · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · Shipped: 17 · others: 0. Next free card ID: FK-25.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -15,26 +13,6 @@ Column counts (2026-06-13, + Phase-3 INS-7→FK-12 kickoff: INS-7 ☑, FK-12 ung
 ---
 
 ## Safe to implement now
-
-### FK-23 · Wire the existing test nets into CI + guard the lazy-load invariant
-- **Rationale:** `ci.yml` already runs on push/PR but only does `npm run build` (CSS). The FK-01 Jest regression net (140 tests) and the FK-17/18 axe battery exist but neither runs in CI — the nets Phase 0 built don't actually fire on PRs. Separately, #15's lazy-load of SheetJS has no guard: re-adding an eager `<script src=".../xlsx.full.min.js">` to `<head>` would silently restore ~930 KB on the critical path with zero test failure. (Discovered at the 2026-06-13 ROADMAP review — the original Tooling note implied no CI existed; it does, it just runs nothing protective.)
-- **Evidence:** O — `.github/workflows/ci.yml` (build step only); `loadSheetJS()` at scorer.html:2542 (injects `/js/xlsx.full.min.js`, no static head tag); `package.json` has no `test` script.
-- **Scope (A) — this card, S-effort, no gate:** add a `test` script + `npx jest` step to `ci.yml`; add a grep/CI assertion that `xlsx.full.min.js` appears only inside `loadSheetJS()` and never as a static `<head>` script tag.
-- **Scope (B) — deferred, NOT this card:** Lighthouse CI + bundle-size budget → Phase 4/backlog. For a static local-first tool the only material perf-regression vector is the SheetJS payload, which (A)'s grep covers far more cheaply; lean toward dropping Lighthouse, keep at most a byte-budget assertion.
-- **Stretch (medium):** run the axe battery in CI too — needs a headless browser + dev server up in the workflow; do after (A) lands.
-- **Risk:** Low — CI/test-harness only; no app code. Watch puppeteer/browser setup cost if the a11y stretch is taken.
-- **DoD:** `ci.yml` fails on a Jest regression; the lazy-load guard fails if an eager SheetJS tag is reintroduced; README Local Development / Planning sections already describe the suites, so no doc drift.
-- **Column:** Safe to implement now (parallel to Phase 3 — off-theme, does not gate INS-5/FK-10). **Priority:** P1 (the regression net is currently decorative in CI). **Effort:** S.
-
-### FK-11 · Rubric-version stamping (per-record) + mixed-version warning at export
-- **Rationale:** `rubric_version_hash` exists and is emitted per row, but INS-6 (☑ 2026-06-13) proved it's computed **once at export** from the currently-loaded rubric and written identically to every row — the cohort record stores no hash. A marker who edits the rubric mid-cohort gets one uniform hash and the divergence is invisible. The whole point of the field (detecting a moved rubric) is currently undeliverable.
-- **Evidence:** O — `_rubricHash(config)` called once (`moderation-export.js:120`), same value on every row (`:188`); INS-1 record schema carries no hash; INS-6 Q1/Q2/Q3 findings.
-- **Dependencies:** ~~INS-6~~ ☑ resolved — **fork landed on the grow side: per-record stamping must be added first.** Touches the cohort-save path; coordinate seam with FK-15 (extract `_rubricHash` to shared) and is adjacent to FK-24's `safeSetItem` work (no *new* key, though — the stamp rides the existing cohort record).
-- **Scope:** (1) move `_rubricHash` out of `moderation-export.js` to a shared home (`shared.js` by `getFKVersion`, or a `FKModSchema` helper) and stamp the record at `saveCurrentStudentToCohort` time; (2) export reads each record's *stored* hash, falling back to live `_rubricHash(config)` for legacy/imported records with none; (3) warn when stored hashes differ across the cohort. Re-saving a record re-stamps under the then-current rubric (intended). FK-19-imported rows have no stamp → legacy-fallback must not false-warn.
-- **Out of scope:** changing what feeds the hash (criteria names+weights+all tier descriptors stays — see INS-6 Q2); the doc-drift fix at `docs/fk_moderation_export_v1.md:71` ("…order and maxima" is wrong) is a cheap ride-along, not the core.
-- **Risk:** Low–medium — adds a field to the stored record (forward-compatible; absence handled by the fallback) and one export-time comparison. No arithmetic change.
-- **DoD:** records stamped with the rubric hash at save time; export warns on mixed hashes (with legacy/no-stamp rows handled, not false-flagged); unit test on the export path covering a mixed-hash cohort + a legacy-record cohort; spec line `:71` corrected. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
-- **Column:** Safe to implement now (INS-6 cleared the gate). **Priority:** P2. **Effort:** M (fork resolved to the grow side).
 
 ### FK-12 · Ambient drift indicators during marking
 - **Rationale:** Consistency signals are destination-only (Cohort Insights modal). One small ambient indicator could surface drift in-flow. INS-7 (☑ 2026-06-13) confirmed the metrics engine is reusable: `cohortMetrics`/`detectState` are **pure functions on `window.CohortInsights`**, but their only in-app caller is `renderInsights` from the insights modal (scorer.html:3104) — destination-only in practice, not by design.
@@ -48,7 +26,7 @@ Column counts (2026-06-13, + Phase-3 INS-7→FK-12 kickoff: INS-7 ☑, FK-12 ung
 - **DoD:** one indicator behind a settings toggle; reuses `CohortInsights.cohortMetrics` (no duplicate computation); small-N suppression honoured (engine already blanks shape stats below n≈12); self-pilot notes recorded **before any default-on decision**. **Implementation belongs in a feature worktree/branch → main via PR, not frosty-babbage.**
 - **Column:** Safe to implement now (INS-7 cleared the technical gate; the anchoring question rides as a default-off + self-pilot DoD, not an inspection blocker). **Priority:** P2. **Effort:** S (existing-aggregate fork) – M (per-criterion fork).
 
-*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed, moved to Safe-to-implement. INS-7 run → FK-12 ungated (metrics engine is pure/reusable; per-criterion histogram is the one signal not pre-computed; anchoring risk handled by default-off toggle + self-pilot), moved to Safe-to-implement. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-8 remainder → FK-13 (last Phase-3 row). FK-11 + FK-12 + FK-23 + FK-24 are implementation cards for a feature worktree, not this one. See ROADMAP-PHASES.md §3.)*
+*(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed. INS-7 run → FK-12 ungated (metrics engine is pure/reusable; per-criterion histogram is the one signal not pre-computed; anchoring risk handled by default-off toggle + self-pilot). **FK-23 (PR #35), FK-24 (PR #36), FK-11 (PR #37) all merged to main 2026-06-13 → Shipped.** FK-12 is the only remaining Safe-to-implement card and is the last open implementation card for a feature worktree, not this one. One live bytes/record confirmation left to flip INS-5 ◐→☑ — non-blocking. Next in Phase 3: INS-8 remainder → FK-13 (last Phase-3 row), then the 2nd promotion checkpoint. See ROADMAP-PHASES.md §3.)*
 
 
 ---
@@ -67,20 +45,10 @@ Column counts (2026-06-13, + Phase-3 INS-7→FK-12 kickoff: INS-7 ☑, FK-12 ung
 
 ## Backlog
 
-### FK-24 · Storage-write quota hardening (surface QuotaExceededError on the heavy writers)
-- **Rationale:** Spawned by FK-10/INS-5. The three unbounded writers — `saveCohort` (shared.js:1149), `saveAllConfigs` (shared.js:309), `saveSnippets` (scorer.html:3244) — `setItem` with no try/catch, so a full origin throws uncaught and the failure is never shown. Dispositive trigger for the FK-10 GO; independent of cohort size (a present bug, not a scale projection).
-- **Evidence:** O — INS-5 writer table; `downloadExcel` ordering (scorer.html:2544–2548) saves to the cohort *after* the Excel file is generated, so a quota throw is masked by a successful download ⇒ student silently omitted from the cohort. `getCohort` (shared.js:1140) swallows a corrupt/oversized blob to `null`.
-- **Scope:** wrap the three writers in try/catch; on `QuotaExceededError` (and Safari's `QUOTA_EXCEEDED_ERR` / name variants) surface a blocking, actionable message ("Storage full — export your cohort to free space") with an escape hatch; make `saveCurrentStudentToCohort`/`downloadExcel` report a save failure rather than let the prior download imply success. Consider one shared `safeSetItem(key, value)` helper so the fix is centralized (FK-15 seam).
-- **Out of scope:** IndexedDB migration (deferred/conditional per FK-10); changing record shape; quota *measurement* (done — INS-5).
-- **Dependencies:** none hard. Coordinate with **FK-21** (adds another writer — it should route through the same `safeSetItem`). **Implementation belongs in a feature worktree/branch → main via PR, not in frosty-babbage.**
-- **Risk:** Low — additive guards; no arithmetic or record-shape change. Test with a deliberately-filled localStorage (fill a junk key near quota, then attempt a cohort save).
-- **DoD:** a cohort/config/snippet save at quota shows the marker a clear, actionable error instead of throwing; `downloadExcel` no longer implies a successful save when the cohort write failed; a regression test simulates QuotaExceeded on the cohort path; INS-5 verdict reflected (live bytes/record check optionally folded in).
-- **Column:** Backlog (sequenced before/with FK-21). **Priority:** P1. **Effort:** S.
-
 ### FK-21 · Draft persistence v2 (re-implement PR #12's intent)
 - **Rationale:** Closing or refreshing the tab mid-mark silently loses the in-progress student. PR #12 solved this pre-programme but its branch predates FK-02…09/17/18/FK-07 scorer.html — decided 2026-06-13 (user + external review): re-implement from intent, never rebase. Its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits dead in main — remove or absorb on contact.
 - **Evidence:** O — dead scaffolding in scorer.html; PR #12 acceptance criteria (preserved in the closed PR + git history) are the intent spec.
-- **Dependencies:** **INS-5/FK-10 first** — this card adds another localStorage writer; the storage capacity/failure-mode audit must inform key design and quota handling. Must reconcile with FK-07's session fingerprint + unsaved-work guard and the `beforeunload` handler (fire only when a draft has ≥1 graded criterion).
+- **Dependencies:** ~~INS-5/FK-10 first~~ ☑ — audit done **and FK-24 shipped (PR #36)**, so the `safeSetItem` write-hardening seam now exists on main; this card's new localStorage writer must **route through it** rather than re-`setItem` raw. Must reconcile with FK-07's session fingerprint + unsaved-work guard and the `beforeunload` handler (fire only when a draft has ≥1 graded criterion).
 - **Risk:** Medium — autosave interacting with FK-07's load/merge ordering (generate-baseline-then-restore) and the cohort store's `sid:`/`name:` keying; quota exhaustion at cohort scale.
 - **DoD:** mid-mark refresh offers Resume/Discard restoring all fields exactly; export and New-student clear the draft; no interference with FK-07 re-entry or existing localStorage keys; quota-exceeded path per FK-10 findings; runtime-validated against the demo scorer.
 - **Column:** Backlog (sequenced after INS-5/FK-10). **Priority:** P1. **Effort:** M.
@@ -136,7 +104,7 @@ Column counts (2026-06-13, + Phase-3 INS-7→FK-12 kickoff: INS-7 ☑, FK-12 ung
 - **Dependencies:** **INS-5 ◐ 2026-06-13** — failure-mode half fully resolved (dispositive); capacity half analytical, one live-confirmation item open (doesn't block this verdict).
 - **Risk:** Acting without measuring risks either a wasted migration or dismissed real data loss.
 - **DoD (this card = the audit, not the migration):** ☑ bytes/record + 300-record projection recorded in INSPECTION.md INS-5; ☑ quota-exceeded behavior documented (**unhandled/silent** — uncaught throw, masked by the prior Excel download in `downloadExcel` scorer.html:2544–2548 ⇒ silent cohort omission); ☑ go/no-go written.
-- **Verdict:** **GO on a card — split.** Trigger is the unhandled-quota half, not raw size. (1) **FK-24** (write-hardening, P1/S) lands now — fixes a present data-loss bug independent of scale. (2) **Full IndexedDB migration deferred/conditional — not carded** (honours INS-5's "wasted migration" caution); revisit only if a live cohort crosses ~150 records or a quota event is seen in the field.
+- **Verdict:** **GO on a card — split.** Trigger is the unhandled-quota half, not raw size. (1) **FK-24** (write-hardening, P1/S) — **shipped 2026-06-13 (PR #36)**; fixes a present data-loss bug independent of scale. (2) **Full IndexedDB migration deferred/conditional — not carded** (honours INS-5's "wasted migration" caution); revisit only if a live cohort crosses ~150 records or a quota event is seen in the field.
 - **Next step to fully close:** promotion-checkpoint fold (INS-5 finding → fk-project-overview.md; this verdict → fk-decisions.md addendum) at the Phase-3 checkpoint. **Priority:** P2. **Effort:** S–M. *(Reopen only if the live bytes/record check contradicts the model.)*
 
 ---
@@ -161,5 +129,8 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-07 | Record re-entry: `loadCohortRecordIntoSession` + View-list Open + unsaved-work guard + drift cross-check (production-verified; name-rename sibling edge ledgered to FK-19) | [#29](https://github.com/stephendmann/feedback-kitchen/pull/29) | 2026-06-13 |
 | FK-14 | Persistent collapsed draft pane in focus mode (D-04 GO; collapsed-by-default contract; + PR #31 night-mode dark-variant follow-up) | [#30](https://github.com/stephendmann/feedback-kitchen/pull/30), [#31](https://github.com/stephendmann/feedback-kitchen/pull/31) | 2026-06-13 |
 | FK-20 | ROADMAP truth pass + stalled-PR triage = Phase-2 promotion checkpoint (Addendum G; snapshot refresh; #12/#16 closed → FK-21/FK-22) | [#32](https://github.com/stephendmann/feedback-kitchen/pull/32), [#33](https://github.com/stephendmann/feedback-kitchen/pull/33) | 2026-06-13 |
+| FK-23 | Wire Jest + lazy-load grep guard into CI (`ci.yml`, `package.json`, `scripts/check-lazy-load.js`; scope-A only — Lighthouse/bundle-budget stayed deferred) | [#35](https://github.com/stephendmann/feedback-kitchen/pull/35) | 2026-06-13 |
+| FK-24 | Storage-write quota hardening — `safeSetItem` on the 3 heavy writers; QuotaExceeded surfaced; `downloadExcel` ordering fixed (+129 tests) | [#36](https://github.com/stephendmann/feedback-kitchen/pull/36) | 2026-06-13 |
+| FK-11 | Rubric per-record version stamping (`SA.rubricVersionHash`) + mixed-version warning at export (legacy live-config fallback; manifest `rubric_versions`; 12 new tests) | [#37](https://github.com/stephendmann/feedback-kitchen/pull/37) | 2026-06-13 |
 
-Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed.
+Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · **FK-11 doc-drift NOT fixed in PR #37** — `docs/fk_moderation_export_v1.md:71` still says the hash covers "criterion order and maxima" (wrong: it's names+weights+all tier descriptors; correct gloss at `js/moderation-readme.js:123`); fold into the next moderation-touching PR.
