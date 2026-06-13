@@ -617,7 +617,10 @@
 
      Returns null (caller hides the badge) when there are too few
      scripts to read scale use meaningfully (n < VERY_SMALL_N) or
-     when there is no usable cohort. */
+     when there is no usable cohort.
+
+     See fk-project-overview.md ("Cohort metrics & ambient signals")
+     for high-level architectural context. */
   function scaleUseSignal(config, students) {
     if (!students || students.length < TH.VERY_SMALL_N) return null;
     var m = cohortMetrics(config, students);
