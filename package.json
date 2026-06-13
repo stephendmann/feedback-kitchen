@@ -6,7 +6,9 @@
     "dev": "node dev-server.js",
     "build:css": "node node_modules/tailwindcss/lib/cli.js -i ./css/tailwind.src.css -o ./css/tailwind.out.css --minify",
     "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./css/tailwind.src.css -o ./css/tailwind.out.css --watch=always",
-    "build": "npm run build:css"
+    "build": "npm run build:css",
+    "test": "jest",
+    "guard:lazy-load": "node scripts/check-lazy-load.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
