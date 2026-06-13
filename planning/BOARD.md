@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 21 · others: 0. Next free card ID: FK-27. *(Latest: FK-12 shipped PR #44 + docs/cross-ref follow-up PR #45 (both merged 2026-06-14). FK-13 #43, FK-26 #42 also shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 4 (FK-15 · FK-16 · FK-19 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-21 draft persistence v2 — IN REVIEW, PR #46) · Shipped: 21 · others: 0. Next free card ID: FK-27. *(Latest: FK-21 in review PR #46. FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -27,14 +27,6 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## Backlog
-
-### FK-21 · Draft persistence v2 (re-implement PR #12's intent)
-- **Rationale:** Closing or refreshing the tab mid-mark silently loses the in-progress student. PR #12 solved this pre-programme but its branch predates FK-02…09/17/18/FK-07 scorer.html — decided 2026-06-13 (user + external review): re-implement from intent, never rebase. Its `saveDraft`/`clearDraft`/`FK_DRAFT_KEY` scaffolding sits dead in main — remove or absorb on contact.
-- **Evidence:** O — dead scaffolding in scorer.html; PR #12 acceptance criteria (preserved in the closed PR + git history) are the intent spec.
-- **Dependencies:** ~~INS-5/FK-10 first~~ ☑ — audit done **and FK-24 shipped (PR #36)**, so the `safeSetItem` write-hardening seam now exists on main; this card's new localStorage writer must **route through it** rather than re-`setItem` raw. Must reconcile with FK-07's session fingerprint + unsaved-work guard and the `beforeunload` handler (fire only when a draft has ≥1 graded criterion).
-- **Risk:** Medium — autosave interacting with FK-07's load/merge ordering (generate-baseline-then-restore) and the cohort store's `sid:`/`name:` keying; quota exhaustion at cohort scale.
-- **DoD:** mid-mark refresh offers Resume/Discard restoring all fields exactly; export and New-student clear the draft; no interference with FK-07 re-entry or existing localStorage keys; quota-exceeded path per FK-10 findings; runtime-validated against the demo scorer.
-- **Column:** Backlog (sequenced after INS-5/FK-10). **Priority:** P1. **Effort:** M.
 
 ### FK-22 · Homepage/dark-mode residuals (re-implement PR #16's intent + accumulated theme escapes)
 - **Rationale:** Small, real, user-visible residuals with no inspection dependency; batched to one S-effort card. PR #16 closed 2026-06-13 (stale base; re-implement from intent).
@@ -74,7 +66,14 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-21 · Draft persistence v2 — IN REVIEW (PR #46)
+- **Status:** implemented on `feat/fk21-draft-persistence`, **PR [#46](https://github.com/stephendmann/feedback-kitchen/pull/46) open**. Re-implements PR #12's intent from scratch; replaces the dead `SA_DRAFT_V1` scaffolding.
+- **Decisions (locked before code):** debounced autosave (1s) + flush on pagehide; non-blocking Resume/Discard banner.
+- **What shipped:** per-scorer key `SA_DRAFT_V1_<id>` via **`SA.safeSetItem`** (FK-24, quota swallowed); autosave gated on FK-07 `_sessionHasUnsavedWork()`; `#draft-resume-banner` with `_draftReady` init-clobber guard; clears on save-to-cohort + New-student; 8 structural tests.
+- **DoD evidence:** mid-mark refresh → banner → Resume restores all fields exactly (incl. feedback-regeneration-order fix); export/New-student clear; **quota-full stub confirmed marking continues uninterrupted**; no FK-07/key interference. Jest 243/243; axe 0 violations all pages.
+- **Out of scope (held):** class-list import / Moodle round-trip → FK-19. **Priority:** P1. **Effort:** M.
+- **On merge:** move to Shipped; post-merge sync.
 
 ## Validate in runtime
 *(empty)*
