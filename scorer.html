@@ -490,6 +490,15 @@
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 print-full">
       <h1 class="sr-only">Mark a student</h1>
 
+      <!-- FK-21: non-blocking draft-resume offer (hidden unless a saved draft exists) -->
+      <div id="draft-resume-banner" class="hidden border border-emerald-300 bg-emerald-50 text-emerald-900 text-sm rounded-xl px-4 py-3 flex items-center justify-between gap-3" role="status">
+        <span>↺ <span id="draft-resume-label">Unsaved draft found</span> — restore your in-progress marking?</span>
+        <span class="flex gap-2 shrink-0">
+          <button type="button" onclick="S.resumeDraft()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1 rounded-lg">Resume</button>
+          <button type="button" onclick="S.discardDraft()" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 font-semibold text-xs px-3 py-1 rounded-lg">Discard</button>
+        </span>
+      </div>
+
       <!-- ─ A. Student Details ───────────────────────────── -->
       <details open id="sec-student" class="bg-white rounded-2xl shadow-sm border border-slate-100">
         <summary>
@@ -1283,30 +1292,153 @@
     let snippets = [];
     let sheetJSPromise = null;
 
-    // Draft persistence (PR #12)
-    const FK_DRAFT_KEY = 'SA_DRAFT_V1';
-    // Guard: stays false until _offerDraftResume() has run, preventing the init-time
-    // recalculate() call from overwriting a saved draft before we've offered to restore it.
-    let _draftReady = false;
+    /* ── Draft persistence v2 (FK-21) ─────────────────────────────
+       Re-implements PR #12's intent: a debounced autosave of the
+       in-progress student so a tab close/refresh mid-mark doesn't lose
+       work. Per-scorer key; routes writes through SA.safeSetItem (FK-24)
+       and degrades silently on quota; gated on FK-07's
+       _sessionHasUnsavedWork() so only real, graded work is stored.
+       Offered back on load via a non-blocking Resume/Discard banner. */
+    const FK_DRAFT_PREFIX = 'SA_DRAFT_V1_';
+    let _draftReady = false;            // flips true once the resume offer has run
+    let _draftSaveTimer = null;
+    const DRAFT_DEBOUNCE_MS = 1000;
 
+    function _draftKey() {
+      return FK_DRAFT_PREFIX + ((config && config.id) || 'default');
+    }
+
+    function _buildDraft() {
+      const v = id => { const x = el(id); return x ? x.value : ''; };
+      return {
+        scorerId:           (config && config.id) || '',
+        savedAt:            new Date().toISOString(),
+        studentGrades:      JSON.parse(JSON.stringify(studentGrades || [])),
+        latePenalty:        v('late-penalty-select') || '0',
+        gradeOverride:      v('grade-override'),
+        studentName:        v('student-name'),
+        studentId:          v('student-id'),
+        studentTutor:       v('student-tutor'),
+        studentDate:        v('student-date'),
+        feedbackText:       v('feedback-text'),
+        additionalComments: v('additional-comments')
+      };
+    }
+
+    // Immediate write. No-op unless there is real unsaved work (>=1 graded
+    // criterion AND changed since the last save/load/reset — FK-07 gate).
+    // safeSetItem throws StorageWriteError on quota; swallow it — the draft is
+    // best-effort and must never interrupt marking (FK-21 AC#4).
     function saveDraft() {
-      if (!_draftReady) return;
+      if (!_draftReady || !config || !config.id) return;
+      if (!_sessionHasUnsavedWork()) return;
       try {
-        const draft = {
-          studentGrades: JSON.parse(JSON.stringify(studentGrades || [])),
-          feedbackText:       (document.getElementById('feedback-text')       || {}).value || '',
-          additionalComments: (document.getElementById('additional-comments') || {}).value || '',
-          studentName:        (document.getElementById('student-name')        || {}).value || '',
-          studentId:          (document.getElementById('student-id')          || {}).value || '',
-          studentTutor:       (document.getElementById('student-tutor')       || {}).value || '',
-          gradeOverride:      (document.getElementById('grade-override')      || {}).value || ''
-        };
-        localStorage.setItem(FK_DRAFT_KEY, JSON.stringify(draft));
-      } catch (e) { /* quota / private browsing — fail silently */ }
+        SA.safeSetItem(_draftKey(), JSON.stringify(_buildDraft()));
+      } catch (e) { /* quota / private browsing — degrade silently */ }
+    }
+
+    function _scheduleDraftSave() {
+      if (!_draftReady) return;
+      if (_draftSaveTimer) clearTimeout(_draftSaveTimer);
+      _draftSaveTimer = setTimeout(saveDraft, DRAFT_DEBOUNCE_MS);
+    }
+
+    // Flush synchronously on page-hide so the last edits survive a hard close.
+    function _flushDraftSave() {
+      if (_draftSaveTimer) { clearTimeout(_draftSaveTimer); _draftSaveTimer = null; }
+      saveDraft();
     }
 
     function clearDraft() {
-      try { localStorage.removeItem(FK_DRAFT_KEY); } catch (e) {}
+      if (_draftSaveTimer) { clearTimeout(_draftSaveTimer); _draftSaveTimer = null; }
+      try { localStorage.removeItem(_draftKey()); } catch (e) {}
+    }
+
+    function _readDraft() {
+      if (!config || !config.id) return null;
+      try {
+        const raw = localStorage.getItem(_draftKey());
+        if (!raw) return null;
+        const d = JSON.parse(raw);
+        if (d && d.scorerId && d.scorerId !== config.id) return null; // this scorer only
+        return d;
+      } catch (e) { return null; }
+    }
+
+    function _draftHasGrades(d) {
+      return !!(d && Array.isArray(d.studentGrades) && d.studentGrades.some(g => g && g.grade));
+    }
+
+    // Debounced autosave on the fields that don't already route through
+    // recalculate() (grades / penalty / override do — see recalculate()).
+    function wireDraftAutosave() {
+      ['feedback-text', 'additional-comments', 'student-name', 'student-id', 'student-tutor']
+        .forEach(function (id) {
+          const elx = el(id);
+          if (elx && !elx._fk21Wired) {
+            elx.addEventListener('input', _scheduleDraftSave);
+            elx._fk21Wired = true;
+          }
+        });
+      window.addEventListener('pagehide', _flushDraftSave);
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') _flushDraftSave();
+      });
+    }
+
+    // On load: if a draft for this scorer holds graded work, offer it via a
+    // non-blocking banner. Always flips _draftReady true at the end so autosave
+    // can begin — the init recalculate() before this is a no-op while
+    // _draftReady is false, so it can't clobber the stored draft.
+    function _offerDraftResume() {
+      const d = _readDraft();
+      const banner = el('draft-resume-banner');
+      if (d && _draftHasGrades(d) && banner) {
+        let when = '';
+        try { when = new Date(d.savedAt).toLocaleString(); } catch (e) {}
+        const label = el('draft-resume-label');
+        if (label) label.textContent = when ? ('Unsaved draft from ' + when) : 'Unsaved draft found';
+        banner.classList.remove('hidden');
+      }
+      _draftReady = true;
+    }
+
+    function resumeDraft() {
+      const d = _readDraft();
+      if (!d) { discardDraft(); return; }
+      const set = (id, val) => { const x = el(id); if (x) x.value = (val == null ? '' : val); };
+      studentGrades = Array.isArray(d.studentGrades)
+        ? JSON.parse(JSON.stringify(d.studentGrades)) : studentGrades;
+      (config.criteria || []).forEach(function (_, i) {
+        const g = studentGrades[i] || {};
+        set('grade-sel-' + i, g.grade || '');
+        set('override-' + i, (g.override == null ? '' : g.override));
+      });
+      set('student-name', d.studentName);
+      set('student-id', d.studentId);
+      set('student-tutor', d.studentTutor);
+      set('student-date', d.studentDate);
+      set('grade-override', d.gradeOverride);
+      set('late-penalty-select', d.latePenalty || '0');
+      const banner = el('draft-resume-banner'); if (banner) banner.classList.add('hidden');
+      recalculate();            // re-render rows + totals from the restored grades
+      // Restore free text AFTER recalculate(): on a fresh page lastGeneratedText
+      // is null, so recalculate() regenerates feedback from the grades and would
+      // otherwise overwrite the marker's saved feedback. Set it last so the
+      // saved text wins (FK-21 AC#6 "restore all fields exactly").
+      const fb = el('feedback-text'); if (fb) fb.value = d.feedbackText || '';
+      const nt = el('additional-comments'); if (nt) nt.value = d.additionalComments || '';
+      lastGeneratedText = '';   // saved feedback is now authoritative, not generated
+      refreshStatusChips();
+      try { _refreshAllAutoPills(); } catch (e) {}
+      showCohortToast('Draft restored.', 'green');
+      // The restored state IS genuine unsaved work — keep the draft and leave
+      // the session "dirty" so the unsaved-work guard still applies.
+    }
+
+    function discardDraft() {
+      clearDraft();
+      const banner = el('draft-resume-banner'); if (banner) banner.classList.add('hidden');
     }
 
     /* ── Shared modal helpers (PR #14) ──────────────────────
@@ -1526,6 +1658,8 @@
       wireExplainerPersistence();
       bindKeyboardShortcuts();
       _markSessionClean();
+      wireDraftAutosave();   // FK-21: debounced autosave + page-hide flush
+      _offerDraftResume();   // FK-21: offer any saved draft, then enable autosave
     }
 
     /* ── No-config screen (with list if scorers exist) ───── */
@@ -2053,6 +2187,10 @@
       } else {
         _announceScoreResult('');
       }
+
+      // FK-21: debounced draft autosave (grade / penalty / override edits all
+      // flow through recalculate(); free-text fields wire their own listeners).
+      _scheduleDraftSave();
 
       // Override + non-fail penalty info note
       const infoNote = el('penalty-override-info');
@@ -2720,6 +2858,7 @@
         }
         refreshCohortUI();
         _markSessionClean();
+        clearDraft();   // FK-21: saved to cohort → in-progress draft no longer needed
         if (!opts.silent) {
           showCohortToast(
             (result.replaced ? 'Updated ' : 'Added ') + (studentName || studentId) +
@@ -3530,6 +3669,7 @@
       recalculate();
       refreshStatusChips();
       _markSessionClean();
+      clearDraft();   // FK-21: New student → discard the previous student's draft
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -4831,6 +4971,7 @@
 
     return { init, onGradeChange, onGradeRowReviewed, bulkFillUngraded, undoBulkFill, hideBulkFillThresholdModal, onOverrideChange, onOverrideFocus, onOverridePrime, onOverrideKeydown, onStudentChange, onOverrideGrade, onPenaltyChange,
              recalculate, updateFeedback, regenerateFeedback, copyFeedback, downloadExcel, newStudent, confirmNewStudent, setRounding,
+             resumeDraft, discardDraft,
              insertSnippet, showSnippetModal, hideSnippetModal, addSnippet, deleteSnippet,
              importSnippetsCsv, exportSnippetsCsv, onSnippetCsvChosen,
              aiBuildPrompt, aiAssembleFinal, aiCopyFinal, aiResetPanel, aiClearLog, aiViewLog,
