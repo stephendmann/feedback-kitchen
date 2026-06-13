@@ -89,7 +89,7 @@ task running; INS-3 status ☑ with findings.
 | Order | Item | Notes |
 |---|---|---|
 | 3.1 | INS-5 storage measurement → FK-10 audit verdict | **◐ kickoff done 2026-06-13** — see note below |
-| 3.2 | INS-6 → FK-11 version stamping/warning | **☑ kickoff done 2026-06-13** — INS-6 ☑, FK-11 ungated (M, per-record stamping); see §3.2 note |
+| 3.2 | INS-6 → FK-11 version stamping/warning | **☑ kickoff done 2026-06-13** — INS-6 ☑, FK-11 ungated (M, per-record stamping); see §3.2 note. **Shipped: FK-11 export warning + stamping (PR #37); the in-app ambient indicator shipped alongside as FK-25 (PR #39) — see FK-25 SPLIT note below.** |
 | 3.3 | INS-7 → FK-12 drift indicator behind toggle | **☑ kickoff done 2026-06-13** — INS-7 ☑, FK-12 ungated (S–M); self-pilot before any default-on; see §3.3 note |
 
 **Exit:** storage go/no-go documented; mixed-version cohorts warn at export (or stamping landed); one drift indicator toggleable.
