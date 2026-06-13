@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 2 (FK-12 ambient *consistency* indicator · FK-13 score-result live region) · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · In progress: 1 (FK-26 modexport tests) · Shipped: 18 · others: 0. Next free card ID: FK-27.
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 2 (FK-12 ambient *consistency* indicator · FK-13 score-result live region) · Needs inspection: 0 · Backlog: 5 (FK-15 · FK-16 · FK-19 · FK-21 · FK-22) · Ready to document: 1 (FK-10) · In progress: 0 · Shipped: 19 (+FK-26 modexport tests, PR #42 / GH issue #4 closed) · others: 0. Next free card ID: FK-27.
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -95,15 +95,7 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-
-### FK-26 · Moderation Export test suite (suppression + privacy) — GitHub issue #4
-> **Two-tracker note:** this is the FK-card mirror of the base product's **GitHub issue #4** (`test/modexport-privacy-tests`, the only open issue of the #1–#4 moderation set; #1–#3 shipped). Carded here so the improvement programme tracks it; close *both* when it merges.
-- **Rationale:** the privacy-reduced Moderation Export (`js/moderation-*.js`) shipped via issues #1–#3 **without dedicated tests** — a gap on Privacy-Act-2020-relevant, PII-handling code. `moderation-schema.js` even pre-declares `FORBIDDEN_FIELDS`/`REQUIRED_ROW_FIELDS` "for tests / issue #4", so the surface was designed for this.
-- **Evidence:** O — no `moderation-*.test.js` existed before this card; only rubric-hash (`rubric-version.test.js`/`rubric-drift.test.js`) touched the area. Export builds a workbook then side-effects `XLSX.writeFile` (returns only a filename), so tests intercept `writeFile` to capture the `wb`.
-- **Scope (done):** two characterization suites in `js/` (matches the `**/js/**/*.test.js` runner — NOT `test/`, which would silently not run): `moderation-suppression.test.js` (pure engine — cohort gate, tutor collapse, extreme rows, flag composition, labels, shuffle) and `moderation-privacy.test.js` (20-student synthetic cohort with SENTINEL PII → real export → read every cell back via vendored SheetJS → assert no name/ID/tutor/feedback/notes/exact-timestamp leaks + workbook-shape/required-column/forbidden-field/positive-control checks). No new dep (SheetJS already vendored at `js/xlsx.full.min.js`).
-- **Status:** scaffolded + **baseline 44/44 green** on branch `test/modexport-privacy-tests` (commit `6a6c8a9`); exporter confirmed non-leaking. Characterization only — no source changed (FK-01 policy); synthetic fixtures only.
-- **Risk:** Low — additive tests; CI (FK-23) auto-runs `js/**/*.test.js`, so they gate regressions on merge with no workflow change.
-- **DoD:** PR to main, CI green, GitHub issue #4 closed. **Implementation worktree → main via PR, not frosty-babbage.** **Priority:** P1 (privacy-critical). **Effort:** S (done).
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -145,5 +137,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-24 | Storage-write quota hardening — `safeSetItem` on the 3 heavy writers; QuotaExceeded surfaced; `downloadExcel` ordering fixed (+129 tests) | [#36](https://github.com/stephendmann/feedback-kitchen/pull/36) | 2026-06-13 |
 | FK-11 | Rubric per-record version stamping (`SA.rubricVersionHash`) + mixed-version warning at export (legacy live-config fallback; manifest `rubric_versions`; 12 new tests) | [#37](https://github.com/stephendmann/feedback-kitchen/pull/37) | 2026-06-13 |
 | FK-25 | Rubric-version drift indicator — ambient in-app badge (`SA.detectRubricDrift`) when the open cohort's stamped rubric (FK-11) ≠ the loaded rubric; mirrors the export manifest's `mixed`/fallback semantics so badge and `90_manifest` can't disagree; 15 new tests (*PR #39 was titled "FK-12" — provenance; in-app surface of D-09*) | [#39](https://github.com/stephendmann/feedback-kitchen/pull/39) | 2026-06-13 |
+| FK-26 | Moderation Export characterization tests (= GitHub issue #4): `moderation-suppression.test.js` + `moderation-privacy.test.js` (SENTINEL-PII cohort → real export → `writeFile` intercept → cell-level leak guard via vendored SheetJS; 44 tests, exporter confirmed non-leaking; no new dep) | [#42](https://github.com/stephendmann/feedback-kitchen/pull/42) | 2026-06-14 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · **FK-11 doc-drift NOT fixed in PR #37** — `docs/fk_moderation_export_v1.md:71` still says the hash covers "criterion order and maxima" (wrong: it's names+weights+all tier descriptors; correct gloss at `js/moderation-readme.js:123`); fold into the next moderation-touching PR.
