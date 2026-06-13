@@ -113,6 +113,12 @@
     details > .section-body { padding: 1rem 1.25rem; }
     details > .section-body.compact { padding: 0 0 0.5rem 0; } /* for rubric table which has its own table padding */
     body { padding-bottom: 4.5rem; }
+    /* ── Rubric drift indicator (FK-12) ──────────────────────────
+       Plain CSS (not Tailwind utilities) so the ambient signal applies
+       without re-running build:css. Surfaces when the open cohort holds
+       records marked against a different rubric than the one loaded. */
+    #cohort-drift-badge { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    #sec-cohort.fk-cohort-drift { border-color: #fcd34d; box-shadow: inset 0 0 0 1px #fde68a; }
     /* ── Focus mode (criterion-by-criterion workspace) ───────── */
     /* Plain CSS (not Tailwind utilities) so it applies without re-running build:css. */
     #focus-workspace { display: none; }
@@ -1163,7 +1169,7 @@
         <summary>
           <div class="flex items-center justify-between gap-3 flex-wrap w-full">
             <div>
-              <h2 class="step-title mb-0">Cohort<span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span></h2>
+              <h2 class="step-title mb-0">Cohort<span id="cohort-status-chip" class="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 align-middle">Ready</span><span id="cohort-drift-badge" class="hidden ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full align-middle" role="status" title="">⚠ Rubric drift</span></h2>
             </div>
             <div class="text-right text-sm">
               <div class="text-slate-600 text-xs">Cohort label</div>
@@ -2943,7 +2949,42 @@
       if (banner) banner.classList.toggle('hidden', count === 0);
       // Keep moderation-export visibility in lockstep with cohort changes.
       try { refreshModExportUI(); } catch (e) { /* module may not be loaded in tests */ }
+      // FK-12: ambient rubric-drift signal stays in lockstep with the cohort too.
+      try { refreshRubricDriftUI(cohort); } catch (e) { /* SA.detectRubricDrift may be absent in tests */ }
       refreshStatusChips();
+    }
+
+    /* ── Rubric drift indicator (FK-12) ──────────────────────────
+       Ambient signal: when the open cohort holds records stamped (FK-11)
+       against a rubric version that differs from the one currently loaded,
+       tint the cohort section and show an amber badge with a plain-English
+       tooltip. Reads SA.detectRubricDrift, which mirrors the moderation
+       export's per-record fallback, so this badge and the exported
+       90_manifest can never disagree. Silent when there is no drift. */
+    function refreshRubricDriftUI(cohort) {
+      const badge   = el('cohort-drift-badge');
+      const section = el('sec-cohort');
+      if (!badge && !section) return;
+      cohort = cohort || (config && SA.getCohort(config.id));
+
+      const d = (SA && typeof SA.detectRubricDrift === 'function')
+        ? SA.detectRubricDrift(config, cohort) : null;
+      const drift = !!(d && d.drift);
+
+      if (section) section.classList.toggle('fk-cohort-drift', drift);
+      if (!badge) return;
+      badge.classList.toggle('hidden', !drift);
+      if (!drift) { badge.title = ''; return; }
+
+      const driftedWord = d.driftedCount === 1 ? 'record was' : 'records were';
+      badge.textContent = d.mixed ? '⚠ Mixed rubric' : '⚠ Rubric drift';
+      badge.title = d.mixed
+        ? d.driftedCount + ' of ' + d.total + ' cohort ' + driftedWord +
+          ' marked against a different rubric version than the one loaded now ('
+          + d.versions.length + ' versions present). The moderation export will report this cohort as "mixed".'
+        : 'All ' + d.total + ' records in this cohort were marked against an earlier rubric version (' +
+          (d.versions[0] || '—') + '); the rubric loaded now is ' + d.currentHash +
+          '. Re-saving a record re-stamps it with the current rubric.';
     }
 
     /* ── Status chips (live UI state) ─────────────────────── */
@@ -4713,6 +4754,8 @@
              disableModExport, runModExport,
              showModExportBlock, hideModExportBlock,
              refreshModExportUI,
+             // Rubric drift indicator (FK-12)
+             refreshRubricDriftUI,
              // Cohort Insights (Phase 1)
              showCohortInsights, hideCohortInsights, copyCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,

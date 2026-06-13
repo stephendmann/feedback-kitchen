@@ -1279,6 +1279,53 @@
     return (h >>> 0).toString(16).padStart(8, '0');
   }
 
+  /* ── Rubric drift detection (FK-12) ───────────────────────────
+     Compares the rubric version stamped on each saved cohort record
+     (FK-11) against the rubric currently loaded in the scorer, and
+     reports whether the open cohort drifted.
+
+     This deliberately mirrors the read path in js/moderation-export.js:
+     each record's effective hash is `record.rubricVersionHash ||
+     currentHash` (legacy unstamped records fall back to the live-config
+     hash, exactly as the export does), `versions` is the sorted set of
+     distinct effective hashes, `mixed` is versions.length > 1, and
+     `manifestHash` reproduces the manifest's 'mixed'/single value. Keeping
+     these aligned guarantees the ambient in-app signal and the exported
+     90_manifest never disagree.
+
+     Returns null when there is nothing to compare (empty/absent cohort)
+     so callers can cheaply skip the signal. */
+  function detectRubricDrift(config, cohort) {
+    const currentHash = rubricVersionHash(config);
+    const students = (cohort && cohort.students) || [];
+    const total = students.length;
+    if (!total) return null;
+
+    let legacyCount = 0;
+    let driftedCount = 0;
+    const versionSet = {};
+    students.forEach(function (s) {
+      const stamped = s && s.rubricVersionHash;
+      if (!stamped) legacyCount++;
+      const eff = stamped || currentHash;   // mirror moderation-export fallback
+      versionSet[eff] = (versionSet[eff] || 0) + 1;
+      if (eff !== currentHash) driftedCount++;
+    });
+
+    const versions = Object.keys(versionSet).sort();
+    const mixed = versions.length > 1;
+    return {
+      total:        total,
+      currentHash:  currentHash,
+      versions:     versions,                 // matches 90_manifest rubric_versions
+      legacyCount:  legacyCount,
+      driftedCount: driftedCount,
+      mixed:        mixed,                     // matches 90_manifest 'mixed'
+      drift:        driftedCount > 0,          // any record marked under a different rubric
+      manifestHash: mixed ? 'mixed' : (versions[0] || currentHash)
+    };
+  }
+
   /* ── Score formatting helper ──────────────────────────────── */
   // Rounds and formats a numeric score according to the scorer's rounding preference.
   // rounding: 'none' (1 d.p.), 'half' (nearest 0.5), 'whole' (nearest integer)
@@ -1299,7 +1346,7 @@
     isQuotaError, safeSetItem,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
-    computeScores, generateFeedbackText, formatScore, rubricVersionHash,
+    computeScores, generateFeedbackText, formatScore, rubricVersionHash, detectRubricDrift,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
     validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS,
