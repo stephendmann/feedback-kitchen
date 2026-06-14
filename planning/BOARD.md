@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-22 homepage/dark-mode residuals — IN REVIEW, PR #49) · Shipped: 23 · others: 0. Next free card ID: FK-27. *(Latest: FK-22 in review #49. FK-19 round-trip shipped #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 24 · others: 0. Next free card ID: FK-27. *(Latest: FK-22 shipped #49. FK-19 round-trip #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -47,12 +47,7 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-
-### FK-22 · Homepage/dark-mode residuals — IN REVIEW (PR #49)
-- **Status:** implemented on `feat/fk22-residuals`, **PR [#49](https://github.com/stephendmann/feedback-kitchen/pull/49) open**. Batched PR #16 intent + post-#31 dark sweep.
-- **Shipped in the PR:** index.html — gstatic preconnect (crossorigin) + partner-logo intrinsic `width`/`height` (CLS); hero CTA already a real `<a href>` (no change). scorer.html — `renderLineDiff` inline hex → `.fk-diff-del`/`.fk-diff-add` classes w/ dark variants; removed the dead `?cinematic=1` → `dark-scorer.css` (404) easter egg; dark-mode sweep of light tint chips (`#score-rounding-label` amber, inactive `[id^=rnd-].bg-slate-100`, kbd/code) → dark slate (active accent left).
-- **DoD evidence:** runtime-verified (gstatic preconnect + logo dims on home; no near-white chips in scorer dark mode; cinematic link gone); `build:css` clean (w-auto already present); Jest 302/302; axe 0 (home + scorer). **Priority:** P2. **Effort:** S.
-- **On merge:** move to Shipped; post-merge sync.
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -99,5 +94,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-12 | Ambient cohort scale-use consistency indicator (D-10): pure `CohortInsights.scaleUseSignal()` (reuses `cohortMetrics`, small-N suppressed) → `#cohort-consistency-badge` behind a **default-off** Scorer-settings toggle; saved-cohort-only, no `recalculate()` touch; 8 unit tests; axe 0/51. *(Docs maintenance note + code cross-ref in follow-up PR #45.)* | [#44](https://github.com/stephendmann/feedback-kitchen/pull/44) | 2026-06-14 |
 | FK-21 | Draft persistence v2: debounced autosave (1s) + pagehide flush of the in-progress student to per-scorer `SA_DRAFT_V1_<id>` via `safeSetItem` (quota-safe); FK-07 `_sessionHasUnsavedWork()` gate; non-blocking `#draft-resume-banner` (Resume/Discard, `_draftReady` clobber-guard); clears on save-to-cohort + New-student; 8 structural tests; quota-full runtime-verified | [#46](https://github.com/stephendmann/feedback-kitchen/pull/46) | 2026-06-14 |
 | FK-19 | Moodle offline-grading-worksheet **round-trip**. Import: `validateWorksheet` (narrow file gate, two-tier taxonomy) → `planImport` (dispositions: import/verify/skip/non-markable) → `buildCohortImport` (skip-if-marked guard, identity-only placeholders) + scorer import UI (state machine, collision-guarded verify). Export: `buildExportWorksheet` (fill Grade + `feedbackText`-only into the re-supplied original, BOM/CRLF preserved, `markerNotes` never read) + "Export Moodle worksheet" UI. Synthetic fixture generator (BOM+CRLF byte-faithful); ~61 tests; axe 0. *(Live-Moodle upload check pending — not code-blocking.)* | [#47](https://github.com/stephendmann/feedback-kitchen/pull/47), [#48](https://github.com/stephendmann/feedback-kitchen/pull/48) | 2026-06-14 |
+| FK-22 | Homepage/dark-mode residuals: index.html gstatic preconnect + partner-logo intrinsic `width`/`height` (CLS); scorer `renderLineDiff` inline hex → `.fk-diff-del`/`.fk-diff-add` classes w/ dark variants; removed dead `?cinematic=1`→`dark-scorer.css` (404) easter egg; dark-mode sweep of light tint chips (rounding label/buttons, kbd/code → dark slate). axe 0; Jest 302/302 | [#49](https://github.com/stephendmann/feedback-kitchen/pull/49) | 2026-06-14 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · ~~FK-11 doc-drift~~ **fixed (PR #41)** — `docs/fk_moderation_export_v1.md:71` gloss corrected. **FK-19 follow-ups:** (1) live-Moodle upload round-trip check (export a generated fixture → upload to a non-prod course; confirms the institution's build matches core — only outstanding FK-19 item, not code-blocking); (2) v1.1 nicety — cache the original worksheet at import for one-click export (today the marker re-supplies it).
