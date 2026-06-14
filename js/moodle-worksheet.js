@@ -188,8 +188,83 @@
     return done(dataRows, dataRows - skipped);
   }
 
+  /* Short status bucket for UI badges. */
+  function statusBucket(status) {
+    const s = String(status || '');
+    if (/^No submission/.test(s)) return 'no-submission';
+    if (/late/i.test(s))          return 'late';
+    if (/^Submitted/.test(s))     return 'submitted';
+    return 'other';
+  }
+
+  /* ── Import mapping (worksheet → cohort-queue plan) ──────────
+     The pure planning layer the UI renders. Runs the validator
+     first: if a FILE-blocking error exists the plan is empty
+     (the UI must not transition to "Ready to Import"). Otherwise
+     every data row is classified into a disposition the UI shows
+     as a distinct visual state — no row is silently dropped:
+
+       • 'import'       — keyed sid:<ID number>; ready to queue.
+       • 'verify'       — ID number blank but Full name present;
+                          keyed name:<name> but REQUIRES manual
+                          confirmation first (name-only matching is
+                          a grade-leakage risk), so never auto-import.
+       • 'skip'         — unkeyable (no id + no name) or duplicate id.
+       • 'non-markable' — No-submission row; shown but not marked.
+
+     Returns { isValid, validation, entries, summary }. Keys are the
+     FK cohort keys (sid:/name:) so the queue can dedupe against an
+     existing cohort. markerNotes / moderation data are NEVER read. */
+  function planImport(text, opts) {
+    opts = opts || {};
+    const validation = validateWorksheet(text, opts);
+    const summary = { total: 0, import: 0, verify: 0, skip: 0, nonMarkable: 0 };
+    if (!validation.isValid) {
+      return { isValid: false, validation: validation, entries: [], summary: summary };
+    }
+    const records = parseCsv(text);
+    const rowCodes = {};
+    validation.errors.filter(e => e.severity === 'row')
+      .forEach(e => { (rowCodes[e.row] = rowCodes[e.row] || []).push(e.code); });
+
+    const entries = [];
+    for (let r = 1; r < records.length; r++) {
+      const rowNo = r + 1;
+      const cells = records[r];
+      if (cells.length !== REQUIRED_HEADER.length) continue;
+      const id     = (cells[COL[IDENTIFIER_COLUMN]] || '').trim();
+      const name   = (cells[COL[NAME_COLUMN]] || '').trim();
+      const status = cells[COL.Status] || '';
+      const codes  = rowCodes[rowNo] || [];
+
+      let disposition, key = null, keyType = null, reason = null;
+      if (codes.indexOf('E_ROW_NO_KEY') !== -1)      { disposition = 'skip'; reason = 'No ID number or name — cannot match a student.'; }
+      else if (codes.indexOf('E_ROW_DUP_ID') !== -1) { disposition = 'skip'; reason = 'Duplicate ID number.'; }
+      else if (statusBucket(status) === 'no-submission') {
+        disposition = 'non-markable'; reason = 'No submission — nothing to mark.';
+        if (id) { key = 'sid:' + id; keyType = 'sid'; } else if (name) { key = 'name:' + name; keyType = 'name'; }
+      } else if (id) { disposition = 'import'; key = 'sid:' + id; keyType = 'sid'; }
+      else { disposition = 'verify'; key = 'name:' + name; keyType = 'name'; reason = 'Name-only match — confirm this is the right student before importing.'; }
+
+      summary.total++;
+      summary[disposition === 'non-markable' ? 'nonMarkable' : disposition]++;
+      entries.push({
+        row: rowNo,
+        participant: (cells[COL[PARTICIPANT_COLUMN]] || '').trim(),
+        name: name,
+        identifier: id,
+        key: key, keyType: keyType,
+        status: statusBucket(status),
+        disposition: disposition,
+        reason: reason,
+        errorCodes: codes
+      });
+    }
+    return { isValid: true, validation: validation, entries: entries, summary: summary };
+  }
+
   return {
-    parseCsv, validateWorksheet,
+    parseCsv, validateWorksheet, planImport, statusBucket,
     REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,
     PARTICIPANT_COLUMN, COL, BOM
   };
