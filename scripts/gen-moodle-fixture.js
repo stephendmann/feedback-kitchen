@@ -121,6 +121,7 @@ function buildWorksheet(opts) {
   const lines = [HEADER.map(csvField).join(',')];
   for (let i = 0; i < rows; i++) {
     const r = makeRow(i);
+    if (opts.overrides && opts.overrides[i]) Object.assign(r, opts.overrides[i]); // per-row field overrides
     lines.push(HEADER.map(h => csvField(r[h])).join(','));
   }
   return BOM + lines.join(eol) + eol;
@@ -151,6 +152,15 @@ function corruptWorksheet(kind, opts) {
     case 'bad-quote':                          // unterminated quoted field at EOF
       return base + 'Participant 8889999,Broken Row,9999999,broken@example.edu,' +
         STATUS_OK + ',,,,100.00,Released,Yes,' + STAMP + ',-,"unterminated feedback\r\n';
+    // ── row-level (data-integrity) poisons — Moodle skips these rows ──
+    case 'no-key-row':                          // blank ID number AND Full name
+      return buildWorksheet(Object.assign({}, opts, { overrides: { 0: { 'Full name': '', 'ID number': '' } } }));
+    case 'dup-id':                              // row 2 repeats row 1's ID number
+      return buildWorksheet(Object.assign({}, opts, { overrides: { 1: { 'ID number': '9900001' } } }));
+    case 'bad-grade-text':                      // non-numeric Grade
+      return buildWorksheet(Object.assign({}, opts, { overrides: { 0: { Grade: 'N/A' } } }));
+    case 'bad-grade-range':                     // Grade above Maximum grade
+      return buildWorksheet(Object.assign({}, opts, { overrides: { 0: { Grade: '150.00' } } }));
     default:
       return base;
   }

@@ -24,7 +24,11 @@
 
   const BOM = '﻿';
 
-  // Canonical 14-column header (INS-10), in order.
+  // THE STRUCTURAL CONTRACT — the canonical 14-column header (INS-10), in
+  // order. Hard-coded on purpose: institutional docs + Moodle core both treat
+  // any rename / reorder / add / remove as fatal, so ANY deviation here is a
+  // FILE-blocking E_HEADER_MISMATCH that must halt the UI "Ready to Import"
+  // transition. Do not soften to a fuzzy match.
   const REQUIRED_HEADER = [
     'Identifier', 'Full name', 'ID number', 'Email address', 'Status',
     'Group', 'Marker', 'Grade', 'Maximum grade', 'Marking workflow state',
@@ -33,7 +37,10 @@
   ];
   const EDITABLE_COLUMNS  = ['Grade', 'Feedback comments']; // only these on upload
   const IDENTIFIER_COLUMN = 'ID number';                    // → FK sid:
+  const NAME_COLUMN       = 'Full name';                    // → FK name: fallback
   const PARTICIPANT_COLUMN = 'Identifier';                  // Moodle's own row key
+  const COL = {};
+  REQUIRED_HEADER.forEach((h, i) => { COL[h] = i; });
 
   /* ── RFC-4180 parser ────────────────────────────────────────
      Records terminate on CRLF or lone LF/CR; quoted fields may
@@ -70,19 +77,40 @@
     return records;
   }
 
-  /* ── Dry-run validator ──────────────────────────────────────
-     Returns { ok, errors, warnings }. errors block import; warnings
-     (BOM / EOL drift) do not, but signal a non-byte-faithful file. */
-  function validateWorksheet(text) {
+  /* ── Two-tier dry-run validator ─────────────────────────────
+     Mirrors Moodle's known internal contract (institutional docs +
+     core grade/import/csv/load_data.php, which skips "invalid row
+     with blank user field" rather than aborting):
+
+       • FILE-blocking errors (severity:'file') — structural: empty,
+         unparseable, or any header deviation. Abort: no rows import,
+         and the UI must NOT transition to "Ready to Import".
+       • ROW-level errors (severity:'row', carry {row,column}) — data
+         integrity on one row (unkeyable, duplicate id, bad grade).
+         Other rows still import; the UI highlights/grays just these.
+       • Warnings — encoding drift (BOM/EOL) or informational row
+         notes (No-submission). Never block.
+
+     Returns { isValid, ok, errors, warnings, rowCount, importableRows }.
+     isValid (===ok) is false iff a file-blocking error exists, OR any
+     row error exists when opts.strictRows is set (risk-averse mode). */
+  function validateWorksheet(text, opts) {
+    opts = opts || {};
     const errors = [], warnings = [];
-    const err  = (code, message) => errors.push({ code, message });
-    const warn = (code, message) => warnings.push({ code, message });
+    const fileErr = (code, message, column) => errors.push({ code, message, severity: 'file', column: (column == null ? null : column) });
+    const rowErr  = (code, message, row, column) => errors.push({ code, message, severity: 'row', row, column });
+    const warn    = (code, message, row) => warnings.push(row == null ? { code, message } : { code, message, row });
     const raw = String(text == null ? '' : text);
 
-    if (!raw.trim()) {
-      err('E_EMPTY', 'The file is empty.');
-      return { ok: false, errors, warnings };
-    }
+    const done = (rowCount, importable) => {
+      const fileBlocking = errors.some(e => e.severity === 'file') ||
+        (opts.strictRows && errors.some(e => e.severity === 'row'));
+      const ok = !fileBlocking;
+      return { isValid: ok, ok: ok, errors: errors, warnings: warnings,
+               rowCount: rowCount || 0, importableRows: (importable == null ? (rowCount || 0) : importable) };
+    };
+
+    if (!raw.trim()) { fileErr('E_EMPTY', 'The file is empty.'); return done(0, 0); }
     if (raw.charCodeAt(0) !== 0xfeff) {
       warn('W_NO_BOM', 'File has no UTF-8 BOM; Moodle exports include one. Re-export or save as UTF-8 to be safe.');
     }
@@ -91,40 +119,78 @@
     }
 
     let records;
-    try {
-      records = parseCsv(raw);
-    } catch (e) {
-      err(e.code || 'E_PARSE', 'Could not parse the CSV: ' + (e.message || 'malformed quoting') + '.');
-      return { ok: false, errors, warnings };
-    }
-    if (!records.length) {
-      err('E_EMPTY', 'No rows found.');
-      return { ok: false, errors, warnings };
-    }
+    try { records = parseCsv(raw); }
+    catch (e) { fileErr(e.code || 'E_PARSE', 'Could not parse the CSV: ' + (e.message || 'malformed quoting') + '.'); return done(0, 0); }
+    if (!records.length) { fileErr('E_EMPTY', 'No rows found.'); return done(0, 0); }
 
+    // ── FILE-blocking: header is the structural contract ──
     const header = records[0];
-    if (header.length !== REQUIRED_HEADER.length ||
-        REQUIRED_HEADER.some((h, k) => header[k] !== h)) {
-      err('E_HEADER_MISMATCH',
-        'Header does not match the expected Moodle worksheet (do not rename, move, add, or remove columns). Expected ' +
-        REQUIRED_HEADER.length + ' columns starting "Identifier,Full name,ID number,…", got ' +
-        header.length + ': "' + header.slice(0, 3).join(',') + '…".');
-      // header is dispositive — skip per-row checks once it is wrong
-      return { ok: false, errors, warnings };
+    if (header.length !== REQUIRED_HEADER.length) {
+      fileErr('E_HEADER_MISMATCH',
+        'Header has ' + header.length + ' columns, expected ' + REQUIRED_HEADER.length +
+        ' (do not add, remove, rename, or reorder columns).', null);
+      return done(records.length - 1, 0);
+    }
+    const badCol = REQUIRED_HEADER.findIndex((h, k) => header[k] !== h);
+    if (badCol !== -1) {
+      fileErr('E_HEADER_MISMATCH',
+        'Column ' + (badCol + 1) + ' is "' + header[badCol] + '", expected "' + REQUIRED_HEADER[badCol] +
+        '" — do not rename, move, add, or remove columns.', badCol);
+      return done(records.length - 1, 0);
     }
 
+    // ── Per-row checks (header is sound) ──
+    const dataRows = records.length - 1;
+    const seenIds = {};
+    let skipped = 0;
     for (let r = 1; r < records.length; r++) {
-      if (records[r].length !== REQUIRED_HEADER.length) {
-        err('E_ROW_FIELD_COUNT',
-          'Row ' + (r + 1) + ' has ' + records[r].length + ' fields, expected ' + REQUIRED_HEADER.length + '.');
+      const rowNo = r + 1;            // 1-based incl. header, for UI/messages
+      const cells = records[r];
+
+      // FILE-blocking: a ragged row means the CSV structure is broken.
+      if (cells.length !== REQUIRED_HEADER.length) {
+        fileErr('E_ROW_FIELD_COUNT',
+          'Row ' + rowNo + ' has ' + cells.length + ' fields, expected ' + REQUIRED_HEADER.length + '.', null);
+        continue;
       }
+
+      let rowBad = false;
+      const id   = (cells[COL[IDENTIFIER_COLUMN]] || '').trim();
+      const name = (cells[COL[NAME_COLUMN]] || '').trim();
+      const grade = (cells[COL.Grade] || '').trim();
+      const maxGrade = parseFloat(cells[COL['Maximum grade']]) || 100;
+      const status = (cells[COL.Status] || '');
+
+      // ROW-level: no usable key (FK keys sid:<ID number>, falls back to name:).
+      if (!id && !name) {
+        rowErr('E_ROW_NO_KEY', 'Row ' + rowNo + ' has no ID number and no Full name — it cannot be matched to a student.', rowNo, IDENTIFIER_COLUMN);
+        rowBad = true;
+      } else if (id) {
+        if (seenIds[id]) { rowErr('E_ROW_DUP_ID', 'Row ' + rowNo + ' repeats ID number "' + id + '" (also row ' + seenIds[id] + ').', rowNo, IDENTIFIER_COLUMN); rowBad = true; }
+        else seenIds[id] = rowNo;
+      }
+
+      // ROW-level: a pre-filled grade that is non-numeric or out of range.
+      if (grade !== '') {
+        const g = Number(grade);
+        if (!isFinite(g))      { rowErr('E_ROW_GRADE_NONNUMERIC', 'Row ' + rowNo + ' grade "' + grade + '" is not a number.', rowNo, 'Grade'); rowBad = true; }
+        else if (g < 0 || g > maxGrade) { rowErr('E_ROW_GRADE_RANGE', 'Row ' + rowNo + ' grade ' + g + ' is outside 0–' + maxGrade + '.', rowNo, 'Grade'); rowBad = true; }
+      }
+
+      // Informational (non-blocking): No-submission rows are non-markable.
+      if (/^No submission/.test(status)) {
+        warn('W_ROW_NO_SUBMISSION', 'Row ' + rowNo + ' has no submission — non-markable; it will be shown but skipped.', rowNo);
+      }
+
+      if (rowBad) skipped++;
     }
 
-    return { ok: errors.length === 0, errors, warnings, rowCount: records.length - 1 };
+    return done(dataRows, dataRows - skipped);
   }
 
   return {
     parseCsv, validateWorksheet,
-    REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, PARTICIPANT_COLUMN, BOM
+    REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,
+    PARTICIPANT_COLUMN, COL, BOM
   };
 }));

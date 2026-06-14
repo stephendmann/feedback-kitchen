@@ -40,12 +40,16 @@ describe('parseCsv (RFC-4180)', () => {
 });
 
 describe('validateWorksheet — conformant file', () => {
-  test('a clean generated worksheet passes with no errors or warnings', () => {
+  test('a clean worksheet is valid, no errors; only a No-submission row note', () => {
     const res = FKMoodle.validateWorksheet(gen.buildWorksheet({ rows: 12 }));
-    expect(res.ok).toBe(true);
+    expect(res.isValid).toBe(true);
+    expect(res.ok).toBe(res.isValid);               // back-compat alias
     expect(res.errors).toEqual([]);
-    expect(res.warnings).toEqual([]);
     expect(res.rowCount).toBe(12);
+    expect(res.importableRows).toBe(12);            // no row errors → all importable
+    // the only warning is the informational No-submission row (Jack, row 11)
+    expect(res.warnings.map(w => w.code)).toEqual(['W_ROW_NO_SUBMISSION']);
+    expect(res.warnings[0].row).toBe(11);
   });
 });
 
@@ -71,11 +75,58 @@ describe('validateWorksheet — structural problems BLOCK with actionable codes'
     ['short data row',    gen.corruptWorksheet('short-row',    { rows: 6 }),   'E_ROW_FIELD_COUNT'],
     ['unbalanced quote',  gen.corruptWorksheet('bad-quote',    { rows: 6 }),   'E_UNBALANCED_QUOTE'],
   ];
-  test.each(cases)('%s → not ok, reports %s', (_label, csv, code) => {
+  test.each(cases)('%s → not valid, reports %s', (_label, csv, code) => {
     const res = FKMoodle.validateWorksheet(csv);
-    expect(res.ok).toBe(false);
+    expect(res.isValid).toBe(false);
     expect(res.errors.map(e => e.code)).toContain(code);
-    // every error carries a human-readable message
     res.errors.forEach(e => expect(typeof e.message).toBe('string'));
+  });
+
+  test('every file-blocking error is tagged severity "file"', () => {
+    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('wrong-header', { rows: 6 }));
+    expect(res.errors.every(e => e.severity === 'file')).toBe(true);
+  });
+
+  test('a header mismatch carries the offending column index', () => {
+    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('wrong-header', { rows: 6 }));
+    const e = res.errors.find(x => x.code === 'E_HEADER_MISMATCH');
+    expect(e.column).toBe(13);            // "Feedback comments" → "Comments" (0-based col 13)
+  });
+});
+
+describe('validateWorksheet — ROW-level integrity (skip-row, mirrors Moodle load_data.php)', () => {
+  test('a row with no ID number AND no name is a non-blocking row error with coordinates', () => {
+    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('no-key-row', { rows: 6 }));
+    expect(res.isValid).toBe(true);                    // file still imports the good rows
+    const e = res.errors.find(x => x.code === 'E_ROW_NO_KEY');
+    expect(e.severity).toBe('row');
+    expect(e.row).toBe(2);                             // first data row (1-based incl. header)
+    expect(e.column).toBe('ID number');
+    expect(res.importableRows).toBe(res.rowCount - 1); // one row skipped
+  });
+
+  test('a duplicate ID number → E_ROW_DUP_ID (row severity), file still valid', () => {
+    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('dup-id', { rows: 6 }));
+    expect(res.isValid).toBe(true);
+    expect(res.errors.map(e => e.code)).toContain('E_ROW_DUP_ID');
+    expect(res.errors.every(e => e.severity === 'row')).toBe(true);
+  });
+
+  test('a non-numeric grade → E_ROW_GRADE_NONNUMERIC', () => {
+    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('bad-grade-text', { rows: 6 }));
+    expect(res.isValid).toBe(true);
+    expect(res.errors.map(e => e.code)).toContain('E_ROW_GRADE_NONNUMERIC');
+  });
+
+  test('a grade above the maximum → E_ROW_GRADE_RANGE', () => {
+    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('bad-grade-range', { rows: 6 }));
+    expect(res.isValid).toBe(true);
+    expect(res.errors.map(e => e.code)).toContain('E_ROW_GRADE_RANGE');
+  });
+
+  test('strictRows promotes any row error to file-blocking (risk-averse mode)', () => {
+    const csv = gen.corruptWorksheet('no-key-row', { rows: 6 });
+    expect(FKMoodle.validateWorksheet(csv).isValid).toBe(true);
+    expect(FKMoodle.validateWorksheet(csv, { strictRows: true }).isValid).toBe(false);
   });
 });
