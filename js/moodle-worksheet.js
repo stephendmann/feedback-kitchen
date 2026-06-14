@@ -182,6 +182,14 @@
     // Row-level classification lives HERE (not the validator). validation.rows
     // are the normalized data rows in original order, so row numbers are
     // reconstructable (header is line 1).
+    //
+    // NOTE — the `Grade` column is deliberately NOT validated on import, and
+    // do not "fix" that by adding range/numeric checks here: a standard Moodle
+    // offline-grading-worksheet / participant export carries EMPTY grade
+    // columns (the marker fills grades in FK, which writes them back on
+    // EXPORT). Grade-value validation therefore belongs to the export path,
+    // not this import classifier — checking it here would validate data that
+    // is empty by definition.
     const entries = [];
     const seenIds = {};
     validation.rows.forEach((cells, idx) => {
