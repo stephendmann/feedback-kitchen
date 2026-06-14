@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 25 · others: 0. Next free card ID: FK-28. *(Latest: FK-27 post-import selection fix shipped #50. FK-22 #49, FK-19 #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-28 active-section scroll highlight + aria-current — IN REVIEW, PR #52) · Shipped: 25 · others: 0. Next free card ID: FK-29. *(Latest: FK-28 in review #52 (dynamic scroll-spy highlight + a11y). FK-27 #50, FK-22 #49, FK-19 #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -47,7 +47,13 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-28 · Dynamic active-section scroll highlight + scroll-spy aria-current — IN REVIEW (PR #52)
+- **Origin:** user idea (a highlight that follows scroll), reviewed against the code — the rail `IntersectionObserver` scroll-spy already existed (emerald rail-link recolour); this extends it. Not a new observer.
+- **Shipped in the PR (scorer.html):** (a11y) active rail link now sets `aria-current="true"` (exactly one) — scroll-spy was colour-only, invisible to AT; (visual) `.fk-active-section` emerald inset rail on the active section content (`#059669` light / `#34d399` dark, preserves card shadow, no layout shift); `prefers-reduced-motion` honoured; suppressed in focus mode (JS guard `.fk-focus-on`).
+- **Design:** dynamic active-only (not static per-section colour — fixed identity decays on reorder, the **D-02** de-lettering lesson); emerald reuses the app accent (no orange palette fork; orange also failed AA for normal text in light mode).
+- **DoD evidence:** runtime-verified — scroll updates active highlight + aria-current (light/dark); focus mode suppresses content highlight while rail still updates; Jest 302/302; axe 0. **Priority:** P3 (polish/a11y). **Effort:** S.
+- **On merge:** move to Shipped; post-merge sync.
 
 ## Validate in runtime
 *(empty)*
