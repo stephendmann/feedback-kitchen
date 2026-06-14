@@ -1038,3 +1038,71 @@ fresh ID (not FK-17). Any later decision to migrate revisits this entry.
 
 **Refs.** FK-10 · FK-24 (PR #36) · INS-5 · D8 / INS-8 (FK-17 collision) ·
 `fk-project-overview.md` § Storage capacity and write-hardening.
+
+---
+
+## Addendum I — Cohort-action grouping and rubric-version provenance (2026-06)
+
+**Track:** same 2026-06 improvement programme as Addenda F–H. Promoted to close the
+two remaining ☑ planning decisions not yet folded into this ADR (D-06, D-09).
+Addendum-scoped numbering (I.1, I.2); no new global D-numbers. Both decisions had
+already shipped before this promotion — this records the locked outcomes.
+
+### I.1 — Cohort actions: isolate the destructive one, keep the configure/run split *(FK-06, FK-08, planning D-06)*
+
+**Decision.** The cohort action row keeps two deliberate properties: (1) the
+destructive "Clear cohort" is visually isolated with danger styling and a
+double-confirm guard; (2) the moderation-export controls stay a **configure (opt-in)
+vs run** pair — they are *not* consolidated into one button.
+
+**Rationale.** The opening assumption — that the moderation pair was partially
+redundant and could be merged — was **falsified** by INS-2: the pair is
+configure-vs-run *by design*. Consolidating would hide the configure step
+moderators rely on, the exact risk the decision set out to avoid. The
+"isolate destructive" half stood on its own evidence (mis-click risk among peer
+buttons).
+
+**Validation outcome.** INS-2 read both handlers + the moderation doc and confirmed
+the configure/run semantics. "Isolate destructive" shipped as **FK-06 (PR #21)**
+(`.btn-danger`, right-isolation, divider grouping). The copy-polish remainder
+shipped as **FK-08 (PR #28)** (button labels/titles + identifier-tuple hint), both
+opt-in states runtime-verified.
+
+**Consequences.** The configure/run split is a locked invariant — do not
+consolidate it (re-deriving would re-introduce the hidden-step risk). Destructive
+cohort actions stay isolated + double-confirmed.
+
+**Refs.** planning D-06 · FK-06 (PR #21) · FK-08 (PR #28) · INS-2.
+
+### I.2 — Rubric-version provenance: stamp per record, warn at export and in-app *(FK-11, FK-25, planning D-09)*
+
+**Decision.** A rubric-version hash is **stamped on each cohort record at save time**
+(re-saving re-stamps). Mixed-version cohorts are surfaced twice: the moderation
+export reports `mixed` + a `rubric_versions` list in `90_manifest`, and an in-app
+ambient badge flags drift when the open cohort's stamps differ from the loaded
+rubric.
+
+**Rationale.** The assumption that the export-time warning was meaningful was
+**falsified** by INS-6: the hash was computed *once at export* from the live config
+and written identically to every row, so mixed-version detection was impossible as
+built. A per-record stamp at mark time was the missing primitive.
+
+**Validation outcome.** **FK-11 (PR #37):** canonical `SA.rubricVersionHash`
+(criteria names + weights + all tier descriptors → 8-char hash), stamped per record
+at save; export reads the stored stamp with a live-config fallback for legacy rows;
+`90_manifest` reports `mixed` + `rubric_versions` when stamps disagree. **FK-25
+(PR #39):** `SA.detectRubricDrift` mirrors the export's per-record fallback exactly
+(so the ambient badge and the manifest can never disagree) and renders an amber
+"Rubric drift" / "Mixed rubric" badge + cohort-section tint.
+
+**Naming note.** FK-25 shipped under the label "FK-12" in PR #39 — a **misnomer**.
+It is the *rubric-version* indicator (this decision, D-09), **not** the FK-12
+cohort-consistency / anchoring indicator (planning D-10, still open). Reconciled on
+the board as FK-25.
+
+**Consequences.** Per-record rubric stamping is a storage invariant; export and the
+ambient badge share one fallback path by design. The cohort-consistency indicator
+(D-10) remains a separate, pending decision.
+
+**Refs.** planning D-09 (+ D-10 disambiguation) · FK-11 (PR #37) · FK-25 (PR #39) ·
+INS-6 · `docs/fk_moderation_export_v1.md`.
