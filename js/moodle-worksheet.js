@@ -263,8 +263,71 @@
     return { isValid: true, validation: validation, entries: entries, summary: summary };
   }
 
+  /* Cohort key, normalised exactly like shared.js studentMatchKey
+     (lower-cased) so import dedup matches the store's own keying. */
+  function storeKey(studentId, name) {
+    const sid = (studentId || '').trim().toLowerCase();
+    if (sid) return 'sid:' + sid;
+    const nm = (name || '').trim().toLowerCase();
+    return nm ? 'name:' + nm : null;
+  }
+
+  function recordHasMarks(rec) {
+    if (!rec) return false;
+    const sr = rec.scoreResult;
+    if (sr && Array.isArray(sr.rows) && sr.rows.some(r => r && r.grade)) return true;
+    return Array.isArray(rec.grades) && rec.grades.some(g => g && g.grade);
+  }
+
+  /* ── Commit decision (pure — does NOT touch the store) ───────
+     Given the (UI-resolved) plan entries and the existing cohort
+     students, decide what to actually add. Honours two locked rules:
+       • skip-if-marked — never overwrite a record that already holds
+         marking (preserve the marker's work); existing UNMARKED
+         placeholders may be refreshed.
+       • identity-only placeholder — a new student is seeded with name
+         + studentId + retained Moodle participant id, NO scoreResult,
+         so it appears as an unmarked cohort entry (opened via FK-07).
+     Only disposition:'import' entries are committed (verify rows must
+     have been resolved to 'import' or 'skip' in the UI first).
+     Returns { toAdd, skippedExisting, summary } — the caller persists
+     toAdd via SA.addToCohort. markerNotes/moderation are never set. */
+  function buildCohortImport(entries, existingStudents) {
+    existingStudents = existingStudents || [];
+    const byKey = {};
+    existingStudents.forEach(s => {
+      const k = s.key || storeKey(s.studentId, s.name);
+      if (k) byKey[k] = s;
+    });
+    const toAdd = [], skippedExisting = [];
+    let skippedRow = 0;
+    (entries || []).forEach(e => {
+      if (e.disposition !== 'import') { skippedRow++; return; }
+      const studentId = e.keyType === 'sid' ? (e.identifier || '') : '';
+      const key = storeKey(studentId, e.name);
+      const existing = key ? byKey[key] : null;
+      if (existing && recordHasMarks(existing)) {
+        skippedExisting.push({ key: key, name: e.name, reason: 'already marked in cohort — kept' });
+        return;
+      }
+      toAdd.push({
+        name: e.name || '',
+        studentId: studentId,
+        moodleIdentifier: e.participant || '',  // Moodle "Participant NNNN" retained for export
+        source: 'moodle-worksheet'
+        // deliberately no scoreResult / markerNotes — an unmarked roster placeholder
+      });
+    });
+    return {
+      toAdd: toAdd,
+      skippedExisting: skippedExisting,
+      summary: { add: toAdd.length, skippedExisting: skippedExisting.length, skippedRow: skippedRow }
+    };
+  }
+
   return {
-    parseCsv, validateWorksheet, planImport, statusBucket,
+    parseCsv, validateWorksheet, planImport, buildCohortImport,
+    statusBucket, storeKey, recordHasMarks,
     REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,
     PARTICIPANT_COLUMN, COL, BOM
   };
