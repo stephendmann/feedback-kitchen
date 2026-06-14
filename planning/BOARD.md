@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 24 · others: 0. Next free card ID: FK-27. *(Latest: FK-22 shipped #49. FK-19 round-trip #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-27 post-import selection bug — IN REVIEW, PR #50) · Shipped: 24 · others: 0. Next free card ID: FK-28. *(Latest: FK-27 bug fix in review #50 (post-FK-19-import: first student not auto-opened). FK-22 shipped #49, FK-19 #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -47,7 +47,13 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-27 · Post-Moodle-import selection regression (first student not auto-opened) — IN REVIEW (PR #50)
+- **Bug (reported live, reproduced):** after a Moodle worksheet import the cohort updates but no student is opened — marking pane stays on the empty "(no name)" state; with focus mode persisted on, the marker sees only the focus workspace with nothing loaded ("normal marking blocked, only Focus marking usable"). Perplexity-arbitrated as one small card; symptom 2 is the downstream effect of symptom 1.
+- **Root cause:** `mwCommit()` (FK-19 import) updated the cohort + toasted but never called the open-student path — selection not finalised after commit. Opening an imported record manually works fine (confirms it's the missing auto-select).
+- **Fix (PR #50):** after `addToCohort`, capture the first imported student's `key` and `loadCohortRecordIntoSession` it + scroll to the pane. Guarded on `!_sessionHasUnsavedWork()` (importing more mid-marking won't discard the current student); toast gains "· now marking &lt;name&gt;".
+- **DoD evidence:** runtime-verified — clean import auto-opens first student (markable); import-with-unsaved-work keeps the WIP student + still adds the new one; Jest 302/302; axe 0. **Priority:** P1 (broke the FK-19 happy path). **Effort:** S.
+- **On merge:** move to Shipped; post-merge sync.
 
 ## Validate in runtime
 *(empty)*
