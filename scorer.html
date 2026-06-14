@@ -1230,6 +1230,8 @@
             <button class="btn btn-ghost" onclick="S.openMoodleImport()" title="Import a Moodle offline grading worksheet (CSV) to pre-seed this cohort. Validates and previews first; never overwrites already-marked students.">Import Moodle worksheet…</button>
             <input type="file" id="moodle-file-input" accept=".csv,text/csv" class="hidden" onchange="S.onMoodleFileChosen(this)">
             <span class="sr-only" id="mw-live" role="status" aria-live="polite"></span>
+            <button class="btn btn-ghost" onclick="S.openMoodleExport()" title="Fill your FK grades + feedback into the Moodle worksheet you downloaded, ready to re-upload.">Export Moodle worksheet…</button>
+            <input type="file" id="moodle-export-file-input" accept=".csv,text/csv" class="hidden" onchange="S.onMoodleExportFileChosen(this)">
             <!-- Moderation Export group: configure (always visible, self-relabels when enabled) / run / disable (both hidden until opted in) — lifecycle split is deliberate, do not consolidate (INS-2/FK-08) -->
             <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center" aria-hidden="true"></span>
             <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Open moderation export settings. Set paper code, cohort ID, and assessment ID to enable the privacy-reduced export for this paper.">Moderation Export…</button>
@@ -1273,6 +1275,21 @@
       </div>
       <div id="mw-body" class="p-5 overflow-y-auto"></div>
       <div id="mw-footer" class="p-4 border-t border-slate-100 flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- FK-19: Moodle worksheet EXPORT — re-supply the original worksheet, FK fills Grade + Feedback back in -->
+  <div id="moodle-export-modal" role="dialog" aria-modal="true" aria-labelledby="me-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.closeModal('moodle-export-modal')"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
+      <h3 id="me-heading" class="font-bold text-slate-800 text-lg mb-2">Export Moodle worksheet</h3>
+      <p class="text-sm text-slate-700 mb-1"><strong>Re-upload your original Moodle worksheet</strong> — the file you downloaded before marking, not a new export.</p>
+      <p class="text-xs text-slate-500 mb-4">FK fills your grades and feedback into it and hands it back, ready to upload to Moodle. It needs the original because it preserves participant data FK doesn’t store. <em>Tip:</em> keep the original filename so Moodle accepts the upload.</p>
+      <div id="me-msg" class="hidden text-sm text-red-700 mb-3" role="alert"></div>
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="S.closeModal('moodle-export-modal')" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 font-semibold px-4 py-2 rounded-lg">Cancel</button>
+        <button onclick="S.mwExportChoose()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg">Choose your original worksheet…</button>
+      </div>
     </div>
   </div>
 
@@ -3397,6 +3414,53 @@
       });
     }
 
+    /* ── FK-19: Moodle worksheet EXPORT (the round-trip's other half) ──
+       Smallest UI slice: re-supply the original worksheet → fill Grade +
+       Feedback via FKMoodle.buildExportWorksheet (feedbackText only, never
+       markerNotes) → download the filled file under the same name. */
+    function openMoodleExport() {
+      if (!window.FKMoodle) { alert('Moodle export is unavailable — the worksheet module did not load.'); return; }
+      const msg = el('me-msg'); if (msg) { msg.classList.add('hidden'); msg.textContent = ''; }
+      openModal('moodle-export-modal');
+    }
+    function mwExportChoose() {
+      const input = el('moodle-export-file-input'); if (input) { input.value = ''; input.click(); }
+    }
+    function _meError(m) { const x = el('me-msg'); if (x) { x.textContent = m; x.classList.remove('hidden'); } }
+    function _downloadText(filename, text) {
+      const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename || 'FK_worksheet.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+    function onMoodleExportFileChosen(input) {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        const cohort = config && SA.getCohort(config.id);
+        const students = (cohort && cohort.students) || [];
+        let res;
+        try { res = window.FKMoodle.buildExportWorksheet(String(reader.result || ''), students); }
+        catch (e) { _meError('Could not process the file: ' + ((e && e.message) || e)); return; }
+        if (!res.ok) {
+          _meError(((res.errors && res.errors[0] && res.errors[0].message) || 'That file is not a valid Moodle worksheet.') +
+            ' Re-export it from Moodle and try again.');
+          return;
+        }
+        _downloadText(file.name, res.text);
+        closeModal('moodle-export-modal');
+        showCohortToast('Exported ' + res.summary.filled + ' grade' + (res.summary.filled === 1 ? '' : 's') +
+          ' to ' + file.name +
+          (res.summary.unmatched ? ' · ' + res.summary.unmatched + ' row(s) left unchanged' : '') +
+          '. Upload it back to Moodle.', res.summary.filled ? 'green' : 'amber');
+      };
+      reader.onerror = function () { _meError('Could not read the file.'); };
+      reader.readAsText(file);
+    }
+
     /* ── Status chips (live UI state) ─────────────────────── */
     let _aiState = 'idle';   // replaces the old _aiApplied boolean
     let _aiLastEdits = 0;    // number of lines different from the main textarea on last apply
@@ -5164,6 +5228,7 @@
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
              // FK-19: Moodle worksheet import
              openMoodleImport, onMoodleFileChosen, mwAssignId, mwIgnore, mwToggleFilter, mwCancel, mwCommit,
+             openMoodleExport, mwExportChoose, onMoodleExportFileChosen,
              // Moderation Export — opt-in & gating (issue #2)
              showModExportOptIn, hideModExportOptIn, confirmModExportOptIn,
              disableModExport, runModExport,

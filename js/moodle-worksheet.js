@@ -288,6 +288,61 @@
     };
   }
 
+  // RFC-4180 field quoting (mirror of parseCsv): quote only when the value
+  // contains a comma, double-quote, CR or LF; double any internal quotes.
+  function csvField(v) {
+    const s = (v == null) ? '' : String(v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function _serializeWorksheet(records) {
+    return BOM + records.map(r => r.map(csvField).join(',')).join('\r\n') + '\r\n';
+  }
+
+  /* ── Export (the other half of the round-trip) ───────────────
+     Fills Grade + Feedback comments back into the ORIGINAL worksheet
+     for students FK has marked, preserving every other column /
+     identifier / the BOM+CRLF encoding so the file re-uploads to
+     Moodle. The marker re-supplies (or FK caches) the original file:
+     FK can't reconstruct Email/Status/timestamps, so the round-trip
+     is "fill the file you downloaded", which is also Moodle's own
+     mental model — and means the import data model needs no change.
+
+     HARD privacy constraint: the writer reads ONLY scoreResult +
+     feedbackText. markerNotes / moderation data are NEVER touched —
+     the Feedback comments column carries feedbackText and nothing else.
+
+     Returns { ok, errors, text, summary }. ok:false (with the file
+     errors) if the supplied file is not a valid worksheet. */
+  function buildExportWorksheet(originalText, cohortStudents, opts) {
+    opts = opts || {};
+    const validation = validateWorksheet(originalText);
+    if (!validation.isValid) return { ok: false, errors: validation.errors, text: null, summary: null };
+
+    const records = parseCsv(originalText);             // [header, ...dataRows]
+    const byKey = {};
+    (cohortStudents || []).forEach(s => { const k = s.key || storeKey(s.studentId, s.name); if (k) byKey[k] = s; });
+
+    const gradeCol = COL.Grade, fbCol = COL['Feedback comments'];
+    let filled = 0;
+    for (let r = 1; r < records.length; r++) {
+      const cells = records[r];
+      if (cells.length !== REQUIRED_HEADER.length) continue;
+      const key = storeKey(cells[COL[IDENTIFIER_COLUMN]], cells[COL[NAME_COLUMN]]);
+      const rec = key ? byKey[key] : null;
+      if (!rec || !recordHasMarks(rec)) continue;       // only matched + MARKED rows
+      const sr = rec.scoreResult || {};
+      const score = (typeof sr.penalisedScore === 'number') ? sr.penalisedScore
+                  : (typeof sr.weightedTotal === 'number') ? sr.weightedTotal : null;
+      if (score == null) continue;
+      cells[gradeCol] = score.toFixed(2);               // FK /100 → Moodle numeric grade
+      cells[fbCol]    = String(rec.feedbackText || ''); // feedbackText ONLY — never markerNotes
+      filled++;
+    }
+    const total = records.length - 1;
+    return { ok: true, errors: [], text: _serializeWorksheet(records),
+             summary: { total: total, filled: filled, unmatched: total - filled } };
+  }
+
   /* Verify re-assignment guard (Gemini): when the user assigns an ID to a
      name-only row, confirm the new ID does not collide with another import
      row or an existing cohort student. Returns null when free, else a
@@ -305,7 +360,7 @@
   }
 
   return {
-    parseCsv, validateWorksheet, planImport, buildCohortImport, sidCollision,
+    parseCsv, validateWorksheet, planImport, buildCohortImport, buildExportWorksheet, sidCollision,
     statusBucket, storeKey, recordHasMarks,
     REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,
     PARTICIPANT_COLUMN, COL, BOM
