@@ -73,6 +73,30 @@ describe('buildCohortImport — identity-only placeholder shape', () => {
   });
 });
 
+describe('sidCollision — verify re-assignment guard', () => {
+  const entries = [
+    { row: 2, name: 'A', identifier: '9900001', keyType: 'sid' },
+    { row: 4, name: 'Kiri', identifier: '', keyType: 'name' }, // the verify row being resolved
+  ];
+  const existing = [{ name: 'Z', studentId: '9900009', key: 'sid:9900009' }];
+
+  test('a free ID returns null (no collision)', () => {
+    expect(FK.sidCollision('9900003', entries, existing, 4)).toBeNull();
+  });
+  test('collision with another worksheet row is reported', () => {
+    const c = FK.sidCollision('9900001', entries, existing, 4);
+    expect(c).toMatchObject({ code: 'E_ROW_DUP_ID', scope: 'worksheet', row: 2 });
+  });
+  test('collision with an existing cohort student is reported', () => {
+    const c = FK.sidCollision('9900009', entries, existing, 4);
+    expect(c).toMatchObject({ scope: 'cohort' });
+  });
+  test('exceptRow excludes the row being edited from self-collision', () => {
+    const e2 = [{ row: 4, name: 'Kiri', identifier: '9900003', keyType: 'sid' }];
+    expect(FK.sidCollision('9900003', e2, [], 4)).toBeNull();
+  });
+});
+
 describe('buildCohortImport — dedup is case-insensitive (matches store keying)', () => {
   test('a name-only import matches an existing record keyed lower-case', () => {
     const existing = [{ name: 'Kiri Modell', key: 'name:kiri modell', scoreResult: { rows: [{ grade: 'B' }] } }];

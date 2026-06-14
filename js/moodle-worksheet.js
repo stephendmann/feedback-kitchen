@@ -325,8 +325,24 @@
     };
   }
 
+  /* Verify re-assignment guard (Gemini): when the user assigns an ID to a
+     name-only row, confirm the new ID does not collide with another import
+     row or an existing cohort student. Returns null when free, else a
+     conflict descriptor — the UI must block Commit until resolved. */
+  function sidCollision(sid, entries, existingStudents, exceptRow) {
+    const key = storeKey(sid, '');
+    if (!key) return { code: 'E_ROW_NO_KEY', scope: 'input' };
+    const dupRow = (entries || []).find(e =>
+      e.row !== exceptRow && e.keyType === 'sid' && storeKey(e.identifier, '') === key);
+    if (dupRow) return { code: 'E_ROW_DUP_ID', scope: 'worksheet', row: dupRow.row };
+    const dupCohort = (existingStudents || []).find(s =>
+      (s.key || storeKey(s.studentId, s.name)) === key);
+    if (dupCohort) return { code: 'E_DUP_IN_COHORT', scope: 'cohort', name: dupCohort.name };
+    return null;
+  }
+
   return {
-    parseCsv, validateWorksheet, planImport, buildCohortImport,
+    parseCsv, validateWorksheet, planImport, buildCohortImport, sidCollision,
     statusBucket, storeKey, recordHasMarks,
     REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,
     PARTICIPANT_COLUMN, COL, BOM
