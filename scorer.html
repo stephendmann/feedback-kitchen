@@ -276,6 +276,16 @@
     .ci-footer { color:#777; font-size:0.82rem; margin-top:24px; border-top:1px solid #e8ecf0; padding-top:12px; }
     .ci-tip { color:#2563eb; cursor:help; border-bottom:1px dotted #2563eb; }
     html.fk-dark .ci-tip { color: #93c5fd !important; border-bottom-color: #93c5fd !important; }
+    /* FK-22: line-diff colours moved from inline hex (renderLineDiff) to classes, with dark variants. */
+    .fk-diff-del { background:#fee2e2; }
+    .fk-diff-add { background:#dcfce7; }
+    html.fk-dark .fk-diff-del { background:#7f1d1d; color:#fecaca; }
+    html.fk-dark .fk-diff-add { background:#14532d; color:#bbf7d0; }
+    /* FK-22: dark-mode sweep — light tint chips PR #31 didn't remap (active accents left intentional). */
+    html.fk-dark #score-rounding-label { background:#3f3a1f !important; color:#fde68a !important; }
+    html.fk-dark [id^="rnd-"].bg-slate-100 { background:#334155 !important; color:#cbd5e1 !important; }
+    html.fk-dark [id^="rnd-"].bg-slate-100:hover { background:#475569 !important; }
+    html.fk-dark kbd.bg-slate-100, html.fk-dark code.bg-slate-100 { background:#334155 !important; color:#e2e8f0 !important; border-color:#475569 !important; }
     .ci-note { font-size:0.88rem; color:#888; }
     @media (max-width:600px) {
       .ci-grid { grid-template-columns:1fr; gap:2px; }
@@ -333,16 +343,8 @@
   <script defer src="/_vercel/insights/script.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
   <link rel="stylesheet" href="/css/site-dark.css">
-  <!-- Cinematic dark mode — loaded only when ?cinematic=1 is in the URL -->
-  <link id="dk-theme" rel="stylesheet" href="/css/dark-scorer.css" disabled>
-  <script>
-    (function () {
-      if (new URLSearchParams(location.search).get('cinematic') === '1') {
-        document.getElementById('dk-theme').disabled = false;
-        document.documentElement.classList.add('fk-cinematic');
-      }
-    })();
-  </script>
+  <!-- FK-22: removed the dead ?cinematic=1 easter egg — it loaded /css/dark-scorer.css,
+       which never existed (404 when enabled). Real dark mode is site-dark.css + html.fk-dark. -->
 </head>
 <body class="bg-slate-50 min-h-screen">
 
@@ -4561,8 +4563,8 @@
         const lb = bl[i] ?? '';
         if (la === lb) { out.push(escHtml(la)); }
         else {
-          if (la) out.push('<span style="background:#fee2e2">− ' + escHtml(la) + '</span>');
-          if (lb) out.push('<span style="background:#dcfce7">+ ' + escHtml(lb) + '</span>');
+          if (la) out.push('<span class="fk-diff-del">− ' + escHtml(la) + '</span>');
+          if (lb) out.push('<span class="fk-diff-add">+ ' + escHtml(lb) + '</span>');
         }
       }
       return out.join('\n');
