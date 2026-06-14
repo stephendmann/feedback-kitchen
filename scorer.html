@@ -122,6 +122,13 @@
     /* FK-12: ambient cohort scale-use consistency badge (default-off; opt-in
        via Scorer settings). Process-quality signal, not a running mean. */
     #cohort-consistency-badge { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    /* FK-19: Moodle import disposition badges */
+    .mw-badge { font-size:10px; font-weight:600; padding:1px 8px; border-radius:9999px; white-space:nowrap; }
+    .mw-import      { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .mw-verify      { background:#fef9c3; color:#854d0e; border:1px solid #fde047; }
+    .mw-skip        { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
+    .mw-nonmarkable { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+    .mw-row-skip td:not(:last-child) { opacity:.5; text-decoration:line-through; }
     #cohort-consistency-badge[data-state="compressed"] { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
     #cohort-consistency-badge[data-state="wide"] { background: #e0f2fe; color: #075985; border-color: #7dd3fc; }
     /* ── Focus mode (criterion-by-criterion workspace) ───────── */
@@ -1220,6 +1227,9 @@
             <button id="btn-insights" class="btn btn-ghost hidden" onclick="S.showCohortInsights()" title="View cohort analytics: grade distribution, marking patterns, distribution shape, and formative prompts.">Cohort Insights <span id="btn-insights-new" class="hidden ml-1 text-[10px] bg-teal-100 text-teal-700 border border-teal-300 px-1.5 py-0.5 rounded font-semibold">NEW</span></button>
             <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">View list</button>
             <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">Rename</button>
+            <button class="btn btn-ghost" onclick="S.openMoodleImport()" title="Import a Moodle offline grading worksheet (CSV) to pre-seed this cohort. Validates and previews first; never overwrites already-marked students.">Import Moodle worksheet…</button>
+            <input type="file" id="moodle-file-input" accept=".csv,text/csv" class="hidden" onchange="S.onMoodleFileChosen(this)">
+            <span class="sr-only" id="mw-live" role="status" aria-live="polite"></span>
             <!-- Moderation Export group: configure (always visible, self-relabels when enabled) / run / disable (both hidden until opted in) — lifecycle split is deliberate, do not consolidate (INS-2/FK-08) -->
             <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center" aria-hidden="true"></span>
             <button id="btn-modexport-optin" class="btn btn-ghost" onclick="S.showModExportOptIn()" title="Open moderation export settings. Set paper code, cohort ID, and assessment ID to enable the privacy-reduced export for this paper.">Moderation Export…</button>
@@ -1253,6 +1263,19 @@
     </div>
   </div>
 
+  <!-- FK-19: Moodle worksheet import modal (state machine: idle→validating→{invalid|previewing}→importing→done) -->
+  <div id="moodle-import-modal" role="dialog" aria-modal="true" aria-labelledby="mw-modal-heading" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="S.mwCancel()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="mw-modal-heading" class="font-bold text-slate-800 text-lg">Import Moodle worksheet</h3>
+        <button onclick="S.mwCancel()" class="text-slate-400 hover:text-slate-600 text-xl leading-none" aria-label="Close">×</button>
+      </div>
+      <div id="mw-body" class="p-5 overflow-y-auto"></div>
+      <div id="mw-footer" class="p-4 border-t border-slate-100 flex items-center justify-end gap-2"></div>
+    </div>
+  </div>
+
   <script src="js/shared.js?v=2.9.0"></script>
   <script src="js/excel.js?v=2.9.0"></script>
   <script src="js/cohort-insights.js?v=1.0.0"></script>
@@ -1262,6 +1285,7 @@
   <script src="js/moderation-suppression.js?v=1.0.0"></script>
   <script src="js/moderation-readme.js?v=1.0.0"></script>
   <script src="js/moderation-export.js?v=1.0.0"></script>
+  <script src="js/moodle-worksheet.js?v=1.0.0"></script>
   <script>/* scorer ui: v2.9.0 */</script>
   <script>
   'use strict';
@@ -3226,6 +3250,153 @@
       applyCohortConsistencyVisibility();
     }
 
+    /* ── FK-19: Moodle worksheet import controller ───────────────
+       State machine: idle → validating → {invalid | previewing} →
+       importing → done. Consumes the pure FKMoodle contract
+       (validateWorksheet → planImport → buildCohortImport); this
+       layer only reads the file, renders, and persists via addToCohort.
+       The guarded commit (skip-if-marked) lives in buildCohortImport. */
+    const _mw = { state: 'idle', plan: null, fileName: '', onlyAttention: false, error: '' };
+
+    function _mwCohortStudents() { const c = config && SA.getCohort(config.id); return (c && c.students) || []; }
+    function _mwEntry(row) { return _mw.plan && _mw.plan.entries.find(e => e.row === row); }
+    function _mwUnresolvedVerify() { return !!(_mw.plan && _mw.plan.entries.some(e => e.disposition === 'verify')); }
+    function _mwSay(msg) { const l = el('mw-live'); if (l) l.textContent = msg; }
+    function _mwRecount() {
+      const s = { total: 0, import: 0, verify: 0, skip: 0, nonMarkable: 0 };
+      _mw.plan.entries.forEach(e => { s.total++; s[e.disposition === 'non-markable' ? 'nonMarkable' : e.disposition]++; });
+      _mw.plan.summary = s;
+    }
+
+    function openMoodleImport() {
+      if (!window.FKMoodle) { alert('Moodle import is unavailable — the worksheet module did not load.'); return; }
+      const input = el('moodle-file-input');
+      if (input) { input.value = ''; input.click(); }
+    }
+
+    function onMoodleFileChosen(input) {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+      _mw.state = 'validating'; _mw.fileName = file.name; _mw.plan = null; _mw.onlyAttention = false; _mw.error = '';
+      openModal('moodle-import-modal');
+      renderMoodleImport();
+      const reader = new FileReader();
+      reader.onload = function () {
+        try {
+          _mw.plan = window.FKMoodle.planImport(String(reader.result || ''));
+          _mw.state = _mw.plan.isValid ? 'previewing' : 'invalid';
+        } catch (e) { _mw.plan = null; _mw.state = 'error'; _mw.error = String((e && e.message) || e); }
+        renderMoodleImport();
+      };
+      reader.onerror = function () { _mw.state = 'error'; _mw.error = 'Could not read the file.'; renderMoodleImport(); };
+      reader.readAsText(file);
+    }
+
+    function _mwBadge(d) {
+      const map = { 'import': ['mw-import', 'Ready'], 'verify': ['mw-verify', 'Verify'], 'skip': ['mw-skip', 'Skip'], 'non-markable': ['mw-nonmarkable', 'No submission'] };
+      const m = map[d] || ['mw-nonmarkable', d];
+      return '<span class="mw-badge ' + m[0] + '">' + m[1] + '</span>';
+    }
+    function _mwCancelBtn() { return '<button onclick="S.mwCancel()" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 font-semibold px-4 py-2 rounded-lg">Cancel</button>'; }
+
+    function renderMoodleImport() {
+      const body = el('mw-body'), footer = el('mw-footer');
+      if (!body || !footer) return;
+      if (_mw.state === 'validating') { body.innerHTML = '<p class="text-slate-600">Reading <strong>' + escHtml(_mw.fileName) + '</strong>…</p>'; footer.innerHTML = ''; _mwSay('Validating worksheet'); return; }
+      if (_mw.state === 'importing')  { body.innerHTML = '<p class="text-slate-600">Importing…</p>'; footer.innerHTML = ''; return; }
+      if (_mw.state === 'error')      { body.innerHTML = '<p class="text-red-700">' + escHtml(_mw.error || 'Unexpected error.') + '</p>'; footer.innerHTML = _mwCancelBtn(); return; }
+
+      if (_mw.state === 'invalid') {
+        const errs = _mw.plan.validation.errors;
+        body.innerHTML =
+          '<p class="text-red-700 font-semibold mb-1">This file can’t be imported.</p>' +
+          '<p class="text-sm text-slate-600 mb-3">Re-export the worksheet from Moodle without renaming, moving, adding, or removing columns — then try again.</p>' +
+          '<ul class="text-sm space-y-1">' + errs.map(function (e) {
+            return '<li class="text-red-700">• ' + escHtml(e.message) +
+              (e.column != null ? ' <span class="text-slate-400">(column ' + (e.column + 1) + ')</span>' : '') +
+              (e.row != null ? ' <span class="text-slate-400">(row ' + e.row + ')</span>' : '') + '</li>';
+          }).join('') + '</ul>';
+        footer.innerHTML = _mwCancelBtn();
+        _mwSay('File invalid; ' + errs.length + ' error' + (errs.length === 1 ? '' : 's'));
+        return;
+      }
+
+      // previewing
+      const s = _mw.plan.summary;
+      const list = _mw.onlyAttention ? _mw.plan.entries.filter(function (e) { return e.disposition === 'verify' || e.disposition === 'skip'; }) : _mw.plan.entries;
+      const rows = list.map(function (e) {
+        const action = e.disposition === 'verify'
+          ? '<button onclick="S.mwAssignId(' + e.row + ')" class="text-xs text-emerald-700 underline mr-2">Assign ID</button><button onclick="S.mwIgnore(' + e.row + ')" class="text-xs text-slate-500 underline">Ignore</button>'
+          : (e.reason ? '<span class="text-xs text-slate-400">' + escHtml(e.reason) + '</span>' : '');
+        return '<tr class="' + (e.disposition === 'skip' ? 'mw-row-skip' : '') + '">' +
+          '<td class="py-1 pr-2 text-slate-400 text-xs">' + e.row + '</td>' +
+          '<td class="py-1 pr-2">' + escHtml(e.name || '—') + '</td>' +
+          '<td class="py-1 pr-2 font-mono text-xs">' + escHtml(e.identifier || '—') + '</td>' +
+          '<td class="py-1 pr-2">' + _mwBadge(e.disposition) + '</td>' +
+          '<td class="py-1">' + action + '</td></tr>';
+      }).join('');
+      body.innerHTML =
+        '<div class="mb-3 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">' +
+          '<strong>' + s.total + ' rows:</strong> ' + s.import + ' ready · ' + s.verify + ' verify needed · ' + s.nonMarkable + ' non-markable · ' + s.skip + ' skipped' +
+          (s.verify ? ' <span class="text-amber-700">— resolve the verify rows to continue.</span>' : '') +
+        '</div>' +
+        '<label class="text-xs text-slate-600 flex items-center gap-1 mb-2"><input type="checkbox" ' + (_mw.onlyAttention ? 'checked' : '') + ' onchange="S.mwToggleFilter()"> Show only rows needing attention</label>' +
+        '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 border-b border-slate-100">' +
+        '<th class="py-1 pr-2">Row</th><th class="py-1 pr-2">Name</th><th class="py-1 pr-2">ID number</th><th class="py-1 pr-2">Status</th><th class="py-1">Action</th></tr></thead><tbody>' +
+        rows + '</tbody></table></div>';
+      const blocked = _mwUnresolvedVerify();
+      footer.innerHTML = _mwCancelBtn() +
+        '<button onclick="S.mwCommit()" ' +
+        (blocked ? 'disabled title="Resolve every verify row first" class="bg-slate-200 text-slate-400 font-semibold px-4 py-2 rounded-lg cursor-not-allowed"'
+                 : 'class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg"') +
+        '>Import ' + s.import + ' student' + (s.import === 1 ? '' : 's') + '</button>';
+      _mwSay(s.total + ' rows; ' + s.import + ' ready, ' + s.verify + ' need verification');
+    }
+
+    function mwAssignId(row) {
+      const e = _mwEntry(row); if (!e) return;
+      const input = prompt('Enter the Moodle ID number for "' + (e.name || 'this row') + '":', '');
+      if (input == null) return;
+      const sid = String(input).trim();
+      if (!sid) return;
+      // Gemini guard: re-check the assigned ID against other rows + the cohort.
+      const conflict = window.FKMoodle.sidCollision(sid, _mw.plan.entries, _mwCohortStudents(), row);
+      if (conflict) {
+        alert(conflict.scope === 'cohort'
+          ? 'That ID number already belongs to "' + (conflict.name || 'a student') + '" in this cohort.'
+          : 'That ID number is already used by row ' + conflict.row + ' in this worksheet.');
+        return; // stays in verify → Commit remains blocked
+      }
+      e.identifier = sid; e.keyType = 'sid'; e.key = 'sid:' + sid; e.disposition = 'import'; e.reason = null;
+      _mwRecount(); renderMoodleImport();
+    }
+
+    function mwIgnore(row) { const e = _mwEntry(row); if (!e) return; e.disposition = 'skip'; e.reason = 'Ignored.'; _mwRecount(); renderMoodleImport(); }
+    function mwToggleFilter() { _mw.onlyAttention = !_mw.onlyAttention; renderMoodleImport(); }
+    function mwCancel() { _mw.state = 'idle'; _mw.plan = null; closeModal('moodle-import-modal'); }
+
+    function mwCommit() {
+      if (!_mw.plan || _mwUnresolvedVerify()) return;
+      const decision = window.FKMoodle.buildCohortImport(_mw.plan.entries, _mwCohortStudents());
+      if (!decision.toAdd.length) {
+        showCohortToast('Nothing to import — every row was skipped or already in the cohort.', 'amber');
+        return;
+      }
+      _mw.state = 'importing'; renderMoodleImport();
+      ensureCohortInitialised(function (cohort) {
+        if (!cohort) { _mw.state = 'previewing'; renderMoodleImport(); return; } // setup dismissed
+        let added = 0, failed = 0;
+        decision.toAdd.forEach(function (rec) { const r = SA.addToCohort(config.id, rec); if (r && r.saved) added++; else failed++; });
+        refreshCohortUI();
+        closeModal('moodle-import-modal');
+        _mw.state = 'idle';
+        const sk = decision.summary.skippedExisting;
+        showCohortToast('Imported ' + added + ' student' + (added === 1 ? '' : 's') +
+          (sk ? ' · ' + sk + ' already marked (kept)' : '') +
+          (failed ? ' · ' + failed + ' failed' : ''), failed ? 'amber' : 'green');
+      });
+    }
+
     /* ── Status chips (live UI state) ─────────────────────── */
     let _aiState = 'idle';   // replaces the old _aiApplied boolean
     let _aiLastEdits = 0;    // number of lines different from the main textarea on last apply
@@ -4991,6 +5162,8 @@
              openCohortRecord, loadCohortRecordIntoSession,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
+             // FK-19: Moodle worksheet import
+             openMoodleImport, onMoodleFileChosen, mwAssignId, mwIgnore, mwToggleFilter, mwCancel, mwCommit,
              // Moderation Export — opt-in & gating (issue #2)
              showModExportOptIn, hideModExportOptIn, confirmModExportOptIn,
              disableModExport, runModExport,
