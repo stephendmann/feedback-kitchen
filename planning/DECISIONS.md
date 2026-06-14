@@ -77,13 +77,13 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
   1. **2026-06-12 — rail sticky-pinning regression (FK-18).** Cause: **structural coupling** — wrapping page chrome in `<header>` (FK-17 landmarks) silently changed the rail's sticky containing block; a cross-feature CSS/structure dependency no test caught. Coupling-related: **yes (1 of the ≥2 needed to trigger the gate).**
 - **Outcome:** _(pending — gate triggers at ≥2 coupling-related of ~5)_
 
-## D-08 ☐ Measure before migrating off localStorage
+## D-08 ☑ Measure before migrating off localStorage
 - **Why it matters:** avoids a heavy migration on an unquantified risk — and avoids dismissing a real data-loss risk.
 - **Evidence:** O — localStorage-only (0 IndexedDB hits); U — payload sizes, quota handling.
 - **Depends on assumption:** realistic cohorts might approach quota (to be measured, not assumed).
 - **Risk if wrong:** premature migration (wasted) or real marker data loss (severe).
 - **First validation step:** INS-5 measurement + decision rule.
-- **Outcome:** _(pending)_
+- **Outcome:** **☑ 2026-06-13/14 — measured, decision made: DEFER the migration.** INS-5 ran: per-record footprint ~6–7 KB typical (live-confirmed 2026-06-14 at 7,178 typical / 13,797 heavy chars/record), 300-record cohort ~1.9–3.9 MB vs a shared ~5 MB origin — so **capacity is not the binding constraint**. The dispositive finding was the *unhandled-quota* half (three heavy writers `setItem` with no try/catch). **FK-10 verdict = GO on a card, split:** (1) **FK-24** write-hardening (`safeSetItem`) shipped **PR #36**; (2) full **IndexedDB migration deferred/conditional — not carded** (revisit only if a live cohort crosses ~150 records or a quota event is seen in the field). INS-5 findings + this verdict were promoted to `fk-project-overview.md` + `fk-decisions.md` **Addendum H** at the 2nd checkpoint (PR #38). Decision realised; nothing further to build.
 
 ## D-09 ☑ Surface rubric-version warnings at export — and in-app
 *(Cards: **FK-11** export-time warning + per-record stamping, **PR #37**; **FK-25** in-app ambient indicator, **PR #39**. Both shipped 2026-06-13. Ready to promote → fk-decisions.md next addendum.)*
