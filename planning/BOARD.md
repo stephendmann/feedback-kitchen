@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 3 (FK-15 · FK-16 · FK-22) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 23 · others: 0. Next free card ID: FK-27. *(Latest: FK-19 **round-trip SHIPPED** — import #47 + export #48 (only the live-Moodle upload check remains, not code-blocking). FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-22 homepage/dark-mode residuals — IN REVIEW, PR #49) · Shipped: 23 · others: 0. Next free card ID: FK-27. *(Latest: FK-22 in review #49. FK-19 round-trip shipped #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 all shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -28,15 +28,6 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 
 ## Backlog
 
-### FK-22 · Homepage/dark-mode residuals (re-implement PR #16's intent + accumulated theme escapes)
-- **Rationale:** Small, real, user-visible residuals with no inspection dependency; batched to one S-effort card. PR #16 closed 2026-06-13 (stale base; re-implement from intent).
-- **Scope (from PR #16):** fonts.gstatic preconnect; logo `img` width/height (layout shift); hero-CTA clickable affordance; `renderLineDiff` hardcoded hex (`#fee2e2`/`#dcfce7`) → tokens/classes per the FK-16 migration policy.
-- **Scope (added post-PR #31, 2026-06-13):** (a) remove/resolve scorer.html's dead `?cinematic=1` easter-egg link to `/css/dark-scorer.css` (file doesn't exist — 404s when enabled); (b) sweep remaining light Tailwind tint chips in dark mode (amber `Display: exact` rounding label, `bg-slate-100` rounding buttons, kbd/code chips) — PR #31 scoped its remaps to `.grade-badge`/`.tier-pill` only.
-- **Dependencies:** none hard. Honour FK-16 policy: new styles → tokens/Tailwind only; run `build:css` before committing the artifact.
-- **Risk:** Low — cosmetic; screenshot baselines + a11y harness cover regressions.
-- **DoD:** PR #16's four items landed in current markup; cinematic link resolved; dark-mode sweep shows no near-white computed backgrounds outside deliberate accents; axe battery clean.
-- **Column:** Backlog. **Priority:** P2. **Effort:** S.
-
 ### FK-15 · Incremental scorer decomposition (ES modules + state→render)
 - **Rationale:** ~5,000 lines / 20 inline script blocks / 261 functions / DOM- and text-anchored cross-feature lookups. Strangler-fig extraction, not rewrite.
 - **Evidence:** O — structure + commit history; **D-07 bug tally now 1/≥2** (FK-18 sticky-containment regression, cause: structural coupling).
@@ -56,7 +47,12 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-22 · Homepage/dark-mode residuals — IN REVIEW (PR #49)
+- **Status:** implemented on `feat/fk22-residuals`, **PR [#49](https://github.com/stephendmann/feedback-kitchen/pull/49) open**. Batched PR #16 intent + post-#31 dark sweep.
+- **Shipped in the PR:** index.html — gstatic preconnect (crossorigin) + partner-logo intrinsic `width`/`height` (CLS); hero CTA already a real `<a href>` (no change). scorer.html — `renderLineDiff` inline hex → `.fk-diff-del`/`.fk-diff-add` classes w/ dark variants; removed the dead `?cinematic=1` → `dark-scorer.css` (404) easter egg; dark-mode sweep of light tint chips (`#score-rounding-label` amber, inactive `[id^=rnd-].bg-slate-100`, kbd/code) → dark slate (active accent left).
+- **DoD evidence:** runtime-verified (gstatic preconnect + logo dims on home; no near-white chips in scorer dark mode; cinematic link gone); `build:css` clean (w-auto already present); Jest 302/302; axe 0 (home + scorer). **Priority:** P2. **Effort:** S.
+- **On merge:** move to Shipped; post-merge sync.
 
 ## Validate in runtime
 *(empty)*
