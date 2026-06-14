@@ -60,6 +60,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Outcome:** **☑ 2026-06-11.** INS-9 ran first (resolved: zero positional lookups; focus nav criterion-indexed). FK-05 then landed: `#sec-adjust` moved below the focus block, banner re-matched, rail verified already-ordered. Assumption held — section order was not load-bearing for any lookup; full runtime battery + a11y baseline diff clean (see FK-05 card). Ready to promote alongside the Phase 0 bundle.
 
 ## D-06 ☑ Consolidate cohort actions; isolate destructive
+*(Promoted 2026-06-15 → fk-decisions.md **Addendum I.1**, via PR #51.)*
 - **Why it matters:** mis-click risk on Clear Cohort; 8 peer buttons.
 - **Evidence:** O — button row. U — moderation pair semantics.
 - **Depends on assumption:** the moderation pair is partially redundant.
@@ -86,7 +87,7 @@ and its outcome is recorded. Status: ☐ Open · ◐ Validation run · ☑ Ready
 - **Outcome:** **☑ 2026-06-13/14 — measured, decision made: DEFER the migration.** INS-5 ran: per-record footprint ~6–7 KB typical (live-confirmed 2026-06-14 at 7,178 typical / 13,797 heavy chars/record), 300-record cohort ~1.9–3.9 MB vs a shared ~5 MB origin — so **capacity is not the binding constraint**. The dispositive finding was the *unhandled-quota* half (three heavy writers `setItem` with no try/catch). **FK-10 verdict = GO on a card, split:** (1) **FK-24** write-hardening (`safeSetItem`) shipped **PR #36**; (2) full **IndexedDB migration deferred/conditional — not carded** (revisit only if a live cohort crosses ~150 records or a quota event is seen in the field). INS-5 findings + this verdict were promoted to `fk-project-overview.md` + `fk-decisions.md` **Addendum H** at the 2nd checkpoint (PR #38). Decision realised; nothing further to build.
 
 ## D-09 ☑ Surface rubric-version warnings at export — and in-app
-*(Cards: **FK-11** export-time warning + per-record stamping, **PR #37**; **FK-25** in-app ambient indicator, **PR #39**. Both shipped 2026-06-13. Ready to promote → fk-decisions.md next addendum.)*
+*(Cards: **FK-11** export-time warning + per-record stamping, **PR #37**; **FK-25** in-app ambient indicator, **PR #39**. Both shipped 2026-06-13. Promoted 2026-06-15 → fk-decisions.md **Addendum I.2**, via PR #51.)*
 - **Why it matters:** mixed-version cohorts silently break comparability at moderation.
 - **Evidence:** O — `rubric_version_hash` exists in moderation schema.
 - **Depends on assumption:** hash is (or can be) stamped per record at mark time.
