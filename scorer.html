@@ -150,6 +150,12 @@
     .fk-active-section { box-shadow: inset 4px 0 0 0 #059669, 0 1px 2px 0 rgba(0,0,0,0.05); transition: box-shadow .2s ease; }
     html.fk-dark .fk-active-section { box-shadow: inset 4px 0 0 0 #34d399, 0 1px 2px 0 rgba(0,0,0,0.4); }
     @media (prefers-reduced-motion: reduce) { .fk-active-section { transition: none; } }
+    /* FK-29: offset in-page anchor jumps for the two stacked sticky bars (primary
+       topbar `sticky top-0` + section rail `sticky top-[88px] md:top-14`) so a rail
+       click — or keyboard focus into a section — lands below them, not hidden
+       underneath. scroll-padding-top on the scroll root covers every anchor. */
+    html { scroll-padding-top: 8.5rem; }
+    @media (min-width: 768px) { html { scroll-padding-top: 6.5rem; } }
     /* Penalty & grade override compact mode: drop verbose instructions in focus mode */
     .fk-focus-on #sec-adjust .step-sub { display: none; }
     #focus-toggle.is-on { color: #047857; background: #d1fae5; }
@@ -5676,12 +5682,24 @@
         document.querySelectorAll('.fk-active-section').forEach(n => n.classList.remove('fk-active-section'));
         if (!focus) { const sec = document.getElementById(id); if (sec) sec.classList.add('fk-active-section'); }
       };
+      let clickLock = 0;
       const io = new IntersectionObserver(entries => {
+        if (Date.now() < clickLock) return;   // FK-29: don't override a just-clicked target mid-scroll
         entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
       }, { rootMargin: '-40% 0px -55% 0px' });
       ['sec-student','sec-rubric','sec-adjust','focus-workspace','sec-feedback',
        'sec-notes','sec-ai','sec-export','sec-cohort']
         .forEach(id => { const n = document.getElementById(id); if (n) io.observe(n); });
+      // FK-29: sync the active state immediately on rail click — the IO may not
+      // re-fire onto the clicked section if it lands outside the active band
+      // (short sections / sticky-offset landings), leaving the highlight stale.
+      // The brief lock lets the jump settle before the IO resumes as source of truth.
+      rail.forEach(a => a.addEventListener('click', () => {
+        const id = (a.getAttribute('href') || '').replace(/^#/, '');
+        if (!id) return;
+        highlight(id);
+        clickLock = Date.now() + 700;
+      }));
     })();
 
     // Scroll-to-top on back-navigation from index.html (avoids landing at #sec-cohort exposing JS source)
