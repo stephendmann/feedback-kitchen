@@ -143,6 +143,13 @@
     /* Focus workspace rail entry: hidden outside focus mode, full opacity inside */
     [data-rail="focus"] { display: none; }
     .fk-focus-on [data-rail="focus"] { display: inline !important; opacity: 1; }
+    /* FK-28: dynamic active-section accent — mirrors the rail scroll-spy onto the
+       content column as a calm emerald inset rail (no layout shift, no bg tint;
+       preserves the card's shadow-sm). Dark variant + reduced-motion; focus mode
+       suppressed via the JS guard. */
+    .fk-active-section { box-shadow: inset 4px 0 0 0 #059669, 0 1px 2px 0 rgba(0,0,0,0.05); transition: box-shadow .2s ease; }
+    html.fk-dark .fk-active-section { box-shadow: inset 4px 0 0 0 #34d399, 0 1px 2px 0 rgba(0,0,0,0.4); }
+    @media (prefers-reduced-motion: reduce) { .fk-active-section { transition: none; } }
     /* Penalty & grade override compact mode: drop verbose instructions in focus mode */
     .fk-focus-on #sec-adjust .step-sub { display: none; }
     #focus-toggle.is-on { color: #047857; background: #d1fae5; }
@@ -5655,10 +5662,20 @@
     (function () {
       const rail = document.querySelectorAll('#section-rail [data-rail]');
       if (!rail.length) return;
-      const highlight = id => rail.forEach(a => {
-        a.classList.toggle('text-emerald-700', a.getAttribute('href') === '#' + id);
-        a.classList.toggle('text-slate-600', a.getAttribute('href') !== '#' + id);
-      });
+      const highlight = id => {
+        const focus = !!document.querySelector('.fk-focus-on');
+        rail.forEach(a => {
+          const on = a.getAttribute('href') === '#' + id;
+          a.classList.toggle('text-emerald-700', on);
+          a.classList.toggle('text-slate-600', !on);
+          // FK-28: scroll-spy was colour-only; expose the active section to AT too.
+          if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+        });
+        // FK-28: mirror the active state onto the section content (emerald inset
+        // rail). Suppressed in focus mode (single-criterion surface, rail covers it).
+        document.querySelectorAll('.fk-active-section').forEach(n => n.classList.remove('fk-active-section'));
+        if (!focus) { const sec = document.getElementById(id); if (sec) sec.classList.add('fk-active-section'); }
+      };
       const io = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) highlight(e.target.id); });
       }, { rootMargin: '-40% 0px -55% 0px' });
