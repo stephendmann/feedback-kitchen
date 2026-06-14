@@ -3404,15 +3404,35 @@
       _mw.state = 'importing'; renderMoodleImport();
       ensureCohortInitialised(function (cohort) {
         if (!cohort) { _mw.state = 'previewing'; renderMoodleImport(); return; } // setup dismissed
-        let added = 0, failed = 0;
-        decision.toAdd.forEach(function (rec) { const r = SA.addToCohort(config.id, rec); if (r && r.saved) added++; else failed++; });
+        let added = 0, failed = 0, firstKey = null;
+        decision.toAdd.forEach(function (rec) {
+          const r = SA.addToCohort(config.id, rec);   // addToCohort stamps rec.key
+          if (r && r.saved) { added++; if (!firstKey) firstKey = rec.key; }
+          else failed++;
+        });
         refreshCohortUI();
         closeModal('moodle-import-modal');
         _mw.state = 'idle';
         const sk = decision.summary.skippedExisting;
+        // FK-27: finalise selection — land the marker ready-to-mark on the first
+        // imported student. Without this the cohort updates but the marking pane
+        // stays on the empty "(no name)" student (and, if focus mode is on, the
+        // marker sees only the focus workspace with nothing loaded). Guarded on
+        // no-unsaved-work so importing more mid-marking doesn't discard the
+        // student currently being marked.
+        let openedName = '';
+        if (firstKey && !_sessionHasUnsavedWork()) {
+          try {
+            if (loadCohortRecordIntoSession(firstKey) !== false) {
+              openedName = (el('student-name').value || '').trim();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          } catch (e) { /* leave the marker on the current pane */ }
+        }
         showCohortToast('Imported ' + added + ' student' + (added === 1 ? '' : 's') +
           (sk ? ' · ' + sk + ' already marked (kept)' : '') +
-          (failed ? ' · ' + failed + ' failed' : ''), failed ? 'amber' : 'green');
+          (failed ? ' · ' + failed + ' failed' : '') +
+          (openedName ? ' · now marking ' + openedName : ''), failed ? 'amber' : 'green');
       });
     }
 
