@@ -45,11 +45,9 @@ describe('validateWorksheet — conformant file', () => {
     expect(res.isValid).toBe(true);
     expect(res.ok).toBe(res.isValid);               // back-compat alias
     expect(res.errors).toEqual([]);
+    expect(res.warnings).toEqual([]);               // BOM+CRLF, structurally clean
     expect(res.rowCount).toBe(12);
-    expect(res.importableRows).toBe(12);            // no row errors → all importable
-    // the only warning is the informational No-submission row (Jack, row 11)
-    expect(res.warnings.map(w => w.code)).toEqual(['W_ROW_NO_SUBMISSION']);
-    expect(res.warnings[0].row).toBe(11);
+    expect(res.rows).toHaveLength(12);              // normalized rows for the planner
   });
 });
 
@@ -82,9 +80,11 @@ describe('validateWorksheet — structural problems BLOCK with actionable codes'
     res.errors.forEach(e => expect(typeof e.message).toBe('string'));
   });
 
-  test('every file-blocking error is tagged severity "file"', () => {
+  test('every error is tagged severity "fatal"; warnings are "warning"', () => {
     const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('wrong-header', { rows: 6 }));
-    expect(res.errors.every(e => e.severity === 'file')).toBe(true);
+    expect(res.errors.every(e => e.severity === 'fatal')).toBe(true);
+    const warned = FKMoodle.validateWorksheet(gen.corruptWorksheet('no-bom', { rows: 6 }));
+    expect(warned.warnings.every(w => w.severity === 'warning')).toBe(true);
   });
 
   test('a header mismatch carries the offending column index', () => {
@@ -94,39 +94,21 @@ describe('validateWorksheet — structural problems BLOCK with actionable codes'
   });
 });
 
-describe('validateWorksheet — ROW-level integrity (skip-row, mirrors Moodle load_data.php)', () => {
-  test('a row with no ID number AND no name is a non-blocking row error with coordinates', () => {
-    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('no-key-row', { rows: 6 }));
-    expect(res.isValid).toBe(true);                    // file still imports the good rows
-    const e = res.errors.find(x => x.code === 'E_ROW_NO_KEY');
-    expect(e.severity).toBe('row');
-    expect(e.row).toBe(2);                             // first data row (1-based incl. header)
-    expect(e.column).toBe('ID number');
-    expect(res.importableRows).toBe(res.rowCount - 1); // one row skipped
+describe('validateWorksheet — narrow contract (row classification is the planner’s job)', () => {
+  test('returns normalized rows[] (header excluded) when valid', () => {
+    const res = FKMoodle.validateWorksheet(gen.buildWorksheet({ rows: 12 }));
+    expect(res.rows).toHaveLength(12);
+    expect(res.rows[0]).toHaveLength(14);            // each row is the 14-field array
+    expect(res.rowCount).toBe(12);
   });
 
-  test('a duplicate ID number → E_ROW_DUP_ID (row severity), file still valid', () => {
-    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('dup-id', { rows: 6 }));
-    expect(res.isValid).toBe(true);
-    expect(res.errors.map(e => e.code)).toContain('E_ROW_DUP_ID');
-    expect(res.errors.every(e => e.severity === 'row')).toBe(true);
+  test('rows[] is empty when the file is invalid', () => {
+    expect(FKMoodle.validateWorksheet(gen.corruptWorksheet('wrong-header', { rows: 6 })).rows).toEqual([]);
   });
 
-  test('a non-numeric grade → E_ROW_GRADE_NONNUMERIC', () => {
-    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('bad-grade-text', { rows: 6 }));
-    expect(res.isValid).toBe(true);
-    expect(res.errors.map(e => e.code)).toContain('E_ROW_GRADE_NONNUMERIC');
-  });
-
-  test('a grade above the maximum → E_ROW_GRADE_RANGE', () => {
-    const res = FKMoodle.validateWorksheet(gen.corruptWorksheet('bad-grade-range', { rows: 6 }));
-    expect(res.isValid).toBe(true);
-    expect(res.errors.map(e => e.code)).toContain('E_ROW_GRADE_RANGE');
-  });
-
-  test('strictRows promotes any row error to file-blocking (risk-averse mode)', () => {
-    const csv = gen.corruptWorksheet('no-key-row', { rows: 6 });
-    expect(FKMoodle.validateWorksheet(csv).isValid).toBe(true);
-    expect(FKMoodle.validateWorksheet(csv, { strictRows: true }).isValid).toBe(false);
+  test('row-DATA problems (no key / duplicate id) are NOT validator errors — the file is valid', () => {
+    expect(FKMoodle.validateWorksheet(gen.corruptWorksheet('no-key-row', { rows: 6 })).isValid).toBe(true);
+    expect(FKMoodle.validateWorksheet(gen.corruptWorksheet('dup-id',     { rows: 6 })).isValid).toBe(true);
+    // (their dispositions are asserted in moodle-import-plan.test.js)
   });
 });

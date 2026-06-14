@@ -77,40 +77,31 @@
     return records;
   }
 
-  /* ── Two-tier dry-run validator ─────────────────────────────
-     Mirrors Moodle's known internal contract (institutional docs +
-     core grade/import/csv/load_data.php, which skips "invalid row
-     with blank user field" rather than aborting):
+  /* ── File-level preflight validator (narrow + deterministic) ──
+     Concerned ONLY with whether the file is a structurally sound Moodle
+     worksheet — parse integrity, the header contract, and encoding.
+     Row-level identity/duplicate/submission classification is the
+     planner's job (planImport → dispositions), not the validator's, so
+     this stays a clean preflight gate (cf. Moodle core, which aborts on
+     structural problems but skips bad rows at import).
 
-       • FILE-blocking errors (severity:'file') — structural: empty,
-         unparseable, or any header deviation. Abort: no rows import,
-         and the UI must NOT transition to "Ready to Import".
-       • ROW-level errors (severity:'row', carry {row,column}) — data
-         integrity on one row (unkeyable, duplicate id, bad grade).
-         Other rows still import; the UI highlights/grays just these.
-       • Warnings — encoding drift (BOM/EOL) or informational row
-         notes (No-submission). Never block.
+       • errors[]   — { code, message, severity:'fatal', column?|row? }
+                      structural/parse/header. Any error → isValid:false;
+                      the UI must NOT transition to "Ready to Import".
+       • warnings[] — { code, message, severity:'warning' } encoding drift
+                      (BOM/EOL). Advisory; never block.
+       • rows[]     — normalized parsed data rows (header excluded), for
+                      downstream planning. Empty unless isValid.
 
-     Returns { isValid, ok, errors, warnings, rowCount, importableRows }.
-     isValid (===ok) is false iff a file-blocking error exists, OR any
-     row error exists when opts.strictRows is set (risk-averse mode). */
-  function validateWorksheet(text, opts) {
-    opts = opts || {};
+     Returns { isValid, ok, errors, warnings, rowCount, rows }. */
+  function validateWorksheet(text) {
     const errors = [], warnings = [];
-    const fileErr = (code, message, column) => errors.push({ code, message, severity: 'file', column: (column == null ? null : column) });
-    const rowErr  = (code, message, row, column) => errors.push({ code, message, severity: 'row', row, column });
-    const warn    = (code, message, row) => warnings.push(row == null ? { code, message } : { code, message, row });
+    const err  = (code, message, extra) => errors.push(Object.assign({ code: code, message: message, severity: 'fatal' }, extra || {}));
+    const warn = (code, message) => warnings.push({ code: code, message: message, severity: 'warning' });
     const raw = String(text == null ? '' : text);
+    const fail = () => ({ isValid: false, ok: false, errors: errors, warnings: warnings, rowCount: 0, rows: [] });
 
-    const done = (rowCount, importable) => {
-      const fileBlocking = errors.some(e => e.severity === 'file') ||
-        (opts.strictRows && errors.some(e => e.severity === 'row'));
-      const ok = !fileBlocking;
-      return { isValid: ok, ok: ok, errors: errors, warnings: warnings,
-               rowCount: rowCount || 0, importableRows: (importable == null ? (rowCount || 0) : importable) };
-    };
-
-    if (!raw.trim()) { fileErr('E_EMPTY', 'The file is empty.'); return done(0, 0); }
+    if (!raw.trim()) { err('E_EMPTY', 'The file is empty.'); return fail(); }
     if (raw.charCodeAt(0) !== 0xfeff) {
       warn('W_NO_BOM', 'File has no UTF-8 BOM; Moodle exports include one. Re-export or save as UTF-8 to be safe.');
     }
@@ -120,72 +111,39 @@
 
     let records;
     try { records = parseCsv(raw); }
-    catch (e) { fileErr(e.code || 'E_PARSE', 'Could not parse the CSV: ' + (e.message || 'malformed quoting') + '.'); return done(0, 0); }
-    if (!records.length) { fileErr('E_EMPTY', 'No rows found.'); return done(0, 0); }
+    catch (e) { err(e.code || 'E_PARSE', 'Could not parse the CSV: ' + (e.message || 'malformed quoting') + '.'); return fail(); }
+    if (!records.length) { err('E_EMPTY', 'No rows found.'); return fail(); }
 
-    // ── FILE-blocking: header is the structural contract ──
+    // The header is the structural contract — any deviation is fatal.
     const header = records[0];
     if (header.length !== REQUIRED_HEADER.length) {
-      fileErr('E_HEADER_MISMATCH',
-        'Header has ' + header.length + ' columns, expected ' + REQUIRED_HEADER.length +
-        ' (do not add, remove, rename, or reorder columns).', null);
-      return done(records.length - 1, 0);
+      err('E_HEADER_MISMATCH', 'Header has ' + header.length + ' columns, expected ' + REQUIRED_HEADER.length +
+        ' (do not add, remove, rename, or reorder columns).', { column: null });
+      return fail();
     }
     const badCol = REQUIRED_HEADER.findIndex((h, k) => header[k] !== h);
     if (badCol !== -1) {
-      fileErr('E_HEADER_MISMATCH',
-        'Column ' + (badCol + 1) + ' is "' + header[badCol] + '", expected "' + REQUIRED_HEADER[badCol] +
-        '" — do not rename, move, add, or remove columns.', badCol);
-      return done(records.length - 1, 0);
+      err('E_HEADER_MISMATCH', 'Column ' + (badCol + 1) + ' is "' + header[badCol] + '", expected "' +
+        REQUIRED_HEADER[badCol] + '" — do not rename, move, add, or remove columns.', { column: badCol });
+      return fail();
     }
 
-    // ── Per-row checks (header is sound) ──
-    const dataRows = records.length - 1;
-    const seenIds = {};
-    let skipped = 0;
+    // Structural integrity only: every data row must be rectangular. Identity /
+    // duplicate / submission-status classification is NOT done here — that is
+    // planImport's job (row-level dispositions), keeping this a narrow file gate.
+    const rows = [];
     for (let r = 1; r < records.length; r++) {
-      const rowNo = r + 1;            // 1-based incl. header, for UI/messages
-      const cells = records[r];
-
-      // FILE-blocking: a ragged row means the CSV structure is broken.
-      if (cells.length !== REQUIRED_HEADER.length) {
-        fileErr('E_ROW_FIELD_COUNT',
-          'Row ' + rowNo + ' has ' + cells.length + ' fields, expected ' + REQUIRED_HEADER.length + '.', null);
-        continue;
+      if (records[r].length !== REQUIRED_HEADER.length) {
+        err('E_ROW_FIELD_COUNT', 'Row ' + (r + 1) + ' has ' + records[r].length + ' fields, expected ' +
+          REQUIRED_HEADER.length + '.', { row: r + 1 });
+      } else {
+        rows.push(records[r]);   // normalized parsed data row, for downstream planning
       }
-
-      let rowBad = false;
-      const id   = (cells[COL[IDENTIFIER_COLUMN]] || '').trim();
-      const name = (cells[COL[NAME_COLUMN]] || '').trim();
-      const grade = (cells[COL.Grade] || '').trim();
-      const maxGrade = parseFloat(cells[COL['Maximum grade']]) || 100;
-      const status = (cells[COL.Status] || '');
-
-      // ROW-level: no usable key (FK keys sid:<ID number>, falls back to name:).
-      if (!id && !name) {
-        rowErr('E_ROW_NO_KEY', 'Row ' + rowNo + ' has no ID number and no Full name — it cannot be matched to a student.', rowNo, IDENTIFIER_COLUMN);
-        rowBad = true;
-      } else if (id) {
-        if (seenIds[id]) { rowErr('E_ROW_DUP_ID', 'Row ' + rowNo + ' repeats ID number "' + id + '" (also row ' + seenIds[id] + ').', rowNo, IDENTIFIER_COLUMN); rowBad = true; }
-        else seenIds[id] = rowNo;
-      }
-
-      // ROW-level: a pre-filled grade that is non-numeric or out of range.
-      if (grade !== '') {
-        const g = Number(grade);
-        if (!isFinite(g))      { rowErr('E_ROW_GRADE_NONNUMERIC', 'Row ' + rowNo + ' grade "' + grade + '" is not a number.', rowNo, 'Grade'); rowBad = true; }
-        else if (g < 0 || g > maxGrade) { rowErr('E_ROW_GRADE_RANGE', 'Row ' + rowNo + ' grade ' + g + ' is outside 0–' + maxGrade + '.', rowNo, 'Grade'); rowBad = true; }
-      }
-
-      // Informational (non-blocking): No-submission rows are non-markable.
-      if (/^No submission/.test(status)) {
-        warn('W_ROW_NO_SUBMISSION', 'Row ' + rowNo + ' has no submission — non-markable; it will be shown but skipped.', rowNo);
-      }
-
-      if (rowBad) skipped++;
     }
 
-    return done(dataRows, dataRows - skipped);
+    const isValid = errors.length === 0;
+    return { isValid: isValid, ok: isValid, errors: errors, warnings: warnings,
+             rowCount: records.length - 1, rows: isValid ? rows : [] };
   }
 
   /* Short status bucket for UI badges. */
@@ -215,51 +173,48 @@
      Returns { isValid, validation, entries, summary }. Keys are the
      FK cohort keys (sid:/name:) so the queue can dedupe against an
      existing cohort. markerNotes / moderation data are NEVER read. */
-  function planImport(text, opts) {
-    opts = opts || {};
-    const validation = validateWorksheet(text, opts);
+  function planImport(text) {
+    const validation = validateWorksheet(text);
     const summary = { total: 0, import: 0, verify: 0, skip: 0, nonMarkable: 0 };
     if (!validation.isValid) {
       return { isValid: false, validation: validation, entries: [], summary: summary };
     }
-    const records = parseCsv(text);
-    const rowCodes = {};
-    validation.errors.filter(e => e.severity === 'row')
-      .forEach(e => { (rowCodes[e.row] = rowCodes[e.row] || []).push(e.code); });
-
+    // Row-level classification lives HERE (not the validator). validation.rows
+    // are the normalized data rows in original order, so row numbers are
+    // reconstructable (header is line 1).
     const entries = [];
-    for (let r = 1; r < records.length; r++) {
-      const rowNo = r + 1;
-      const cells = records[r];
-      if (cells.length !== REQUIRED_HEADER.length) continue;
+    const seenIds = {};
+    validation.rows.forEach((cells, idx) => {
+      const rowNo  = idx + 2;                       // +1 header, +1 to 1-based
       const id     = (cells[COL[IDENTIFIER_COLUMN]] || '').trim();
       const name   = (cells[COL[NAME_COLUMN]] || '').trim();
-      const status = cells[COL.Status] || '';
-      const codes  = rowCodes[rowNo] || [];
+      const status = statusBucket(cells[COL.Status] || '');
 
       let disposition, key = null, keyType = null, reason = null;
-      if (codes.indexOf('E_ROW_NO_KEY') !== -1)      { disposition = 'skip'; reason = 'No ID number or name — cannot match a student.'; }
-      else if (codes.indexOf('E_ROW_DUP_ID') !== -1) { disposition = 'skip'; reason = 'Duplicate ID number.'; }
-      else if (statusBucket(status) === 'no-submission') {
+      const codes = [];
+      if (!id && !name) {
+        disposition = 'skip'; reason = 'No ID number or name — cannot match a student.'; codes.push('E_ROW_NO_KEY');
+      } else if (id && seenIds[id]) {
+        disposition = 'skip'; reason = 'Duplicate ID number (also row ' + seenIds[id] + ').'; codes.push('E_ROW_DUP_ID');
+      } else if (status === 'no-submission') {
         disposition = 'non-markable'; reason = 'No submission — nothing to mark.';
-        if (id) { key = 'sid:' + id; keyType = 'sid'; } else if (name) { key = 'name:' + name; keyType = 'name'; }
-      } else if (id) { disposition = 'import'; key = 'sid:' + id; keyType = 'sid'; }
-      else { disposition = 'verify'; key = 'name:' + name; keyType = 'name'; reason = 'Name-only match — confirm this is the right student before importing.'; }
+        if (id) { key = 'sid:' + id; keyType = 'sid'; seenIds[id] = rowNo; } else { key = 'name:' + name; keyType = 'name'; }
+      } else if (id) {
+        disposition = 'import'; key = 'sid:' + id; keyType = 'sid'; seenIds[id] = rowNo;
+      } else {
+        disposition = 'verify'; key = 'name:' + name; keyType = 'name';
+        reason = 'Name-only match — confirm this is the right student before importing.';
+      }
 
       summary.total++;
       summary[disposition === 'non-markable' ? 'nonMarkable' : disposition]++;
       entries.push({
         row: rowNo,
         participant: (cells[COL[PARTICIPANT_COLUMN]] || '').trim(),
-        name: name,
-        identifier: id,
-        key: key, keyType: keyType,
-        status: statusBucket(status),
-        disposition: disposition,
-        reason: reason,
-        errorCodes: codes
+        name: name, identifier: id, key: key, keyType: keyType,
+        status: status, disposition: disposition, reason: reason, errorCodes: codes
       });
-    }
+    });
     return { isValid: true, validation: validation, entries: entries, summary: summary };
   }
 
