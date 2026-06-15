@@ -47,7 +47,12 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-30 · Slim the scorer footer (de-duplicate the redundant footer) — In review
+- **Rationale:** The scorer rendered the full shared "Privacy & support" footer (4-column grid + acknowledgement, ~660px) — the same block as the homepage, redundant noise below a task-focused screen.
+- **Change:** Pages opt into a compact one-line footer via `data-footer="compact"`; `footer.js` renders `COMPACT` vs `FULL` from `el.dataset.footer` (full preserved verbatim, incl. `#acknowledgements`). Scorer keeps a single trust line (browser-only privacy summary + About/credits → `index.html#acknowledgements` + Ko-fi); homepage unchanged. `.site-footer--compact` flex row inherits the dark panel, muted text ≥4.5:1.
+- **Verification:** preview — homepage full footer ~658px unchanged; scorer ~92px compact line. jest 302/302; axe 0 (Home/Builder/Scorer).
+- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#54](https://github.com/stephendmann/feedback-kitchen/pull/54).
 
 ## Validate in runtime
 *(empty)*
