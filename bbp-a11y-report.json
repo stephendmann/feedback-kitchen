@@ -1,8 +1,8 @@
 {
   "meta": {
-    "timestamp": "2026-06-14T21:38:26.614Z",
+    "timestamp": "2026-06-15T19:47:43.350Z",
     "baseUrl": "http://localhost:3000",
-    "elapsed": "9.6"
+    "elapsed": "9.9"
   },
   "results": [
     {
@@ -91,30 +91,30 @@
       "url": "http://localhost:3000/scorer.html?id=demo-written-response-v2",
       "axe": {
         "violations": [],
-        "passes": 51,
+        "passes": 50,
         "incomplete": 1,
-        "inapplicable": 38
+        "inapplicable": 39
       },
       "keyboard": [
         {
           "desc": "Tab to first scoring control",
           "status": "✅",
-          "focused": "<button#rnd-half.px-2.py-1.rounded.text-xs.font-medium.bg-slate-100.text-slate-600.hover:bg-slate-200.whitespace-nowrap> \"Half marksHalf\""
+          "focused": "<button#theme-toggle.p-1.5.rounded-lg.border.border-slate-200.text-slate-500.hover:text-slate-700.hover:bg-slate-50.transition-colors> \"Switch to dark mode\""
         },
         {
           "desc": "Arrow key through score options",
           "status": "✅",
-          "focused": "<button#rnd-half.px-2.py-1.rounded.text-xs.font-medium.bg-slate-100.text-slate-600.hover:bg-slate-200.whitespace-nowrap> \"Half marksHalf\""
+          "focused": "<button#theme-toggle.p-1.5.rounded-lg.border.border-slate-200.text-slate-500.hover:text-slate-700.hover:bg-slate-50.transition-colors> \"Switch to dark mode\""
         },
         {
           "desc": "Tab to submit/next",
           "status": "✅",
-          "focused": "<a.hover:text-emerald-600.whitespace-nowrap> \"Student\""
+          "focused": "<a.hover:text-emerald-600.whitespace-nowrap> \"Penalty & grade override\""
         },
         {
           "desc": "Activate submit with Space",
           "status": "✅",
-          "focused": "<a.hover:text-emerald-600.whitespace-nowrap.text-slate-600> \"Student\""
+          "focused": "<a.hover:text-emerald-600.whitespace-nowrap.text-slate-600> \"Penalty & grade override\""
         }
       ],
       "loadError": null
