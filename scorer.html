@@ -426,6 +426,16 @@
           <span class="hidden" id="nav-scorer-name"></span>
         </div>
 
+        <!-- FK-33: shared-machine safety — always-visible current-marker readout + one-click switch.
+             Makes a stale tutor name obvious before any marking begins (safety by visibility). -->
+        <div id="marking-as" class="flex items-center gap-1.5 text-xs order-last md:order-none w-full md:w-auto justify-center md:justify-start">
+          <span class="text-slate-500">Marking as:</span>
+          <span id="marking-as-name" class="font-semibold text-slate-500">not set</span>
+          <button type="button" onclick="S.switchTutor()"
+                  class="ml-0.5 px-1.5 py-0.5 rounded border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 text-[11px] whitespace-nowrap"
+                  title="Clear the tutor name (and any unsaved draft) so a different marker can take over on this device">Switch tutor</button>
+        </div>
+
         <!-- Mobile row 2 / Desktop right: rounding + wording key + desktop New student -->
         <div class="flex items-center gap-3">
           <!-- Rounding group -->
@@ -1375,7 +1385,7 @@
         gradeOverride:      v('grade-override'),
         studentName:        v('student-name'),
         studentId:          v('student-id'),
-        studentTutor:       v('student-tutor'),
+        studentTutor:       getSetting('clearTutorBetweenStudents', false) ? '' : v('student-tutor'),  // FK-33: keep the marker name out of the on-device draft on shared machines
         studentDate:        v('student-date'),
         feedbackText:       v('feedback-text'),
         additionalComments: v('additional-comments')
@@ -1487,6 +1497,7 @@
       const nt = el('additional-comments'); if (nt) nt.value = d.additionalComments || '';
       lastGeneratedText = '';   // saved feedback is now authoritative, not generated
       refreshStatusChips();
+      updateMarkingAs();        // FK-33: reflect the resumed tutor in the topbar readout
       try { _refreshAllAutoPills(); } catch (e) {}
       showCohortToast('Draft restored.', 'green');
       // The restored state IS genuine unsaved work — keep the draft and leave
@@ -1634,6 +1645,7 @@
       // Header, nav & page title
       const navParts = [config.name, config.assessmentTitle].filter(Boolean);
       document.getElementById('nav-scorer-name').textContent = navParts.join(' · ');
+      updateMarkingAs();   // FK-33: initialise the "Marking as" topbar readout
       const hdrTitle = [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Feedback Kitchen';
       document.getElementById('hdr-title').textContent = hdrTitle;
       document.title = hdrTitle === 'Feedback Kitchen' ? 'Feedback Kitchen' : 'Feedback Kitchen — ' + hdrTitle;
@@ -1992,6 +2004,38 @@
     function onStudentChange() {
       updateFeedback(); refreshStickySummary(); refreshAIInputChips();
       if (focusMode) focusRefreshStudentName();
+      updateMarkingAs();   // FK-33: keep the topbar "Marking as" readout in sync with the tutor field
+    }
+
+    /* ── FK-33: shared-machine tutor safety ──────────────────────
+       The Tutor field persists between students (advertised convenience) and,
+       while there's unsaved work, into the on-device draft. On shared/lab
+       machines that risks the next marker silently working under the previous
+       tutor's name. These helpers surface the current marker and let a new one
+       take over cleanly. Cohort records (layer 3) intentionally keep `tutor`. */
+    function updateMarkingAs() {
+      const ti = el('student-tutor');
+      const out = el('marking-as-name');
+      if (!out) return;
+      const t = ti ? (ti.value || '').trim() : '';
+      out.textContent = t || 'not set';
+      out.classList.toggle('text-slate-500', !t);   // muted when unset (AA on white: #64748b ≥4.5:1)
+      out.classList.toggle('text-slate-700', !!t);
+    }
+    function switchTutor() {
+      const ti = el('student-tutor');
+      if (ti) { ti.value = ''; ti.dispatchEvent(new Event('input')); }  // fires onStudentChange + draft autosave reschedule
+      if (!_sessionHasUnsavedWork()) clearDraft();   // no work in progress → drop any stale draft so it can't be resumed by the next marker
+      updateMarkingAs();
+      if (ti) ti.focus();
+    }
+    function applyClearTutorSetting() {
+      const cb = el('setting-clear-tutor');
+      if (cb) cb.checked = !!getSetting('clearTutorBetweenStudents', false);
+    }
+    function setClearTutorBetweenStudents(on) {
+      setSetting('clearTutorBetweenStudents', !!on);
+      applyClearTutorSetting();
     }
 
     /* ── Grade-override helpers ──────────────────────────── */
@@ -3081,6 +3125,7 @@
       el('student-name').value  = rec.name || '';
       el('student-id').value    = rec.studentId || '';
       el('student-tutor').value = rec.tutor || '';
+      updateMarkingAs();   // FK-33: reflect the opened record's tutor in the topbar readout
       if (rec.date) el('student-date').value = rec.date;
 
       // Grades: rebuild state array against the CURRENT criteria list, then
@@ -3898,7 +3943,9 @@
     function confirmNewStudent() {
       el('student-name').value   = '';
       el('student-id').value     = '';
-      // Tutor name intentionally kept — same marker for the whole batch
+      // Tutor name kept by default (same marker for the whole batch) — but the
+      // FK-33 shared-machine opt-in clears it on every New student.
+      if (getSetting('clearTutorBetweenStudents', false)) el('student-tutor').value = '';
       el('grade-override').value = '';
       const commentsEl = el('additional-comments');
       if (commentsEl) { commentsEl.value = ''; commentsEl.dispatchEvent(new Event('input')); }
@@ -3941,6 +3988,7 @@
       refreshStatusChips();
       _markSessionClean();
       clearDraft();   // FK-21: New student → discard the previous student's draft
+      updateMarkingAs();   // FK-33: reflect any tutor clear in the topbar readout
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -5230,6 +5278,7 @@
       maybeRenderDiagUsage();
       applyAdvancedToolsVisibility();
       try { applyCohortConsistencyVisibility(); } catch (e) {} // FK-12: sync settings checkbox + badge
+      try { applyClearTutorSetting(); } catch (e) {}           // FK-33: sync the clear-tutor settings checkbox
     });
 
     /* ── Wrap legacy advanced-tool calls so we instrument them ── */
@@ -5274,6 +5323,8 @@
              refreshRubricDriftUI,
              // Cohort consistency indicator (FK-12)
              refreshCohortConsistencyUI, applyCohortConsistencyVisibility, setShowCohortConsistency,
+             // FK-33: tutor shared-machine safety
+             switchTutor, updateMarkingAs, setClearTutorBetweenStudents, applyClearTutorSetting,
              // Cohort Insights (Phase 1)
              showCohortInsights, hideCohortInsights, copyCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
@@ -5759,6 +5810,15 @@
         <span class="text-sm text-slate-700">
           <strong>Show cohort consistency indicator</strong>
           <span class="block text-xs text-slate-500 mt-1">An ambient badge on the Cohort section showing how much of the score range your saved cohort spans (a marking-consistency cue, not the average). Saved cohort only; hidden for fewer than 12 scripts. Off by default.</span>
+        </span>
+      </label>
+      <label class="flex items-start gap-3 cursor-pointer mb-4">
+        <input type="checkbox" id="setting-clear-tutor"
+               class="mt-1"
+               onchange="S.setClearTutorBetweenStudents(this.checked)">
+        <span class="text-sm text-slate-700">
+          <strong>Clear tutor name between students</strong>
+          <span class="block text-xs text-slate-500 mt-1">For shared or lab computers: clears the Tutor field each time you start a new student, and keeps the tutor name out of the on-device draft. Off by default — leave off if you mark a whole batch on your own machine. You can always use “Switch tutor” in the top bar to hand over.</span>
         </span>
       </label>
       <div class="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-2">
