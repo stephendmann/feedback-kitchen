@@ -57,6 +57,12 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 - **Verification:** preview light+dark — readout syncs; Switch tutor clears field+draft; setting ON clears on New Student + writes empty `studentTutor` to draft; OFF persists. Muted readout `text-slate-500` (AA). jest 338/338 (+8); axe 0.
 - **Column:** In review. **Priority:** P3. **Effort:** S–M. **PR:** [#57](https://github.com/stephendmann/feedback-kitchen/pull/57). *(GPT-5 review carded; "Switch tutor" label + readout + FERPA framing adopted; default-ON rejected with reasons.)*
 
+### FK-34 · Move Score Rounding from the top bar into the section rail — In review
+- **Rationale:** The primary top bar grew crowded (logo + FK-33 marker readout + Score Rounding + theme + Wording key + New student). Rounding is a *display* control like Focus mode / Expand / Collapse, so it belongs in the section rail's RHS beside them — lighter top bar, no loss of function.
+- **Implementation (scorer.html):** removed the rounding group from the top-bar nav; inserted a compact single-line version (`#rail-rounding`) into the section-rail RHS before Focus mode. Button ids (`rnd-none/half/whole`) + handlers unchanged → `highlightRoundingBtn`/`setRounding` work as-is. The live example line is mirrored onto the control's **tooltip** (rail is single-line; `#rounding-example` kept hidden). No new dark CSS (both bars are `nav.sticky`). `#score-rounding-label` "Display:" chip untouched.
+- **Verification:** preview light+dark — rounding in rail RHS; switching restyles button + updates Display chip + tooltip; top bar lighter; mobile rail scrolls as before. +4-test guard (`rounding-rail.test.js`). jest 334/334; axe 0.
+- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#58](https://github.com/stephendmann/feedback-kitchen/pull/58). *(Complements FK-33; independent DOM regions.)*
+
 ## Validate in runtime
 *(empty)*
 
