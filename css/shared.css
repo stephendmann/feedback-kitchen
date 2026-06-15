@@ -6,6 +6,27 @@
   color: #cbd5e1;
 }
 
+/* FK-30: compact footer variant (scorer page) — one slim trust line instead of
+   the full two-column block + acknowledgement; the homepage keeps the full
+   version (#acknowledgements). Inherits the dark footer panel. */
+.site-footer--compact {
+  margin-top: 2.5rem;
+  padding: 0.85rem 1.25rem;
+}
+.site-footer--compact .site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1.5rem;
+}
+.site-footer--compact p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8; /* ≥4.5:1 on #0f172a */
+}
+.site-footer--compact p strong { color: #cbd5e1; }
+
 .site-footer__brand--utility {
   margin-bottom: 0.25rem;
 }
