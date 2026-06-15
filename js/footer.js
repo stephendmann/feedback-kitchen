@@ -1,4 +1,24 @@
-document.getElementById('site-footer').innerHTML = `
+(function () {
+  const el = document.getElementById('site-footer');
+  if (!el) return;
+
+  // FK-30: the scorer is a task-focused screen and already duplicates the
+  // homepage's trust block. Pages opt into a compact one-line footer via
+  // data-footer="compact"; everywhere else gets the full version (the homepage
+  // is where users evaluate privacy/provenance, so it keeps the detail).
+  const COMPACT = `
+<footer class="site-footer site-footer--compact" aria-label="Privacy and support">
+  <div class="site-footer__inner">
+    <p><strong>Browser-only by default</strong> &mdash; student data stays on this device unless you export it; the wording assistant strips names &amp; IDs before any text leaves your browser.</p>
+    <p>
+      <a href="/index.html#acknowledgements">About, backups &amp; credits</a>
+      <span aria-hidden="true">&middot;</span>
+      <a class="site-footer__kofi-link" href="https://ko-fi.com/smann" target="_blank" rel="noopener noreferrer" aria-label="Support on Ko-fi (opens in a new tab)" onclick="if(typeof gtag==='function'){gtag('event','kofi_click',{event_category:'engagement',link_location:'footer'})}">Support (Ko-fi)</a>
+    </p>
+  </div>
+</footer>`;
+
+  const FULL = `
 <footer class="site-footer" aria-labelledby="site-footer-title">
   <div class="site-footer__inner">
     <div class="site-footer__brand site-footer__brand--utility">
@@ -45,5 +65,7 @@ document.getElementById('site-footer').innerHTML = `
       </p>
     </section>
   </div>
-</footer>
-`;
+</footer>`;
+
+  el.innerHTML = el.dataset.footer === 'compact' ? COMPACT : FULL;
+})();
