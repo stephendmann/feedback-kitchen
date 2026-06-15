@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 35 · others: 0. Next free card ID: FK-36. *(Latest: FK-35 #59 (rounding tooltip fix) 2026-06-16. FK-34 #58, FK-33 #57, FK-32 #56, FK-31 #55, FK-30 #54 this cycle.)*
+Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In review: 1 (FK-36) · Shipped: 35 · others: 0. Next free card ID: FK-37. *(Latest: FK-36 #60 (rounding button redesign, in review) 2026-06-16. FK-35 #59, FK-34 #58 this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -48,7 +48,11 @@ Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · B
 
 ## In progress
 
-*(empty)*
+### FK-36 · Two-line segmented rounding buttons — In review
+- **Rationale:** The rounding control (FK-34/35) had a static tooltip that redundantly mirrored the active mode. The button design itself can be more visually informative: show the short label on line 1 and a tiny example on line 2, eliminating the need for explanatory text and making the options self-documenting.
+- **Implementation (scorer.html):** Restructured the three rounding buttons into a flex column layout. Line 1: short label (Exact, Half, Whole). Line 2: tiny muted example (77.4, 77.5, 77). Removed the long title tooltip. Wrapped buttons in `flex gap-0` for segmented appearance with `border-l` dividers. Equal width (`min-w-[56px]`), `leading-tight` for compact spacing. Note: Whole correctly shows 77 (77.4 rounds down, not to 78).
+- **Verification:** jest 342/342; axe 0. Button semantics and IDs (`rnd-none/half/whole`) unchanged → `setRounding`/`highlightRoundingBtn` work as before.
+- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#60](https://github.com/stephendmann/feedback-kitchen/pull/60).
 
 ## Validate in runtime
 *(empty)*
