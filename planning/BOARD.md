@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In review: 1 (FK-35) · Shipped: 34 · others: 0. Next free card ID: FK-36. *(Latest: FK-34 #58 + FK-35 #59 (tooltip fix, in review) 2026-06-16. FK-33 #57, FK-32 #56, FK-31 #55, FK-30 #54 this cycle.)*
+Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 35 · others: 0. Next free card ID: FK-36. *(Latest: FK-35 #59 (rounding tooltip fix) 2026-06-16. FK-34 #58, FK-33 #57, FK-32 #56, FK-31 #55, FK-30 #54 this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -48,11 +48,7 @@ Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · B
 
 ## In progress
 
-### FK-35 · Fix rounding tooltip — static all-modes description — In review
-- **Rationale:** The `#rail-rounding` tooltip introduced in FK-34 mirrored the currently-active rounding mode's example (e.g. "Rounded to nearest whole mark, e.g. 77.4 → 78"), which is redundant — the active button is already highlighted. A tooltip should explain what the other options do, not echo the current selection.
-- **Implementation:** Replaced the dynamic `wrap.title = ex.textContent` JS pattern with a static `title` attribute on the `#rail-rounding` div: `"Score display rounding — Exact: raw score (e.g. 77.4) · Half marks: rounds to nearest 0.5 (e.g. 77.4 → 77.5) · Whole marks: rounds to nearest whole number (e.g. 77.4 → 78)"`. Removed the `getElementById('rail-rounding')` / `wrap.title` JS lines from `highlightRoundingBtn`. Updated `rounding-rail.test.js` last assertion to verify static title present + dynamic pattern absent.
-- **Verification:** jest 342/342; axe 0.
-- **Column:** In review. **Priority:** P3. **Effort:** XS. **PR:** [#59](https://github.com/stephendmann/feedback-kitchen/pull/59).
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -108,5 +104,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-32 | Favicon/PWA icon regen from the new chef badge (FK-31 follow-on): new reproducible `scripts/render-icons.mjs` (puppeteer renders `fk-chef.svg` → `favicon-32`/`icon-192`/`icon-512` rounded transparent-corner + full-bleed-square `apple-touch-icon` for iOS; ImageMagick builds multi-res `favicon.ico` 16/32/48). Added `<link rel="icon" type="image/svg+xml" href="/fk-chef.svg">` to all 5 pages (crisp vector; ICO/PNG fallback). `og-image.png` untouched (FK wordmark card, no chef). +15-test guard (`favicon-links.test.js`). jest 330/330; axe 0 | [#56](https://github.com/stephendmann/feedback-kitchen/pull/56) | 2026-06-15 |
 | FK-33 | Tutor-name shared-machine safety (layers 1–2): always-visible "Marking as: <name>" topbar readout (`updateMarkingAs`) + "Switch tutor" button (`switchTutor`, clears field + drops stale draft) + opt-in "Clear tutor between students" setting (`clearTutorBetweenStudents`, **default OFF**) clearing the field on New Student and excluding `studentTutor` from the draft. Layer 3 (cohort records keep `tutor`) untouched — needed by moderation/merge. GPT-5 review's default-ON rejected with reasons (advertised convenience; not cleanly implementable; visibility > friction). +8-test guard (`tutor-privacy.test.js`); muted readout `text-slate-500` AA. jest 338/338; axe 0 | [#57](https://github.com/stephendmann/feedback-kitchen/pull/57) | 2026-06-16 |
 | FK-34 | Move Score Rounding from the top bar into the section rail: removed rounding group from top-bar nav; inserted compact `#rail-rounding` into rail RHS before Focus mode. Button ids (`rnd-none/half/whole`) + handlers unchanged. `#rounding-example` kept hidden. Tooltip bug found post-merge → FK-35. +4-test guard (`rounding-rail.test.js`). jest 342/342; axe 0 | [#58](https://github.com/stephendmann/feedback-kitchen/pull/58) | 2026-06-16 |
+| FK-35 | Fix rounding tooltip — replaced dynamic per-mode `wrap.title = ex.textContent` with a static all-modes `title` attribute on `#rail-rounding` div; removed JS lines; updated `rounding-rail.test.js` assertion. 342/342; axe 0 | [#59](https://github.com/stephendmann/feedback-kitchen/pull/59) | 2026-06-16 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · ~~FK-11 doc-drift~~ **fixed (PR #41)** — `docs/fk_moderation_export_v1.md:71` gloss corrected. **FK-19 follow-ups:** (1) live-Moodle upload round-trip check (export a generated fixture → upload to a non-prod course; confirms the institution's build matches core — only outstanding FK-19 item, not code-blocking); (2) v1.1 nicety — cache the original worksheet at import for one-click export (today the marker re-supplies it).
