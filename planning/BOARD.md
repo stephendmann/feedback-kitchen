@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In review: 1 (FK-36) · Shipped: 35 · others: 0. Next free card ID: FK-37. *(Latest: FK-36 #60 (rounding button redesign, in review) 2026-06-16. FK-35 #59, FK-34 #58 this cycle.)*
+Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In review: 1 (FK-37) · Shipped: 35 · others: 0. Next free card ID: FK-38. *(Latest: FK-37 #61 (rounding control rework: single-line buttons + dynamic helper, in review) 2026-06-16. FK-36 #60 superseded; FK-35 #59, FK-34 #58 this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -48,11 +48,11 @@ Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · B
 
 ## In progress
 
-### FK-36 · Two-line segmented rounding buttons — In review
-- **Rationale:** The rounding control (FK-34/35) had a static tooltip that redundantly mirrored the active mode. The button design itself can be more visually informative: show the short label on line 1 and a tiny example on line 2, eliminating the need for explanatory text and making the options self-documenting.
-- **Implementation (scorer.html):** Restructured the three rounding buttons into a flex column layout. Line 1: short label (Exact, Half, Whole). Line 2: tiny muted example (77.4, 77.5, 77). Removed the long title tooltip. Wrapped buttons in `flex gap-0` for segmented appearance with `border-l` dividers. Equal width (`min-w-[56px]`), `leading-tight` for compact spacing. Note: Whole correctly shows 77 (77.4 rounds down, not to 78).
-- **Verification:** jest 342/342; axe 0. Button semantics and IDs (`rnd-none/half/whole`) unchanged → `setRounding`/`highlightRoundingBtn` work as before.
-- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#60](https://github.com/stephendmann/feedback-kitchen/pull/60).
+### FK-37 · Single-line rounding buttons with dynamic helper — In review
+- **Rationale:** FK-36's two-line button design was too tall for the sticky rail. Better approach: keep buttons compact (single-line, Exact/Half/Whole) and move explanation below as a desktop-only helper line that dynamically shows computed rounded values. Mobile shows just the buttons; desktop gets the helpful context.
+- **Implementation (scorer.html):** Simplified buttons to single-line text labels (Exact, Half, Whole). Made #rail-rounding `flex flex-col` so helper sits below. Helper line is `hidden md:block` (desktop-only). Initially shows placeholder: "Examples appear once a score is calculated". Updated `highlightRoundingBtn()` to compute all three rounded values from current `penalisedScore` and format: "Examples for 77.4: Exact 77.4 · Half 77.5 · Whole 77". Helper shows/hides based on score validity.
+- **Verification:** jest 343/343 (+1 new helper visibility assertion); axe 0. Button IDs (`rnd-none/half/whole`) and logic unchanged → existing JS untouched.
+- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#61](https://github.com/stephendmann/feedback-kitchen/pull/61). *(FK-36 two-line design superseded.)*
 
 ## Validate in runtime
 *(empty)*
