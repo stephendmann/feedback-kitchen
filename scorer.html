@@ -426,25 +426,8 @@
           <span class="hidden" id="nav-scorer-name"></span>
         </div>
 
-        <!-- Mobile row 2 / Desktop right: rounding + wording key + desktop New student -->
+        <!-- Mobile row 2 / Desktop right: wording key + desktop New student (FK-34: Score Rounding moved to the section rail) -->
         <div class="flex items-center gap-3">
-          <!-- Rounding group -->
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-1">
-              <span class="text-slate-500 text-xs font-semibold mr-1 whitespace-nowrap">
-                <span class="hidden md:inline">Score </span>Rounding:
-              </span>
-              <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Exact</button>
-              <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">
-                <span class="hidden md:inline">Half marks</span><span class="md:hidden">Half</span>
-              </button>
-              <button id="rnd-whole" onclick="S.setRounding('whole')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">
-                <span class="hidden md:inline">Whole marks</span><span class="md:hidden">Whole</span>
-              </button>
-            </div>
-            <p id="rounding-example" class="text-[10px] text-slate-600 ml-1 hidden md:block"></p>
-          </div>
-          <span class="w-px h-5 bg-slate-200 self-center hidden md:block"></span>
           <!-- Theme toggle -->
           <button id="theme-toggle"
             class="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
@@ -484,6 +467,17 @@
         <a href="#sec-export"   data-rail="export" class="hover:text-emerald-600 whitespace-nowrap">Finish</a>
         <a href="#sec-cohort"   data-rail="cohort" class="hover:text-emerald-600 whitespace-nowrap"><span id="rail-cohort-label">Cohort</span></a>
         <span class="flex-1 min-w-[12px]"></span>
+        <!-- FK-34: Score Rounding (a display control) lives here beside Focus mode / Expand / Collapse.
+             IDs unchanged so highlightRoundingBtn/setRounding work as before; the live example line
+             is surfaced as a tooltip on #rail-rounding since the rail is single-line. -->
+        <div id="rail-rounding" class="flex items-center gap-1 whitespace-nowrap relative z-10">
+          <span class="text-slate-500 mr-0.5"><span class="hidden md:inline">Score </span>Rounding:</span>
+          <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Exact</button>
+          <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap"><span class="hidden md:inline">Half marks</span><span class="md:hidden">Half</span></button>
+          <button id="rnd-whole" onclick="S.setRounding('whole')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap"><span class="hidden md:inline">Whole marks</span><span class="md:hidden">Whole</span></button>
+          <span id="rounding-example" class="hidden"></span>
+        </div>
+        <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center mx-1" aria-hidden="true"></span>
         <button id="focus-toggle" onclick="S.toggleFocusMode()" aria-pressed="false"
                 class="text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded px-1.5 py-0.5 whitespace-nowrap relative z-10"
                 title="Focus mode: mark one criterion at a time — grade and feedback together — instead of scrolling between the rubric table and the feedback draft.">◎ Focus mode</button>
@@ -3979,6 +3973,10 @@
           var rounded = Math.round(n);
           ex.textContent = 'Rounded to nearest whole mark, e.g. ' + nStr + ' → ' + rounded;
         }
+        // FK-34: rounding now lives in the single-line section rail — surface the
+        // example as a tooltip on the control instead of a visible second line.
+        var wrap = document.getElementById('rail-rounding');
+        if (wrap) wrap.title = ex.textContent;
       }
     }
 
