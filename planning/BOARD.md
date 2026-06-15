@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 1 (FK-29 rail anchor offset + click sync — IN REVIEW, PR #53) · Shipped: 26 · others: 0. Next free card ID: FK-30. *(Latest: FK-29 in review #53 (FK-28 follow-on: rail anchor under sticky header + click sync). FK-28 #52, FK-27 #50, FK-22 #49, FK-19 #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 shipped this cycle.)*
+Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** drift indicator that was built under the label "FK-12" but is a *different* feature from FK-12's card — carded as **FK-25 · Rubric-version drift indicator → Shipped**; FK-12 remains the unbuilt cohort-consistency/anchoring indicator (D-10)): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 27 · others: 0. Next free card ID: FK-30. *(Latest: FK-29 rail anchor offset + click sync shipped #53. FK-28 #52, FK-27 #50, FK-22 #49, FK-19 #47+#48, FK-21 #46, FK-12 #44 + docs #45, FK-13 #43, FK-26 #42 shipped this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -47,12 +47,7 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-
-### FK-29 · Rail anchor lands under sticky header + immediate active-state sync — IN REVIEW (PR #53)
-- **Follow-on bug from FK-28** (reviewed against code, reproduced): rail click landed the section **under the two stacked sticky bars** (topbar `sticky top-0` + rail `sticky top-[88px] md:top-14`; no scroll offset existed), and the active highlight didn't switch on click (plain `<a href>`, only the IO updated it — stale when a short section landed outside the IO band).
-- **Fix (PR #53):** `html { scroll-padding-top: 8.5rem; md 6.5rem }` so anchor jumps + keyboard focus land below both bars; rail click now calls `highlight(id)` immediately (aria-current + `.fk-active-section`) with a 700ms lock so the IO doesn't override the just-clicked target mid-scroll (IO stays source of truth after).
-- **DoD evidence:** runtime-verified — clicked section lands at the 136px offset (not under the bar); active highlight + aria-current switch instantly and hold; focus-mode suppression still holds; Jest 302/302; axe 0. **Priority:** P3 (polish/a11y). **Effort:** S.
-- **On merge:** move to Shipped; post-merge sync.
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -102,5 +97,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-22 | Homepage/dark-mode residuals: index.html gstatic preconnect + partner-logo intrinsic `width`/`height` (CLS); scorer `renderLineDiff` inline hex → `.fk-diff-del`/`.fk-diff-add` classes w/ dark variants; removed dead `?cinematic=1`→`dark-scorer.css` (404) easter egg; dark-mode sweep of light tint chips (rounding label/buttons, kbd/code → dark slate). axe 0; Jest 302/302 | [#49](https://github.com/stephendmann/feedback-kitchen/pull/49) | 2026-06-14 |
 | FK-27 | Post-Moodle-import selection fix: `mwCommit()` auto-opens the first imported student (`loadCohortRecordIntoSession` on its key + scroll), guarded on `!_sessionHasUnsavedWork()` so importing mid-marking keeps the current student; toast "· now marking &lt;name&gt;". Fixes the empty "(no name)"/focus-only post-import state. Runtime-verified both paths; axe 0 | [#50](https://github.com/stephendmann/feedback-kitchen/pull/50) | 2026-06-15 |
 | FK-28 | Dynamic active-section scroll highlight + scroll-spy a11y: extends the existing rail `IntersectionObserver` to set `aria-current="true"` on the active rail link (was colour-only) + mirror the active state onto the section content as an emerald inset rail (`.fk-active-section`, `#059669` light / `#34d399` dark, no layout shift); `prefers-reduced-motion` + focus-mode suppression. Dynamic active-only (D-02 lesson); emerald, not orange. axe 0 | [#52](https://github.com/stephendmann/feedback-kitchen/pull/52) | 2026-06-15 |
+| FK-29 | Rail anchor offset + click sync (FK-28 follow-on): `html { scroll-padding-top: 8.5rem; md 6.5rem }` so anchor jumps + keyboard focus land below the two stacked sticky bars (topbar + rail), not under them; rail click now syncs the active highlight + `aria-current` immediately (700ms lock so the IO doesn't override mid-scroll). Runtime-verified (lands at 136px offset; instant switch); axe 0 | [#53](https://github.com/stephendmann/feedback-kitchen/pull/53) | 2026-06-15 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · ~~FK-11 doc-drift~~ **fixed (PR #41)** — `docs/fk_moderation_export_v1.md:71` gloss corrected. **FK-19 follow-ups:** (1) live-Moodle upload round-trip check (export a generated fixture → upload to a non-prod course; confirms the institution's build matches core — only outstanding FK-19 item, not code-blocking); (2) v1.1 nicety — cache the original worksheet at import for one-click export (today the marker re-supplies it).
