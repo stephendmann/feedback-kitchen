@@ -1,10 +1,12 @@
 /**
- * FK-34/FK-36 regression guard — Score Rounding lives in the section rail with a two-line button design.
+ * FK-34/FK-37 regression guard — Score Rounding lives in the section rail as single-line segmented buttons
+ * with a dynamic helper line below.
  *
  * The rounding control (a display control, like Focus mode) was moved out of the
- * crowded primary top bar into the section rail's right-hand cluster. FK-36 redesigned
- * the buttons to be compact two-line segmented buttons: label on line 1 (Exact/Half/Whole),
- * tiny muted example on line 2 (77.4/77.5/77). These structural assertions lock that
+ * crowded primary top bar into the section rail's right-hand cluster. Single-line segmented buttons
+ * (Exact/Half/Whole) with a desktop-only helper line beneath that dynamically displays computed
+ * rounded values based on the current score: "Examples for 77.4: Exact 77.4 · Half 77.5 · Whole 77".
+ * Placeholder shown when no score is calculated yet. These structural assertions lock that
  * placement and design in, and confirm the ID-driven JS contract still holds.
  */
 const fs = require('fs');
@@ -40,12 +42,19 @@ describe('FK-34 rounding moved into the section rail', () => {
     expect(html).not.toMatch(/Desktop right: rounding/);
   });
 
-  test('rounding buttons have two-line segmented design (label + example)', () => {
-    // Each button contains two divs: label (Exact/Half/Whole) + example number (77.4/77.5/77)
-    expect(html).toMatch(/id="rnd-none"[\s\S]*?Exact[\s\S]*?77\.4/);
-    expect(html).toMatch(/id="rnd-half"[\s\S]*?Half[\s\S]*?77\.5/);
-    expect(html).toMatch(/id="rnd-whole"[\s\S]*?Whole[\s\S]*?77/);
-    // #rail-rounding wrapper has no tooltip
+  test('rounding buttons are single-line segmented (no nested divs)', () => {
+    // Buttons contain simple text labels, not nested divs
+    expect(html).toMatch(/id="rnd-none"[^>]*>Exact</);
+    expect(html).toMatch(/id="rnd-half"[^>]*>Half</);
+    expect(html).toMatch(/id="rnd-whole"[^>]*>Whole</);
+  });
+
+  test('#rounding-example is a visible helper line (desktop-only, initially italic placeholder)', () => {
+    // Helper is hidden on mobile (hidden md:block), visible on desktop
+    expect(html).toMatch(/id="rounding-example"[^>]*hidden md:block/);
+    // Initially shows placeholder text
+    expect(html).toMatch(/id="rounding-example"[^>]*italic[^>]*>Examples appear once/);
+    // No tooltip on #rail-rounding wrapper
     expect(html).not.toMatch(/id="rail-rounding"[^>]*title=/);
   });
 });
