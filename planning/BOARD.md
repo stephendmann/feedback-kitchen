@@ -47,7 +47,14 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-33 · Tutor-name shared-machine safety (readout + switch + opt-in clear) — In progress
+- **Rationale:** The Tutor field persists across three layers — (1) in-session DOM (`confirmNewStudent` keeps it, scorer.html:3901), (2) the FK-21 unsaved draft in localStorage (`studentTutor`, scorer.html:1378), (3) cohort records (scorer.html:2893, reaches normal exports). On **shared/lab/hot-desk machines** the prior tutor's name pre-fills for the next person → silent **misattribution**, and a stale draft hands the next person the prior tutor's name **plus** the in-progress student's partial assessment (a **FERPA / NZ Privacy Act** exposure, not just a nuisance).
+- **Fix (layers 1–2 only):** (a) always-visible **"Marking as: <name>"** topbar readout — safety-by-visibility so a stale name is obvious *before* marking; (b) **"Switch tutor"** button — clears the name + drops any stale draft for a clean handoff; (c) opt-in setting **"Clear tutor between students"** (`clearTutorBetweenStudents`, **default OFF**) that clears the field on New Student *and* excludes `studentTutor` from the draft.
+- **Default decision (differs from GPT-5's "default ON"):** kept **OFF** — persist-between-students is an advertised convenience (scorer.html:532/5299) for the dominant single-user case; "default-on for new installs only" isn't cleanly implementable (a toggle's default shows to all existing users too); the always-on readout + button mitigate the shared-machine risk by visibility, not by degrading the common workflow.
+- **Out of scope:** layer 3 (cohort records keep `tutor`) — required by the moderation/multi-marker merge attribution (scorer.html:5330); moderation export already strips tutor names (scorer.html:5403).
+- **ACs:** readout in topbar (light+dark); Switch-tutor clears field + draft; toggle off by default, clears on New Student + excludes from draft when on; structural regression guard; layer-3 untouched.
+- **Column:** In progress. **Priority:** P3. **Effort:** S–M. *(GPT-5 review carded; "Switch tutor" label + readout + FERPA framing adopted; default-ON rejected with reasons.)*
 
 ## Validate in runtime
 *(empty)*
