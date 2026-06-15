@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In review: 1 (FK-37) · Shipped: 35 · others: 0. Next free card ID: FK-38. *(Latest: FK-37 #61 (rounding control rework: single-line buttons + dynamic helper, in review) 2026-06-16. FK-36 #60 superseded; FK-35 #59, FK-34 #58 this cycle.)*
+Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 36 · others: 0. Next free card ID: FK-38. *(Latest: FK-37 #61 (rounding control single-line + dynamic helper) shipped 2026-06-16. FK-36 superseded; FK-35 #59, FK-34 #58 this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -48,11 +48,7 @@ Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · B
 
 ## In progress
 
-### FK-37 · Single-line rounding buttons with dynamic helper — In review
-- **Rationale:** FK-36's two-line button design was too tall for the sticky rail. Better approach: keep buttons compact (single-line, Exact/Half/Whole) and move explanation below as a desktop-only helper line that dynamically shows computed rounded values. Mobile shows just the buttons; desktop gets the helpful context.
-- **Implementation (scorer.html):** Simplified buttons to single-line text labels (Exact, Half, Whole). Made #rail-rounding `flex flex-col` so helper sits below. Helper line is `hidden md:block` (desktop-only). Initially shows placeholder: "Examples appear once a score is calculated". Updated `highlightRoundingBtn()` to compute all three rounded values from current `penalisedScore` and format: "Examples for 77.4: Exact 77.4 · Half 77.5 · Whole 77". Helper shows/hides based on score validity.
-- **Verification:** jest 343/343 (+1 new helper visibility assertion); axe 0. Button IDs (`rnd-none/half/whole`) and logic unchanged → existing JS untouched.
-- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#61](https://github.com/stephendmann/feedback-kitchen/pull/61). *(FK-36 two-line design superseded.)*
+*(empty)*
 
 ## Validate in runtime
 *(empty)*
@@ -109,5 +105,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-33 | Tutor-name shared-machine safety (layers 1–2): always-visible "Marking as: <name>" topbar readout (`updateMarkingAs`) + "Switch tutor" button (`switchTutor`, clears field + drops stale draft) + opt-in "Clear tutor between students" setting (`clearTutorBetweenStudents`, **default OFF**) clearing the field on New Student and excluding `studentTutor` from the draft. Layer 3 (cohort records keep `tutor`) untouched — needed by moderation/merge. GPT-5 review's default-ON rejected with reasons (advertised convenience; not cleanly implementable; visibility > friction). +8-test guard (`tutor-privacy.test.js`); muted readout `text-slate-500` AA. jest 338/338; axe 0 | [#57](https://github.com/stephendmann/feedback-kitchen/pull/57) | 2026-06-16 |
 | FK-34 | Move Score Rounding from the top bar into the section rail: removed rounding group from top-bar nav; inserted compact `#rail-rounding` into rail RHS before Focus mode. Button ids (`rnd-none/half/whole`) + handlers unchanged. `#rounding-example` kept hidden. Tooltip bug found post-merge → FK-35. +4-test guard (`rounding-rail.test.js`). jest 342/342; axe 0 | [#58](https://github.com/stephendmann/feedback-kitchen/pull/58) | 2026-06-16 |
 | FK-35 | Fix rounding tooltip — replaced dynamic per-mode `wrap.title = ex.textContent` with a static all-modes `title` attribute on `#rail-rounding` div; removed JS lines; updated `rounding-rail.test.js` assertion. 342/342; axe 0 | [#59](https://github.com/stephendmann/feedback-kitchen/pull/59) | 2026-06-16 |
+| FK-37 | Rework Score Rounding control from FK-36's two-line button design (too tall) to compact single-line segmented buttons (Exact/Half/Whole) with desktop-only dynamic helper line below. Helper initially shows "Examples appear once a score is calculated"; updates live with computed rounded values: "Examples for 77.4: Exact 77.4 · Half 77.5 · Whole 77". Values computed from current `penalisedScore` via updated `highlightRoundingBtn()`. IDs + click handlers unchanged. 343/343; axe 0. *(FK-36 two-line design superseded.)* | [#61](https://github.com/stephendmann/feedback-kitchen/pull/61) | 2026-06-16 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · ~~FK-11 doc-drift~~ **fixed (PR #41)** — `docs/fk_moderation_export_v1.md:71` gloss corrected. **FK-19 follow-ups:** (1) live-Moodle upload round-trip check (export a generated fixture → upload to a non-prod course; confirms the institution's build matches core — only outstanding FK-19 item, not code-blocking); (2) v1.1 nicety — cache the original worksheet at import for one-click export (today the marker re-supplies it).
