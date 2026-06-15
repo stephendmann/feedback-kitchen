@@ -4,8 +4,9 @@
  * The rounding control (a display control, like Focus mode) was moved out of the
  * crowded primary top bar into the section rail's right-hand cluster. These
  * structural assertions lock that placement in and confirm the ID-driven JS
- * contract still holds (the buttons keep their ids; the example line is mirrored
- * to the #rail-rounding tooltip since the rail is single-line).
+ * contract still holds (the buttons keep their ids; the example line is kept hidden
+ * so highlightRoundingBtn can write to it without error; the tooltip on #rail-rounding
+ * is a static all-modes description set in HTML, not a dynamic per-mode mirror).
  */
 const fs = require('fs');
 const path = require('path');
@@ -40,8 +41,10 @@ describe('FK-34 rounding moved into the section rail', () => {
     expect(html).not.toMatch(/Desktop right: rounding/);
   });
 
-  test('highlightRoundingBtn mirrors the example onto the #rail-rounding tooltip', () => {
-    expect(html).toMatch(/getElementById\('rail-rounding'\)/);
-    expect(html).toMatch(/wrap\.title = ex\.textContent/);
+  test('#rail-rounding has a static all-modes tooltip (not a dynamic per-mode mirror)', () => {
+    // Static title in HTML — describes all three modes regardless of which is active.
+    expect(html).toMatch(/id="rail-rounding"[^>]*title="Score display rounding/);
+    // Dynamic wrap.title assignment removed — the tooltip no longer echoes the active mode.
+    expect(html).not.toMatch(/wrap\.title = ex\.textContent/);
   });
 });
