@@ -480,7 +480,7 @@
         <!-- FK-34: Score Rounding (a display control) lives here beside Focus mode / Expand / Collapse.
              IDs unchanged so highlightRoundingBtn/setRounding work as before; the live example line
              is surfaced as a tooltip on #rail-rounding since the rail is single-line. -->
-        <div id="rail-rounding" class="flex items-center gap-1 whitespace-nowrap relative z-10">
+        <div id="rail-rounding" class="flex items-center gap-1 whitespace-nowrap relative z-10" title="Score display rounding — Exact: raw score (e.g. 77.4) · Half marks: rounds to nearest 0.5 (e.g. 77.4 → 77.5) · Whole marks: rounds to nearest whole number (e.g. 77.4 → 78)">
           <span class="text-slate-500 mr-0.5"><span class="hidden md:inline">Score </span>Rounding:</span>
           <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Exact</button>
           <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap"><span class="hidden md:inline">Half marks</span><span class="md:hidden">Half</span></button>
@@ -4021,10 +4021,6 @@
           var rounded = Math.round(n);
           ex.textContent = 'Rounded to nearest whole mark, e.g. ' + nStr + ' → ' + rounded;
         }
-        // FK-34: rounding now lives in the single-line section rail — surface the
-        // example as a tooltip on the control instead of a visible second line.
-        var wrap = document.getElementById('rail-rounding');
-        if (wrap) wrap.title = ex.textContent;
       }
     }
 
