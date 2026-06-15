@@ -48,11 +48,13 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 
 ## In progress
 
-### FK-31 · Brand mark refresh — theme-aware SVG header mark
-- **Rationale:** The chef brand mark is a bright-blue PNG (`icon-192.png`) reused as the header lockup, favicon/PWA set, and og-image. A navy refresh was proposed; navy-on-navy fails the dark-mode header (`#141d2e`, site-dark.css:34) and the dark footer (`#0f172a`). Fix = a theme-aware **inline SVG** header mark that adapts fill per theme (light surfaces → navy; dark header → light/blue), instead of one fixed-colour raster.
-- **Source asset:** `planning/_archive/Chef Icon SVG Markup.md` (192×192 viewBox; `--icon-fill`/`currentColor` base + `--color-bg` detail cut-outs). *Note: supplied markup is bloated (path duplicated several times) + the `--color-bg` detail layer is fragile across backgrounds — clean up / decide single-tone vs two-tone during impl.*
-- **Scope:** header lockup → inline theme-aware SVG; light + dark headers verified in preview. Favicon/PWA/og raster regeneration is a follow-on, not this card.
-- **Column:** In progress. **Priority:** P3. **Effort:** S–M.
+### FK-31 · Brand mark refresh — self-contained chef badge in page headers — In review
+- **Rationale:** The chef brand mark was a bright-blue PNG (`icon-192.png` / `favicon-32.png`) in the header lockup. A navy refresh was proposed; a *fixed* navy fill fails on the dark-mode header (`#141d2e`, site-dark.css:34). Resolved differently than first scoped: instead of a theme-aware single-colour silhouette, ship a **self-contained badge** — a rounded navy (`#1e3a5f`) tile with the chef knocked out in white. The tile carries its own background, so it's identical/crisp on light *and* dark headers with **no theme CSS** and stays legible to favicon scale.
+- **Source-asset journey:** `Chef Icon SVG Markup.md` was hallucinated junk (renders as a blob) — rejected. `fk-icon-SVG.svg` / `fk-icon-inverted SVG.svg` (Inkscape) = real chef as a **knockout** (square + chef `evenodd`). Hand-inverting to a positive silhouette corrupted geometry (relative-vs-absolute first sub-path → 96px shift); fix = use the authored path **verbatim** (navy over white base, clipped to rounded rect). 9 Canva candidates compared at header sizes — 5–9 (line-art) vanish at 22px, 1–2 (solid gold) viable-but-softer; **white-on-navy chosen** for clarity.
+- **Implementation:** new `fk-chef.svg`; header `<img src>` → `/fk-chef.svg` on index/scorer/builder/upload/convert (sizes/classes/`alt=""` preserved).
+- **Scope:** header lockup only. Browser favicons + `og-image.png` + 3 decorative `icon-192` backgrounds in how-to = **raster-regen follow-on**, not this card.
+- **Verification:** preview light+dark @160/64/40/24px; jest 302/302; axe 0 (Home/Builder/Scorer).
+- **Column:** In review. **Priority:** P3. **Effort:** S–M. **PR:** [#55](https://github.com/stephendmann/feedback-kitchen/pull/55).
 
 ## Validate in runtime
 *(empty)*
