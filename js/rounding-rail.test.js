@@ -1,12 +1,11 @@
 /**
- * FK-34 regression guard — Score Rounding lives in the section rail, not the top bar.
+ * FK-34/FK-36 regression guard — Score Rounding lives in the section rail with a two-line button design.
  *
  * The rounding control (a display control, like Focus mode) was moved out of the
- * crowded primary top bar into the section rail's right-hand cluster. These
- * structural assertions lock that placement in and confirm the ID-driven JS
- * contract still holds (the buttons keep their ids; the example line is kept hidden
- * so highlightRoundingBtn can write to it without error; the tooltip on #rail-rounding
- * is a static all-modes description set in HTML, not a dynamic per-mode mirror).
+ * crowded primary top bar into the section rail's right-hand cluster. FK-36 redesigned
+ * the buttons to be compact two-line segmented buttons: label on line 1 (Exact/Half/Whole),
+ * tiny muted example on line 2 (77.4/77.5/77). These structural assertions lock that
+ * placement and design in, and confirm the ID-driven JS contract still holds.
  */
 const fs = require('fs');
 const path = require('path');
@@ -41,10 +40,12 @@ describe('FK-34 rounding moved into the section rail', () => {
     expect(html).not.toMatch(/Desktop right: rounding/);
   });
 
-  test('#rail-rounding has a static all-modes tooltip (not a dynamic per-mode mirror)', () => {
-    // Static title in HTML — describes all three modes regardless of which is active.
-    expect(html).toMatch(/id="rail-rounding"[^>]*title="Score display rounding/);
-    // Dynamic wrap.title assignment removed — the tooltip no longer echoes the active mode.
-    expect(html).not.toMatch(/wrap\.title = ex\.textContent/);
+  test('rounding buttons have two-line segmented design (label + example)', () => {
+    // Each button contains two divs: label (Exact/Half/Whole) + example number (77.4/77.5/77)
+    expect(html).toMatch(/id="rnd-none"[\s\S]*?Exact[\s\S]*?77\.4/);
+    expect(html).toMatch(/id="rnd-half"[\s\S]*?Half[\s\S]*?77\.5/);
+    expect(html).toMatch(/id="rnd-whole"[\s\S]*?Whole[\s\S]*?77/);
+    // #rail-rounding wrapper has no tooltip
+    expect(html).not.toMatch(/id="rail-rounding"[^>]*title=/);
   });
 });

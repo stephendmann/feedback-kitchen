@@ -1,123 +1,30 @@
 {
   "meta": {
-    "timestamp": "2026-06-14T21:38:26.614Z",
+    "timestamp": "2026-06-15T18:54:02.391Z",
     "baseUrl": "http://localhost:3000",
-    "elapsed": "9.6"
+    "elapsed": "7.9"
   },
   "results": [
     {
       "name": "Home / Dashboard",
       "url": "http://localhost:3000/",
-      "axe": {
-        "violations": [],
-        "passes": 33,
-        "incomplete": 1,
-        "inapplicable": 56
-      },
-      "keyboard": [
-        {
-          "desc": "Tab to first interactive element",
-          "status": "✅",
-          "focused": "<a.flex.items-center.gap-2.font-bold.text-xl.text-blue-700> \"Feedback Kitchen\""
-        },
-        {
-          "desc": "Tab through nav links",
-          "status": "✅",
-          "focused": "<button.text-xs.text-blue-700.hover:underline.font-semibold> \"Or try the demo scorer →\""
-        },
-        {
-          "desc": "Activate focused button with Enter",
-          "status": "ℹ️  bodyFocusOk",
-          "focused": "body (no focus)"
-        },
-        {
-          "desc": "Escape to dismiss any modal",
-          "status": "ℹ️  bodyFocusOk",
-          "focused": "body (no focus)"
-        }
-      ],
-      "loadError": null
+      "axe": null,
+      "keyboard": [],
+      "loadError": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/"
     },
     {
       "name": "Builder",
       "url": "http://localhost:3000/builder.html",
-      "axe": {
-        "violations": [],
-        "passes": 38,
-        "incomplete": 1,
-        "inapplicable": 51
-      },
-      "keyboard": [
-        {
-          "desc": "Tab to Add Criterion button",
-          "status": "✅",
-          "focused": "<select#s1-spelling-locale.input-field> \"Auto-detect from browser\n              A\""
-        },
-        {
-          "desc": "Activate Add Criterion with Enter",
-          "status": "✅",
-          "focused": "<select#s1-spelling-locale.input-field> \"Auto-detect from browser\n              A\""
-        },
-        {
-          "desc": "Tab into new input field",
-          "status": "✅",
-          "focused": "<select#s1-spelling-locale.input-field> \"Auto-detect from browser\n              A\""
-        },
-        {
-          "desc": "Type in criterion name",
-          "status": "✅",
-          "focused": "Typed: \"Test Criterion\""
-        },
-        {
-          "desc": "Tab to Add Band button",
-          "status": "✅",
-          "focused": "<a.site-footer__kofi-link> \"Ko-fi\""
-        },
-        {
-          "desc": "Activate Add Band with Enter",
-          "status": "✅",
-          "focused": "<a.site-footer__kofi-link> \"Ko-fi\""
-        },
-        {
-          "desc": "Escape from any modal/drawer",
-          "status": "✅",
-          "focused": "<a.site-footer__kofi-link> \"Ko-fi\""
-        }
-      ],
-      "loadError": null
+      "axe": null,
+      "keyboard": [],
+      "loadError": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/builder.html"
     },
     {
       "name": "Scorer",
       "url": "http://localhost:3000/scorer.html?id=demo-written-response-v2",
-      "axe": {
-        "violations": [],
-        "passes": 51,
-        "incomplete": 1,
-        "inapplicable": 38
-      },
-      "keyboard": [
-        {
-          "desc": "Tab to first scoring control",
-          "status": "✅",
-          "focused": "<button#rnd-half.px-2.py-1.rounded.text-xs.font-medium.bg-slate-100.text-slate-600.hover:bg-slate-200.whitespace-nowrap> \"Half marksHalf\""
-        },
-        {
-          "desc": "Arrow key through score options",
-          "status": "✅",
-          "focused": "<button#rnd-half.px-2.py-1.rounded.text-xs.font-medium.bg-slate-100.text-slate-600.hover:bg-slate-200.whitespace-nowrap> \"Half marksHalf\""
-        },
-        {
-          "desc": "Tab to submit/next",
-          "status": "✅",
-          "focused": "<a.hover:text-emerald-600.whitespace-nowrap> \"Student\""
-        },
-        {
-          "desc": "Activate submit with Space",
-          "status": "✅",
-          "focused": "<a.hover:text-emerald-600.whitespace-nowrap.text-slate-600> \"Student\""
-        }
-      ],
-      "loadError": null
+      "axe": null,
+      "keyboard": [],
+      "loadError": "net::ERR_CONNECTION_REFUSED at http://localhost:3000/"
     }
   ]
 }

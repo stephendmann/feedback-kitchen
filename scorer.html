@@ -477,14 +477,25 @@
         <a href="#sec-export"   data-rail="export" class="hover:text-emerald-600 whitespace-nowrap">Finish</a>
         <a href="#sec-cohort"   data-rail="cohort" class="hover:text-emerald-600 whitespace-nowrap"><span id="rail-cohort-label">Cohort</span></a>
         <span class="flex-1 min-w-[12px]"></span>
-        <!-- FK-34: Score Rounding (a display control) lives here beside Focus mode / Expand / Collapse.
-             IDs unchanged so highlightRoundingBtn/setRounding work as before; the live example line
-             is surfaced as a tooltip on #rail-rounding since the rail is single-line. -->
-        <div id="rail-rounding" class="flex items-center gap-1 whitespace-nowrap relative z-10" title="Score display rounding — Exact: raw score (e.g. 77.4) · Half marks: rounds to nearest 0.5 (e.g. 77.4 → 77.5) · Whole marks: rounds to nearest whole number (e.g. 77.4 → 78)">
-          <span class="text-slate-500 mr-0.5"><span class="hidden md:inline">Score </span>Rounding:</span>
-          <button id="rnd-none"  onclick="S.setRounding('none')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap">Exact</button>
-          <button id="rnd-half"  onclick="S.setRounding('half')"  class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap"><span class="hidden md:inline">Half marks</span><span class="md:hidden">Half</span></button>
-          <button id="rnd-whole" onclick="S.setRounding('whole')" class="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 whitespace-nowrap"><span class="hidden md:inline">Whole marks</span><span class="md:hidden">Whole</span></button>
+        <!-- FK-34/FK-36: Score Rounding (a display control) lives here beside Focus mode / Expand / Collapse.
+             FK-36 redesign: two-line segmented buttons (label + tiny muted example). IDs unchanged so
+             highlightRoundingBtn/setRounding work as before. Whole rounds 77.4 → 77 (not 78). -->
+        <div id="rail-rounding" class="flex items-center gap-1 relative z-10">
+          <span class="text-slate-500 text-xs font-medium"><span class="hidden md:inline">Score </span>Rounding:</span>
+          <div class="flex gap-0">
+            <button id="rnd-none"  onclick="S.setRounding('none')"  class="flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-1.5 text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 leading-tight rounded-l">
+              <div>Exact</div>
+              <div class="text-[10px] text-slate-500">77.4</div>
+            </button>
+            <button id="rnd-half"  onclick="S.setRounding('half')"  class="flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-1.5 text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 leading-tight border-l border-slate-200">
+              <div>Half</div>
+              <div class="text-[10px] text-slate-500">77.5</div>
+            </button>
+            <button id="rnd-whole" onclick="S.setRounding('whole')" class="flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-1.5 text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 leading-tight rounded-r border-l border-slate-200">
+              <div>Whole</div>
+              <div class="text-[10px] text-slate-500">77</div>
+            </button>
+          </div>
           <span id="rounding-example" class="hidden"></span>
         </div>
         <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center mx-1" aria-hidden="true"></span>
