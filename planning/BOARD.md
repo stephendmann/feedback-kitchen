@@ -47,7 +47,13 @@ Column counts (2026-06-13, + FK-25 split: PR #39 shipped a **rubric-version** dr
 ---
 
 ## In progress
-*(empty)*
+
+### FK-32 · Favicon/PWA icon regen from the new chef badge (FK-31 follow-on) — In review
+- **Rationale:** FK-31 refreshed the header logo but left the browser-tab favicon, PWA icons, and apple-touch icon as the old bright-blue chef — a visible mismatch. Regenerate them from `fk-chef.svg`.
+- **Implementation:** new `scripts/render-icons.mjs` (puppeteer renders the badge → `favicon-32`/`icon-192`/`icon-512` rounded w/ transparent corners + a **full-bleed square** `apple-touch-icon` for iOS masking; ImageMagick assembles multi-res `favicon.ico` 16/32/48). Added `<link rel="icon" href="/fk-chef.svg" type="image/svg+xml">` on index/scorer/builder/upload/convert (modern crisp vector; ICO/PNG fallback). +15-test guard (`favicon-links.test.js`).
+- **Out of scope:** `og-image.png` (typographic FK card, no chef → no mismatch); how-to decorative `icon-192` backgrounds auto-update.
+- **Verification:** all icon links resolve 200 w/ correct content-types; rendered chef badge @32/180/192; jest 330/330; axe 0.
+- **Column:** In review. **Priority:** P3. **Effort:** S. **PR:** [#56](https://github.com/stephendmann/feedback-kitchen/pull/56).
 
 ## Validate in runtime
 *(empty)*
