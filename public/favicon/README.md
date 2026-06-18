@@ -56,11 +56,19 @@ favicon SVGs.
   metadata (the source SVG carries a large embedded raster + C2PA manifest; only
   the rasterised pixels are kept).
 
-## No SVG favicon
+## No SVG favicon — a source-specific decision, NOT a general rule
 
 `_source-navy.svg` is technically an SVG but **wraps a 2000×2000 base64 raster**
 (≈1.6 MB). Shipping it as `rel="icon" type="image/svg+xml"` would be pure bloat
 with zero crispness gain over the PNGs, so this set is **PNG + ICO only**.
+
+This conclusion is tied to *this asset being raster-in-SVG* — it is **not** a
+stance that SVG favicons are bad. If the mark is ever rebuilt as a **true vector**
+source (real paths, small payload), an SVG favicon becomes worthwhile again and
+can even go adaptive via `prefers-color-scheme` (see
+https://web.dev/articles/building/an-adaptive-favicon). At that point: add
+`<link rel="icon" type="image/svg+xml" href="...">` ahead of the PNG links and
+keep the ICO/PNG set as the fallback for browsers and contexts that don't use it.
 
 ## Going live
 
