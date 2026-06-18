@@ -1,19 +1,23 @@
 /**
- * FK-31 regression guard — header brand mark.
+ * FK-31 regression guard — header brand mark (two-tier crest system).
  *
- * The chef logo was standardised onto a self-contained asset
- * (/fk-chef.svg: navy tile + white chef knockout) so it renders identically on
- * light AND dark headers with no theme CSS. The HOMEPAGE (index.html) header
- * intentionally diverges onto the larger detailed chef badge (/fk-chef-badge.png,
- * a 128px raster of _source-navy.svg) — it only reads well at the homepage's
- * 40px lockup, so the tighter app-page navbars (22/32px) keep fk-chef.svg.
+ * The header lockups use a two-tier brand system:
+ *   • HOMEPAGE (index.html) → /fk-chef-badge.png — the larger detailed navy/gold
+ *     chef badge (128px raster of _source-navy.svg), read well at the 40px lockup.
+ *   • APP PAGES (scorer/builder/upload/convert) → /fk-chef-crest.png — a simpler
+ *     blue-shield crest (96px raster of _source-crest.svg) that holds at the
+ *     tighter 22/32px navbars.
  *
- * These tests lock in: (a) the four app pages stay on the single fk-chef.svg
- * asset, (b) the homepage uses the detailed badge, (c) no header reverts to the
- * old favicon-32/icon-192 raster, (d) fk-chef.svg stays self-contained.
+ * fk-chef.svg (the original self-contained navy tile + white chef knockout) is
+ * no longer a header <img>; it remains the SVG favicon, so its self-contained
+ * properties are still guarded below.
  *
- * Rendering-consistency note: marks are referenced via <img src>, so the SVG is
- * an isolated document — page color/fill/CSS custom properties cannot tint it.
+ * These tests lock in: (a) the four app pages share the single crest asset,
+ * (b) the homepage uses the detailed badge, (c) no header reverts to the old
+ * favicon-32/icon-192 raster, (d) fk-chef.svg stays self-contained.
+ *
+ * Rendering-consistency note: marks are referenced via <img src>, so each asset
+ * is an isolated document — page color/fill/CSS custom properties cannot tint it.
  * The only thing that could is filter/opacity/mix-blend/mask applied to the img
  * element itself; the dark-mode image filters in css/site-dark.css are scoped to
  * the partner logos (img.grayscale, #uow-logo) and never the chef.
@@ -28,10 +32,10 @@ const APP_PAGES = ['scorer.html', 'builder.html', 'upload.html', 'convert.html']
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 describe('FK-31 header brand mark', () => {
-  test.each(APP_PAGES)('%s header lockup uses /fk-chef.svg', (page) => {
+  test.each(APP_PAGES)('%s header lockup uses the app-page crest', (page) => {
     const html = read(page);
-    // header lockup <img> points at the canonical app-page asset
-    expect(html).toMatch(/<img\b[^>]*\bsrc="\/fk-chef\.svg"/);
+    // header lockup <img> points at the canonical app-page crest asset
+    expect(html).toMatch(/<img\b[^>]*\bsrc="\/fk-chef-crest\.png"/);
   });
 
   test('index.html header lockup uses the detailed chef badge', () => {
@@ -48,10 +52,10 @@ describe('FK-31 header brand mark', () => {
 
   test('the four app-page headers reference the same single asset', () => {
     const srcs = APP_PAGES.map((page) => {
-      const m = read(page).match(/<img\b[^>]*\bsrc="(\/fk-chef\.svg)"/);
+      const m = read(page).match(/<img\b[^>]*\bsrc="(\/fk-chef-crest\.png)"/);
       return m && m[1];
     });
-    expect(new Set(srcs)).toEqual(new Set(['/fk-chef.svg']));
+    expect(new Set(srcs)).toEqual(new Set(['/fk-chef-crest.png']));
   });
 });
 
