@@ -75,9 +75,17 @@ gain, so the tab uses the rasterised **16/32/48 PNG + ICO**.
 <meta name="theme-color" content="#1a2744">
 ```
 
-## Going live
+## Live wiring
 
-These are staged under `public/favicon/` so the live root favicons stay untouched
-during testing. To adopt: move the files to the **site root**, drop the
-`/public/favicon/` prefix in the markup (→ `/`), set `theme-color` to `#1a2744`,
-and retire the old `icon-192.png` / `icon-512.png` (or repoint the manifest).
+The five live pages (`index`, `scorer`, `builder`, `convert`, `upload`) point
+their `<head>` directly at this folder via `/public/favicon/...` paths, with
+`theme-color` `#1a2744`. Vercel serves the repo root (`outputDirectory: "."`),
+so these paths resolve in production. Guarded by `js/favicon-links.test.js`.
+
+The old root assets (`favicon-32.png`, `icon-192.png`, `icon-512.png`,
+`fk-chef.svg`) are intentionally left in place — `fk-chef.svg` is still the
+header logo `<img>`, and `icon-192.png` is used as decoration on the how-to page.
+
+**Optional future tidy:** move this set to the site root and drop the
+`/public/favicon/` prefix (→ `/`) for shorter URLs. Not required — it's purely
+cosmetic, and would mean updating the markup + this folder's paths together.
