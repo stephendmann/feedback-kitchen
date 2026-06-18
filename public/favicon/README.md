@@ -1,84 +1,86 @@
-# Favicon set — navy "Michelin-style" chef badge
+# Favicon set — size-appropriate chef badge
 
-Generated from `_source-navy.svg` (the **"Michelin style blue exterior"** variant:
-a self-contained **navy `#1e3553` square tile** with a gold-rimmed shield and a
-white chef). Regenerate any time with:
+Favicons are designed **per size**. A single detailed mark can't serve both a
+16px browser tab and a 512px install icon, so this set uses **two sources**:
+
+| Source | Type | Drives | Why |
+|---|---|---|---|
+| `favicon-small.svg` | true vector | `favicon-16/32/48.png`, `favicon.ico`, **and the SVG favicon** | Minimal **toque-in-shield** mark — the detailed chef collapses into noise at 16/32px, so the tab shows only the hat |
+| `_source-navy.svg` | raster-in-SVG (~1.6 MB) | `apple-touch-icon` (180), `android-chrome` 192/512 | Detailed **chef badge** — looks great at 180px+, used only where icons render large (home-screen / PWA) |
+
+Palette: navy `#1a2744` · gold `#c9a84c` · white `#ffffff`.
+
+Regenerate any time:
 
 ```bash
 node scripts/generate-favicons.mjs
 ```
 
+## Why split by CONTEXT, not by two size-selected SVGs
+
+The intuitive plan — ship `favicon-small.svg` and `favicon-large.svg` and let
+the browser pick by the `sizes` attribute — **does not work**. An SVG favicon is
+treated as `sizes="any"`; browsers that support SVG favicons use that one SVG at
+*every* size. Size-based selection via `sizes` only applies to **raster** icons
+(PNG/ICO).
+
+So the same visual goal is achieved by splitting on **context** instead:
+
+- **Tab** (always small) → minimal toque, served as `favicon-small.svg` (vector,
+  crisp at any tab size) with 16/32/48 PNG + `.ico` as fallback.
+- **Home-screen / PWA** (always large) → detailed chef badge PNGs.
+
+This is robust across every browser and needs no non-existent SVG-size selector.
+
+## SVG favicon — now YES (this is a true-vector asset)
+
+The minimal mark `favicon-small.svg` is hand-authored clean geometry (no
+`<image>`, no embedded raster, no fonts), so it ships as a real SVG favicon.
+
+> Note: the earlier "no SVG favicon" decision applied to the **detailed**
+> `_source-navy.svg`, which wraps a 2000×2000 base64 raster — shipping *that* as
+> `image/svg+xml` would be ~1.6 MB of payload with no vector-sharpness gain. That
+> was a source-specific call, not a general rule, and it correctly flips here
+> because this small mark is genuinely vector.
+
 ## Files
 
-| File | Size | Used by |
-|---|---|---|
-| `favicon.ico` | 16/32/48 multi-res | Legacy browsers, Windows, bookmarks |
-| `favicon-16x16.png` | 16×16 | Browser tab |
-| `favicon-32x32.png` | 32×32 | Browser tab (hi-dpi), taskbar |
-| `favicon-48x48.png` | 48×48 | Windows site icons |
-| `apple-touch-icon.png` | 180×180 | iOS home-screen |
-| `android-chrome-192x192.png` | 192×192 | Android / PWA |
-| `android-chrome-512x512.png` | 512×512 | PWA install / splash |
-| `site.webmanifest` | — | PWA metadata |
-| `test.html` | — | Local visual test page |
-| `_source-navy.svg` | 1.6 MB | Design source (not shipped to users) |
+| File | Notes |
+|---|---|
+| `favicon-small.svg` | Minimal toque, true vector — the SVG favicon + small-PNG source |
+| `favicon.ico` | 16/32/48 multi-res, from the minimal mark |
+| `favicon-16x16.png` / `-32x32` / `-48x48` | Tab, from the minimal mark |
+| `apple-touch-icon.png` (180) | Detailed chef badge |
+| `android-chrome-192x192.png` / `-512x512` | Detailed chef badge (PWA) |
+| `site.webmanifest` | PWA metadata (`theme_color` `#1a2744`) |
+| `test.html` | Local visual test page |
+| `_source-navy.svg` | Detailed design source (not shipped to users) |
 
-## Why navy, and why a single source (not adaptive light/dark)
+## Small-size QA (16 / 32)
 
-Two design variants were evaluated — **navy tile** vs **white tile** — rendered
-at 16/32px on both white and dark tabs:
+- **32px:** crisp — gold shield, navy fill, white toque (puffy crown + band) read
+  instantly.
+- **16px:** the bold white toque inside the gold rim survives on both white and
+  dark tabs. Iterated once (enlarged the toque, thinned the gold rim to ~1.5px)
+  so the hat silhouette holds at tab size — far more legible than the detailed
+  chef, whose face/arms mush at 16px.
+- Rendered at density 384 + Lanczos; every output `-strip`ped of metadata.
 
-- Both are **solid square tiles** (not transparent badges); the shield + gold rim
-  + white chef is identical. Only the tile colour differs.
-- **White tile fails on the default white tab** — the tile vanishes and you're
-  left with a floating, unfinished-looking shield.
-- **Navy tile reads on both**: it pops on white tabs, and on dark tabs the
-  **gold rim keeps the shield legible** even though the navy edge merges.
-- The static `.ico`/PNG/Apple/PWA assets can only ever be **one** image, and that
-  image has to work on the dominant white tab — so navy is the only viable single
-  source.
-- Navy also matches the existing site header brand mark (`/fk-chef.svg`), which is
-  itself a self-contained navy tile chosen so it needs no theme switching.
+## `<head>` markup (staged local paths)
 
-An adaptive `prefers-color-scheme` SVG (navy in light, white in dark) was
-considered and **declined**: it would only marginally sharpen the dark-mode
-square *edge* for modern browsers, can't help any of the static contexts above,
-and Safari has an unreliable history honouring dark-mode media queries inside
-favicon SVGs.
-
-## Small-size legibility
-
-- **No simplified variant was needed.** At 16px the chef's face/arms soften into a
-  white figure, but the **gold-rimmed shield silhouette** — the real recognition
-  cue — survives cleanly. 32px and up are crisp.
-- Rendered at **density 384 + Lanczos** downsampling for sharp edges.
-- Every output is `-strip`ped, removing the source's Canva/C2PA provenance
-  metadata (the source SVG carries a large embedded raster + C2PA manifest; only
-  the rasterised pixels are kept).
-
-## No SVG favicon — a source-specific decision, NOT a general rule
-
-`_source-navy.svg` is technically an SVG but **wraps a 2000×2000 base64 raster**
-(≈1.6 MB). Shipping it as `rel="icon" type="image/svg+xml"` would be pure bloat
-with zero crispness gain over the PNGs, so this set is **PNG + ICO only**.
-
-This conclusion is tied to *this asset being raster-in-SVG* — it is **not** a
-stance that SVG favicons are bad. If the mark is ever rebuilt as a **true vector**
-source (real paths, small payload), an SVG favicon becomes worthwhile again and
-can even go adaptive via `prefers-color-scheme` (see
-https://web.dev/articles/building/an-adaptive-favicon). At that point: add
-`<link rel="icon" type="image/svg+xml" href="...">` ahead of the PNG links and
-keep the ICO/PNG set as the fallback for browsers and contexts that don't use it.
+```html
+<link rel="icon" href="/public/favicon/favicon.ico" sizes="any">
+<link rel="icon" href="/public/favicon/favicon-small.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="16x16" href="/public/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/public/favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/public/favicon/apple-touch-icon.png">
+<link rel="manifest" href="/public/favicon/site.webmanifest">
+<meta name="theme-color" content="#1a2744">
+```
 
 ## Going live
 
-These are staged under `public/favicon/` for local testing without touching the
-live root favicons. To adopt:
-
-1. Move/copy these files to the **site root** (where `favicon.ico`,
-   `apple-touch-icon.png`, etc. already live).
-2. Update the `<head>` links to drop the `/public/favicon/` prefix (use `/`).
-3. Replace the old `theme-color` (`#1e40af`) with `#1e3553` to match the tile.
-4. Delete the superseded `icon-192.png` / `icon-512.png` or repoint the manifest.
-
-See `test.html` for the exact `<head>` markup currently under test.
+These are staged under `public/favicon/` so the live root favicons stay untouched
+during testing. To adopt: move the files to the **site root**, drop the
+`/public/favicon/` prefix in the markup (→ `/`), set `theme-color` to `#1a2744`,
+and retire the old `icon-192.png` / `icon-512.png` (or repoint the manifest).
