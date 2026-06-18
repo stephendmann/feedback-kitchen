@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favicon test — Feedback Kitchen (navy)</title>
+
+  <!-- ===== FAVICON SET UNDER TEST (paths are /public/favicon/ for local staging) =====
+       Tab icon = MINIMAL toque (16/32/48 PNG + ico, from _source-small.svg).
+       Home-screen / PWA = DETAILED chef badge (apple-touch 180, android 192/512). -->
+  <link rel="icon" href="/public/favicon/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/public/favicon/site.webmanifest">
+  <meta name="theme-color" content="#1a2744">
+  <!-- ================================================================================= -->
+
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.25rem; }
+    .row { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; margin: 1rem 0; }
+    .swatch { text-align: center; font-size: .75rem; color: #555; }
+    .light { background: #fff; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+    .dark  { background: #1a1a1a; color: #ccc; padding: 1rem; border-radius: 8px; }
+    img.px { image-rendering: pixelated; }
+    code { background: #f4f4f4; padding: .1rem .3rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Favicon test — size-appropriate chef badge</h1>
+  <p><strong>Look at the browser tab.</strong> This page declares the new favicon set, so the tab
+     icon you see is the real thing. The tab shows the <strong>minimal toque</strong> mark; the
+     home-screen / PWA icons show the <strong>detailed chef</strong>.</p>
+
+  <h2 style="font-size:.95rem">Tab mark — minimal toque (16 / 32, on white)</h2>
+  <div class="row light">
+    <div class="swatch"><img src="/public/favicon/favicon-16x16.png" width="16" height="16"><br>16 actual</div>
+    <div class="swatch"><img src="/public/favicon/favicon-32x32.png" width="32" height="32"><br>32 actual</div>
+    <div class="swatch"><img class="px" src="/public/favicon/favicon-16x16.png" width="96" height="96"><br>16 → 6× zoom</div>
+    <div class="swatch"><img class="px" src="/public/favicon/favicon-32x32.png" width="96" height="96"><br>32 → 3× zoom</div>
+  </div>
+
+  <h2 style="font-size:.95rem">Tab mark — minimal toque (16 / 32, on dark)</h2>
+  <div class="row dark">
+    <div class="swatch" style="color:#ccc"><img src="/public/favicon/favicon-16x16.png" width="16" height="16"><br>16 actual</div>
+    <div class="swatch" style="color:#ccc"><img src="/public/favicon/favicon-32x32.png" width="32" height="32"><br>32 actual</div>
+    <div class="swatch" style="color:#ccc"><img class="px" src="/public/favicon/favicon-16x16.png" width="96" height="96"><br>16 → 6× zoom</div>
+    <div class="swatch" style="color:#ccc"><img class="px" src="/public/favicon/favicon-32x32.png" width="96" height="96"><br>32 → 3× zoom</div>
+  </div>
+
+  <h2 style="font-size:.95rem">Home-screen / PWA — detailed chef badge</h2>
+  <div class="row light">
+    <div class="swatch"><img src="/public/favicon/apple-touch-icon.png" width="90" height="90"><br>apple-touch 180</div>
+    <div class="swatch"><img src="/public/favicon/android-chrome-192x192.png" width="90" height="90"><br>android 192</div>
+    <div class="swatch"><img src="/public/favicon/android-chrome-512x512.png" width="90" height="90"><br>android 512</div>
+  </div>
+
+  <p>Served by the repo dev server at
+     <code>http://localhost:3000/public/favicon/test.html</code>.
+     Hard-refresh (Ctrl+F5) if the tab still shows an old icon — browsers cache favicons aggressively.</p>
+</body>
+</html>
