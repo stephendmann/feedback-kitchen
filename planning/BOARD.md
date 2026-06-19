@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 36 · others: 0. Next free card ID: FK-38. *(Latest: FK-37 #61 (rounding control single-line + dynamic helper) shipped 2026-06-16. FK-36 superseded; FK-35 #59, FK-34 #58 this cycle.)*
+Column counts (2026-06-20): Safe to implement now: 1 (FK-38) · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 36 · others: 0. Next free card ID: FK-39. *(Latest: FK-37 #61 (rounding control single-line + dynamic helper) shipped 2026-06-16. FK-36 superseded; FK-35 #59, FK-34 #58 this cycle.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -14,7 +14,16 @@ Column counts (2026-06-16): Safe to implement now: 0 · Needs inspection: 0 · B
 
 ## Safe to implement now
 
-*(empty — FK-12 moved to **In progress / In review** (PR #44). Full card history in git log of this file.)*
+### FK-38 · Micro-interactions animation polish (slice 1 of the animation set)
+- **Rationale:** Reviewer verdict on the Animation polish draft: micro-interactions are the safe, cheap win — isolated, mostly CSS, lowest regression risk, partly already present (toast glide scorer.html:286–290; `.btn transition:all .15s` :77). Accordion → FK-39, View Transitions → FK-40 (deferred; cross-cutting, need sticky-rail/scroll-spy testing — FK-18/28/29).
+- **Evidence:** O — scorer.html inline styles + `recalculate()` badge reassignment (:1975); reviewer verdict 2026-06-20 (`planning/Animation polish for review/`).
+- **Scope (Core only):** button hover-lift; toast timing polish; grade-badge pop on grade-change-only; scoped `prefers-reduced-motion` guard (none exists in scorer.html today — only in how-to-feedback-kitchen.html). Focus-pulse + rail-indicator deferred.
+- **Risk:** Low — additive CSS + one small JS hook; dark-header box-shadow needs a `site-dark.css` variant.
+- **DoD:** jest green (+ new `js/micro-interactions.test.js` guard); axe 0; reduced-motion verified; no badge-pop on every keystroke; dark-mode button lift visible/correct.
+- **Implementation worktree:** feature branch off **up-to-date `main`** (`feat/fk-38-micro-interactions`) — NOT frosty-babbage. Watch the stale-local-main gotcha.
+- **Column:** Safe to implement now. **Priority:** P3. **Effort:** S (~2–3h).
+
+*(History: FK-12 moved to **In progress / In review** (PR #44) then shipped. Full card history in git log of this file.)*
 
 *(Phase-3 kickoff done 2026-06-13: INS-5 run → FK-10 audit verdict (GO, split) → **FK-24** spawned. INS-6 run → FK-11 ungated, M fork confirmed. INS-7 run → FK-12 ungated (metrics engine is pure/reusable; per-criterion histogram is the one signal not pre-computed; anchoring risk handled by default-off toggle + self-pilot). **FK-23 (PR #35), FK-24 (PR #36), FK-11 (PR #37) all merged to main 2026-06-13 → Shipped.** INS-8 run → FK-13 ungated, **rescoped from "centralization audit" to "score-result aria-live region + validation-convention note"** (the per-widget hard-invalid/soft-warn split is intentional; the validation-*model* centralization folds into FK-15; the real gap is the unannounced recomputed score — WCAG 4.1.3). **Phase-3 inspection sweep now complete (INS-5/6/7/8).** FK-12 is **in review (PR #44)** and FK-13 **shipped (PR #43)** — both 2026-06-14. Safe-to-implement is now empty; remaining feature-worktree work is the Backlog cards (FK-15/16/19/21/22), not this one. INS-5 ☑ as of 2026-06-14 (live bytes/record check done — typical 7,178 / heavy 13,797 chars/record confirmed the model). **2nd promotion checkpoint ✅ EXECUTED 2026-06-13 (PR #38 — Addendum H + INS-5 fold on main; confirmed 2026-06-14).** With both checkpoints done, the open work is purely the FK-12/FK-13 implementation cards. See ROADMAP-PHASES.md §3 / Promotion checkpoint.)*
 
