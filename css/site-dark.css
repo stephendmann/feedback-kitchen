@@ -260,6 +260,11 @@ html.fk-dark tr:hover td {
   background-color: #1a2434;
 }
 
+/* FK-38: hover-lift shadow — the light-mode rgba(0,0,0,.12) shadow barely reads
+   on the dark #141d2e header, so deepen it to .4 (matches the dark toast/footer
+   shadow idiom: rgba(0,0,0,.5)/.4) for a visible lift. */
+html.fk-dark .btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+
 /* Destructive (red) buttons */
 html.fk-dark .btn-red { background: #450a0a; color: #fca5a5; }
 html.fk-dark .btn-red:hover { background: #5a0e0e; }
