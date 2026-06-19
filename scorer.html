@@ -77,6 +77,9 @@
     .btn { font-weight: 600; padding: 0.55rem 1.2rem; border-radius: 0.5rem;
            border: none; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; display: inline-flex;
            align-items: center; gap: 0.4rem; }
+    /* FK-38: subtle hover-lift on enabled buttons (light header shadow; dark variant in site-dark.css) */
+    .btn:hover:not(:disabled)  { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+    .btn:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
     .btn-blue   { background: #047857; color: white; } /* emerald-700: ≥4.5:1 with white (FK-17) */
     .btn-blue:hover { background: #065f46; }
     .btn-green  { background: #047857; color: white; } /* emerald-700: ≥4.5:1 with white (FK-17) */
@@ -99,6 +102,10 @@
     .score-badge { font-size: 1.8rem; font-weight: 800; }
     .grade-badge { display: inline-flex; align-items: center; justify-content: center;
                    border-radius: 0.75rem; font-weight: 800; }
+    /* FK-38: one-shot pop when the suggested grade letter actually changes
+       (re-added in recalculate() only on real change — not on every keystroke) */
+    .grade-badge.updated { animation: badge-pop .4s ease; }
+    @keyframes badge-pop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
     /* Step badge — now used only for the ◎ Focus-marking glyph (letters removed, FK-02/D-02) */
     .step-badge { display: inline-flex; align-items: center; justify-content: center;
                   width: 1.6rem; height: 1.6rem; border-radius: 9999px;
@@ -150,7 +157,13 @@
        suppressed via the JS guard. */
     .fk-active-section { box-shadow: inset 4px 0 0 0 #059669, 0 1px 2px 0 rgba(0,0,0,0.05); transition: box-shadow .2s ease; }
     html.fk-dark .fk-active-section { box-shadow: inset 4px 0 0 0 #34d399, 0 1px 2px 0 rgba(0,0,0,0.4); }
-    @media (prefers-reduced-motion: reduce) { .fk-active-section { transition: none; } }
+    /* FK-38: scoped reduced-motion guard — disables only the micro-interaction
+       transitions/animations (avoids a nuclear *{} reset that would fight the
+       toast's class-driven fade). */
+    @media (prefers-reduced-motion: reduce) {
+      .fk-active-section { transition: none; }
+      .btn, .grade-badge, #fk-dispatch-toast { transition: none; animation: none; }
+    }
     /* FK-29: offset in-page anchor jumps for the two stacked sticky bars (primary
        topbar `sticky top-0` + section rail `sticky top-[88px] md:top-14`) so a rail
        click — or keyboard focus into a section — lands below them, not hidden
@@ -335,7 +348,8 @@
       pointer-events: none;
       opacity: 0;
       transform: translateY(12px);
-      transition: opacity 0.25s ease, transform 0.25s ease;
+      /* FK-38: ease-out-expo for a softer entrance glide */
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1);
     }
     #fk-dispatch-toast.fk-toast-visible  { opacity: 1; transform: translateY(0); }
     #fk-dispatch-toast.fk-toast-fading   { opacity: 0; transform: translateY(-6px);
@@ -2249,6 +2263,7 @@
       // Grade display
       el('penalised-score-display').textContent = isFail ? '0' : (hasGrades ? SA.formatScore(penalisedScore, _displayRounding) : '–');
       const gradeBadge = el('grade-display');
+      const _prevGradeText = gradeBadge.textContent; // FK-38: capture before reassignment for grade-change-only pop
       gradeBadge.textContent = (hasGrades || isFail) ? suggestedGrade : '–';
 
       const tierColourMap = {
@@ -2271,6 +2286,18 @@
         'C-': 'bg-yellow-100 text-yellow-800','D':  'bg-red-100 text-red-800'
       });
       gradeBadge.className = 'grade-badge text-2xl px-4 py-1 ' + (gradeColours[suggestedGrade] || 'bg-slate-100 text-slate-600');
+      // FK-38: the className reassignment above wipes any prior `.updated`, so a
+      // wholesale reset on every recompute can't accumulate. Re-add it only when
+      // the displayed grade letter actually changed (not on same-grade keystrokes),
+      // and remove it once the one-shot animation ends.
+      const _newGradeText = gradeBadge.textContent;
+      if (_newGradeText !== _prevGradeText && _newGradeText !== '–') {
+        gradeBadge.classList.add('updated');
+        gradeBadge.addEventListener('animationend', function _clearPop() {
+          gradeBadge.classList.remove('updated');
+          gradeBadge.removeEventListener('animationend', _clearPop);
+        });
+      }
 
       // FK-13: announce the recomputed result to assistive tech (4.1.3).
       if (hasGrades || isFail) {
