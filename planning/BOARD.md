@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-20): Safe to implement now: 1 (FK-38) · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 36 · others: 0. Next free card ID: FK-39. *(Latest: FK-37 #61 (rounding control single-line + dynamic helper) shipped 2026-06-16. FK-36 superseded; FK-35 #59, FK-34 #58 this cycle.)*
+Column counts (2026-06-20): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. Next free card ID: FK-39. *(Latest: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20. Accordion FK-39 + View Transitions FK-40 deferred. Prior: FK-37 #61 rounding control shipped 2026-06-16.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -13,15 +13,7 @@ Column counts (2026-06-20): Safe to implement now: 1 (FK-38) · Needs inspection
 ---
 
 ## Safe to implement now
-
-### FK-38 · Micro-interactions animation polish (slice 1 of the animation set)
-- **Rationale:** Reviewer verdict on the Animation polish draft: micro-interactions are the safe, cheap win — isolated, mostly CSS, lowest regression risk, partly already present (toast glide scorer.html:286–290; `.btn transition:all .15s` :77). Accordion → FK-39, View Transitions → FK-40 (deferred; cross-cutting, need sticky-rail/scroll-spy testing — FK-18/28/29).
-- **Evidence:** O — scorer.html inline styles + `recalculate()` badge reassignment (:1975); reviewer verdict 2026-06-20 (`planning/Animation polish for review/`).
-- **Scope (Core only):** button hover-lift; toast timing polish; grade-badge pop on grade-change-only; scoped `prefers-reduced-motion` guard (none exists in scorer.html today — only in how-to-feedback-kitchen.html). Focus-pulse + rail-indicator deferred.
-- **Risk:** Low — additive CSS + one small JS hook; dark-header box-shadow needs a `site-dark.css` variant.
-- **DoD:** jest green (+ new `js/micro-interactions.test.js` guard); axe 0; reduced-motion verified; no badge-pop on every keystroke; dark-mode button lift visible/correct.
-- **Implementation worktree:** feature branch off **up-to-date `main`** (`feat/fk-38-micro-interactions`) — NOT frosty-babbage. Watch the stale-local-main gotcha.
-- **Column:** Safe to implement now. **Priority:** P3. **Effort:** S (~2–3h).
+*(empty — FK-38 shipped 2026-06-20 (PR #66); see Shipped. Accordion (FK-39) and View Transitions (FK-40) remain deferred — they need the sticky-rail/scroll-spy testing in the Animation polish reviewer verdict before carding.)*
 
 *(History: FK-12 moved to **In progress / In review** (PR #44) then shipped. Full card history in git log of this file.)*
 
@@ -115,5 +107,6 @@ Full card history in git and `docs/planning-202606/` (snapshot refreshed 2026-06
 | FK-34 | Move Score Rounding from the top bar into the section rail: removed rounding group from top-bar nav; inserted compact `#rail-rounding` into rail RHS before Focus mode. Button ids (`rnd-none/half/whole`) + handlers unchanged. `#rounding-example` kept hidden. Tooltip bug found post-merge → FK-35. +4-test guard (`rounding-rail.test.js`). jest 342/342; axe 0 | [#58](https://github.com/stephendmann/feedback-kitchen/pull/58) | 2026-06-16 |
 | FK-35 | Fix rounding tooltip — replaced dynamic per-mode `wrap.title = ex.textContent` with a static all-modes `title` attribute on `#rail-rounding` div; removed JS lines; updated `rounding-rail.test.js` assertion. 342/342; axe 0 | [#59](https://github.com/stephendmann/feedback-kitchen/pull/59) | 2026-06-16 |
 | FK-37 | Rework Score Rounding control from FK-36's two-line button design (too tall) to compact single-line segmented buttons (Exact/Half/Whole) with desktop-only dynamic helper line below. Helper initially shows "Examples appear once a score is calculated"; updates live with computed rounded values: "Examples for 77.4: Exact 77.4 · Half 77.5 · Whole 77". Values computed from current `penalisedScore` via updated `highlightRoundingBtn()`. IDs + click handlers unchanged. 343/343; axe 0. *(FK-36 two-line design superseded.)* | [#61](https://github.com/stephendmann/feedback-kitchen/pull/61) | 2026-06-16 |
+| FK-38 | Micro-interactions animation polish (slice 1 of 3): `.btn` hover-lift (`translateY(-1px)`+shadow, `:active` reset; dark-header shadow variant in `site-dark.css`); toast ease-out-expo entrance; grade-badge pop (`@keyframes badge-pop` + `.grade-badge.updated`, re-added in `recalculate()` **grade-letter-change-only**, cleared one-shot on `animationend`); scoped `prefers-reduced-motion` guard (`.btn`/`.grade-badge`/`#fk-dispatch-toast`). No Tailwind utils ⇒ no `build:css`. +10-test guard (`micro-interactions.test.js`); jest 353/353; axe 0. *(Accordion → FK-39, View Transitions → FK-40 still deferred.)* | [#66](https://github.com/stephendmann/feedback-kitchen/pull/66) | 2026-06-20 |
 
 Residuals carried forward from shipped cards: `index.html:323` "New Student" casing · Title Case field labels → sentence case on next touch (canon §7) · dark-hero links keep slate-400 (intentional) · fk-decisions.md D8 narrowed not closed · ~~FK-11 doc-drift~~ **fixed (PR #41)** — `docs/fk_moderation_export_v1.md:71` gloss corrected. **FK-19 follow-ups:** (1) live-Moodle upload round-trip check (export a generated fixture → upload to a non-prod course; confirms the institution's build matches core — only outstanding FK-19 item, not code-blocking); (2) v1.1 nicety — cache the original worksheet at import for one-click export (today the marker re-supplies it).
