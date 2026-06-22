@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-20): Safe to implement now: 0 · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. Next free card ID: FK-39. *(Latest: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20. Accordion FK-39 + View Transitions FK-40 deferred. Prior: FK-37 #61 rounding control shipped 2026-06-16.)*
+Column counts (2026-06-23): Safe to implement now: 1 (FK-41) · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. **Next free card ID: FK-42.** *(FK-39 + FK-40 are **reserved** for the deferred accordion / View Transitions animation slices — not yet carded; FK-41 is the Inter-preconnect-residuals card added below 2026-06-23. The earlier "Next free: FK-39" reading was stale — it ignored those two reservations.)* *(Latest: FK-41 carded 2026-06-23 (Inter preconnect residuals, FK-22 follow-on). Prior: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20; FK-37 #61 rounding control shipped 2026-06-16.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -13,7 +13,26 @@ Column counts (2026-06-20): Safe to implement now: 0 · Needs inspection: 0 · B
 ---
 
 ## Safe to implement now
-*(empty — FK-38 shipped 2026-06-20 (PR #66); see Shipped. Accordion (FK-39) and View Transitions (FK-40) remain deferred — they need the sticky-rail/scroll-spy testing in the Animation polish reviewer verdict before carding.)*
+
+### FK-41 · Inter font preconnect residuals on builder + scorer (FK-22 follow-on)
+- **Summary:** Add the two Google Fonts `preconnect` hints (`fonts.googleapis.com` and `fonts.gstatic.com crossorigin`) ahead of the Inter stylesheet `<link>` on builder.html and scorer.html, so the DNS/TCP/TLS handshake to the font origins runs in parallel with HTML parse instead of blocking on the stylesheet request. Mirrors the exact change FK-22 (PR #49) already made to index.html.
+- **Evidence:** O — verified against `main` (the planning worktree's working copy predates FK-22, so read `main`, not this branch): `builder.html:45` and `scorer.html:46` load the Inter stylesheet with **zero** preconnect lines; `index.html:45–46` and `how-to-feedback-kitchen.html:17–18` already carry both; `upload.html` and `convert.html` load no web fonts (correctly out of scope).
+- **Dependencies:** none. No inspection gates. Same one-line-pair edit FK-22 shipped for index.html.
+- **Files & areas to touch:** `builder.html` (insert immediately before the Inter stylesheet `<link>`, ~line 45 on main); `scorer.html` (same, ~line 46 on main). Copy `index.html:45–46` verbatim. No CSS/JS change ⇒ no `build:css`.
+- **Concrete steps:**
+  1. In `builder.html`, directly **before** the `fonts.googleapis.com/css2?family=Inter…` stylesheet link, add:
+     `<link rel="preconnect" href="https://fonts.googleapis.com">`
+     `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
+  2. Repeat the same two lines in `scorer.html`, in the same position before its Inter stylesheet link.
+  3. Verify ordering: both preconnects must **precede** the stylesheet link (a preconnect after the request that uses it is a no-op).
+  4. Leave `upload.html` and `convert.html` untouched (no web fonts).
+- **Test strategy:** FK's jest suite is static-HTML regex assertions over `fs.readFileSync` of the HTML (no jsdom). Add/extend a guard (e.g. `js/preconnect-hints.test.js`) asserting builder.html + scorer.html each contain both preconnect lines, that the gstatic hint carries `crossorigin`, and that the preconnect block appears **before** the Inter stylesheet link. Full jest green + axe 0 (no a11y surface change). Optional runtime check: DevTools Network shows the gstatic connection opening earlier in the waterfall.
+- **Risks & mitigations:** Very low — pure network-timing hint, no visual/behavioural change. (1) Ordering: preconnect after the stylesheet is wasted → the test asserts order. (2) The gstatic hint **must** keep `crossorigin` (font fetches are CORS) → copy index.html verbatim.
+- **Commit message pattern:** `FK-41: add Inter font preconnect hints to builder + scorer (FK-22 follow-on)`
+- **DoD:** both preconnect lines present and correctly ordered on builder.html + scorer.html; byte-match index.html's pair; regression guard added; jest green; axe 0; upload/convert untouched.
+- **Column:** Safe to implement now. **Priority:** P3 (hygiene). **Effort:** S. **Phase:** 4 hygiene / FK-22 follow-on.
+
+*(Not yet carded in this column: the deferred **accordion (reserved FK-39)** and **View Transitions (reserved FK-40)** animation slices — they still need the sticky-rail/scroll-spy testing called out in the Animation polish reviewer verdict before carding. See `planning/Animation polish for review/`. FK-38 shipped 2026-06-20, PR #66.)*
 
 *(History: FK-12 moved to **In progress / In review** (PR #44) then shipped. Full card history in git log of this file.)*
 

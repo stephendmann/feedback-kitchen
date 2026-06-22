@@ -12,6 +12,18 @@ You are working inside a dedicated Git worktree planning workspace for Feedback
 Kitchen (FK). This worktree has internal planning artefacts under `planning/` that
 are not yet pushed to GitHub and are the single source of truth for planning.
 
+## Step 0 — Live board reality check (before anything else)
+
+Start from the **live** board, not a snapshot. `planning/BOARD.md` on this
+`frosty-babbage` worktree is authoritative. `docs/planning-202606/` on `main` is a
+**frozen 2026-06-13 snapshot** — historical provenance only; do not plan from it or trust
+its column counts / "Next free card ID". Before assigning any new card ID, re-derive the
+next free ID from the live columns **plus reserved/deferred IDs** (e.g. FK-39 / FK-40 are
+reserved for the deferred accordion / View Transitions slices). When you need the real
+state of app code as evidence, read `git show main:<file>` — this worktree's checkout of
+scorer.html/builder.html/css predates recently-merged feature PRs. See the "Step 0"
+section in `planning/README.md` for the full rule.
+
 ## Planning context (do not re-invent)
 
 Use and respect these existing files:
