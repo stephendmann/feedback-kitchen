@@ -30,6 +30,15 @@
     gtag('js', new Date());
     gtag('config', 'G-LQSJNBBPKZ', { anonymize_ip: true });
   </script>
+  <!-- FOUC prevention: apply fk-dark class before any stylesheet is parsed -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem('fk-theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('fk-dark');
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/css/tailwind.out.css">
   <style>
     body { font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -43,6 +52,7 @@
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/site-dark.css">
 </head>
 <body class="bg-slate-50 min-h-screen">
 
@@ -51,7 +61,15 @@
     <a href="index.html" class="flex items-center gap-2 font-bold text-blue-700 text-lg hover:text-blue-900 transition-colors">
       <img src="/fk-chef.svg" alt="" width="22" height="22" style="vertical-align:middle"> Feedback Kitchen
     </a>
-    <a href="index.html" class="text-sm text-slate-500 hover:text-slate-800 transition-colors">← Back to home</a>
+    <div class="flex items-center gap-3">
+      <button id="theme-toggle"
+        class="p-2 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+        aria-label="Switch to dark mode">
+        <svg class="fk-icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
+        <svg class="fk-icon-sun hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
+      </button>
+      <a href="index.html" class="text-sm text-slate-500 hover:text-slate-800 transition-colors">← Back to home</a>
+    </div>
   </nav>
 
   <main class="max-w-xl mx-auto px-4 py-12">
@@ -392,6 +410,24 @@
       document.getElementById('duplicate-panel').classList.add('hidden');
       document.getElementById('file-input').value = '';
     }
+
+    // ── Theme toggle (shared fk-dark layer) ──────────────────────
+    (function () {
+      var btn = document.getElementById('theme-toggle');
+      if (!btn) return;
+      function sync() {
+        var dark = document.documentElement.classList.contains('fk-dark');
+        btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        btn.querySelector('.fk-icon-moon').classList.toggle('hidden', dark);
+        btn.querySelector('.fk-icon-sun').classList.toggle('hidden', !dark);
+      }
+      btn.addEventListener('click', function () {
+        var dark = document.documentElement.classList.toggle('fk-dark');
+        localStorage.setItem('fk-theme', dark ? 'dark' : 'light');
+        sync();
+      });
+      sync();
+    })();
 
     // ── Init ─────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {

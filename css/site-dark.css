@@ -590,3 +590,71 @@ html.fk-dark .btn-secondary:hover {
 /* "Doesn't do" block — already slate-900, leave it ────────────── */
 /* Footer — already dark via shared.css, leave it ─────────────── */
 /* Hero — always dark regardless of mode, leave it ────────────── */
+
+/* ════════════════════════════════════════════════════════════════
+   Builder (builder.html) + Add-a-Scorer (upload.html)
+   ────────────────────────────────────────────────────────────────
+   These two pages opted into the shared dark layer later than the
+   homepage/scorer. Most of their surfaces are plain Tailwind utilities
+   already covered above (.bg-white, .bg-slate-50, .text-slate-*, the
+   blue CTAs, badges, panels). The rules below fill the remaining gaps:
+   the builder's page-local component classes (defined in its <style>
+   block) and a handful of utility tokens (gray-*, amber-600, *-50
+   tints, extra hover variants) that no earlier page happened to use.
+   Blue CTAs (.btn-primary, bg-blue-600 buttons, active step dot) are
+   intentionally left at their light-mode blue — that accent is the
+   brand and reads accessibly on the dark surfaces.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Builder component classes (builder.html <style> block) ────── */
+/* Field labels — light value (#475569) is near-invisible on dark */
+html.fk-dark .label { color: #cbd5e1; }
+
+/* Required/important fields get a warm tint in light mode (#fefce8);
+   mirror the scorer's muted dark-amber so "fill me in" still reads
+   without the neon. !important to beat the page's !important rule. */
+html.fk-dark .input-yellow { background-color: #1f1a08 !important; }
+
+/* Stepper connector line (light #e2e8f0). The .done state stays blue. */
+html.fk-dark .step-line { background-color: #334155; }
+
+/* Inline validation text (light #dc2626 is harsh on dark) */
+html.fk-dark .error-msg { color: #fca5a5; }
+
+/* btn-secondary already themed above (import/export idiom) — builder's
+   variant inherits it. btn-primary/btn-danger likewise covered. */
+
+/* ── Utility tokens first needed by these two pages ───────────── */
+/* Tailwind gray-* (builder uses gray, not slate, for one helper line) */
+html.fk-dark .text-gray-500 { color: #94a3b8; }
+html.fk-dark .text-gray-400 { color: #64748b; }
+
+/* amber-600 (Score-Display label) + red-500 (required asterisks) */
+html.fk-dark .text-amber-600 { color: #fbbf24; }
+html.fk-dark .text-red-500   { color: #f87171; }
+
+/* tier-customiser micro-labels (uppercase coloured headings) — the
+   -700 text tokens are already remapped above; nothing extra needed. */
+
+/* ── Soft tint surfaces (-50) used by result/feedback panels ──── */
+/* upload.html success/error result panels (applied dynamically),
+   builder step-1 has none of these but later steps reuse the idiom. */
+html.fk-dark .bg-green-50 { background-color: #0f1f15; }
+html.fk-dark .bg-red-50   { background-color: #1f0f0f; }
+html.fk-dark .border-green-200 { border-color: #065f46; }
+html.fk-dark .border-red-200   { border-color: #7f1d1d; }
+
+/* ── upload.html JSON drop-zone hover/drag state ──────────────── */
+/* light drag-over bg is #eff6ff; reuse the dark blue-50 surface */
+html.fk-dark #json-card.drag-over { background-color: #0c1d36; }
+
+/* ── Extra hover variants these pages rely on ─────────────────── */
+html.fk-dark .hover\:text-slate-800:hover  { color: #e2e8f0; }
+html.fk-dark .hover\:text-slate-700:hover  { color: #cbd5e1; }
+html.fk-dark .hover\:text-slate-600:hover  { color: #cbd5e1; }
+html.fk-dark .hover\:text-blue-900:hover   { color: #bfdbfe; }
+html.fk-dark .hover\:text-amber-900:hover  { color: #fde68a; }
+html.fk-dark .hover\:bg-slate-200:hover    { background-color: #263347; }
+html.fk-dark .hover\:bg-amber-100:hover    { background-color: #2a1800; }
+html.fk-dark .hover\:border-emerald-400:hover { border-color: #065f46; }
+html.fk-dark .hover\:border-slate-400:hover   { border-color: #475569; }
