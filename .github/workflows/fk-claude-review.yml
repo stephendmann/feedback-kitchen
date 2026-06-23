@@ -31,7 +31,9 @@ jobs:
       - name: Claude review
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Authenticates with the Claude Pro subscription (claude setup-token),
+          # so CI reviews draw from the plan allocation rather than API billing.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Runs the same `code-review` skill used locally via /code-review,
           # for consistent behaviour between local and CI reviews.
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
