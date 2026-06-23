@@ -23,6 +23,7 @@ jobs:
       contents: read        # read repo for context; never pushes from CI
       pull-requests: write  # post the review
       issues: write         # comment API path for PR conversations
+      id-token: write       # required by claude-code-action for its OIDC auth handshake
 
     steps:
       - name: Checkout code
