@@ -1,0 +1,48 @@
+name: FK Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Cancel an in-flight review when the PR is updated again, so rapid pushes
+# don't run several full reviews in parallel (saves API + Actions minutes).
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude code review (read-only)
+    # Fork PRs run with a read-only token and no secrets, so the API key and
+    # comment-post would fail — only review PRs from branches in this repo.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read        # read repo for context; never pushes from CI
+      pull-requests: write  # post the review
+      issues: write         # comment API path for PR conversations
+      id-token: write       # required by claude-code-action for its OIDC auth handshake
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Claude review
+        uses: anthropics/claude-code-action@v1
+        with:
+          # Authenticates with the Claude Pro subscription (claude setup-token),
+          # so CI reviews draw from the plan allocation rather than API billing.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Runs the same `code-review` skill used locally via /code-review,
+          # for consistent behaviour between local and CI reviews.
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          claude_args: >-
+            --append-system-prompt "Feedback Kitchen is an academic assessment / rubrics
+            web app. Treat student data as sensitive: never recommend logging or exposing
+            raw student identifiers. Weight findings toward grading/rubric correctness,
+            data privacy, and performance on large cohorts. The repo CLAUDE.md and
+            planning docs carry FK conventions — honour them."

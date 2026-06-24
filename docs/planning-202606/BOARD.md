@@ -1,5 +1,17 @@
 # FK Improvement Board
 
+> ## ⛔ FROZEN SNAPSHOT — DO NOT PLAN FROM THIS FILE
+>
+> This is a **point-in-time snapshot frozen 2026-06-13** at the FK-20 promotion
+> checkpoint, kept on `main` for historical provenance only. It is **not** the working
+> board and its contents below (column counts, card list, **"Next free card ID: FK-23"**)
+> are long out of date.
+>
+> **The live, authoritative board is `planning/BOARD.md` on the `frosty-babbage`
+> planning worktree.** Read and update that file for all planning. Do not assign card
+> IDs, derive "next free ID", or check card status from this snapshot — reconcile against
+> the live board (and its reserved/deferred IDs) instead.
+
 Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx]`.
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
