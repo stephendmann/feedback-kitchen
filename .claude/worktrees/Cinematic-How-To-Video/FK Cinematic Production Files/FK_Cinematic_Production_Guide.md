@@ -638,12 +638,17 @@ Two distinct artefacts — keep them separate:
 - **Final deliverable** (after QA learnings fold back in): adds the VO and the timed `.vtt`
   captions, poster frame, and hosting wiring.
 
+**QA outcomes — 2026-06-24 (from `brand-film.html` prototype, user-reviewed):**
+- ✅ **Navy: locked to `#0c1527`** (incumbent live hero). `#0D1B2A` rejected. Update brand-voice-canon.md to this single token.
+- ✅ **Aspect: maintain BOTH 16:9 and 2.39:1** — but **responsively**: large/desktop screens may use the 2.39:1 cinema crop; **small/mobile screens use 16:9 only** (no cinema crop below the breakpoint). The prototype enforces this (auto-forces 16:9 under ~760px and disables the cinema toggle).
+- ✅ Autoplay-blocked fallback confirmed (poster + visible play control + replay).
+
 Tasks:
 - [ ] Decide hosting: YouTube (preferred for discoverability + zero cost) or stephendmann.com subdomain
-- [ ] **QA prototype:** confirm aspect ratio — produce 16:9 (web/mobile) and 2.39:1 (cinema) builds; decide whether both are worth maintaining
-- [ ] **QA prototype:** navy A/B — incumbent is **`#0c1527`** (live homepage hero, `index.html:117`; `#0D1B2A` does not appear in `index.html`); confirm vs `#0D1B2A` and lock one in brand-voice-canon.md
-- [ ] **QA prototype:** real `<video controls>` (no autoplay-only), `target="_top"` on all links, real logo + real product screenshots (never the made-up ones)
-- [ ] **QA prototype:** autoplay-blocked fallback — poster frame + visible large play control + replay; never a blank/black frame (QA pass condition, desktop + mobile)
+- [x] **QA prototype:** aspect — keep 16:9 + 2.39:1; mobile/narrow = 16:9 only (responsive breakpoint) ← *resolved above*
+- [x] **QA prototype:** navy — locked to **`#0c1527`**; `#0D1B2A` rejected ← *resolved above*
+- [x] **QA prototype:** real `<video controls>` (no autoplay-only), `target="_top"` on all links, real logo + real product screenshots (never the made-up ones)
+- [x] **QA prototype:** autoplay-blocked fallback — poster frame + visible large play control + replay; never a blank/black frame (QA pass condition, desktop + mobile)
 - [ ] **Final:** produce VO + captions (.vtt) from VO script (timing to final cut)
 - [ ] **Final:** produce poster frame — export of Scene 9 end card at 1920×1080
 - [ ] **Final:** brand-film.html ships `<track kind="captions" default>` once the `.vtt` exists
