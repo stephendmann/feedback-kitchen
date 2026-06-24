@@ -173,6 +173,11 @@ How should the film be embedded for local QA? **Use a separate file via iframe. 
 
 **PROBLEM WITH EXISTING brand-film.html to replace legacy** how-to-feedback-kitchen.html
 
+> ⚠️ **These three problems belong to the STOPPED `brand-film.html` iteration — NOT to the live
+> `how-to-feedback-kitchen.html`.** The live how-to page already has visible playback controls and
+> uses real product content (see the Corrections note before "Revised Plan" below). Do not carry
+> these defects across onto the how-to page.
+
 - Opens another window that replicates index (prefer a popup or within window on home page)
 
 - has no video control (just autoplay, mute and repeat)
@@ -588,30 +593,61 @@ Two concerns appeared independently in ALL phases:
 - Hosting: YouTube or stephendmann.com subdomain on GitHub (hobby-scale, limited users)
 - Scope: (1) Finalise concept, (2) AI-generate assets
 
+### Corrections — 2026-06-24 · branch `feat/brand-film-howto` · supersedes review in commit `e35835d` (PR: pending)
+
+The Gstack `/autoplan` review above **conflated two different assets**, and its original Phase A
+inherited defects that do not apply to the live page:
+
+1. The **live** `how-to-feedback-kitchen.html` — a working React/Babel animated tutorial with
+   real product content and full, visible playback controls.
+2. A **stopped, earlier `brand-film.html` iteration** — autoplay-only, no controls, made-up logo
+   and made-up scorer (the three problems listed at "PROBLEM WITH EXISTING brand-film.html" above).
+
+Verified ground truth against `how-to-feedback-kitchen.html`:
+
+| Original Phase-A claim | Reality | Evidence |
+|---|---|---|
+| "Fake/made-up scorer content → replace with screenshots" | **False.** Real, coherent rubric: *BIOL 240 — Lab Report*, 4 criteria weighted 25/35/25/15 = 100%, real descriptor sentences, real grade-scale presets (NZ/AU/UK/US/Custom), real 6-step Builder flow, real FK branding. | `how-to-feedback-kitchen.html:1242, 2229–2233, 2289–2292, 2391–2394` |
+| "No user-facing controls / make play-pause discoverable" | **False & self-contradictory.** Visible `PlaybackBar` (return-to-start, play/pause, scrub, time) + keyboard (space = play/pause, ←→ = seek). The review's own Eng phase already lists these. | `how-to-feedback-kitchen.html:945–964, 1038–1054, 879` |
+| "Made-up logo and scorer" | True only of the stopped `brand-film.html` (not in repo). | "PROBLEM WITH EXISTING brand-film.html" block above |
+
+The Phase A below is corrected accordingly (false bug-fix tasks removed; valid polish items kept).
+
 ### Revised Plan — Two Phases
 
-**Phase A — Fix existing tutorial (immediate)**
-Priority: High. The existing how-to-feedback-kitchen.html has known bugs:
-- Fake/made-up scorer content in some scenes (to be replaced with real product screenshots)
-- No user-facing controls visible by default
-- `localStorage` playhead persistence works but is not surfaced to user
-Tasks:
-- [ ] Replace fake content with real product screenshots (real criteria, real descriptors, real Brand FK tone)
-- [ ] Surface playback controls more visibly (play/pause already exists at L964 — make it discoverable)
+**Phase A — Light polish of existing tutorial (immediate)**
+Priority: Medium. Per the Corrections note above, the live how-to page is **not** buggy: it
+already uses real product content and ships visible playback controls + keyboard seek. The
+earlier "fake content" / "no controls" tasks were imported from the stopped `brand-film.html`
+and are **dropped**. Remaining genuine improvements:
 - [ ] Add "Skip to product demo" anchor link for cold visitors
 - [ ] Review: does the tutorial answer "what does this tool do in 30 seconds?" for a new visitor
 - [ ] Add how-to page to `bbp-a11y-tests.mjs` PAGES array
+- [ ] (Optional) Surface the existing `localStorage` playhead resume more visibly to the user
 
 **Phase B — Brand film (conceptual → AI-generated)**
 Priority: Medium. Prerequisites: Phase A complete, hosting decided.
+
+Two distinct artefacts — keep them separate:
+- **QA prototype** (build first, after PR review): wires the *already-produced* scene clips
+  (`S3 → S2 → S1 → S3B → S4`, mapped to guide Scenes 1–4 by content, not by filename) + the
+  `FK backtrack.mp3` track. **No voiceover.** Purpose: resolve open design questions (navy
+  choice, mobile vs cinema aspect, autoplay-blocked fallback). **No captions/`<track>`** — with
+  no VO there is no speech to caption, so do not ship a `<track>` pointing at a non-existent
+  `.vtt`.
+- **Final deliverable** (after QA learnings fold back in): adds the VO and the timed `.vtt`
+  captions, poster frame, and hosting wiring.
+
+Tasks:
 - [ ] Decide hosting: YouTube (preferred for discoverability + zero cost) or stephendmann.com subdomain
-- [ ] Confirm aspect ratio: 16:9 for web (2.39:1 is aspirational only)
-- [ ] Confirm navy hex: audit `#0c1527` vs `#0D1B2A` — lock one in brand-voice-canon.md
-- [ ] Produce AI-generated assets per scene guide (each scene is a prompt for Sora/Runway/Canva)
-- [ ] Produce captions (.vtt) from VO script (timing to final cut)
-- [ ] Produce poster frame: export of Scene 9 end card at 1920×1080
+- [ ] **QA prototype:** confirm aspect ratio — produce 16:9 (web/mobile) and 2.39:1 (cinema) builds; decide whether both are worth maintaining
+- [ ] **QA prototype:** navy A/B — incumbent is **`#0c1527`** (live homepage hero, `index.html:117`; `#0D1B2A` does not appear in `index.html`); confirm vs `#0D1B2A` and lock one in brand-voice-canon.md
+- [ ] **QA prototype:** real `<video controls>` (no autoplay-only), `target="_top"` on all links, real logo + real product screenshots (never the made-up ones)
+- [ ] **QA prototype:** autoplay-blocked fallback — poster frame + visible large play control + replay; never a blank/black frame (QA pass condition, desktop + mobile)
+- [ ] **Final:** produce VO + captions (.vtt) from VO script (timing to final cut)
+- [ ] **Final:** produce poster frame — export of Scene 9 end card at 1920×1080
+- [ ] **Final:** brand-film.html ships `<track kind="captions" default>` once the `.vtt` exists
 - [ ] Add brand film to homepage as SEPARATE module (not replace tutorial)
-- [ ] brand-film.html: `<video controls>`, `<track kind="captions" default>`, `target="_top"` on all links
 - [ ] iframe in how-to-feedback-kitchen.html: add `title`, `allow="autoplay; fullscreen"`, `aspect-ratio: 16/9` container
 - [ ] Update brand-voice-canon.md scenes table to reflect new film scenes
 
