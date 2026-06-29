@@ -15,11 +15,14 @@
  * Usage:
  *   node scripts/capture-ui.mjs --target builder --still
  *   node scripts/capture-ui.mjs --target scorer  --still
+ *   node scripts/capture-ui.mjs --target hero    --still           (nav+hero clip, dark)
  *   node scripts/capture-ui.mjs --target all     --still
  *   node scripts/capture-ui.mjs --target builder --frames --mp4   (author driveAndCapture first)
+ *   node scripts/capture-ui.mjs --url file:///abs/path/brand-close.html --name closing
  *
  * Flags:
- *   --target builder|scorer|all   which page(s)            (default builder)
+ *   --target builder|scorer|hero|all   which page(s)       (default builder)
+ *   --url <url> --name <basename>      capture any page (incl file://) full-frame
  *   --scale  N                    deviceScaleFactor        (default 2 → 3840×2160)
  *   --width / --height            CSS viewport             (default 1920 / 1080)
  *   --theme  light|dark           fk-theme                 (default light — guide spec)
@@ -51,15 +54,32 @@ const TARGET = arg('target', 'builder');
 const SCALE  = parseInt(arg('scale', '2'), 10);
 const WIDTH  = parseInt(arg('width', '1920'), 10);
 const HEIGHT = parseInt(arg('height', '1080'), 10);
+const THEME_EXPLICIT = has('theme');           // did the user pass --theme?
 const THEME  = arg('theme', 'light');
 const OUTDIR = arg('out', './capture-out');
 const FPS    = parseInt(arg('fps', '24'), 10);
+
+// Arbitrary-page mode: --url <full url, incl file://> --name <basename>.
+// Lets the script capture any local film asset (e.g. brand-close.html) at high DPI.
+const URL_OVERRIDE = arg('url', null);
+const NAME = arg('name', null);
 
 const TARGETS = {
   builder: { path: '/builder.html', seedDemo: false },
   // Bare /scorer.html shows only "No Scorer Found"; seed the real demo first.
   scorer:  { path: '/scorer.html?id=demo-written-response-v2', seedDemo: true },
+  // Homepage hero extract: clip from the top of the page to the bottom of the
+  // hero <section> (so the nav is included). Hero reads best in dark theme.
+  // Dismiss the first-run welcome banner so the shot is clean nav + hero.
+  hero:    { path: '/', clipBelow: 'section[style*="0c1527"]', defaultTheme: 'dark',
+             seedKeys: { SA_WELCOME_DISMISSED: '1' } },
 };
+
+// Effective theme for a target: explicit --theme wins, else the target's preference.
+function themeFor(target) {
+  if (THEME_EXPLICIT) return THEME;
+  return (TARGETS[target] && TARGETS[target].defaultTheme) || THEME;
+}
 
 fs.mkdirSync(OUTDIR, { recursive: true });
 
@@ -81,24 +101,52 @@ async function seedDemoScorer(page) {
   });
 }
 
-async function loadTarget(page, target) {
-  const t = TARGETS[target];
-  // Establish origin (and seed) before setting theme so first paint is correct.
-  if (t.seedDemo) await seedDemoScorer(page);
-  else await page.goto(BASE_URL + '/', { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.evaluate((th) => { try { localStorage.setItem('fk-theme', th); } catch {} }, THEME);
-
-  await page.goto(BASE_URL + t.path, { waitUntil: 'networkidle2', timeout: 20000 });
-  await page.evaluate((th) => document.documentElement.setAttribute('data-theme', th), THEME);
-
-  // Let fonts load and entrance animations settle before the shutter.
+async function settle(page) {
   await page.evaluate(() => (document.fonts ? document.fonts.ready : null));
   await new Promise((r) => setTimeout(r, 600));
 }
 
-async function captureStill(page, target) {
-  const file = path.join(OUTDIR, `${target}-${WIDTH * SCALE}x${HEIGHT * SCALE}-${THEME}.png`);
-  await page.screenshot({ path: file, type: 'png' }); // PNG only — never JPEG
+async function loadTarget(page, target) {
+  const t = TARGETS[target];
+  const theme = themeFor(target);
+  // Establish origin (and seed) before setting theme so first paint is correct.
+  if (t.seedDemo) await seedDemoScorer(page);
+  else await page.goto(BASE_URL + '/', { waitUntil: 'domcontentloaded', timeout: 20000 });
+  await page.evaluate((th) => { try { localStorage.setItem('fk-theme', th); } catch {} }, theme);
+  if (t.seedKeys) {
+    await page.evaluate((kv) => { try { for (const k in kv) localStorage.setItem(k, kv[k]); } catch {} }, t.seedKeys);
+  }
+
+  await page.goto(BASE_URL + t.path, { waitUntil: 'networkidle2', timeout: 20000 });
+  await settle(page);
+}
+
+// Capture a single PNG. For targets with `clipBelow`, clip from the top of the
+// page down to the bottom of that selector (e.g. nav + hero, no empty page below).
+async function captureStill(page, target, basename, theme) {
+  const t = TARGETS[target] || {};
+  let clip;
+  if (t.clipBelow) {
+    clip = await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: 0, y: 0, width: Math.ceil(window.innerWidth), height: Math.ceil(r.bottom) };
+    }, t.clipBelow);
+  }
+  const w = clip ? clip.width * SCALE : WIDTH * SCALE;
+  const h = clip ? clip.height * SCALE : HEIGHT * SCALE;
+  const file = path.join(OUTDIR, `${basename}-${w}x${h}-${theme}.png`);
+  await page.screenshot({ path: file, type: 'png', ...(clip ? { clip } : {}) }); // PNG only — never JPEG
+  console.log('still  →', file);
+}
+
+// Arbitrary local/remote page (e.g. brand-close.html via file://) → full-frame 4K PNG.
+async function captureUrl(page, url, name) {
+  await page.goto(url, { waitUntil: 'networkidle2', timeout: 20000 });
+  await settle(page);
+  const file = path.join(OUTDIR, `${name}-${WIDTH * SCALE}x${HEIGHT * SCALE}.png`);
+  await page.screenshot({ path: file, type: 'png' });
   console.log('still  →', file);
 }
 
@@ -147,19 +195,28 @@ function assembleMp4(target) {
 }
 
 async function run() {
-  const targets = TARGET === 'all' ? Object.keys(TARGETS) : [TARGET];
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--force-color-profile=srgb'],
   });
   try {
+    // Arbitrary-page mode: --url <url> --name <basename>
+    if (URL_OVERRIDE) {
+      const page = await browser.newPage();
+      await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE });
+      await captureUrl(page, URL_OVERRIDE, NAME || 'page');
+      await page.close();
+      return;
+    }
+
+    const targets = TARGET === 'all' ? Object.keys(TARGETS) : [TARGET];
     for (const target of targets) {
       if (!TARGETS[target]) { console.error('unknown --target:', target); continue; }
       const page = await browser.newPage();
       await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: SCALE });
       await loadTarget(page, target);
 
-      if (has('still') || !has('frames')) await captureStill(page, target);
+      if (has('still') || !has('frames')) await captureStill(page, target, target, themeFor(target));
       if (has('frames')) {
         _frame = 0;
         await driveAndCapture(page, target, makeCaptureFrame(page, target));
