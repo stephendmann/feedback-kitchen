@@ -32,3 +32,6 @@ scorer.backup.*.html
 
 # Recovery artefacts from Claude Code restore operations
 *.restored
+
+# Brand-film UI capture output (regenerable, large PNG/MP4)
+capture-out/
