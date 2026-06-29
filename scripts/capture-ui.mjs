@@ -126,7 +126,7 @@ async function loadTarget(page, target) {
 async function captureStill(page, target, basename, theme) {
   const t = TARGETS[target] || {};
   let clip;
-  if (t.clipBelow) {
+  if (t.clipBelow && !has('full')) {   // --full = ignore the clip, capture the whole 16:9 frame
     clip = await page.evaluate((sel) => {
       const el = document.querySelector(sel);
       if (!el) return null;
