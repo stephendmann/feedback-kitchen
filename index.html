@@ -21,7 +21,28 @@
   <meta name="twitter:title" content="Feedback Kitchen">
   <meta name="twitter:description" content="Rubric-based marking, editable feedback drafts, on-device privacy.">
   <meta name="twitter:image" content="https://marking.stephendmann.com/og-image.png">
+  <meta property="og:video" content="https://www.youtube.com/embed/nJXzqZ8A5Fo">
+  <meta property="og:video:secure_url" content="https://www.youtube.com/embed/nJXzqZ8A5Fo">
+  <meta property="og:video:type" content="text/html">
+  <meta property="og:video:width" content="1280">
+  <meta property="og:video:height" content="720">
   <meta name="theme-color" content="#1A1A1A">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": "Feedback Kitchen — Your rubric. Your judgement. Done in clicks. (60-second film)",
+    "description": "A 60-second film introducing Feedback Kitchen: build a rubric-based scorer once, grade criterion by criterion, and generate editable feedback drafts — entirely in your browser. Not an autograder — you choose the grades, the tool drafts the feedback.",
+    "thumbnailUrl": [
+      "https://marking.stephendmann.com/film-poster.jpg",
+      "https://i.ytimg.com/vi/nJXzqZ8A5Fo/maxresdefault.jpg"
+    ],
+    "uploadDate": "2026-06-30T22:01:12-07:00",
+    "duration": "PT1M6S",
+    "url": "https://www.youtube.com/watch?v=nJXzqZ8A5Fo",
+    "embedUrl": "https://www.youtube.com/embed/nJXzqZ8A5Fo"
+  }
+  </script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQSJNBBPKZ"></script>
   <script>
@@ -129,11 +150,11 @@
         <a href="builder.html" class="bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl text-lg hover:bg-emerald-600 transition-colors shadow-lg">
           Build a New Scorer
         </a>
-        <a href="/how-to-feedback-kitchen.html" target="_blank" rel="noopener"
+        <a href="#film"
           class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-bold px-8 py-4 rounded-xl text-lg hover:bg-slate-100 transition-colors shadow-lg"
-          aria-label="Watch the 2-minute demo in a new tab">
+          aria-label="Watch the 60-second film — jumps to the video below">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" d="M2 10a8 8 0 1 1 16 0A8 8 0 0 1 2 10Zm6.39-2.908c.18-.103.33-.108.447-.04l4.225 2.45c.117.068.17.182.17.498-.001.316-.053.43-.17.498l-4.225 2.45c-.117.068-.268.063-.447-.04C8.215 12.855 8 12.7 8 12.45v-4.9c0-.25.215-.405.39-.458Z" clip-rule="evenodd" /></svg>
-          Watch a 2-min Demo
+          Watch the 60-second film
         </a>
       </div>
       <p class="mt-5 text-sm text-slate-400">
@@ -147,6 +168,56 @@
       </p>
     </div>
   </section>
+
+  <!-- ── Brand film (click-to-load YouTube facade) ────────── -->
+  <section id="film" aria-label="Feedback Kitchen 60-second film" class="py-16 px-4" style="background:#0c1527; border-bottom:1px solid #1e3050;">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-8">Feedback Kitchen in 60 seconds</h2>
+      <div id="film-facade" class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl bg-black">
+        <button type="button" id="film-play" class="group absolute inset-0 w-full h-full cursor-pointer"
+          aria-label="Play the 60-second Feedback Kitchen film — loads YouTube's privacy-enhanced player">
+          <img src="/film-poster.jpg" alt="" width="1280" height="720" fetchpriority="low"
+            class="absolute inset-0 w-full h-full object-cover">
+          <span class="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" aria-hidden="true"></span>
+          <span class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+            <span class="flex items-center justify-center w-20 h-20 rounded-full bg-white/90 group-hover:bg-white shadow-lg transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#0c1527" width="32" height="32" aria-hidden="true"><path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z" /></svg>
+            </span>
+          </span>
+        </button>
+      </div>
+      <noscript>
+        <p class="text-center text-sm text-slate-300 mt-4">
+          <a href="https://www.youtube.com/watch?v=nJXzqZ8A5Fo" class="underline hover:text-white">Watch the film on YouTube →</a>
+        </p>
+      </noscript>
+      <p class="text-center text-sm text-slate-300 mt-4">
+        This film features an AI-generated presenter. English captions are available via the player's CC button.
+        Pressing play loads the video from YouTube's privacy-enhanced player.
+      </p>
+      <p class="text-center mt-3">
+        <a href="/how-to-feedback-kitchen.html" target="_blank" rel="noopener"
+          class="text-sm font-semibold text-blue-300 hover:text-white transition-colors">
+          Prefer a step-by-step walkthrough? →
+        </a>
+      </p>
+    </div>
+  </section>
+  <script>
+    var filmPlayBtn = document.getElementById('film-play');
+    if (filmPlayBtn) filmPlayBtn.addEventListener('click', function () {
+      var facade = document.getElementById('film-facade');
+      var iframe = document.createElement('iframe');
+      iframe.src = 'https://www.youtube-nocookie.com/embed/nJXzqZ8A5Fo?autoplay=1&rel=0';
+      iframe.title = 'Feedback Kitchen — Your rubric. Your judgement. Done in clicks. (60-second film)';
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.className = 'absolute inset-0 w-full h-full';
+      iframe.style.border = '0';
+      facade.replaceChildren(iframe);
+      iframe.focus();
+    });
+  </script>
 
   <!-- ── Origins / Credibility Strip ──────────────────────── -->
   <section class="bg-white py-10 px-4 border-b border-slate-200">
