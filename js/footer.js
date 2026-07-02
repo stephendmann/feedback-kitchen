@@ -9,7 +9,7 @@
   const COMPACT = `
 <footer class="site-footer site-footer--compact" aria-label="Privacy and support">
   <div class="site-footer__inner">
-    <p><strong>Browser-only by default</strong> &mdash; student data stays on this device unless you export it; the wording assistant strips names &amp; IDs before any text leaves your browser.</p>
+    <p><strong>Browser-only by default:</strong> student data stays on this device unless you export it; the wording assistant strips names &amp; IDs before any text leaves your browser.</p>
     <p>
       <a href="/index.html#acknowledgements">About, backups &amp; credits</a>
       <span aria-hidden="true">&middot;</span>
@@ -36,7 +36,7 @@
       <section class="site-footer__column" aria-labelledby="footer-wording">
         <h3 id="footer-wording">Wording assistant</h3>
         <p>
-          If used, only scrubbed feedback text is sent to the language service &mdash; names and IDs are removed first.
+          If used, only scrubbed feedback text is sent to the language service; names and IDs are removed first.
         </p>
       </section>
 
@@ -61,7 +61,7 @@
         Adapted from the original <em>Feedback Kitchen</em> Excel workbook by
         <strong>Dr Michael Harker, University of Strathclyde</strong>; redesigned as a browser-based application for the
         <strong>University of Waikato</strong>.
-        <span class="site-footer__muted">Built with AI coding assistance (Claude / Anthropic &middot; Perplexity &middot; Microsoft Copilot). The tool itself runs in your browser &mdash; the AI listed here assisted with development only.</span>
+        <span class="site-footer__muted">Built with AI coding assistance (Claude / Anthropic &middot; Perplexity &middot; Microsoft Copilot). The tool itself runs in your browser. The AI listed here assisted with development only. The development team has tested privacy handling, calculations, and site functionality in real-world marking.</span>
       </p>
     </section>
   </div>
