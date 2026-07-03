@@ -33,3 +33,12 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Worktree cleanup
+
+This repo uses per-session Git worktrees for Claude tasks. For monthly cleanup, use `scripts/worktree-gardening.ps1`.
+
+- Report only: `pwsh .\scripts\worktree-gardening.ps1`
+- Apply safe removals: `pwsh .\scripts\worktree-gardening.ps1 -Apply`
+
+The `frosty-babbage` planning worktree is protected and never removed. See the script's comment-based help (`Get-Help .\scripts\worktree-gardening.ps1`) for the full rules and caveats.
