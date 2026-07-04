@@ -35,3 +35,9 @@ scorer.backup.*.html
 
 # Brand-film UI capture output (regenerable, large PNG/MP4)
 capture-out/
+
+# Graphify generated output (knowledge graph cache, analysis, reports)
+graphify-out/
+
+# Claude Code local settings (machine-specific paths, session IDs)
+.claude/settings.local.json
