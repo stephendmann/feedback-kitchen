@@ -782,3 +782,56 @@ Post-ship axe + keyboard audit surfaced 12 violations across `index.html`, `buil
 **Status:** ✅ Approved as temporary workaround — mirror-local decision.
 **Decision:** CSS filter-based dark-mode treatment for the University of Waikato logo (`invert`/`grayscale` filter on `#uow-logo`) is acceptable and deployed. This is a workaround, not an official reversed or dark-background asset; end-state is an asset swap when a suitable file is available from UoW marketing, at which point the workaround CSS is removed. An alternative filter refinement exists in local stash only and is not planned for release unless the live version proves inadequate.
 **See:** ROADMAP.md § UI Polish and Branding Safety — Parked Items.
+
+---
+
+## D17 — KoFi access: trust-based supporter unlock vs automated entitlement
+
+**Date:** 2026-07-06
+**Status:** ⬜ Proposed — awaiting sign-off. Documents a decision already embodied in shipped code (see Note under Recommendation).
+**Author:** Stephen Mann (from a Sonnet 5 AI-usage audit; reviews by Perplexity and StrawberryAI).
+**Owner:** Stephen Mann (product + brand voice).
+
+### Context
+
+FK's paid value-adds — Sonnet-quality wording for the `improve_criterion_body` mode, and PDF-to-scorer import — are gated to KoFi supporters. The gate today is trust-based: a shared supporter-unlock code checked client-side (`upload.html` / `js/converter.js` `checkSupporterAccess()` for PDF import; `scorer.html` for Sonnet, shipped in PR #84 with a server-side model-downgrade guard in `api/garnish.js`). FK holds no record of who has paid — the honesty system is the whole mechanism.
+
+The question: keep that, or move to automated gating that maps a KoFi payment to a per-user entitlement (accounts, a stored payment-to-credential mapping, server-side enforcement)?
+
+This touches FK's core promise. Today FK stores no student names or IDs server-side (`scrubPII` runs client-side before any prompt leaves the browser; the proxy has no database), so "everything stays in this browser" is literally true. Automated KoFi gating would be the first feature to break that: it needs a persistent store of who paid — FK's first genuine PII/financial-data surface.
+
+### Options
+
+**Option A — Trust-based supporter unlock (honesty system).** ← recommended
+- Keep the shared-code unlock already shipped. No accounts, no payment-to-credential mapping, no new service.
+- Pro: no new PII/financial surface; preserves the "everything stays in this browser" promise; aligns with brand principle 5 (privacy-first) and principle 4 (transparent about AI); no new compliance scope (cf. Addendum B).
+- Pro: already implemented and shipped (PR #84 Sonnet gating; `upload.html` PDF unlock) — no further build.
+- Con: freeloading. A non-supporter can share or guess the unlock code and use Sonnet / PDF import without contributing. Exposure is bounded by Sonnet cost per call (audit estimate ~$0.025) and the current small user base.
+
+**Option B — Automated entitlement (payment-to-credential mapping).**
+- Map each KoFi payment to a per-user credential; enforce server-side.
+- Pro: removes the manual/honesty step; hard gate; yields usage data to size future tiers.
+- Con: introduces FK's first persistent PII/financial-data surface — a database, auth, and the privacy/compliance obligations that follow — working directly against the "everything stays in this browser" promise. High build and ongoing-maintenance cost for a small user base.
+- Con: a paywall implies FK is quietly profiling supporter data, undercutting the trust that makes a privacy-first tool credible.
+
+### Recommendation
+
+**Option A.** The trust-based unlock already delivers the commercial hinge (supporters get Sonnet + PDF import) without taking on any of the surface automation would require. The audit's framing is that automated gating is the single change that would most damage FK's privacy posture, for a benefit — hard enforcement — that only matters at a scale FK is not at.
+
+Revisit only if freeloading cost becomes material: sustained Sonnet / PDF-import volume from clearly non-contributing use, or a Sonnet-cost line that outgrows KoFi contributions. FK has no per-supporter usage telemetry today, and adding it is itself a privacy trade-off — so any move toward Option B starts by deciding whether that measurement is worth taking on, not by building accounts.
+
+*Note (scope guard):* the assessment-count / exportable-count telemetry shipped in PR #86 informs a **different** open question — whether the two-pass PDF detect/extract can collapse to a single pass — not this KoFi decision. It is not the trigger for Option B.
+
+### Decision
+
+- [ ] Option A — keep trust-based supporter unlock (recommended)
+- [ ] Option B — build automated entitlement mapping
+
+Signed: _______________________  Date: ____________
+
+### References
+
+- AI-usage audit (Sonnet 5), Objective 1 (KoFi value architecture); Perplexity + StrawberryAI reviews.
+- PR #84 — Sonnet gated to `improve_criterion_body` for unlocked supporters (+ `api/garnish.js` downgrade guard).
+- `upload.html` / `js/converter.js` `checkSupporterAccess()` — existing trust-based PDF-import unlock.
+- Brand principle 5 (privacy-first); D15 locked brand-voice principles; `brand-voice-canon.md`.
