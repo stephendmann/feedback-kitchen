@@ -4378,10 +4378,27 @@
       const effectiveRes = SA.applyGradeOverride(config, scoreResult, overrideRaw);
 
       const final = SA.assembleFinalFeedback(config, effectiveRes, body, {
-        studentName: el('student-name').value
+        studentName: el('student-name').value,
+        lengthMode: getLengthMode()
       });
       el('ai-suggestion').value = final;
-      SA.logAssistantRun({ stage: 'assembled', bodyLen: body.length, finalLen: final.length });
+
+      // Same deterministic, model-independent post-check as the aiAssist
+      // flow above — non-blocking, marker decides whether to act on it.
+      const v = (typeof SA.getLastValidationResult === 'function')
+        ? SA.getLastValidationResult()
+        : null;
+      if (v && !v.ok) {
+        usageTrack('validation_flagged');
+        showValidationBadge(v);
+      } else {
+        hideValidationBadge();
+      }
+
+      SA.logAssistantRun({
+        stage: 'assembled', bodyLen: body.length, finalLen: final.length,
+        flagged: !!(v && !v.ok), issueCount: (v && v.issues) ? v.issues.length : 0
+      });
       setAIState('applied');
     }
 
@@ -4423,7 +4440,7 @@
         if (!log.length) { alert('No runs logged yet.'); return; }
         const lines = log.map(function (e, i) {
           const when = e.ts ? new Date(e.ts).toLocaleString() : '—';
-          return (i + 1) + '. ' + when + ' | ' + (e.stage || e.via || '?') + (e.model ? ' | ' + e.model : '') + (e.replyChars ? ' | ' + e.replyChars + ' chars' : '');
+          return (i + 1) + '. ' + when + ' | ' + (e.stage || e.via || '?') + (e.model ? ' | ' + e.model : '') + (e.replyChars ? ' | ' + e.replyChars + ' chars' : '') + (e.flagged ? ' | ⚠ ' + e.issueCount + ' flag' + (e.issueCount === 1 ? '' : 's') : '');
         });
         alert('Last ' + log.length + ' run(s):\n\n' + lines.join('\n'));
       } catch (e) { alert('Could not read log.'); }
@@ -4566,7 +4583,10 @@
         const editCount = approxLineEdits(el('feedback-text').value, final);
         setAIState('applied', editCount);
 
-        SA.logAssistantRun({ stage: 'assistant', mode, bodyLen: body.length });
+        SA.logAssistantRun({
+          stage: 'assistant', mode, bodyLen: body.length,
+          flagged: !!(v && !v.ok), issueCount: (v && v.issues) ? v.issues.length : 0
+        });
       } catch (err) {
         setAIState('error');
         alert('Network error: ' + (err && err.message ? err.message : err));

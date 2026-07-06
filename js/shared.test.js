@@ -182,6 +182,30 @@ describe('validateAIBody', () => {
     const result = SA.validateAIBody(body, { lengthMode: 'standard' });
     expect(result.ok).toBe(true);
   });
+
+  test('flags a banned filler phrase regardless of model behaviour', () => {
+    const SA = loadShared();
+    const body = 'Argument – 5 / 10\nThe argument needs work and lacks depth overall. Support your claim with a named source.';
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(false);
+    expect(result.issues[0].messages.join(' ')).toMatch(/contains banned phrase/);
+    expect(result.issues[0].bannedPhrases).toEqual(expect.arrayContaining(['needs work', 'lacks depth']));
+  });
+
+  test('banned-phrase match is case-insensitive', () => {
+    const SA = loadShared();
+    const body = 'Argument – 5 / 10\nThis Could Be Improved with more named evidence. Support your claim with a named source.';
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(false);
+    expect(result.issues[0].bannedPhrases).toContain('could be improved');
+  });
+
+  test('does not flag a body with no banned phrases', () => {
+    const SA = loadShared();
+    const body = 'Argument – 5 / 10\nThe argument is well supported by named sources. Add one counterexample to the second paragraph.';
+    const result = SA.validateAIBody(body, { lengthMode: 'standard' });
+    expect(result.ok).toBe(true);
+  });
 });
 
 describe('audience mode group-named', () => {

@@ -760,9 +760,7 @@
         '\n  State the action only. Do NOT explain why it matters.' +
 
         '\n\nBANNED PHRASES (do not use unless immediately followed by a specific named change):' +
-        '\n  "could be improved", "would benefit from", "more rigour", "deeper analysis",' +
-        '\n  "stronger argument", "clearer structure", "better evidence", "more detail",' +
-        '\n  "needs work", "lacks depth".' +
+        '\n  ' + BANNED_PHRASES.map(function (p) { return '"' + p + '"'; }).join(', ') + '.' +
 
         '\n\nADDITIONAL RULES:' +
         '\n  • Do NOT reuse the same imperative verb across more than two criteria.' +
@@ -1046,6 +1044,15 @@
   ─────────────────────────────────────────────────────────────── */
   const VALID_ACTION_VERBS = ['Add', 'Clarify', 'Compare', 'Link', 'Proofread', 'Replace', 'Restructure', 'Support'];
 
+  // Single source of truth for the banned-filler-phrase list — used both in
+  // the prompt text (buildAIAssistPrompt) and the deterministic post-check
+  // (validateAIBody), so the two never drift apart.
+  const BANNED_PHRASES = [
+    'could be improved', 'would benefit from', 'more rigour', 'deeper analysis',
+    'stronger argument', 'clearer structure', 'better evidence', 'more detail',
+    'needs work', 'lacks depth'
+  ];
+
   function _splitSentences(text) {
     if (!text) return [];
     // Split on . ? ! followed by space/end. Crude but workable.
@@ -1107,6 +1114,15 @@
         blockIssues.push('exceeds ' + lengthMode + ' word cap (' + words + ' > ' + wordCap + ')');
       }
 
+      // 4. Banned filler phrases (case-insensitive substring match; the model
+      // is model-independent here — this check does not rely on the LLM
+      // having followed the BANNED PHRASES instruction in the prompt).
+      const lowerBody = body.toLowerCase();
+      const foundBanned = BANNED_PHRASES.filter(function (p) { return lowerBody.indexOf(p) !== -1; });
+      if (foundBanned.length) {
+        blockIssues.push('contains banned phrase' + (foundBanned.length > 1 ? 's' : '') + ': "' + foundBanned.join('", "') + '"');
+      }
+
       if (blockIssues.length) {
         issues.push({
           index: idx,
@@ -1114,12 +1130,13 @@
           sentences: sentences.length,
           words: words,
           firstActionWord: firstWord,
+          bannedPhrases: foundBanned,
           messages: blockIssues
         });
       }
     });
 
-    // 4. Verb overuse — same verb on >2 criteria
+    // 5. Verb overuse — same verb on >2 criteria
     const overused = Object.keys(verbCounts).filter(function (v) { return verbCounts[v] > 2; });
 
     return {
@@ -1369,7 +1386,7 @@
     computeScores, generateFeedbackText, formatScore, rubricVersionHash, detectRubricDrift,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
-    validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS,
+    validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS, BANNED_PHRASES,
     getLastValidationResult, stripValidationMarkers,
     loadSnippets, logAssistantRun, clearAssistantLog,
     // Deprecated aliases
