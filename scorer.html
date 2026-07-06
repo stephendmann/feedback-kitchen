@@ -926,8 +926,11 @@
               <div class="panel panel-suggestion">
                 <h3 class="text-sm font-semibold text-violet-800 mb-1">Suggested wording (you can edit or ignore this)</h3>
                 <p class="text-xs text-slate-500 mb-2">Click an action above to generate a suggestion. Your draft above is untouched until you replace or insert.</p>
-                <!-- Validation badge: marker-only. Hidden by default. -->
-                <div id="validation-badge" class="hidden mb-2 text-xs px-2 py-1 rounded bg-amber-50 border border-amber-200 text-amber-900">
+                <!-- Validation badge: marker-only. Hidden by default.
+                     role="status" + aria-live="polite" (FK-13 pattern, WCAG
+                     2.1 AA 4.1.3) so screen-reader markers hear the flag
+                     when it appears, not just see it. -->
+                <div id="validation-badge" role="status" aria-live="polite" aria-atomic="true" class="hidden mb-2 text-xs px-2 py-1 rounded bg-amber-50 border border-amber-200 text-amber-900">
                   <span class="font-semibold">Marker note:</span>
                   <span id="validation-badge-text"></span>
                   <button type="button" class="ml-2 text-amber-700 underline" onclick="S.toggleValidationDetails()">details</button>
@@ -5093,7 +5096,19 @@
        leaking technical text into student-facing output. The
        suggestion textarea always shows clean text; the badge
        is a separate visual element above it.
+
+       FK-13 pattern (WCAG 2.1 AA 4.1.3 Status Messages): the badge
+       carries role="status" + aria-live="polite" in markup so screen
+       readers hear the flag when it appears, not just see it.
+       _lastValidationAnnouncement de-dupes so an unrelated re-render
+       with the identical message doesn't announce twice, but a
+       genuine re-trigger from a hidden state (hideValidationBadge
+       resets it) still gets a fresh announcement — same convention
+       as _announceScoreResult's clear-then-set, adapted for a
+       click-triggered (not chatty/per-keystroke) element, so no
+       debounce timer is needed here.
     ─────────────────────────────────────────────────────────── */
+    let _lastValidationAnnouncement = '';
     function showValidationBadge(result) {
       const badge = document.getElementById('validation-badge');
       const text  = document.getElementById('validation-badge-text');
@@ -5104,7 +5119,12 @@
       const summary = [];
       if (flagCount) summary.push(flagCount + ' criterion ' + (flagCount === 1 ? 'flag' : 'flags'));
       if (overuse)   summary.push((result.overusedVerbs || []).join('/') + ' overused');
-      text.textContent = ' Suggestion has ' + (summary.join(', ') || 'minor issues') + '. Review before sending.';
+      const msg = ' Suggestion has ' + (summary.join(', ') || 'minor issues') + '. Review before sending.';
+      // De-dupe: an identical message already live gets cleared first so a
+      // genuine repeat still re-announces instead of being silently dropped.
+      if (msg === _lastValidationAnnouncement) text.textContent = '';
+      _lastValidationAnnouncement = msg;
+      text.textContent = msg;
       det.textContent = (result.issues || []).map(function (i) {
         return '• ' + i.criterion + ': ' + (i.messages || []).join('; ');
       }).join('\n') + (overuse ? '\n• verb overuse: ' + result.overusedVerbs.join(', ') : '');
@@ -5114,6 +5134,7 @@
     function hideValidationBadge() {
       const badge = document.getElementById('validation-badge');
       if (badge) badge.classList.add('hidden');
+      _lastValidationAnnouncement = '';
     }
     function toggleValidationDetails() {
       const det = document.getElementById('validation-badge-details');
