@@ -177,6 +177,18 @@
       clearLoadingState();
       renderAssessmentList();
 
+      // Anonymous count only — no file name, no document content, no
+      // identifiers. Answers one question: how many exportable assessments
+      // does a typical manual contain? Informs the single-pass-extraction
+      // decision (see fk-decisions.md D17) without adding new infrastructure;
+      // reuses the same GA property already loaded on every other FK page.
+      if (typeof gtag === 'function') {
+        gtag('event', 'manual_detect_count', {
+          event_category: 'engagement',
+          value: state.assessments.length
+        });
+      }
+
     } catch (err) {
       clearLoadingState();
       showGlobalError(err.message || 'Detection failed. Please try again.');
