@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-06-23): Safe to implement now: 1 (FK-41) · Needs inspection: 0 · Backlog: 2 (FK-15 · FK-16) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. **Next free card ID: FK-42.** *(FK-39 + FK-40 are **reserved** for the deferred accordion / View Transitions animation slices — not yet carded; FK-41 is the Inter-preconnect-residuals card added below 2026-06-23. The earlier "Next free: FK-39" reading was stale — it ignored those two reservations.)* *(Latest: FK-41 carded 2026-06-23 (Inter preconnect residuals, FK-22 follow-on). Prior: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20; FK-37 #61 rounding control shipped 2026-06-16.)*
+Column counts (2026-07-06): Safe to implement now: 1 (FK-41) · Needs inspection: 0 · Backlog: 3 (FK-15 · FK-16 · FK-42) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. **Next free card ID: FK-43.** *(FK-39 + FK-40 are **reserved** for the deferred accordion / View Transitions animation slices — not yet carded; FK-41 is the Inter-preconnect-residuals card added below 2026-06-23. The earlier "Next free: FK-39" reading was stale — it ignored those two reservations.)* *(Latest: FK-42 carded 2026-07-06 (legacy #sec-ai unreachable AI log viewer, PR #83 QA follow-on). Prior: FK-41 carded 2026-06-23 (Inter preconnect residuals, FK-22 follow-on). Prior: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20; FK-37 #61 rounding control shipped 2026-06-16.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -63,6 +63,16 @@ Column counts (2026-06-23): Safe to implement now: 1 (FK-41) · Needs inspection
 - **Risk:** Low-medium — visual drift during migration; screenshot baselines + full-coverage a11y harness mitigate.
 - **DoD:** watch task ✓ (slice shipped 2026-06-12, PR #21); migration policy written (new styles → tokens/Tailwind only; shared.css frozen, shrink-on-touch; run `build:css` before committing the artifact — watch output is unminified); screenshot diffs clean.
 - **Column:** Backlog. **Priority:** P3. **Effort:** M amortized.
+
+### FK-42 · Legacy `#sec-ai` assistant section permanently hidden (unreachable AI log viewer + manual-paste UI)
+- **Rationale:** In `scorer.html`, `<details id="sec-ai" style="display:none">` is never un-hidden. The "Open legacy assistant ↓" link only sets `.open = true`, which does not override an inline `display:none`, so the section stays invisible in the shipped app. Its controls — the manual-paste assistant UI and the "View local log" / "Clear log" buttons — are dead, unreachable markup.
+- **Evidence:** O — found during PR #83 (`feat/prompt-salience-hygiene`) QA. PR #83 relocated the new validation badge out of this section into the visible suggestion panel; the log-viewer controls were left behind.
+- **Impact:** The PR #83 post-check guard writes violation entries to `SA_AI_LOG` via `logAssistantRun` (shared.js ~1136) so failures are meant to be "inspectable in the existing log viewer" — but markers cannot reach that viewer, so that half of the guard's promise is undelivered. The badge (guard's primary marker-facing signal) is unaffected.
+- **Options:** (a) clear the inline `display:none` when the toggle opens; (b) relocate "View local log" / "Clear log" into the visible "Suggested wording" panel and drop the rest; (c) delete the dead markup if fully superseded. Prefer the smallest change that makes the `SA_AI_LOG` viewer reachable.
+- **Dependencies:** none; follow-on from PR #83. Also spawned as a background task (`task_8aa5f011`).
+- **Risk:** Low — scoped UI-wiring change; verify no visual regression in the visible panel.
+- **DoD:** a marker can open the log viewer and see a guard-flagged entry end-to-end; dead markup restored, relocated, or removed; regression guard added; jest green; axe 0.
+- **Column:** Backlog. **Priority:** P2. **Effort:** S.
 
 ---
 
