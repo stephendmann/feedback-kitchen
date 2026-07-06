@@ -39,6 +39,20 @@
     if (p && state.credPass) p.value = state.credPass;
   }
 
+  // Same "supporter unlocked" signal as upload.html's checkSupporterAccess() —
+  // presence of the shared credential pair, not a separate entitlement check.
+  // convert.html can be reached directly (not only via the upload.html card),
+  // so it needs its own copy of the locked/unlocked framing.
+  function checkSupporterAccess() {
+    const unlocked = !!(localStorage.getItem(FK_USER_KEY) && localStorage.getItem(FK_PASS_KEY));
+    const locked   = document.getElementById('pdf-locked-section');
+    const bLocked  = document.getElementById('pdf-badge-locked');
+    const bUnlocked= document.getElementById('pdf-badge-unlocked');
+    if (locked)    locked.classList.toggle('hidden', unlocked);
+    if (bLocked)   bLocked.classList.toggle('hidden', unlocked);
+    if (bUnlocked) bUnlocked.classList.toggle('hidden', !unlocked);
+  }
+
   function saveCreds() {
     const u = document.getElementById('cred-user');
     const p = document.getElementById('cred-pass');
@@ -176,6 +190,9 @@
       state.assessments = data.assessments || [];
       clearLoadingState();
       renderAssessmentList();
+      // Credentials are proven valid now (the API accepted them) — flip the
+      // badge/locked-section state rather than trusting typed-but-unverified input.
+      checkSupporterAccess();
 
     } catch (err) {
       clearLoadingState();
@@ -597,7 +614,7 @@
 
   // ── Public API ───────────────────────────────────────────────
   window.CONV = {
-    init:            function () { loadCreds(); },
+    init:            function () { loadCreds(); checkSupporterAccess(); },
     handleDragOver:  handleDragOver,
     handleDragLeave: handleDragLeave,
     handleDrop:      handleDrop,
