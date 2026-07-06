@@ -4,7 +4,7 @@ Working board. Card IDs are stable — refer to them in commits/notes as `[FK-xx
 Evidence types: **O** = Observed (screenshot/repo), **I** = Inferred, **U** = Unknown.
 Inspection refs point to `INSPECTION.md` items (INS-x).
 
-Column counts (2026-07-06): Safe to implement now: 1 (FK-41) · Needs inspection: 0 · Backlog: 3 (FK-15 · FK-16 · FK-42) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. **Next free card ID: FK-43.** *(FK-39 + FK-40 are **reserved** for the deferred accordion / View Transitions animation slices — not yet carded; FK-41 is the Inter-preconnect-residuals card added below 2026-06-23. The earlier "Next free: FK-39" reading was stale — it ignored those two reservations.)* *(Latest: FK-42 carded 2026-07-06 (legacy #sec-ai unreachable AI log viewer, PR #83 QA follow-on). Prior: FK-41 carded 2026-06-23 (Inter preconnect residuals, FK-22 follow-on). Prior: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20; FK-37 #61 rounding control shipped 2026-06-16.)*
+Column counts (2026-07-06): Safe to implement now: 1 (FK-41) · Needs inspection: 0 · Backlog: 4 (FK-15 · FK-16 · FK-42 · FK-43) · Ready to document: 1 (FK-10, fully closed) · In progress: 0 · Shipped: 37 · others: 0. **Next free card ID: FK-44.** *(FK-39 + FK-40 are **reserved** for the deferred accordion / View Transitions animation slices — not yet carded; FK-41 is the Inter-preconnect-residuals card added below 2026-06-23. The earlier "Next free: FK-39" reading was stale — it ignored those two reservations.)* *(Latest: FK-43 carded 2026-07-06 (text-slate-400 aside contrast + axe coverage gap, PR #85 QA follow-on). Prior: FK-42 carded 2026-07-06 (legacy #sec-ai unreachable AI log viewer, PR #83 QA follow-on); FK-41 carded 2026-06-23 (Inter preconnect residuals, FK-22 follow-on). Prior: FK-38 #66 (micro-interactions animation polish — slice 1 of 3) shipped 2026-06-20; FK-37 #61 rounding control shipped 2026-06-16.)*
 
 > Board pruned 2026-06-12 at the Phase-1 refresh: shipped cards are one-line
 > tombstones in **Shipped** below. Full card history: git log of this file and
@@ -72,6 +72,15 @@ Column counts (2026-07-06): Safe to implement now: 1 (FK-41) · Needs inspection
 - **Dependencies:** none; follow-on from PR #83. Also spawned as a background task (`task_8aa5f011`).
 - **Risk:** Low — scoped UI-wiring change; verify no visual regression in the visible panel.
 - **DoD:** a marker can open the log viewer and see a guard-flagged entry end-to-end; dead markup restored, relocated, or removed; regression guard added; jest green; axe 0.
+- **Column:** Backlog. **Priority:** P2. **Effort:** S.
+
+### FK-43 · `text-slate-400` aside contrast fails AA (+ confirm convert.html is in the axe harness)
+- **Rationale:** convert.html carries a "serious" colour-contrast violation on its `text-slate-400` aside text — below WCAG AA. The repo holds an axe-0 line per card, so a serious violation surviving on `main` also points at an **axe coverage gap** (either convert.html isn't scanned, or these asides sit outside the scanned region).
+- **Evidence:** O — found during PR #85 (`feat/convert-consent-kofi`) QA; axe confirmed the violation is present on `main` **before** that change (same lines, same `text-slate-400` classes), so it is pre-existing, not introduced. Live on the deployed site now.
+- **Scope:** (1) bump the offending asides to an AA-clearing token (`text-slate-500`/`-600` on their background); (2) grep for the same `text-slate-400`-on-light pattern across the other pages (index/scorer/builder/upload) and fix any that recur; (3) confirm convert.html (and any missed page) is actually in the axe test harness so this class of gap can't reappear silently.
+- **Dependencies:** none; follow-on from PR #85. Purely presentational + test-coverage.
+- **Risk:** Low — token swap; screenshot-diff to confirm no unintended visual drift.
+- **DoD:** axe 0 on convert.html and every page touched; contrast ≥ AA on the fixed asides; axe harness demonstrably covers the affected pages; jest green.
 - **Column:** Backlog. **Priority:** P2. **Effort:** S.
 
 ---
