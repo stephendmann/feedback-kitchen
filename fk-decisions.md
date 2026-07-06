@@ -370,6 +370,7 @@ The Phase 4 brief's "Take 10% from each" wording was illustrative. Literal flat-
 | **C** | Schema versioning convention | Phase 3 v1.0.1 patch | `schemaVersion: "1.0"` as first field of `persistedShape()`. 18 bytes per entity, free forward-compat for v1.1 folder adapter. |
 | **D** | C4 redistribution lock (proportional) | Phase 4 Pass 2 (2026-05-16) | D5 above. Both sides signed: CD via Pass 2 bundle + `PHASE-4-MERGED.md`; mirror via `phase-4-pass-2-validation.md`. Phase 5 housekeeping pickup explicitly captured: `fk-rubric-editor-v1.html` narrative spec to be extracted from `behaviours.js` header docblock as a post-merge artefact (non-gating, extraction-only — no new content beyond Pass 2 doc set). |
 | **E** | Folder-as-storage adapter contract (v1.1) | Phase 6 Pass 1 — ✅ both sides signed 2026-05-16 | Implementation-shape contract for FolderAdapter. 5-method surface (get/set/del/list/stat); ETag-on-load conflict resolution; banner + localStorage fallback permission-renewal UX; kitchen-config.json schema; migration and OOS. Supersedes `fk-marking-interactions-v1-addendum-storage.md`. |
+| **F** | Improvement-programme Phase 0 decisions (2026-06) | 2026-06-11 — solo-maintainer track | Three validated decisions from the 2026-06 architecture-assessment improvement programme (a different "Phase 0" from this document's title): F.1 characterization-tests-first for the scoring functions; F.2 de-letter sections/navigation; F.3 reorder sections to the marking task sequence. Full text at the end of this document; planning trail snapshot at `docs/planning-202606/`. |
 
 ---
 
@@ -546,6 +547,13 @@ Align on next pass or leave — does not affect contract.
 
 **Status:** Open — does not gate P0/P1. Can land in any Phase 6 bundle.
 **Source:** Phase 5 mirror decision (excluded from Pass 2 scope); CD scoping triage 2026-05-16.
+
+> **Cross-reference (2026-06-12, improvement-programme FK-17):** the *live-app*
+> `region` violations (index.html, builder.html, scorer.html — page chrome,
+> rails, banners, action bars) were cleared by the FK-17 WCAG AA pass and are
+> now guarded by the full-coverage local axe harness (demo-loaded scorer).
+> D8's own scope — the preview-component surfaces (modals, legends, callouts,
+> inner cards) — remains open and unsigned; this note narrows, not closes, it.
 
 ### Context
 
@@ -782,6 +790,322 @@ Post-ship axe + keyboard audit surfaced 12 violations across `index.html`, `buil
 **Status:** ✅ Approved as temporary workaround — mirror-local decision.
 **Decision:** CSS filter-based dark-mode treatment for the University of Waikato logo (`invert`/`grayscale` filter on `#uow-logo`) is acceptable and deployed. This is a workaround, not an official reversed or dark-background asset; end-state is an asset swap when a suitable file is available from UoW marketing, at which point the workaround CSS is removed. An alternative filter refinement exists in local stash only and is not planned for release unless the live version proves inadequate.
 **See:** ROADMAP.md § UI Polish and Branding Safety — Parked Items.
+
+---
+
+## Addendum F — Improvement-programme Phase 0 decisions (2026-06)
+
+**Track:** 2026-06 architecture-assessment improvement programme (planning
+worktree board) — distinct from the CD-project "Phase 0" this document's title
+refers to. Planning trail snapshot: `docs/planning-202606/` (DECISIONS.md,
+BOARD.md, INSPECTION.md).
+**Status:** recorded, solo-maintainer track. Each decision below ran its
+planning-register validation step before promotion; outcomes are quoted. No
+new global D-numbers — subsections are addendum-scoped (F.1–F.4) to avoid
+colliding with the legacy D-series.
+
+### F.1 — Characterise the scoring functions before any feature work *(planning D-01)*
+
+**Decision.** Grade arithmetic gets a characterization-test net before any
+behavioural change ships. Tests assert what the code *does*, not what it
+should do; surprises are ledgered (planning INS-4) and triaged — never fixed
+inside the test commit.
+
+**Rationale.** Grade arithmetic is the product's licence to exist; until this
+programme, the Jest suite covered only AI-wording post-processing — zero
+score-math tests.
+
+**Validation outcome (2026-06-11).** `js/score-grade.test.js`: 75 tests over
+`scoreToGrade` / `scoreToGradeFromScale` — every NZ band boundary (floor,
+±0.01), custom scales (shuffled, sparse, floored), malformed input. All passed
+on first run; **zero source changes needed** (both functions were already
+exported). Five surprises ledgered (INS-4 S-1…S-5): one latent crash
+(empty/null gradeScale → TypeError, unreachable in normal flow), four
+intended/benign coercion behaviours. None affect normal-path correctness.
+Suite 98/98.
+
+**Consequences.** FK-09 (engine boundary hardening) inherits the S-1/S-4/S-5
+guard decisions as interface-contract items. The no-silent-fixes rule is
+standing policy for future characterization work.
+
+**Refs.** planning D-01 · FK-01 · INS-3, INS-4.
+
+### F.2 — De-letter sections and navigation *(planning D-02)*
+
+**Decision.** Section identity is the plain name ("Student", "Rubric scores",
+"Penalty & grade override", …). The A–G letter badges are removed from step
+badges, onboarding banner, nav rail, and the letter-keyed CSS hooks
+(`data-rail` re-keyed to section slugs). Letters do not return.
+
+**Rationale.** Letters re-decay on every structural change — observed twice
+before the decision (focus mode replaced B·Rubric; the page carried a
+*duplicate F*: wording assistant and Finish) and the onboarding banner taught
+sections that no longer matched. Names don't decay.
+
+**Validation outcome (2026-06-11).** Repo-wide grep: letter references were
+confined to scorer.html (plus one stale REVIEW.md checklist); the how-to page
+and README carried no load-bearing letters. One load-bearing code reference —
+focus-mode CSS hiding rail entries by letter — was re-keyed to slugs *before*
+markup changes. Landed with FK-02/FK-03; runtime-validated (focus enter/exit,
+rail, banner); a11y baseline diff clean (one pre-existing violation removed).
+
+**Consequences.** brand-voice-canon.md gained §7 (UI control casing: sentence
+case). FK-05's reorder no longer interacts with navigation labelling.
+
+**Refs.** planning D-02 · FK-02, FK-03 · INS-9.
+
+### F.3 — Reorder sections to the marking task sequence *(planning D-05)*
+
+**Decision.** Page order follows the marker's task order: Student → Rubric /
+Focus marking → Penalty & grade override → Feedback draft → Notes → Finish →
+Cohort. Penalty/override no longer renders above the marking blocks.
+
+**Rationale.** Marker task order is score-then-penalise; the old layout forced
+a per-student visual skip and put override UI in view before grading (anchoring
+risk).
+
+**Validation outcome (2026-06-11).** Pre-flight inspection (planning INS-9)
+found zero positional DOM lookups — focus navigation is criterion-indexed and
+order-independent — so the move was a markup splice plus banner re-match; the
+rail was already in target order. Runtime battery (focus nav, expand/collapse-
+all, penalty → recalculate → sticky bar) and a11y baseline diff clean.
+
+**Consequences.** Section order is confirmed non-load-bearing; future reorders
+need only the INS-9 grep set re-run as a guard.
+
+**Refs.** planning D-05 · FK-05 · INS-9, INS-3.
+
+### F.4 — Harden the scoring-engine boundary *(FK-09)*
+
+**Decision.** The scoring engine takes explicit args — one DOM-read site
+(`readScoringInputs()`) feeds it; no DOM reads remain in the score path.
+Boundary guards land the INS-4 contract items deliberately: S-1 invalid/empty
+`gradeScale` falls back to NZ defaults (was: TypeError); S-4 numeric override
+is `Number()`-coerced explicitly, non-numeric strings rejected; S-5 no upper
+cap on numeric override is the **documented contract**, not an omission.
+
+**Validation outcome — local (2026-06).** Merged via PR #25
+(`fk09-engine-boundary`). `js/score-engine.test.js`: 40 headless edge-case
+tests over the engine (override × penalty × rounding modes); characterization
+suite green pre/post each guard commit.
+
+**Validation outcome — production (2026-06-13, agentic-browser run).** Full
+fixture entered on the live scorer; every value read back from the DOM:
+
+- *Weighted scores* (read from `#weighted-0`…`#weighted-4`, the WEIGHTED
+  column — note `final-score-X` is the FINAL /100 midpoint column, a
+  read-back trap for future probes): 23.1 / 15.9 / 11.6 / 15.9 / 13.9 — all
+  match the validated local run. Per-criterion numeric override (58 on
+  Organisation & structure) applied correctly.
+- *Totals:* pre-penalty 80.4/100; after 2-day late penalty 60.4; final letter
+  grade B with override applied. Production-identical to local.
+- *Guard S-4:* alpha string ("XXXX") in the override input rejected silently —
+  value reverted to empty, grade midpoint used, total held at 80.4. Numeric
+  999 accepted without clamp and total rose to 307.1, no crash — confirming
+  the S-5 no-cap contract as documented.
+- *Guard S-1 (inferred):* engine state not introspectable in production
+  (module pattern, no global); A midpoint 92.5 and B midpoint 79.5 observed,
+  consistent with NZ default thresholds in effect.
+- *UI sanity:* Regenerate feedback and View list both functional; zero
+  console errors across the entire run.
+
+**Consequences.** FK-09 closes: merged, locally tested, production-verified.
+The S-5 no-cap behaviour is now observed in production as well as documented —
+any future decision to clamp is a contract change, not a bug fix. Production
+DOM probes should target `#weighted-N` for weighted scores.
+
+**Refs.** PR #25 · FK-09 · INS-3, INS-4 (S-1, S-4, S-5) · F.1.
+
+## Addendum G — Improvement-programme Phase 2 outcomes (2026-06)
+
+**Track:** same 2026-06 improvement programme as Addendum F; promoted at the
+post-Phase-2 checkpoint (FK-20 session, 2026-06-13). Planning trail snapshot
+refreshed the same day: `docs/planning-202606/`. Addendum-scoped numbering
+(G.1–G.2); no new global D-numbers. FK-09, Phase 2's first item, was promoted
+early with its production verification — see **F.4**.
+
+### G.1 — Cohort records re-open into the live session *(FK-07, planning D-03)*
+
+**Decision.** The cohort is a workbench, not a write-only log. One inverse
+load function (`loadCohortRecordIntoSession`) restores a saved record into the
+marking session; the View list gains a per-record **Open** action; an
+unsaved-work guard prompts before replacing a session that has ungraded-out
+work. **Loader ordering contract:** generate the baseline feedback from the
+restored grades *first*, then restore the saved draft text over it — this is
+what lets manual feedback edits survive the merge path. The ordering is
+load-bearing; do not "simplify" it.
+
+**Rationale.** The biggest workflow gap vs the ideal marking loop: records
+were exportable but not re-enterable, so any post-save fix meant re-keying the
+student. INS-1 established there was no hidden re-edit path to conflict with,
+and that the store was already full-fidelity and update-in-place keyed
+(`sid:`/`name:`) — so re-entry cost one function, not a store rework.
+
+**Validation outcome (2026-06-13).** PR #29 merged; full DoD battery in dev
+(load → edit → re-save → no duplication; guard paths; drift cross-check
+between record and live rubric) and verified on the production deploy. One
+edge ledgered, not fixed: renaming a student whose sibling shares the
+identifier tuple — carried on FK-19's card.
+
+**Consequences.** FK-19 (Moodle offline-grading-worksheet round-trip) builds
+directly on this queue and supersedes FK-07's class-list-import stretch goal.
+Draft persistence (FK-21) must reconcile with the loader ordering contract and
+the session fingerprint.
+
+**Refs.** planning D-03 · FK-07 · INS-1 · PR #29.
+
+### G.2 — Persistent collapsed draft pane in focus mode *(FK-14, planning D-04)*
+
+**Decision.** Focus mode always shows the assembled student-facing draft as a
+**collapsed single-line strip** below the criterion navigation: live line/word
+counts plus a tail preview of the last criterion block written (taken from
+above `TOTAL SCORE:` — everything below it is static once generated). It
+expands inline to a read-only mirror. **Collapsed-by-default contract:** the
+pane re-collapses on every focus-mode entry; its open state is a per-look
+choice — deliberately excluded from section-state persistence and from
+Expand/Collapse-all. Making the open state persistent is a design change that
+revisits this entry, not a tweak.
+
+**Rationale.** The draft accumulated invisibly behind an "Open full draft"
+button; tone/repetition drift surfaced only if the marker remembered to look.
+The recorded risk was that any pane works against focus mode's
+noise-reduction purpose — the mitigation hypothesis (collapsed by default,
+glanceable signal, expansion on demand) was validated by prototype before the
+go decision.
+
+**Validation outcome (2026-06-13).** Prototype self-test across a full
+5-criterion mark on the demo scorer: counts verified against the actual draft
+text; tail updates per keystroke; mirror never stale (synced unconditionally);
+re-collapse on exit/re-entry and survival of Expand-all confirmed; collapsed
+cost ≈35 px against a ~672 px workspace. Jest 140/140; a11y battery 0
+violations. GO decided same sitting; PR #30 merged + production-verified.
+Calibration note: the word count can stay flat across a grading because the
+outro re-words as the overall tier changes — the counts are a coarse signal,
+not a precision one.
+
+**Consequences.** The old peek button/panel is gone (`focusToggleFullDraft`
+removed from the public `S` surface). Night-mode follow-up PR #31 fixed the
+`#focus-body[disabled]` white-box (inline ID selector out-specifying the dark
+sheet's class rules) and added dark variants for grade-badge/tier-pill tint
+classes and `.btn-danger`; remaining light tint chips and the dead
+`?cinematic=1` stylesheet link are carried on FK-22's card.
+
+**Refs.** planning D-04 · FK-14 · PR #30, PR #31 · F.3 (section layout) · F.4.
+
+## Addendum H — Improvement-programme Phase 3 outcomes (2026-06)
+
+**Track:** same 2026-06 improvement programme as Addenda F and G; promoted at the
+second promotion checkpoint (2026-06-13). Planning trail snapshot:
+`docs/planning-202606/` (INSPECTION.md INS-5–8). Addendum-scoped numbering (H.1);
+no new global D-numbers. The Phase-3 sweep also shipped FK-23(A) (PR #35) and
+FK-11 (PR #37), and left FK-12 / FK-13 Safe-to-implement; this addendum records
+the one item that resolved to a *decision* — FK-10's storage verdict. FK-24, the
+action half of that verdict, is captured under H.1.
+
+### H.1 — localStorage: harden the writes, defer the migration *(FK-10, gated by INS-5)*
+
+**Decision.** FK-10 resolves **GO split**, not as a single migration. localStorage
+stays the v1 storage backend; the quota-bearing writes are hardened now, and the
+larger IndexedDB migration is deferred rather than carded.
+
+- **Harden now → FK-24 (shipped, PR #36):** `try`/`catch` around the cohort-save /
+  config / draft `setItem` writes; `QuotaExceededError` surfaced to the marker
+  instead of propagating uncaught; and the `downloadExcel` export path fixed so a
+  mid-export failure no longer risks losing cohort state.
+- **Defer → full IndexedDB-behind-`SessionStore` migration.** No card opened —
+  capacity headroom makes it non-urgent. A fresh ID is assigned only if usage or
+  telemetry later warrants. **ID-collision note:** INS-5's method text named a
+  provisional "FK-17" for this migration, but FK-17 is already the
+  axe-remediation card (see D8 / INS-8); the migration must **not** reuse that ID.
+
+**Rationale.** INS-5 measured both halves of its decision rule and they disagreed:
+capacity *passes* (a 300-record cohort projects comfortably under the ~5 MB origin
+budget, so the "<40% of quota" test is met), but failure-handling *fails* — the
+`setItem` writes were unguarded, so a quota error would surface as an uncaught
+throw, and `downloadExcel` carried a data-loss hazard on mid-export failure.
+Because capacity alone doesn't force a migration but the failure modes were
+genuinely unsafe, the right move was to fix the safety gap immediately and defer
+the storage-engine change until there's a usage reason for it.
+
+**Validation outcome (2026-06-13).** Capacity figures and the unguarded-write /
+`downloadExcel` hazards established in INS-5 (`docs/planning-202606/INSPECTION.md`).
+FK-24 merged via PR #36 with the three hardening changes above; FK-10 closes as
+GO-split.
+
+**Consequences.** localStorage is confirmed as the v1 backend with hardened writes.
+The IndexedDB/`SessionStore` migration is a future, unscheduled card needing a
+fresh ID (not FK-17). Any later decision to migrate revisits this entry.
+
+**Refs.** FK-10 · FK-24 (PR #36) · INS-5 · D8 / INS-8 (FK-17 collision) ·
+`fk-project-overview.md` § Storage capacity and write-hardening.
+
+---
+
+## Addendum I — Cohort-action grouping and rubric-version provenance (2026-06)
+
+**Track:** same 2026-06 improvement programme as Addenda F–H. Promoted to close the
+two remaining ☑ planning decisions not yet folded into this ADR (D-06, D-09).
+Addendum-scoped numbering (I.1, I.2); no new global D-numbers. Both decisions had
+already shipped before this promotion — this records the locked outcomes.
+
+### I.1 — Cohort actions: isolate the destructive one, keep the configure/run split *(FK-06, FK-08, planning D-06)*
+
+**Decision.** The cohort action row keeps two deliberate properties: (1) the
+destructive "Clear cohort" is visually isolated with danger styling and a
+double-confirm guard; (2) the moderation-export controls stay a **configure (opt-in)
+vs run** pair — they are *not* consolidated into one button.
+
+**Rationale.** The opening assumption — that the moderation pair was partially
+redundant and could be merged — was **falsified** by INS-2: the pair is
+configure-vs-run *by design*. Consolidating would hide the configure step
+moderators rely on, the exact risk the decision set out to avoid. The
+"isolate destructive" half stood on its own evidence (mis-click risk among peer
+buttons).
+
+**Validation outcome.** INS-2 read both handlers + the moderation doc and confirmed
+the configure/run semantics. "Isolate destructive" shipped as **FK-06 (PR #21)**
+(`.btn-danger`, right-isolation, divider grouping). The copy-polish remainder
+shipped as **FK-08 (PR #28)** (button labels/titles + identifier-tuple hint), both
+opt-in states runtime-verified.
+
+**Consequences.** The configure/run split is a locked invariant — do not
+consolidate it (re-deriving would re-introduce the hidden-step risk). Destructive
+cohort actions stay isolated + double-confirmed.
+
+**Refs.** planning D-06 · FK-06 (PR #21) · FK-08 (PR #28) · INS-2.
+
+### I.2 — Rubric-version provenance: stamp per record, warn at export and in-app *(FK-11, FK-25, planning D-09)*
+
+**Decision.** A rubric-version hash is **stamped on each cohort record at save time**
+(re-saving re-stamps). Mixed-version cohorts are surfaced twice: the moderation
+export reports `mixed` + a `rubric_versions` list in `90_manifest`, and an in-app
+ambient badge flags drift when the open cohort's stamps differ from the loaded
+rubric.
+
+**Rationale.** The assumption that the export-time warning was meaningful was
+**falsified** by INS-6: the hash was computed *once at export* from the live config
+and written identically to every row, so mixed-version detection was impossible as
+built. A per-record stamp at mark time was the missing primitive.
+
+**Validation outcome.** **FK-11 (PR #37):** canonical `SA.rubricVersionHash`
+(criteria names + weights + all tier descriptors → 8-char hash), stamped per record
+at save; export reads the stored stamp with a live-config fallback for legacy rows;
+`90_manifest` reports `mixed` + `rubric_versions` when stamps disagree. **FK-25
+(PR #39):** `SA.detectRubricDrift` mirrors the export's per-record fallback exactly
+(so the ambient badge and the manifest can never disagree) and renders an amber
+"Rubric drift" / "Mixed rubric" badge + cohort-section tint.
+
+**Naming note.** FK-25 shipped under the label "FK-12" in PR #39 — a **misnomer**.
+It is the *rubric-version* indicator (this decision, D-09), **not** the FK-12
+cohort-consistency / anchoring indicator (planning D-10, still open). Reconciled on
+the board as FK-25.
+
+**Consequences.** Per-record rubric stamping is a storage invariant; export and the
+ambient badge share one fallback path by design. The cohort-consistency indicator
+(D-10) remains a separate, pending decision.
+
+**Refs.** planning D-09 (+ D-10 disambiguation) · FK-11 (PR #37) · FK-25 (PR #39) ·
+INS-6 · `docs/fk_moderation_export_v1.md`.
 
 ---
 
