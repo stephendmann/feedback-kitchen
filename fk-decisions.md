@@ -794,7 +794,9 @@ Post-ship axe + keyboard audit surfaced 12 violations across `index.html`, `buil
 
 ### Context
 
-FK's paid value-adds — Sonnet-quality wording for the `improve_criterion_body` mode, and PDF-to-scorer import — are gated to KoFi supporters. The gate today is trust-based: a shared supporter-unlock code checked client-side (`upload.html` / `js/converter.js` `checkSupporterAccess()` for PDF import; `scorer.html` for Sonnet, shipped in PR #84 with a server-side model-downgrade guard in `api/garnish.js`). FK holds no record of who has paid — the honesty system is the whole mechanism.
+FK's AI value-adds are gated to KoFi supporters. Operationally, "supporter" means holding the shared AI credential — it is the *only* gate on AI use. So the wording assistant (Haiku for most modes, Sonnet for `improve_criterion_body`) and PDF-to-scorer import are all supporter-only; the free tier is the manual scorer, rubric builder, and cohort tracking, with no AI. Sonnet is therefore a premium *mode within* supporter access, not the boundary between a free tier and a paid one. (Confirmed in PR #84 QA: with the credential cleared, no AI call is possible at all; the server enforces a mode allowlist, `SONNET_ELIGIBLE_MODES`, on top of the credential gate.)
+
+The gate is trust-based: the shared credential is checked client-side (`upload.html` / `js/converter.js` `checkSupporterAccess()` for PDF import; `scorer.html` for Sonnet, shipped in PR #84 with a server-side model-downgrade guard in `api/garnish.js`). FK holds no record of who has paid — the honesty system is the whole mechanism.
 
 The question: keep that, or move to automated gating that maps a KoFi payment to a per-user entitlement (accounts, a stored payment-to-credential mapping, server-side enforcement)?
 
