@@ -56,8 +56,30 @@
     <!-- Header -->
     <div class="text-center mb-8">
       <div class="text-5xl mb-4">📄</div>
-      <h1 class="text-2xl font-bold text-slate-800 mb-2">Convert Assessment Manual</h1>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">
+        Convert Assessment Manual
+        <span id="pdf-badge-locked" class="align-middle text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Supporter feature</span>
+        <span id="pdf-badge-unlocked" class="hidden align-middle text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">✓ Unlocked</span>
+      </h1>
       <p class="text-slate-500 text-sm max-w-xl mx-auto">Upload a PDF assessment manual and Feedback Kitchen will detect the assessment structure, extract the rubric, and generate a ready-to-use scorer JSON.</p>
+      <p class="text-slate-500 text-sm max-w-xl mx-auto mt-1">Ko-fi support unlocks PDF import, which removes re-keying the whole rubric by hand; manual scorer building stays free.</p>
+    </div>
+
+    <!-- How to unlock (shown until supporter credentials are saved in this browser) -->
+    <div id="pdf-locked-section" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-8 text-sm text-amber-800">
+      <p class="font-semibold mb-2">How to unlock PDF import:</p>
+      <ol class="space-y-1.5 text-xs">
+        <li class="flex gap-2">
+          <span class="font-bold shrink-0">1.</span>
+          <span>Support the project on Ko-fi —
+            <a href="https://ko-fi.com/smann" target="_blank" rel="noopener"
+               onclick="if(typeof gtag==='function'){gtag('event','kofi_click',{event_category:'engagement',event_label:'convert_pdf_unlock'})}"
+               class="font-semibold underline hover:text-amber-900">ko-fi.com/smann</a>
+          </span>
+        </li>
+        <li class="flex gap-2"><span class="font-bold shrink-0">2.</span><span>Receive your access credentials by message</span></li>
+        <li class="flex gap-2"><span class="font-bold shrink-0">3.</span><span>Enter them below — your key is then saved in this browser for future sessions</span></li>
+      </ol>
     </div>
 
     <!-- How it works -->
@@ -69,7 +91,7 @@
         <li>Select one assessment — the rubric, criteria, and weights are extracted</li>
         <li>Review and edit the result, then download the FK scorer JSON</li>
       </ol>
-      <p class="text-slate-400 text-xs mt-3">The PDF is sent to a secure server for AI processing and is not stored. Only PDF files are supported in this version.</p>
+      <p class="text-slate-400 text-xs mt-3">Only PDF files are supported in this version.</p>
     </div>
 
     <!-- Global error -->
@@ -117,6 +139,7 @@
         </div>
       </div>
       <p class="text-xs text-slate-400 mb-4">Credentials are saved in your browser session and are not stored on any server.</p>
+      <p class="text-sm text-slate-600 mb-4">Your PDF is sent to a secure server for AI processing and is not stored.</p>
 
       <button id="btn-detect" onclick="CONV.detect()"
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm">
