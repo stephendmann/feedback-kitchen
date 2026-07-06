@@ -788,7 +788,7 @@ Post-ship axe + keyboard audit surfaced 12 violations across `index.html`, `buil
 ## D17 — KoFi access: trust-based supporter unlock vs automated entitlement
 
 **Date:** 2026-07-06
-**Status:** ⬜ Proposed — awaiting sign-off. Documents a decision already embodied in shipped code (see Note under Recommendation).
+**Status:** ✅ Approved — Option A (trust-based unlock). Chosen for now: simpler code, ships immediately, and usage is still developing rather than at strong-growth or mature scale; revisit if freeloading cost becomes material (see Recommendation). Documents a decision already embodied in shipped code (see Note under Recommendation).
 **Author:** Stephen Mann (from a Sonnet 5 AI-usage audit; reviews by Perplexity and StrawberryAI).
 **Owner:** Stephen Mann (product + brand voice).
 
@@ -826,10 +826,10 @@ Revisit only if freeloading cost becomes material: sustained Sonnet / PDF-import
 
 ### Decision
 
-- [ ] Option A — keep trust-based supporter unlock (recommended)
+- [x] Option A — keep trust-based supporter unlock (recommended)
 - [ ] Option B — build automated entitlement mapping
 
-Signed: _______________________  Date: ____________
+Signed: Stephen Mann   Date: 2026-07-06
 
 ### References
 
