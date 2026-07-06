@@ -194,6 +194,22 @@
       // badge/locked-section state rather than trusting typed-but-unverified input.
       checkSupporterAccess();
 
+      // Anonymous counts only — no file name, no document content, no
+      // identifiers. The decision this informs (single-pass "detect and
+      // extract the obvious one" shortcut, see fk-decisions.md D17) hinges
+      // on how many assessments per manual are actually exportable, not
+      // just how many are detected — so both counts are sent: the total,
+      // and the exportable subset using the same a.exportable === true
+      // flag renderAssessmentList() already reads. Reuses the same GA
+      // property already loaded on every other FK page; no new infrastructure.
+      if (typeof gtag === 'function') {
+        gtag('event', 'manual_detect_count', {
+          event_category: 'engagement',
+          value: state.assessments.length,
+          exportable_count: state.assessments.filter(a => a.exportable === true).length
+        });
+      }
+
     } catch (err) {
       clearLoadingState();
       showGlobalError(err.message || 'Detection failed. Please try again.');
