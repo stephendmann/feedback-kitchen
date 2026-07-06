@@ -114,9 +114,19 @@ module.exports = async function handler(req, res) {
   }
 
   // ── Forward to Anthropic ──
-  const requestedModel = (typeof model === 'string' && model.length)
-    ? model
-    : 'claude-haiku-4-5-20251001';
+  // Sonnet is reserved for the improve_criterion_body flow (the flagship
+  // "Improve feedback" action, gated client-side on Ko-fi supporter-unlock).
+  // Anyone who reaches this point has already passed the auth gate above,
+  // so this is not a second identity check — it stops a forged/stale
+  // request from a *different* mode claiming Sonnet by editing the
+  // request body. Downgrade rather than reject: honest guard, not punitive.
+  const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+  const SONNET_MODEL = 'claude-sonnet-4-6';
+  const SONNET_ELIGIBLE_MODES = new Set(['improve_criterion_body', 'draft', 'improve', 'shorten']);
+  const requestedModelRaw = (typeof model === 'string' && model.length) ? model : HAIKU_MODEL;
+  const requestedModel = (requestedModelRaw === SONNET_MODEL && !SONNET_ELIGIBLE_MODES.has(mode))
+    ? HAIKU_MODEL
+    : requestedModelRaw;
   const requestedMaxTokens = Number.isFinite(maxTokens) && maxTokens > 0 && maxTokens <= 4000
     ? Math.floor(maxTokens)
     : 1500;

@@ -1127,6 +1127,10 @@
               <span class="btn-help">Empties suggestion box; leaves your draft untouched.</span>
             </button>
           </div>
+          <p class="text-xs text-slate-500">
+            You mark. Claude drafts. You stay in control. Ko-fi support runs Improve feedback
+            on Claude Sonnet; the rest of the wording assistant uses Haiku.
+          </p>
           <p class="text-xs text-slate-500 italic">
             You don&rsquo;t need to finish grading first &mdash; the assistant uses whatever
             you&rsquo;ve scored so far and will note which criteria it covered.
@@ -4472,6 +4476,19 @@
     const FK_PASS_KEY = 'SA_FK_PASS';
     const FK_PROXY_ENDPOINT = '/api/garnish';
 
+    // Sonnet is reserved for the flagship Improve feedback action
+    // (improve_criterion_body and its legacy mode aliases), and only once
+    // the marker already has wording-assistant credentials — the same
+    // Ko-fi supporter-unlock check used by upload.html's PDF import.
+    // Everything else (the manual/direct paste flow, all other modes)
+    // stays on Haiku. api/garnish.js enforces this same mode check
+    // server-side, so a forged request cannot get Sonnet either.
+    const SONNET_MODEL_ID = 'claude-sonnet-4-6';
+    const HAIKU_MODEL_ID  = 'claude-haiku-4-5-20251001';
+    function isImproveFeedbackMode(mode) {
+      return mode === 'improve_criterion_body' || mode === 'draft' || mode === 'improve' || mode === 'shorten';
+    }
+
     function showAISettings() {
       const u = localStorage.getItem(FK_USER_KEY) || '';
       const p = localStorage.getItem(FK_PASS_KEY) || '';
@@ -4557,7 +4574,7 @@
             password: localStorage.getItem(FK_PASS_KEY),
             prompt: prompt,
             mode: mode,
-            model: 'claude-haiku-4-5-20251001'
+            model: (hasAICreds() && isImproveFeedbackMode(mode)) ? SONNET_MODEL_ID : HAIKU_MODEL_ID
           })
         });
         const data = await res.json().catch(() => ({}));
@@ -4794,7 +4811,10 @@
             user: localStorage.getItem(FK_USER_KEY),
             password: localStorage.getItem(FK_PASS_KEY),
             prompt: prompt,
-            model: 'claude-haiku-4-5-20251001'
+            // This is the general manual/direct-paste flow — no mode, so it
+            // stays on Haiku; Sonnet is reserved for improve_criterion_body
+            // in aiAssist above.
+            model: HAIKU_MODEL_ID
           })
         });
         const data = await res.json().catch(() => ({}));
@@ -4818,7 +4838,7 @@
         SA.logAssistantRun({
           when: new Date().toISOString(),
           student: (lastConfig && lastScoreResult) ? (el('student-name').value || '') : '',
-          model: data.model || 'claude-haiku-4-5-20251001',
+          model: data.model || HAIKU_MODEL_ID,
           promptChars: prompt.length,
           replyChars: body.length,
           via: 'direct'

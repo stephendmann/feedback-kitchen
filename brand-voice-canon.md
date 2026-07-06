@@ -15,6 +15,7 @@ Three short, parallel sentences emphasising user ownership. This is the canonica
 | Personalisation card (tutorial video Scene 5) | "Your phrases. Your voice. Your judgement." |
 | Sharing card (tutorial video Scene 6) | "One rubric. Every marker. Consistent feedback." |
 | Privacy close (tutorial video Scene 7) | "Student data never leaves the room." |
+| Improve feedback button (scorer.html, Sonnet-gating note) | "You mark. Claude drafts. You stay in control." |
 
 **Structural rule:** three units, parallel grammar, each ≤5 words. Either `Your X. Your Y. Your Z.` (ownership emphasis) or three nouns/verbs in series (`Build · Mark · Export.`).
 
