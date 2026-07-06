@@ -926,6 +926,14 @@
               <div class="panel panel-suggestion">
                 <h3 class="text-sm font-semibold text-violet-800 mb-1">Suggested wording (you can edit or ignore this)</h3>
                 <p class="text-xs text-slate-500 mb-2">Click an action above to generate a suggestion. Your draft above is untouched until you replace or insert.</p>
+                <!-- Validation badge: marker-only. Hidden by default. -->
+                <div id="validation-badge" class="hidden mb-2 text-xs px-2 py-1 rounded bg-amber-50 border border-amber-200 text-amber-900">
+                  <span class="font-semibold">Marker note:</span>
+                  <span id="validation-badge-text"></span>
+                  <button type="button" class="ml-2 text-amber-700 underline" onclick="S.toggleValidationDetails()">details</button>
+                  <pre id="validation-badge-details" class="hidden mt-1 text-[11px] whitespace-pre-wrap font-mono"></pre>
+                  <p class="text-[11px] mt-1 italic text-amber-700">These notes are visible to you only. They are not shown to students and have already been stripped from the suggestion above.</p>
+                </div>
                 <textarea id="refine-suggestion-mirror" class="feedback-box" rows="6"
                           placeholder="No suggestion yet. Pick an action above."
                           style="background:#fff"
@@ -974,7 +982,15 @@
         </div>
       </details>
 
-      <!-- ─ Legacy wording-assistant section — hidden unless 'Show advanced wording tools' is on. Primary controls live inline in the feedback draft section. ─ -->
+      <!-- ─ Legacy wording-assistant section. NOTE (found during PR #83 QA):
+           this is permanently display:none — nothing in the app ever clears
+           that inline style, including the "Open legacy assistant" link
+           below, which only sets .open on this <details>. That makes this
+           whole section (aiGarnishDirect / manual-paste flow, #ai-manual-
+           suggestion, View local log / Clear log) unreachable in the
+           shipped UI. Pre-existing, out of scope here — not resurrected as
+           part of this fix. Primary controls live inline in the feedback
+           draft section above. ─ -->
       <details id="sec-ai" class="bg-white border border-slate-200 rounded-2xl no-print" style="display:none">
         <summary class="flex items-center justify-between px-5 py-3 cursor-pointer select-none list-none">
           <span class="step-title">
@@ -1119,14 +1135,10 @@
             <p class="text-xs text-slate-500 mb-2">
               Click a button above to generate a suggestion. You can edit it, ignore it, or keep your own wording.
             </p>
-            <!-- Validation badge: marker-only. Hidden by default. -->
-            <div id="validation-badge" class="hidden mb-2 text-xs px-2 py-1 rounded bg-amber-50 border border-amber-200 text-amber-900">
-              <span class="font-semibold">Marker note:</span>
-              <span id="validation-badge-text"></span>
-              <button type="button" class="ml-2 text-amber-700 underline" onclick="S.toggleValidationDetails()">details</button>
-              <pre id="validation-badge-details" class="hidden mt-1 text-[11px] whitespace-pre-wrap font-mono"></pre>
-              <p class="text-[11px] mt-1 italic text-amber-700">These notes are visible to you only. They are not shown to students and have already been stripped from the suggestion above.</p>
-            </div>
+            <!-- Validation badge lives in the visible "Refine wording" panel now
+                 (this whole section is unreachable dead markup — see note near
+                 the top of #sec-ai). Not duplicated here to avoid a second
+                 element with the same id. -->
             <textarea
               id="ai-suggestion"
               class="feedback-box"
