@@ -691,7 +691,28 @@
 
   function buildAIAssistPrompt(mode, config, scoreResult, opts) {
     opts = opts || {};
-    const base = buildAIGarnishPrompt(config, scoreResult, opts);
+    // Map legacy modes to the unified mode up front so the strict-mode
+    // summary below can key off the resolved mode, not the raw caller value.
+    const resolved = (mode === 'draft' || mode === 'improve' || mode === 'shorten')
+      ? 'improve_criterion_body'
+      : (mode || 'improve_criterion_body');
+
+    let base = buildAIGarnishPrompt(config, scoreResult, opts);
+
+    // High-salience pointer to the strict-mode constraints, placed right
+    // after ROLE/before HARD RULES rather than ~2500 tokens later where the
+    // full spec lives (see the MODE block below). Points at the detailed
+    // rules; does not replace them, so there is a single source of truth.
+    if (resolved === 'improve_criterion_body') {
+      const strictModeSummary =
+        '\n\nNON-NEGOTIABLE (strict mode): sentence 2 of every criterion MUST open with ' +
+        'one of exactly these verbs: Add, Clarify, Compare, Link, Proofread, Replace, ' +
+        'Restructure, Support. Banned filler phrases (e.g. "could be improved", "needs ' +
+        'work") are forbidden outright. Full detail is in the MODE section below — this ' +
+        'is a summary, not a substitute.';
+      base = base.replace('\n\nHARD RULES:', strictModeSummary + '\n\nHARD RULES:');
+    }
+
     const existingBody = scrubPII((opts.existingBody || '').trim(), opts);
 
     // Length mode — Brief enforces hard cap; Standard allows two sentences.
@@ -752,11 +773,6 @@
         '\n\nEXISTING BODY (treat as supplementary marker insight, not as text to keep):' +
         '\n' + (existingBody || '(none — generate fresh from rubric and notes)')
     };
-
-    // Map legacy modes to the unified mode for back-compat with existing callers.
-    const resolved = (mode === 'draft' || mode === 'improve' || mode === 'shorten')
-      ? 'improve_criterion_body'
-      : (mode || 'improve_criterion_body');
 
     return base + lengthRule + audienceRule + (extras[resolved] || extras.improve_criterion_body);
   }
