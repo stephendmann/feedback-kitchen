@@ -1,8 +1,8 @@
 {
   "meta": {
-    "timestamp": "2026-06-15T19:47:43.350Z",
+    "timestamp": "2026-07-06T02:54:33.827Z",
     "baseUrl": "http://localhost:3000",
-    "elapsed": "9.9"
+    "elapsed": "10.2"
   },
   "results": [
     {
@@ -43,25 +43,25 @@
       "url": "http://localhost:3000/builder.html",
       "axe": {
         "violations": [],
-        "passes": 38,
+        "passes": 39,
         "incomplete": 1,
-        "inapplicable": 51
+        "inapplicable": 50
       },
       "keyboard": [
         {
           "desc": "Tab to Add Criterion button",
           "status": "✅",
-          "focused": "<select#s1-spelling-locale.input-field> \"Auto-detect from browser\n              A\""
+          "focused": "<select#s1-rounding.input-field.input-yellow> \"Full precision (e.g. 73.3)\n             \""
         },
         {
           "desc": "Activate Add Criterion with Enter",
           "status": "✅",
-          "focused": "<select#s1-spelling-locale.input-field> \"Auto-detect from browser\n              A\""
+          "focused": "<select#s1-rounding.input-field.input-yellow> \"Full precision (e.g. 73.3)\n             \""
         },
         {
           "desc": "Tab into new input field",
           "status": "✅",
-          "focused": "<select#s1-spelling-locale.input-field> \"Auto-detect from browser\n              A\""
+          "focused": "<select#s1-rounding.input-field.input-yellow> \"Full precision (e.g. 73.3)\n             \""
         },
         {
           "desc": "Type in criterion name",
@@ -71,17 +71,17 @@
         {
           "desc": "Tab to Add Band button",
           "status": "✅",
-          "focused": "<a.site-footer__kofi-link> \"Ko-fi\""
+          "focused": "<button#btn-next.btn-primary> \"Next Step →\""
         },
         {
           "desc": "Activate Add Band with Enter",
           "status": "✅",
-          "focused": "<a.site-footer__kofi-link> \"Ko-fi\""
+          "focused": "<button#btn-next.btn-primary> \"Next Step →\""
         },
         {
           "desc": "Escape from any modal/drawer",
           "status": "✅",
-          "focused": "<a.site-footer__kofi-link> \"Ko-fi\""
+          "focused": "<button#btn-next.btn-primary> \"Next Step →\""
         }
       ],
       "loadError": null

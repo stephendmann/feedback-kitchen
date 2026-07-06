@@ -657,13 +657,17 @@
       '  4. Integrate the marker\'s private notes naturally into the relevant criterion',
       '     where they are specific to that criterion. Do not invent criticism or',
       '     praise that is not supported by the rubric descriptor or the notes.',
-      '  5. Use Au/NZ spelling. Address the student in the second person.',
+      '  5. Use Au/NZ spelling. Address the student in the second person,',
+      '     UNLESS an AUDIENCE RULE section below specifies otherwise — if so,',
+      '     follow that instead.',
       '  6. Match the tutor voice exemplars where natural.',
       '  7. Stay under ' + wordCap + ' words for the whole body. PREFER BREVITY — students skim, so cut filler before adding qualifiers. Less is usually better.',
       '  8. Output format: one block per criterion, in the same order as below.',
       '     For each criterion use exactly this header line:',
       '       <Criterion name> – <weighted score to 1 d.p.> / <weight>',
-      '     followed by one or two short paragraphs of personalised commentary.',
+      '     followed by one or two short paragraphs of personalised commentary,',
+      '     UNLESS a MODE section below specifies a different commentary format —',
+      '     if so, follow the MODE section\'s format exactly instead.',
       '     Separate criteria with a single blank line. No markdown, no bullet list.',
       '',
       'CONTEXT (for your information only — do not quote):',
@@ -687,7 +691,28 @@
 
   function buildAIAssistPrompt(mode, config, scoreResult, opts) {
     opts = opts || {};
-    const base = buildAIGarnishPrompt(config, scoreResult, opts);
+    // Map legacy modes to the unified mode up front so the strict-mode
+    // summary below can key off the resolved mode, not the raw caller value.
+    const resolved = (mode === 'draft' || mode === 'improve' || mode === 'shorten')
+      ? 'improve_criterion_body'
+      : (mode || 'improve_criterion_body');
+
+    let base = buildAIGarnishPrompt(config, scoreResult, opts);
+
+    // High-salience pointer to the strict-mode constraints, placed right
+    // after ROLE/before HARD RULES rather than ~2500 tokens later where the
+    // full spec lives (see the MODE block below). Points at the detailed
+    // rules; does not replace them, so there is a single source of truth.
+    if (resolved === 'improve_criterion_body') {
+      const strictModeSummary =
+        '\n\nNON-NEGOTIABLE (strict mode): sentence 2 of every criterion MUST open with ' +
+        'one of exactly these verbs: Add, Clarify, Compare, Link, Proofread, Replace, ' +
+        'Restructure, Support. Banned filler phrases (e.g. "could be improved", "needs ' +
+        'work") are forbidden outright. Full detail is in the MODE section below — this ' +
+        'is a summary, not a substitute.';
+      base = base.replace('\n\nHARD RULES:', strictModeSummary + '\n\nHARD RULES:');
+    }
+
     const existingBody = scrubPII((opts.existingBody || '').trim(), opts);
 
     // Length mode — Brief enforces hard cap; Standard allows two sentences.
@@ -735,9 +760,7 @@
         '\n  State the action only. Do NOT explain why it matters.' +
 
         '\n\nBANNED PHRASES (do not use unless immediately followed by a specific named change):' +
-        '\n  "could be improved", "would benefit from", "more rigour", "deeper analysis",' +
-        '\n  "stronger argument", "clearer structure", "better evidence", "more detail",' +
-        '\n  "needs work", "lacks depth".' +
+        '\n  ' + BANNED_PHRASES.map(function (p) { return '"' + p + '"'; }).join(', ') + '.' +
 
         '\n\nADDITIONAL RULES:' +
         '\n  • Do NOT reuse the same imperative verb across more than two criteria.' +
@@ -748,11 +771,6 @@
         '\n\nEXISTING BODY (treat as supplementary marker insight, not as text to keep):' +
         '\n' + (existingBody || '(none — generate fresh from rubric and notes)')
     };
-
-    // Map legacy modes to the unified mode for back-compat with existing callers.
-    const resolved = (mode === 'draft' || mode === 'improve' || mode === 'shorten')
-      ? 'improve_criterion_body'
-      : (mode || 'improve_criterion_body');
 
     return base + lengthRule + audienceRule + (extras[resolved] || extras.improve_criterion_body);
   }
@@ -1026,6 +1044,15 @@
   ─────────────────────────────────────────────────────────────── */
   const VALID_ACTION_VERBS = ['Add', 'Clarify', 'Compare', 'Link', 'Proofread', 'Replace', 'Restructure', 'Support'];
 
+  // Single source of truth for the banned-filler-phrase list — used both in
+  // the prompt text (buildAIAssistPrompt) and the deterministic post-check
+  // (validateAIBody), so the two never drift apart.
+  const BANNED_PHRASES = [
+    'could be improved', 'would benefit from', 'more rigour', 'deeper analysis',
+    'stronger argument', 'clearer structure', 'better evidence', 'more detail',
+    'needs work', 'lacks depth'
+  ];
+
   function _splitSentences(text) {
     if (!text) return [];
     // Split on . ? ! followed by space/end. Crude but workable.
@@ -1087,6 +1114,15 @@
         blockIssues.push('exceeds ' + lengthMode + ' word cap (' + words + ' > ' + wordCap + ')');
       }
 
+      // 4. Banned filler phrases (case-insensitive substring match; the model
+      // is model-independent here — this check does not rely on the LLM
+      // having followed the BANNED PHRASES instruction in the prompt).
+      const lowerBody = body.toLowerCase();
+      const foundBanned = BANNED_PHRASES.filter(function (p) { return lowerBody.indexOf(p) !== -1; });
+      if (foundBanned.length) {
+        blockIssues.push('contains banned phrase' + (foundBanned.length > 1 ? 's' : '') + ': "' + foundBanned.join('", "') + '"');
+      }
+
       if (blockIssues.length) {
         issues.push({
           index: idx,
@@ -1094,12 +1130,13 @@
           sentences: sentences.length,
           words: words,
           firstActionWord: firstWord,
+          bannedPhrases: foundBanned,
           messages: blockIssues
         });
       }
     });
 
-    // 4. Verb overuse — same verb on >2 criteria
+    // 5. Verb overuse — same verb on >2 criteria
     const overused = Object.keys(verbCounts).filter(function (v) { return verbCounts[v] > 2; });
 
     return {
@@ -1349,7 +1386,7 @@
     computeScores, generateFeedbackText, formatScore, rubricVersionHash, detectRubricDrift,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
-    validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS,
+    validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS, BANNED_PHRASES,
     getLastValidationResult, stripValidationMarkers,
     loadSnippets, logAssistantRun, clearAssistantLog,
     // Deprecated aliases
