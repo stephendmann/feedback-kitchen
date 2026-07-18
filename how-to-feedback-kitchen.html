@@ -898,8 +898,10 @@ function Stage({
   const displayTime = hoverTime != null ? hoverTime : time;
 
   const ctxValue = React.useMemo(
-    () => ({ time: displayTime, duration, playing, setTime, setPlaying }),
-    [displayTime, duration, playing]
+    // `actualTime` is the real playhead, unaffected by hover-scrub preview.
+    // Audio components sync to it so hovering the track doesn't yank sound.
+    () => ({ time: displayTime, actualTime: time, duration, playing, setTime, setPlaying }),
+    [displayTime, time, duration, playing]
   );
 
   return (
@@ -3835,6 +3837,132 @@ function FileChip() {
 Object.assign(window, { Scene5Snippets, Scene6Share });
   </script>
 
+  <!-- 6b. Soundtrack — narration (timeline-locked) + music bed (ducked) -->
+  <script type="text/babel" data-presets="react">
+    // ── FkSoundtrack ─────────────────────────────────────────────────
+    // Two audio layers for the tutorial:
+    //   • audio/howto-vo.mp3    — 98.1s narration track, each take pre-placed
+    //     at its timeline offset (source: VideoProjects/projects/fk-howto-vo,
+    //     script of record VO-SCRIPT.md). HARD-LOCKED to the film clock:
+    //     drift > 0.35s (seek, scrub, restart) snaps currentTime.
+    //   • audio/howto-music.mp3 — 98.1s ambient bed with baked-in fades.
+    //     Kept LOW (instructional content: music competes with narration for
+    //     auditory working memory) and ducked to 35% under every VO window.
+    // Both follow the Stage's play/pause and use `actualTime` so the
+    // playback-bar hover-scrub preview doesn't yank the audio clock.
+    const VO_WINDOWS = [
+      [0.8, 5.5], [6.0, 20.3], [22.4, 42.3], [44.0, 57.8],
+      [60.0, 73.8], [75.0, 84.6], [87.0, 97.0],
+    ];
+    const MUSIC_BASE = 0.22;   // low bed — tutorial, not trailer
+    const DUCK_LEVEL = 0.35;   // music multiplier while narration speaks
+    const DUCK_RAMP  = 0.3;    // seconds of linear ramp at window edges
+
+    function duckFactor(t, windows) {
+      let f = 1;
+      for (const [a, b] of windows) {
+        if (t < a - DUCK_RAMP || t > b + DUCK_RAMP) continue;
+        let w = 1;
+        if (t < a) w = (t - (a - DUCK_RAMP)) / DUCK_RAMP;
+        else if (t > b) w = ((b + DUCK_RAMP) - t) / DUCK_RAMP;
+        f = Math.min(f, 1 - (1 - DUCK_LEVEL) * clamp(w, 0, 1));
+      }
+      return f;
+    }
+
+    function FkSoundtrack() {
+      const tl = useTimeline();
+      const time = tl.actualTime != null ? tl.actualTime : tl.time;
+      const { playing, duration } = tl;
+      const voRef = React.useRef(null);
+      const musicRef = React.useRef(null);
+      const [muted, setMuted] = React.useState(() => {
+        try { return localStorage.getItem('fk-howto-muted') === '1'; } catch { return false; }
+      });
+      const playingRef = React.useRef(playing);
+      React.useEffect(() => { playingRef.current = playing; }, [playing]);
+
+      // Autoplay unblock: browsers block un-gestured audio. Try to start;
+      // on rejection, arm one-shot pointer/key listeners to retry.
+      React.useEffect(() => {
+        const els = [voRef.current, musicRef.current].filter(Boolean);
+        let cancelled = false;
+        const tryPlay = () => els.forEach(el => { if (playingRef.current) el.play().catch(() => {}); });
+        const arm = () => {
+          const on = () => { if (!cancelled) tryPlay(); };
+          window.addEventListener('pointerdown', on, { once: true });
+          window.addEventListener('keydown', on, { once: true });
+        };
+        Promise.all(els.map(el => el.play())).catch(() => { if (!cancelled) arm(); });
+        return () => { cancelled = true; els.forEach(el => { try { el.pause(); } catch {} }); };
+      }, []);
+
+      // Follow the film's play/pause.
+      React.useEffect(() => {
+        [voRef.current, musicRef.current].forEach(el => {
+          if (!el) return;
+          if (playing) el.play().catch(() => {});
+          else el.pause();
+        });
+      }, [playing]);
+
+      // Hard-lock both clocks to the film clock (both tracks are exactly
+      // film-length, so the music's end fade stays aligned too).
+      React.useEffect(() => {
+        [voRef.current, musicRef.current].forEach(el => {
+          if (!el) return;
+          const target = isFinite(el.duration) ? Math.min(time, el.duration) : time;
+          if (Math.abs(el.currentTime - target) > 0.35) {
+            try { el.currentTime = target; } catch {}
+            if (playing && el.paused) el.play().catch(() => {});
+          }
+        });
+      }, [time, playing]);
+
+      // Music ducking under narration.
+      React.useEffect(() => {
+        const el = musicRef.current;
+        if (el) el.volume = MUSIC_BASE * duckFactor(time, VO_WINDOWS);
+      }, [time]);
+
+      // Mute toggle — both layers, persisted.
+      React.useEffect(() => {
+        [voRef.current, musicRef.current].forEach(el => { if (el) el.muted = muted; });
+        try { localStorage.setItem('fk-howto-muted', muted ? '1' : '0'); } catch {}
+      }, [muted]);
+
+      return (
+        <>
+          <audio ref={voRef} src="audio/howto-vo.mp3" preload="auto" />
+          <audio ref={musicRef} src="audio/howto-music.mp3" preload="auto" />
+          {/* Sound toggle — in-canvas, bottom-left, clear of the chapter
+              overlay (top-right). Hidden from the MP4 frame capture. */}
+          <button
+            data-capture-hide="1"
+            onClick={() => setMuted(m => !m)}
+            aria-label={muted ? 'Unmute narration and music' : 'Mute narration and music'}
+            aria-pressed={muted}
+            style={{
+              position: 'absolute', left: 24, bottom: 24, zIndex: 120,
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              padding: '10px 16px', borderRadius: 999,
+              background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(148,163,184,0.4)',
+              color: '#F1F5F9', fontSize: 13, fontWeight: 600,
+              letterSpacing: '0.06em',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              cursor: 'pointer',
+            }}
+          >
+            <span aria-hidden="true" style={{ fontSize: 15, lineHeight: 1 }}>{muted ? '🔇' : '🔊'}</span>
+            {muted ? 'Sound off' : 'Sound on'}
+          </button>
+        </>
+      );
+    }
+    Object.assign(window, { FkSoundtrack });
+  </script>
+
   <!-- 7. Inline timeline + ReactDOM.render -->
   <script type="text/babel" data-presets="react">
     // ── Scene timing config ───────────────────────────────────────────
@@ -3943,6 +4071,7 @@ Object.assign(window, { Scene5Snippets, Scene6Share });
             </Sprite>
           ))}
           <ChapterOverlay />
+          <FkSoundtrack />
         </Stage>
       );
     }
