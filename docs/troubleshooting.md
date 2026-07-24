@@ -1,6 +1,6 @@
 # Troubleshooting notes
 
-Failures that have cost real time in this repo, with the diagnosis that actually worked. Each entry records what the symptom looks like, what it turned out to be, and which check settles it.
+Failures that have cost real time in this repo. Each entry records what the symptom looks like, what it turned out to be, and which check settles it. One entry is still open, and says so rather than offering a theory dressed as an answer.
 
 Every claim here was verified against this repository: the workflow run history, the built CSS, or the running app. Where a diagnosis was wrong the first time, that is recorded too, because the wrong answer is usually the plausible one.
 
@@ -10,9 +10,11 @@ Every claim here was verified against this repository: the workflow run history,
 
 **Symptom.** The "Claude code review (read-only)" check goes red about two seconds after Claude Code initialises. The log ends with `is_error: true`, `num_turns: 1`, `total_cost_usd: 0`, and no error message. It happens on every pull request, regardless of what the diff contains.
 
-**What it is.** Zero cost with an instant first-turn failure means the run was rejected before any work happened. In this repo the cause has been the mutable `@v1` tag on `anthropics/claude-code-action` moving under us, not the OAuth token.
+**What it is.** Not yet known. Two confident diagnoses have both been wrong, so this entry records what has been eliminated rather than an answer.
 
-The run history is the evidence. `fk-claude-review.yml` has not been edited since 2026-06-23, yet:
+What the signature does tell you: zero cost with a first-turn failure means the run was rejected before any work happened. Claude Code initialises, reports `"model": "claude-sonnet-5"`, and returns a result roughly two seconds later with `duration_ms` under 2000. Everything in the job before that point succeeds, including the OIDC handshake, the app token exchange, the permission check, the Claude Code install, the marketplace clone, and the plugin install.
+
+**Eliminated: the action version.** The mutable `@v1` tag did move under us, which looked causal. `fk-claude-review.yml` had not been edited since 2026-06-23, yet:
 
 | Date | `@v1` resolved to | Result |
 |---|---|---|
@@ -20,19 +22,30 @@ The run history is the evidence. `fk-claude-review.yml` has not been edited sinc
 | 2026-07-18 | `3553f843` | fail, 1 turn, $0 |
 | 2026-07-24 | `44423bd` | fail, 1 turn, $0 |
 
-Three different action SHAs in under three weeks, and only the oldest was ever green. Everything in the job before the Claude call is byte-identical between the green run and the failing ones.
+Three different action SHAs in under three weeks, and only the oldest was ever green. That is a strong-looking correlation, and it is the wrong answer. PR #98 pinned `558b1d6`, the SHA from the green run, and the next run still failed with the same signature: `is_error: true`, `num_turns: 1`, `total_cost_usd: 0`. The log confirms the pin took effect (`Download action repository 'anthropics/claude-code-action@558b1d6...'`) and that the action's bundled Claude Code 2.1.201 installed cleanly. Same action, same version, green in July and failing now, so the cause is not in the action.
 
-**Why the token looked guilty.** The 2026-07-18 failure was diagnosed as an expired `CLAUDE_CODE_OAUTH_TOKEN`, the token was regenerated, and the pull request merged. That reads like a fix but is not one: the review check is **not a required status check** and `main` has **no branch protection**, so pull requests merge red either way. There has been no green review run since 2026-07-06, and a second token regeneration on 2026-07-24 changed nothing.
+The pin stays, because pinning a third-party action is right regardless and because it removes one variable from the next diagnosis. It is not a fix.
+
+**Eliminated: the marketplace plugin, mostly.** `plugins: "code-review@claude-code-plugins"` resolves against live `anthropics/claude-code.git` and was the other floating dependency. The log shows it clone, validate, and install successfully every time. It remains possible that the plugin's `/code-review:code-review` command contract changed in a way that errors on the first turn, but the plugin is not failing to load.
+
+**Eliminated: the token, twice over.** The 2026-07-18 failure was diagnosed as an expired `CLAUDE_CODE_OAUTH_TOKEN`, the token was regenerated, and the pull request merged. That reads like a fix but is not one: the review check is **not a required status check** and `main` has **no branch protection**, so pull requests merge red either way. There has been no green review run since 2026-07-06, and a second token regeneration on 2026-07-24 changed nothing.
 
 Never infer that a check recovered from the fact that a pull request merged. Read the run conclusion.
 
-**What to do.** Pin the action to the last known-good SHA, which is also the standard hardening for third-party actions. This landed in PR #98 on 2026-07-25:
+**Why you cannot see the error.** There is an error message. The action refuses to print it:
 
-```yaml
-uses: anthropics/claude-code-action@558b1d6cab4085c7753fe402c10bef0fbb92ac7a
+```
+Running Claude Code via SDK (full output hidden for security)...
+Rerun in debug mode or enable `show_full_output: true` in your workflow file for full output.
 ```
 
-Treat that as a test rather than a guaranteed fix. A pinned action can still fail for quota, auth, or upstream service reasons, and there is a second floating dependency in the same workflow: `plugins: "code-review@claude-code-plugins"` resolves against live `anthropics/claude-code.git`. Pinning the action discriminates between the two. If a pinned run still fast-fails, the marketplace plugin is the remaining suspect.
+That instruction is half wrong. `gh run rerun --debug` adds runner-level `##[debug]` lines and does **not** lift the redaction, because the suppression happens inside the action rather than in the runner. Verified on run `30117731296`: re-run with `--debug`, identical output, still no error text. The only route to the message is `show_full_output: true` in the workflow, which has two costs worth weighing before anyone reaches for it. It prints Claude's full output into the logs of a public repository, and because it edits the workflow file it cannot take effect until it is merged to `main` (see the validation trap below).
+
+**What is left to test.** In rough order of cost:
+
+1. Swap the prompt for something trivial with no plugin (`prompt: "Say OK"`). If that also fails at 1 turn and $0, the problem is authentication, entitlement, or a rate limit. If it succeeds, the problem is the `/code-review:code-review` command. This is the cleanest discriminator and it leaks nothing.
+2. Check whether the plan behind `CLAUDE_CODE_OAUTH_TOKEN` can reach `claude-sonnet-5`, the model the SDK selects when `ANTHROPIC_DEFAULT_SONNET_MODEL` is unset. A model the token cannot use would fail on turn one at no cost.
+3. `show_full_output: true`, accepting the exposure, if 1 and 2 do not settle it.
 
 **Confirming it worked, and the trap that stops you.** The action has a workflow-validation guard: it refuses to run on any pull request whose copy of the workflow file differs from the version on `main`, and that refusal exits **green**. So the pull request that pins the SHA cannot test the pin. It flips the check from red to green while running no review at all. Verified on run `28016397454`, and again on PR #98, where the job passed in 14 seconds with `Exiting due to workflow validation skip` in the log.
 
@@ -44,7 +57,9 @@ The only real test is **the next pull request that does not touch `.github/workf
 gh run view <run_id> --log | grep -E "num_turns|total_cost_usd|is_error"
 ```
 
-A working run is roughly 10 turns with a non-zero cost and `is_error: false`. The broken one is always 1 turn and $0. A green check by itself proves nothing here, for the same reason a merged pull request proved nothing above.
+A working run is roughly 10 turns with a non-zero cost and `is_error: false`. The broken one is always 1 turn and $0.
+
+**The check mark is not the signal.** On PR #99 the "Claude code review (read-only)" check reported **pass** in 30 seconds while the log carried `is_error: true`, `num_turns: 1`, `total_cost_usd: 0`, and no review was posted. A green check here can mean the review ran, or that the validation guard skipped it, or that the run failed and the action exited zero anyway. All three look identical from the Checks tab. Read the log.
 
 ---
 
@@ -107,8 +122,9 @@ When one of these fails, start here rather than with the diff:
 
 | Symptom | First suspect |
 |---|---|
-| Claude review fails fast on every PR | A moving dependency, not credentials. The action is pinned as of PR #98, so check the pin is intact, then suspect the `code-review` marketplace plugin. |
+| Claude review fails fast on every PR | Unresolved. The action version and the token are both eliminated. Do not add a fourth confident theory without a test that can falsify it. |
 | Claude review went green the moment you edited its workflow | The validation guard skipped it. A skip exits green. Read the log for `workflow validation`. |
+| Claude review is green but posted no review | Green does not mean it ran. Check `is_error` and `num_turns` in the log. |
 | A red check that never blocked anything before | It is advisory. Check whether it is a required status check before treating it as a gate. |
 | `hidden` element still visible | Cascade or specificity, usually `.btn` or an ID selector beating `.hidden`. Not a missing class. |
 | A new rule in a stylesheet does nothing | The file stopped parsing above it, or the server is serving a different copy. |
