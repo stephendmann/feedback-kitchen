@@ -26,6 +26,20 @@ Three different action SHAs in under three weeks, and only the oldest was ever g
 
 The pin stays, because pinning a third-party action is right regardless and because it removes one variable from the next diagnosis. It is not a fix.
 
+**Eliminated: the client stack entirely.** Comparing the last green run against a pinned failing one settles this. Both installed Claude Code **v2.1.201** and both initialised on **`claude-sonnet-5`**:
+
+| Run | Date | Claude Code | Model | Result |
+|---|---|---|---|---|
+| `28773539302` | 2026-07-06 | v2.1.201 | `claude-sonnet-5` | `is_error: false`, 10 turns, $0.2487 |
+| `29635934160` | 2026-07-18 | v2.1.214 | `claude-sonnet-5` | `is_error: true`, 1 turn, $0 |
+| `30118079810` | 2026-07-24 | v2.1.201 | `claude-sonnet-5` | `is_error: true`, 1 turn, $0 |
+
+The same Claude Code version and the same model produced a real review in July and a first-turn rejection now. Nothing that ships in the action explains it. Two corollaries worth keeping:
+
+The model default did not drift. `claude-sonnet-5` is what the SDK selected on the green run too, so "the plan cannot reach the new default model" is not the answer. The plan reached that exact model successfully on 6 July.
+
+Cost reporting works for this token. The green run reported $0.2487, so `total_cost_usd: 0` is not an artefact of subscription billing. It means no billable inference happened.
+
 **Eliminated: the marketplace plugin, mostly.** `plugins: "code-review@claude-code-plugins"` resolves against live `anthropics/claude-code.git` and was the other floating dependency. The log shows it clone, validate, and install successfully every time. It remains possible that the plugin's `/code-review:code-review` command contract changed in a way that errors on the first turn, but the plugin is not failing to load.
 
 **Eliminated: the token, twice over.** The 2026-07-18 failure was diagnosed as an expired `CLAUDE_CODE_OAUTH_TOKEN`, the token was regenerated, and the pull request merged. That reads like a fix but is not one: the review check is **not a required status check** and `main` has **no branch protection**, so pull requests merge red either way. There has been no green review run since 2026-07-06, and a second token regeneration on 2026-07-24 changed nothing.
@@ -43,9 +57,11 @@ That instruction is half wrong. `gh run rerun --debug` adds runner-level `##[deb
 
 **What is left to test.** In rough order of cost:
 
-1. Swap the prompt for something trivial with no plugin (`prompt: "Say OK"`). If that also fails at 1 turn and $0, the problem is authentication, entitlement, or a rate limit. If it succeeds, the problem is the `/code-review:code-review` command. This is the cleanest discriminator and it leaks nothing.
-2. Check whether the plan behind `CLAUDE_CODE_OAUTH_TOKEN` can reach `claude-sonnet-5`, the model the SDK selects when `ANTHROPIC_DEFAULT_SONNET_MODEL` is unset. A model the token cannot use would fail on turn one at no cost.
+1. Check the plan allocation behind `CLAUDE_CODE_OAUTH_TOKEN`. Since the client stack is identical to the green run, the account is the largest remaining variable, and an exhausted or rate-limited allocation produces exactly this signature: instant rejection, first turn, no billable inference. This costs nothing and changes no code. Note that CI draws on the same subscription as interactive Claude Code use on the owner's machine, so heavy local sessions and CI reviews compete for one allocation.
+2. Swap the prompt for something trivial with no plugin (`prompt: "Say OK"`). Fails at 1 turn and $0 means authentication, entitlement, or a rate limit. Succeeds means the `/code-review:code-review` command. This is the cleanest discriminator and it leaks nothing, but it costs a merge plus a canary and leaves the repo without a working review while it is in place.
 3. `show_full_output: true`, accepting the exposure, if 1 and 2 do not settle it.
+
+What is *not* worth testing: whether the plan can reach `claude-sonnet-5`. The table above shows it reached that exact model successfully on 6 July.
 
 **Confirming it worked, and the trap that stops you.** The action has a workflow-validation guard: it refuses to run on any pull request whose copy of the workflow file differs from the version on `main`, and that refusal exits **green**. So the pull request that pins the SHA cannot test the pin. It flips the check from red to green while running no review at all. Verified on run `28016397454`, and again on PR #98, where the job passed in 14 seconds with `Exiting due to workflow validation skip` in the log.
 
