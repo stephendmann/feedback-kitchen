@@ -194,6 +194,37 @@
   }
 }
 
+/* FK-49: this @media block was committed truncated — a selector, no declarations, and no closing
+   braces. The file has been 2 braces short since before FK-30 (PR #54, 2026-06-15), so the CSS
+   parser treated everything from here to end-of-file as part of an unterminated block and dropped
+   it. That is why appending a rule to this stylesheet silently did nothing, which is how the
+   truncation was found.
+   Closed here so the file parses. The rule carried no declarations, so nothing is recoverable from
+   history and nothing visual changes: what the 1100px footer variant was meant to do needs the
+   owner's intent, not a guess. Left in place rather than deleted so that intent is not lost. */
 @media (min-width: 1100px) {
   .site-footer__inner:not(:has(.site-footer__brand--utility)) {
-   
+    /* intentionally empty pending FK-50 */
+  }
+}
+
+/* FK-49: restore the `hidden` utility on button elements.
+   `.btn` is declared in scorer.html's inline <style>, which the browser applies after the linked
+   stylesheets, so `.btn { display: inline-flex }` and Tailwind's `.hidden { display: none }` tie on
+   specificity and source order hands the win to `.btn`. Adding `hidden` to a `.btn` element
+   therefore applied the class and hid nothing: btn-insights, btn-modexport-run and
+   btn-modexport-disable all shipped visible while carrying it, defeating the FK-08 moderation
+   lifecycle split (run and disable are meant to stay hidden until opt-in).
+   Two class selectors outrank one, so this wins on specificity regardless of load order.
+
+   Scoped deliberately rather than fixed with `.hidden { display: none !important }`. That blanket
+   rule would also beat the responsive variants, breaking every `hidden md:block` element in the
+   app, which is the intended Tailwind idiom here and is used widely. Verified first that no `.btn`
+   relies on a responsive un-hide, so this override cannot swallow one. */
+.btn.hidden { display: none; }
+
+/* Same defect, different mechanism: `#framework-label-chip` sets `display: inline-flex` from an ID
+   selector, which outranks `.hidden` on specificity alone. The chip is shown by removing `hidden`
+   once a framework label exists, so before then it rendered as an empty pill beside "Rubric scores".
+   An ID plus a class outranks the ID alone. */
+#framework-label-chip.hidden { display: none; }

@@ -111,6 +111,36 @@ async function runKeyboardSmoke(page, pagePath) {
   return results;
 }
 
+/* FK-49: catch utility classes that are applied but do nothing.
+   `.btn` is declared in scorer.html's inline <style>, which the browser applies after the linked
+   stylesheets, so `.btn { display: inline-flex }` and `.hidden { display: none }` tie on specificity
+   and source order handed the win to `.btn`. Three controls shipped visible while carrying `hidden`
+   (btn-insights, btn-modexport-run, btn-modexport-disable), defeating the FK-08 moderation
+   lifecycle split.
+
+   A static markup test cannot see this: the class really is present and the HTML looks right. Only
+   computed style tells the truth, so the check belongs here, where a real browser is already
+   driving the page. Deliberately broad — any element, not just `.btn` — so the next collision is
+   caught wherever it appears. */
+async function checkHiddenUtility(page) {
+  return page.evaluate(() => {
+    /* `hidden md:block` and friends are the intended Tailwind idiom for "hidden on small screens,
+       shown from this breakpoint up". At the 1280px viewport this battery uses, those elements
+       legitimately render while carrying `hidden`, so a naive check reports them and drowns the
+       real defects. Only flag elements with no responsive variant that could be un-hiding them. */
+    const RESPONSIVE_UNHIDE = /\b(sm|md|lg|xl|2xl):(block|flex|grid|inline|inline-block|inline-flex|table|contents)\b/;
+    return [...document.querySelectorAll('.hidden')]
+      .filter((el) => getComputedStyle(el).display !== 'none')
+      .filter((el) => !RESPONSIVE_UNHIDE.test(el.className || ''))
+      .map((el) => ({
+        id: el.id || '(no id)',
+        classes: (el.className || '').slice(0, 80),
+        display: getComputedStyle(el).display,
+        text: (el.innerText || '').trim().slice(0, 40),
+      }));
+  });
+}
+
 async function main() {
   console.log('\n🔍 BBP v0.1 — Accessibility Audit Starting...\n');
   console.log(`Base URL: ${BASE_URL}`);
@@ -141,6 +171,7 @@ async function main() {
         axe: null,
         keyboard: [],
         loadError: null,
+        hiddenUtilityLeaks: [],   // FK-49: elements carrying `hidden` that still render
       };
 
       try {
@@ -166,6 +197,14 @@ async function main() {
           incomplete: axeResults.incomplete.length,
           inapplicable: axeResults.inapplicable.length,
         };
+
+        pageResult.hiddenUtilityLeaks = await checkHiddenUtility(page);
+        if (pageResult.hiddenUtilityLeaks.length) {
+          console.log(`   ❌ ${pageResult.hiddenUtilityLeaks.length} element(s) carry "hidden" but still render:`);
+          pageResult.hiddenUtilityLeaks.forEach((l) => console.log(`      #${l.id} → display: ${l.display}  "${l.text}"`));
+        } else {
+          console.log('   ✓ hidden-utility check clean');
+        }
 
         const vCount = axeResults.violations.length;
         const critCount = axeResults.violations.filter(v => v.impact === 'critical').length;
