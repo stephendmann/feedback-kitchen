@@ -68,7 +68,11 @@ The manual names controls as they appear on screen: "Import Moodle worksheet…"
 
 Renaming a user-facing control is always a documentation-impacting change. There is no version of that edit where `docs-impact: none` is the right answer.
 
-Casing is the one exception. The guides write control names in sentence case per `brand-voice-canon.md`, including where a shipped label still uses title case (the home page's "Build a New Scorer" is the current example). Do not "correct" the guides to match title-case labels: the label is the thing scheduled to change, and matching it would lock the violation into published documentation. Recognition does not depend on case, so a reader loses nothing.
+Casing is the one exception. The guides write control names in sentence case per `brand-voice-canon.md`, even where a shipped label uses title case. Do not "correct" the guides to match: the label is the thing scheduled to change, and matching it would lock the violation into published documentation. Recognition does not depend on case, so a reader loses nothing.
+
+The action that starts a new scorer is a live example, and a larger problem than casing. It currently ships under five different strings: `+ Create Scorer` (home page nav), `Build a New Scorer` (hero), `Build Your Scorer`, and `Build a Scorer →` (both elsewhere on the home page), plus `Build a Scorer →` on the scorer's empty state. They differ in verb, determiner, and case, and all lead to the same place. The guides call it "Build a new scorer" throughout, which is the canon-compliant form of the hero label.
+
+Until the application settles on one string, do not chase these variants into the guides. One consistent name that matches the primary call to action serves a reader better than four alternatives faithfully reproduced. When the application does settle, that is a documentation-impacting change and this paragraph should shrink to a single sentence.
 
 ---
 
