@@ -310,6 +310,8 @@ The site *serves* with no build step, but **styling changes do need the CSS watc
 
 Run the test suite with `npx jest`; the accessibility harness is `bash run-bbp-a11y.sh` (needs the dev server up).
 
+If something fails in a way that doesn't match the diff, [`docs/troubleshooting.md`](docs/troubleshooting.md) records the failures that have already cost time here: a CI review job that dies in seconds, an element that keeps rendering despite `class="hidden"`, and a stylesheet edit that silently does nothing.
+
 ---
 
 ## Planning & Decision Records
