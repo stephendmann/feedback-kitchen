@@ -30,7 +30,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Claude review
-        uses: anthropics/claude-code-action@v1
+        # Pinned to the last SHA that produced a real review (2026-07-06: 10 turns,
+        # non-zero cost, is_error false). The mutable @v1 tag moved twice after that
+        # (3553f843 on 18 Jul, 44423bd on 24 Jul) and both fast-fail in under a minute
+        # with num_turns 1 and $0 cost. Pinning also removes a silent moving dependency.
+        # See docs/troubleshooting.md for how to tell a moved tag from an expired token.
+        uses: anthropics/claude-code-action@558b1d6cab4085c7753fe402c10bef0fbb92ac7a # v1 as of 2026-07-06
         with:
           # Authenticates with the Claude Pro subscription (claude setup-token),
           # so CI reviews draw from the plan allocation rather than API billing.
