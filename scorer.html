@@ -555,6 +555,16 @@
         <div class="section-body">
           <p class="step-sub mb-4" style="margin-left:2.15rem">Name, ID, tutor. Date auto-fills; tutor persists between students.
             <span class="text-amber-800 whitespace-nowrap"><span aria-hidden="true">✎</span> Tinted fields are marker inputs.</span></p>
+          <!-- FK-44: Moodle import is a pre-marking step, so it needs an entry point where marking starts.
+               The canonical controls stay in #sec-cohort; this calls the same handler.
+               data-fk-moodle marks every Moodle-only control for FK-48's per-scorer visibility toggle. -->
+          <p id="moodle-entry-student" data-fk-moodle="entry" class="text-xs text-slate-600 mb-4" style="margin-left:2.15rem">
+            Marking a Moodle cohort?
+            <button type="button" onclick="S.openMoodleImport()"
+                    class="font-semibold text-emerald-700 hover:text-emerald-600 underline"
+                    title="Import a Moodle offline grading worksheet (CSV) to pre-seed this cohort with the class list. Validates and previews first; never overwrites already-marked students.">Import the worksheet</button>
+            to load the class list before you start marking.
+          </p>
           <div class="grid sm:grid-cols-4 gap-4">
             <div>
               <label for="student-name" class="block text-xs font-semibold text-slate-600 mb-1" title="The full name of the student being marked.">Student Name</label>
@@ -1286,10 +1296,10 @@
             <button id="btn-insights" class="btn btn-ghost hidden" onclick="S.showCohortInsights()" title="View cohort analytics: grade distribution, marking patterns, distribution shape, and formative prompts.">Cohort Insights <span id="btn-insights-new" class="hidden ml-1 text-[10px] bg-teal-100 text-teal-700 border border-teal-300 px-1.5 py-0.5 rounded font-semibold">NEW</span></button>
             <button class="btn btn-ghost" onclick="S.viewCohortList()" title="See the list of students currently saved in this cohort.">View list</button>
             <button class="btn btn-ghost" onclick="S.renameCohort()" title="Change the cohort label.">Rename</button>
-            <button class="btn btn-ghost" onclick="S.openMoodleImport()" title="Import a Moodle offline grading worksheet (CSV) to pre-seed this cohort. Validates and previews first; never overwrites already-marked students.">Import Moodle worksheet…</button>
+            <button data-fk-moodle="import" class="btn btn-ghost" onclick="S.openMoodleImport()" title="Import a Moodle offline grading worksheet (CSV) to pre-seed this cohort. Validates and previews first; never overwrites already-marked students.">Import Moodle worksheet…</button>
             <input type="file" id="moodle-file-input" accept=".csv,text/csv" class="hidden" onchange="S.onMoodleFileChosen(this)">
             <span class="sr-only" id="mw-live" role="status" aria-live="polite"></span>
-            <button class="btn btn-ghost" onclick="S.openMoodleExport()" title="Fill your FK grades + feedback into the Moodle worksheet you downloaded, ready to re-upload.">Export Moodle worksheet…</button>
+            <button data-fk-moodle="export" class="btn btn-ghost" onclick="S.openMoodleExport()" title="Fill your FK grades + feedback into the Moodle worksheet you downloaded, ready to re-upload.">Export Moodle worksheet…</button>
             <input type="file" id="moodle-export-file-input" accept=".csv,text/csv" class="hidden" onchange="S.onMoodleExportFileChosen(this)">
             <!-- Moderation Export group: configure (always visible, self-relabels when enabled) / run / disable (both hidden until opted in) — lifecycle split is deliberate, do not consolidate (INS-2/FK-08) -->
             <span class="hidden md:inline-block w-px h-4 bg-slate-200 self-center" aria-hidden="true"></span>
