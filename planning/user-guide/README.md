@@ -10,9 +10,11 @@ Drafts of the lecturer-facing documentation FK does not yet have. Written 2026-0
 
 ## Status
 
-Not published, and not to be circulated. Publication is carded as **FK-46**, blocked by **FK-44**.
+Not yet published, and not to be circulated until it is. Publication is carded as **FK-46**, which is **no longer blocked**: FK-44 (PR #92) and FK-48 (PR #93) both shipped on 2026-07-24 and the drafts were revised the same day to match.
 
-FK-44 is the reason for the block. `Import Moodle worksheet…` currently sits in the last section of the scorer, below Finish, in the one section with no rail link, even though importing is what you do before marking anyone. The manual's Moodle section describes reaching it from where marking starts, which is how FK-44 will leave it. Publishing first would have meant teaching a workaround and rewriting the section afterwards.
+Part 6 of the manual now describes the shipped Student-section import entry point, and gains a section on the per-scorer "This assessment is marked in Moodle" setting, including that it travels with a shared scorer and that the export control stays available mid-round-trip.
+
+One thing to settle before publishing: markdown in `docs/` is served as `text/markdown` and browsers display it as raw text with the markup visible, so it reads correctly on GitHub but not on the live site. Publishing to `docs/` plus a README link works today; a lecturer-facing page on the site needs a rendering step, which is tracked on the FK-46 card.
 
 ## Why these live in the planning worktree
 
@@ -22,9 +24,6 @@ FK-44 is the reason for the block. `Import Moodle worksheet…` currently sits i
 
 Every claim was checked against `origin/main`, not against this worktree, which is roughly five weeks stale (merge-base `1af58be`, 2026-06-11). Anyone revising these drafts should do the same.
 
-Two drift items were found in existing documentation while drafting, both recorded on FK-46:
+One drift item stands, recorded on FK-46: `fk-decisions.md` (lines 1121 and 1161) says Sonnet is gated to `improve_criterion_body`, while shipped `api/garnish.js:125` allows four modes (`improve_criterion_body`, `draft`, `improve`, `shorten`). It does not affect these drafts, which were written from the code, but the decision record needs correcting.
 
-- `README.md` still says student session data "is never written to localStorage". Draft autosave (FK-21) and cohort save both write it, and the Cohort Workbench section in the same file describes the cohort records that contradict the claim.
-- `fk-decisions.md` D17 says Sonnet is gated to `improve_criterion_body`. Shipped `api/garnish.js:125` allows four modes: `improve_criterion_body`, `draft`, `improve`, `shorten`.
-
-Neither affects the drafts, which were written from the code. Both need fixing where they sit.
+A second claimed drift item has been **withdrawn as an error**. These notes previously said `README.md` still asserts that student session data is never written to localStorage. That is not true of `main`: `README.md:274` already describes cohort records being saved to localStorage, accurately. The mistake came from reading this worktree's own five-week-stale copy of `README.md` instead of `main`, which is exactly the hazard noted above.

@@ -1,0 +1,43 @@
+.calibre {
+    display: block;
+    font-size: 1em;
+    margin-bottom: 0;
+    margin-left: 5pt;
+    margin-right: 5pt;
+    margin-top: 0;
+    padding-left: 0;
+    padding-right: 0
+    }
+.calibre1 {
+    display: block;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 1em
+    }
+.calibre2 {
+    height: 1344px;
+    width: 896px
+    }
+.calibre3 {
+    height: 1346px;
+    width: 896px
+    }
+.calibre4 {
+    height: 1348px;
+    width: 896px
+    }
+.calibre5 {
+    height: 1349px;
+    width: 896px
+    }
+.calibre6 {
+    height: 1718px;
+    width: 896px
+    }
+
+@page {
+    margin-bottom: 5pt;
+    margin-top: 5pt
+    }
+

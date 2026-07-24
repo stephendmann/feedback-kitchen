@@ -1,7 +1,7 @@
 # Feedback Kitchen: a manual for lecturers and tutors
 
 > **Draft: not yet published. Do not circulate.**
-> Written 2026-07-24 against `origin/main`. Publication is tracked as FK-46 and is blocked by **FK-44** (Moodle import unreachable from where marking starts). Part 6 describes the post-fix flow. Part 9 lists what to re-check before this goes out.
+> Written 2026-07-24 against `origin/main` and revised the same day once FK-44 and FK-48 shipped. Part 6 now describes the behaviour actually on `main`: the Student-section import entry point (FK-44, PR #92) and the per-scorer Moodle setting (FK-48, PR #93). Publication is FK-46, no longer blocked.
 
 ---
 
@@ -194,7 +194,7 @@ The round trip has two halves, and the first one belongs at the start of marking
 
 In your Moodle assignment, choose to download the **offline grading worksheet**. Moodle gives you a CSV containing the participant list.
 
-In Feedback Kitchen, choose **Import Moodle worksheet…** and select that file. Feedback Kitchen checks it is genuinely a Moodle worksheet, then shows you a preview of what it will do with each row before anything is imported. Students already marked in this cohort are protected: the import will not overwrite them.
+In Feedback Kitchen, the Student section carries a line reading "Marking a Moodle cohort? Import the worksheet to load the class list before you start marking." Use that, or **Import Moodle worksheet…** in the Cohort section lower down; both do the same thing. Select the file you downloaded. Feedback Kitchen checks it is genuinely a Moodle worksheet, then shows you a preview of what it will do with each row before anything is imported. Students already marked in this cohort are protected: the import will not overwrite them.
 
 Once you commit the import, the class list is loaded and the first student opens ready to mark. From then on you are marking against real names and IDs that came from Moodle, so nothing is mistyped and nothing is missed.
 
@@ -211,6 +211,14 @@ Your marker's notes are never written into the Moodle file. They stay in the Exc
 ### If you would rather not use the worksheet
 
 Nothing forces you to. Marking a student and using **Copy feedback**, then pasting into Moodle's grading interface by hand, works exactly as well. The worksheet route saves time on large cohorts and removes transcription errors; on twelve students it may not be worth the round trip.
+
+### Turning the Moodle tools off
+
+If an assessment is not marked in Moodle at all, you can keep these tools out of the way. Step 6 of the builder has a setting, "This assessment is marked in Moodle", switched on by default. Turn it off and the Moodle import and export controls disappear from the scorer for that assessment. The same setting is in scorer settings if you want to change it later.
+
+It is saved with the scorer rather than with your browser, so it travels when you share the scorer with your marking team. That is deliberate: an assessment either is or is not delivered through Moodle, and that is the same answer for everyone marking it. Someone at another institution who imports your scorer can switch it back on.
+
+One safeguard worth knowing: if you have already imported a Moodle worksheet into the cohort, the export control stays visible even with the setting off, so you can always finish a round trip you have started.
 
 ---
 

@@ -1,7 +1,7 @@
 # Feedback Kitchen: quick start for new lecturers
 
 > **Draft: not yet published. Do not circulate.**
-> Written 2026-07-24 against `origin/main`. Publication is FK-46, which is blocked by **FK-44**: the Moodle import control is currently unreachable from where marking starts, and the "Marking a Moodle cohort" section below describes the flow **as it will read once FK-44 ships**. Publishing before then would document a workaround instead of a working product.
+> Written 2026-07-24 against `origin/main` and revised the same day once FK-44 (PR #92) shipped. The Moodle section below matches the behaviour now on `main`. Publication is FK-46, no longer blocked.
 
 *Two pages. Everything here is free and needs no account, no install, and no sign-up.*
 
