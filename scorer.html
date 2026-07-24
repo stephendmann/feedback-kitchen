@@ -3305,6 +3305,9 @@
       try { refreshModExportUI(); } catch (e) { /* module may not be loaded in tests */ }
       // FK-25: ambient rubric-drift signal stays in lockstep with the cohort too.
       try { refreshRubricDriftUI(cohort); } catch (e) { /* SA.detectRubricDrift may be absent in tests */ }
+      // FK-48: the Moodle export control stays visible while the cohort holds imported records, so
+      // its visibility has to be re-evaluated whenever the cohort changes (import, clear, re-open).
+      try { applyMoodleVisibility(); } catch (e) { /* no-op before the config is loaded */ }
       // FK-12: ambient cohort scale-use consistency signal (default-off; opt-in).
       try { refreshCohortConsistencyUI(cohort); } catch (e) { /* CohortInsights may be absent in tests */ }
       refreshStatusChips();
@@ -3382,6 +3385,69 @@
       setSetting('showCohortConsistency', !!on);
       if (on) usageTrack('cohort_consistency_enabled');
       applyCohortConsistencyVisibility();
+    }
+
+    /* ── FK-48: per-scorer Moodle declaration ─────────────────────
+       A scorer declares whether its assessment is marked in Moodle. When it is not, the Moodle
+       entry points are hidden rather than disabled: nothing the marker does in-session can change
+       the answer, so a permanently greyed control would be noise that invites a click and explains
+       itself only on hover. (Disabled-with-tooltip is right for moderation export, where marking
+       15 students genuinely unlocks it.)
+
+       The flag lives on the config, not in SA_SCORER_SETTINGS_V1, because that blob is device-global
+       and would switch Moodle off for every scorer on the machine. On the config it is per-scorer
+       and travels with the JSON export to the marking team.
+
+       Absent reads as enabled, so scorers built before this existed are untouched. */
+    function moodleDeclared() {
+      return !config || config.moodleEnabled !== false;
+    }
+
+    /* True when the open cohort holds records imported from a Moodle worksheet. buildCohortImport
+       stamps source:'moodle-worksheet' on every imported record, so this is a read of existing data. */
+    function cohortHasMoodleRecords() {
+      try {
+        if (!config || !config.id || !window.SA || !SA.getCohort) return false;
+        const cohort = SA.getCohort(config.id);
+        const students = (cohort && cohort.students) || [];
+        return students.some(function (s) { return s && s.source === 'moodle-worksheet'; });
+      } catch (e) { return false; }
+    }
+
+    /* Hides entry + import when the scorer says it is not marked in Moodle. Export is kept visible
+       whenever the open cohort holds Moodle-imported records, so a marker who imported a worksheet
+       and marked half the cohort cannot be stranded with no way to finish the round trip. The flag
+       therefore governs entry to the workflow, not exit from it. */
+    function applyMoodleVisibility() {
+      const declared = moodleDeclared();
+      const stranded = !declared && cohortHasMoodleRecords();
+      document.querySelectorAll('[data-fk-moodle]').forEach(function (node) {
+        const kind = node.getAttribute('data-fk-moodle');
+        const show = declared || (kind === 'export' && stranded);
+        // Inline display, not the `hidden` utility class. Two of the three targets are `.btn`
+        // elements, and `.btn { display: inline-flex }` beats `.hidden { display: none }` in the
+        // cascade, so toggling the class applies it without hiding anything (the FK-06 / FK-16
+        // hazard). Runtime-confirmed here: class present, computed display still flex.
+        // Empty string restores whatever the stylesheet says, so showing again needs no bookkeeping.
+        node.style.display = show ? '' : 'none';
+      });
+    }
+
+    function applyMoodleSetting() {
+      const cb = el('setting-moodle-enabled');
+      if (cb) cb.checked = moodleDeclared();
+      applyMoodleVisibility();
+    }
+
+    function setMoodleEnabled(on) {
+      if (!config) return;
+      config.moodleEnabled = !!on;
+      try {
+        SA.saveConfig(config);
+      } catch (e) {
+        alert(e && e.message ? e.message : 'Could not save the Moodle setting — this browser’s storage may be full.');
+      }
+      applyMoodleVisibility();
     }
 
     /* ── FK-19: Moodle worksheet import controller ───────────────
@@ -5406,6 +5472,7 @@
       applyAdvancedToolsVisibility();
       try { applyCohortConsistencyVisibility(); } catch (e) {} // FK-12: sync settings checkbox + badge
       try { applyClearTutorSetting(); } catch (e) {}           // FK-33: sync the clear-tutor settings checkbox
+      try { applyMoodleSetting(); } catch (e) {}               // FK-48: sync the Moodle checkbox + entry-point visibility
     });
 
     /* ── Wrap legacy advanced-tool calls so we instrument them ── */
@@ -5440,6 +5507,7 @@
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
              // FK-19: Moodle worksheet import
              openMoodleImport, onMoodleFileChosen, mwAssignId, mwIgnore, mwToggleFilter, mwCancel, mwCommit,
+             setMoodleEnabled, applyMoodleVisibility,
              openMoodleExport, mwExportChoose, onMoodleExportFileChosen,
              // Moderation Export — opt-in & gating (issue #2)
              showModExportOptIn, hideModExportOptIn, confirmModExportOptIn,
@@ -5921,6 +5989,19 @@
          onclick="S.closeModal('scorer-settings-modal')"></div>
     <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
       <h3 id="scorer-settings-modal-heading" class="font-bold text-slate-800 text-lg mb-3">Scorer settings</h3>
+      <!-- FK-48: this one is stored on the scorer config, not the device settings blob, so it is
+           grouped separately. The footer note below distinguishes the two scopes. -->
+      <p class="text-xs font-semibold text-slate-500 mb-2">This scorer</p>
+      <label class="flex items-start gap-3 cursor-pointer mb-4">
+        <input type="checkbox" id="setting-moodle-enabled"
+               class="mt-1"
+               onchange="S.setMoodleEnabled(this.checked)">
+        <span class="text-sm text-slate-700">
+          <strong>This assessment is marked in Moodle</strong>
+          <span class="block text-xs text-slate-500 mt-1">Shows the Moodle worksheet import and export tools. Turn it off for an assessment you do not mark in Moodle and those tools stay out of your way. Saved with this scorer and included when you export it, so your marking team gets the same setting.</span>
+        </span>
+      </label>
+      <p class="text-xs font-semibold text-slate-500 mb-2 mt-5">This device</p>
       <label class="flex items-start gap-3 cursor-pointer mb-4">
         <input type="checkbox" id="setting-show-advanced-wording"
                class="mt-1"
@@ -5949,7 +6030,7 @@
         </span>
       </label>
       <div class="text-xs text-slate-500 border-t border-slate-100 pt-3 space-y-2">
-        <p>Settings are saved on this device only.</p>
+        <p>Device settings are saved in this browser only. The scorer setting is saved with the scorer itself.</p>
         <p>
           <a href="?view=local-stats"
              class="text-blue-600 hover:underline"
