@@ -8,6 +8,7 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 
 ## Table of Contents
 
+- [Guides for lecturers](#guides-for-lecturers)
 - [Background & Rationale](#background--rationale)
 - [How It Works — Overview](#how-it-works--overview)
 - [Getting Started](#getting-started)
@@ -28,6 +29,21 @@ Feedback Kitchen is a browser-based assessment feedback tool adapted from the or
 - [Planning & Decision Records](#planning--decision-records)
 - [How I use Pull Requests for FK](#how-i-use-pull-requests-for-fk)
 - [Acknowledgements](#acknowledgements)
+
+---
+
+## Guides for lecturers
+
+Two written guides, both covering the free tool. Neither needs an account or an install.
+
+| Guide | Length | For |
+|---|---|---|
+| [Quick start](docs/user-guide/QUICK-START.md) | Two pages | Opening Feedback Kitchen for the first time: build a scorer, mark a student, export the record |
+| [Lecturer manual](docs/user-guide/USER-MANUAL.md) | 12 parts | The full reference, including Moodle worksheets, snippets, cohort exports, moderation, privacy, and troubleshooting |
+
+The marking workflow is free in full. The manual's closing part covers the two features reserved for Ko-fi supporters (the AI wording assistant and PDF rubric import), neither of which sits between a rubric and a marked cohort.
+
+There is also a [narrated tour](https://marking.stephendmann.com/how-to-feedback-kitchen.html) on the site if you would rather watch than read.
 
 ---
 
@@ -311,6 +327,8 @@ The site *serves* with no build step, but **styling changes do need the CSS watc
 Run the test suite with `npx jest`; the accessibility harness is `bash run-bbp-a11y.sh` (needs the dev server up).
 
 If something fails in a way that doesn't match the diff, [`docs/troubleshooting.md`](docs/troubleshooting.md) records the failures that have already cost time here: a CI review job that dies in seconds, an element that keeps rendering despite `class="hidden"`, and a stylesheet edit that silently does nothing.
+
+When a change alters something the lecturer guides describe, [`docs/MANUAL-MAINTENANCE.md`](docs/MANUAL-MAINTENANCE.md) maps each application surface to the manual sections that document it, so checking is a lookup rather than a judgement call.
 
 ---
 
