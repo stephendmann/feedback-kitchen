@@ -194,17 +194,18 @@
   }
 }
 
-/* FK-49: this @media block was committed truncated — a selector, no declarations, and no closing
-   braces. The file has been 2 braces short since before FK-30 (PR #54, 2026-06-15), so the CSS
-   parser treated everything from here to end-of-file as part of an unterminated block and dropped
-   it. That is why appending a rule to this stylesheet silently did nothing, which is how the
-   truncation was found.
-   Closed here so the file parses. The rule carried no declarations, so nothing is recoverable from
-   history and nothing visual changes: what the 1100px footer variant was meant to do needs the
-   owner's intent, not a guess. Left in place rather than deleted so that intent is not lost. */
+/* FK-49: this @media block was committed truncated, with a selector, no declarations, and no
+   closing braces. The file had been 2 braces short since before FK-30 (PR #54, 2026-06-15), so the
+   CSS parser treated everything from here to end-of-file as part of an unterminated block and
+   dropped it. That is why appending a rule to this stylesheet silently did nothing, which is how
+   the truncation was found.
+   Closed here so the file parses. The rule carried no declarations, so nothing was recoverable
+   from history and closing it changed nothing visual. The follow-up asking what the 1100px footer
+   variant was meant to do was withdrawn on 2026-07-24: no further work is wanted, and the empty
+   rule is kept only to mark where the truncation was. */
 @media (min-width: 1100px) {
   .site-footer__inner:not(:has(.site-footer__brand--utility)) {
-    /* intentionally empty pending FK-50 */
+    /* intentionally empty */
   }
 }
 
