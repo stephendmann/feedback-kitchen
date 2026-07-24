@@ -29,6 +29,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ==================== TEMPORARY DIAGNOSTIC ====================
+      # This job is NOT reviewing pull requests right now. It runs a minimal
+      # prompt with no plugin, to answer one question: can CI reach Claude at
+      # all? See docs/troubleshooting.md, "The Claude review job fails in
+      # seconds", for why the usual suspects have been eliminated.
+      #
+      #   1 turn and $0        -> auth, entitlement, or a rate limit
+      #   a real reply, >$0    -> the /code-review:code-review command
+      #
+      # REVERT THIS as soon as its canary pull request has run:
+      #   git revert <this commit>
+      # The review configuration it replaces is in that commit's diff.
+      # Because of the workflow-validation guard, reverting also needs a
+      # separate pull request that touches no workflow file before the real
+      # review runs again.
+      # ==============================================================
       - name: Claude review
         # Pinned to the last SHA that produced a real review (2026-07-06: 10 turns,
         # non-zero cost, is_error false). The mutable @v1 tag moved twice after that
@@ -40,14 +56,7 @@ jobs:
           # Authenticates with the Claude Pro subscription (claude setup-token),
           # so CI reviews draw from the plan allocation rather than API billing.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Runs the same `code-review` skill used locally via /code-review,
-          # for consistent behaviour between local and CI reviews.
-          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
-          plugins: "code-review@claude-code-plugins"
-          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          claude_args: >-
-            --append-system-prompt "Feedback Kitchen is an academic assessment / rubrics
-            web app. Treat student data as sensitive: never recommend logging or exposing
-            raw student identifiers. Weight findings toward grading/rubric correctness,
-            data privacy, and performance on large cohorts. The repo CLAUDE.md and
-            planning docs carry FK conventions — honour them."
+          # DIAGNOSTIC: no plugin, no marketplace, no system prompt, and a
+          # prompt that needs no repository context. Every moving part except
+          # the credential is removed, so the result is unambiguous.
+          prompt: "Reply with exactly: OK"
