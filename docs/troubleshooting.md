@@ -26,7 +26,7 @@ Three different action SHAs in under three weeks, and only the oldest was ever g
 
 Never infer that a check recovered from the fact that a pull request merged. Read the run conclusion.
 
-**What to do.** Pin the action to the last known-good SHA, which is also the standard hardening for third-party actions:
+**What to do.** Pin the action to the last known-good SHA, which is also the standard hardening for third-party actions. This landed in PR #98 on 2026-07-25:
 
 ```yaml
 uses: anthropics/claude-code-action@558b1d6cab4085c7753fe402c10bef0fbb92ac7a
@@ -34,7 +34,17 @@ uses: anthropics/claude-code-action@558b1d6cab4085c7753fe402c10bef0fbb92ac7a
 
 Treat that as a test rather than a guaranteed fix. A pinned action can still fail for quota, auth, or upstream service reasons, and there is a second floating dependency in the same workflow: `plugins: "code-review@claude-code-plugins"` resolves against live `anthropics/claude-code.git`. Pinning the action discriminates between the two. If a pinned run still fast-fails, the marketplace plugin is the remaining suspect.
 
-**Confirming it worked.** Re-run from the Checks tab, or `gh run rerun <run_id> --failed`. The run ID is required. A recovered run looks like roughly 10 turns with a non-zero cost; the broken one is always 1 turn and $0.
+**Confirming it worked, and the trap that stops you.** The action has a workflow-validation guard: it refuses to run on any pull request whose copy of the workflow file differs from the version on `main`, and that refusal exits **green**. So the pull request that pins the SHA cannot test the pin. It flips the check from red to green while running no review at all. Verified on run `28016397454`, and again on PR #98, where the job passed in 14 seconds with `Exiting due to workflow validation skip` in the log.
+
+Re-running an older pull request's job does not test it either, because that branch still carries the unpinned file. `gh run rerun` replays the workflow as it exists on the head commit, not as it exists on `main`.
+
+The only real test is **the next pull request that does not touch `.github/workflows/`**. On that run, read the log rather than the check mark:
+
+```bash
+gh run view <run_id> --log | grep -E "num_turns|total_cost_usd|is_error"
+```
+
+A working run is roughly 10 turns with a non-zero cost and `is_error: false`. The broken one is always 1 turn and $0. A green check by itself proves nothing here, for the same reason a merged pull request proved nothing above.
 
 ---
 
@@ -97,7 +107,8 @@ When one of these fails, start here rather than with the diff:
 
 | Symptom | First suspect |
 |---|---|
-| Claude review fails fast on every PR | The `@v1` tag moved. Pin the SHA, then look at credentials. |
+| Claude review fails fast on every PR | A moving dependency, not credentials. The action is pinned as of PR #98, so check the pin is intact, then suspect the `code-review` marketplace plugin. |
+| Claude review went green the moment you edited its workflow | The validation guard skipped it. A skip exits green. Read the log for `workflow validation`. |
 | A red check that never blocked anything before | It is advisory. Check whether it is a required status check before treating it as a gate. |
 | `hidden` element still visible | Cascade or specificity, usually `.btn` or an ID selector beating `.hidden`. Not a missing class. |
 | A new rule in a stylesheet does nothing | The file stopped parsing above it, or the server is serving a different copy. |
