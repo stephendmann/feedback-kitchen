@@ -1,6 +1,6 @@
 # Troubleshooting notes
 
-Failures that have cost real time in this repo. Each entry records what the symptom looks like, what it turned out to be, and which check settles it. One entry is still open, and says so rather than offering a theory dressed as an answer.
+Failures that have cost real time in this repo. Each entry records what the symptom looks like, what it turned out to be, and which check settles it.
 
 Every claim here was verified against this repository: the workflow run history, the built CSS, or the running app. Where a diagnosis was wrong the first time, that is recorded too, because the wrong answer is usually the plausible one.
 
@@ -10,9 +10,13 @@ Every claim here was verified against this repository: the workflow run history,
 
 **Symptom.** The "Claude code review (read-only)" check goes red about two seconds after Claude Code initialises. The log ends with `is_error: true`, `num_turns: 1`, `total_cost_usd: 0`, and no error message. It happens on every pull request, regardless of what the diff contains.
 
-**What it is.** Not yet known. Two confident diagnoses have both been wrong, so this entry records what has been eliminated rather than an answer.
+**What it was.** The `CLAUDE_CODE_OAUTH_TOKEN` repository secret was **empty**. The action received a blank token, which the API rejects on the first turn before any inference, producing the zero-cost signature. Confirmed on 2026-07-25: the owner set the correct value, and re-running the previously failing canary job (`30118079810`) with no other change produced a real review, `is_error: false`, 11 turns, $0.2926, 35 seconds. Same pinned action, same code, only the secret populated.
 
-What the signature does tell you: zero cost with a first-turn failure means the run was rejected before any work happened. Claude Code initialises, reports `"model": "claude-sonnet-5"`, and returns a result roughly two seconds later with `duration_ms` under 2000. Everything in the job before that point succeeds, including the OIDC handshake, the app token exchange, the permission check, the Claude Code install, the marketplace clone, and the plugin install.
+Read the rest of this entry as a worked example of how long a wrong frame can survive, because the answer turned out to be the very first suspect, wearing a disguise. The failure was the token all along. It was not *expired*, which is what the first diagnosis claimed and later got talked out of. It was blank. "It's the token" was rejected precisely because someone had supposedly already replaced the token, so the reasoning became "the token has been refreshed, therefore the token is not the problem." That inference is only as good as the belief that the refresh wrote a non-empty value to the right secret, and that belief was never checked. **When a fix for a suspect does not work, confirm the fix landed before crossing the suspect off.** An empty secret and a healthy secret are indistinguishable from the run history: both let the job start, both reach the model call, and the action redacts the error that would tell them apart.
+
+What the signature told us, correctly: zero cost with a first-turn failure means the run was rejected before any work happened. Claude Code initialises, reports `"model": "claude-sonnet-5"`, and returns a result roughly two seconds later with `duration_ms` under 2000. Everything in the job before that point succeeds, including the OIDC handshake, the app token exchange, the permission check, the Claude Code install, the marketplace clone, and the plugin install. All of that uses the GitHub token, not the Anthropic one, which is why the Anthropic credential being blank breaks nothing until the model call.
+
+The eliminations below were sound reasoning from the evidence available, and they did useful work: they steered away from the action, the client stack, and the plugin, and toward the account. The one that was wrong, "eliminated: the token", was wrong not in its logic but in its premise. It is kept in place, marked, rather than quietly deleted.
 
 **Eliminated: the action version.** The mutable `@v1` tag did move under us, which looked causal. `fk-claude-review.yml` had not been edited since 2026-06-23, yet:
 
@@ -42,9 +46,9 @@ Cost reporting works for this token. The green run reported $0.2487, so `total_c
 
 **Eliminated: the marketplace plugin, mostly.** `plugins: "code-review@claude-code-plugins"` resolves against live `anthropics/claude-code.git` and was the other floating dependency. The log shows it clone, validate, and install successfully every time. It remains possible that the plugin's `/code-review:code-review` command contract changed in a way that errors on the first turn, but the plugin is not failing to load.
 
-**Eliminated: the token, twice over.** The 2026-07-18 failure was diagnosed as an expired `CLAUDE_CODE_OAUTH_TOKEN`, the token was regenerated, and the pull request merged. That reads like a fix but is not one: the review check is **not a required status check** and `main` has **no branch protection**, so pull requests merge red either way. There has been no green review run since 2026-07-06, and a second token regeneration on 2026-07-24 changed nothing.
+**"Eliminated: the token" — this was the wrong elimination.** The 2026-07-18 failure was diagnosed as an expired `CLAUDE_CODE_OAUTH_TOKEN`, the token was reportedly regenerated, and the pull request merged. Reading "the PR merged" as a fix was a genuine error, separate from this one: the review check is **not a required status check** and `main` has **no branch protection**, so pull requests merge red either way. That much still holds, and read the run conclusion, never the merge, for whether a check recovered.
 
-Never infer that a check recovered from the fact that a pull request merged. Read the run conclusion.
+But the deeper mistake was here. Because a regeneration had supposedly happened, the token was crossed off, and every later step reasoned "not the token". The regeneration either wrote an empty value, updated the wrong secret, or did not save. Nobody read back the secret to confirm it was non-empty, and the secret being blank was the whole cause. The lesson is not "suspect the token"; it is **verify that the fix you already applied is actually in place before you rule its target out.**
 
 **Why you cannot see the error.** There is an error message. The action refuses to print it:
 
@@ -55,27 +59,29 @@ Rerun in debug mode or enable `show_full_output: true` in your workflow file for
 
 That instruction is half wrong. `gh run rerun --debug` adds runner-level `##[debug]` lines and does **not** lift the redaction, because the suppression happens inside the action rather than in the runner. Verified on run `30117731296`: re-run with `--debug`, identical output, still no error text. The only route to the message is `show_full_output: true` in the workflow, which has two costs worth weighing before anyone reaches for it. It prints Claude's full output into the logs of a public repository, and because it edits the workflow file it cannot take effect until it is merged to `main` (see the validation trap below).
 
-**What is left to test.** In rough order of cost:
+Had the error been visible, this entry would have been one line. It was not, so the cheapest genuinely diagnostic step, once the client stack was ruled out, was to read the secret back and confirm it held a value. That is the step to reach for first next time: when the signature points at the credential and a fix was supposedly already applied, verify the credential is actually present before building anything.
 
-1. Check the plan allocation behind `CLAUDE_CODE_OAUTH_TOKEN`. Since the client stack is identical to the green run, the account is the largest remaining variable, and an exhausted or rate-limited allocation produces exactly this signature: instant rejection, first turn, no billable inference. This costs nothing and changes no code. Note that CI draws on the same subscription as interactive Claude Code use on the owner's machine, so heavy local sessions and CI reviews compete for one allocation.
-2. Swap the prompt for something trivial with no plugin (`prompt: "Say OK"`). Fails at 1 turn and $0 means authentication, entitlement, or a rate limit. Succeeds means the `/code-review:code-review` command. This is the cleanest discriminator and it leaks nothing, but it costs a merge plus a canary and leaves the repo without a working review while it is in place.
-3. `show_full_output: true`, accepting the exposure, if 1 and 2 do not settle it.
+**How to check the secret is set.** GitHub never shows a secret's value, but it will tell you whether one exists and when it was last updated:
 
-What is *not* worth testing: whether the plan can reach `claude-sonnet-5`. The table above shows it reached that exact model successfully on 6 July.
+```bash
+gh secret list
+```
 
-**Confirming it worked, and the trap that stops you.** The action has a workflow-validation guard: it refuses to run on any pull request whose copy of the workflow file differs from the version on `main`, and that refusal exits **green**. So the pull request that pins the SHA cannot test the pin. It flips the check from red to green while running no review at all. Verified on run `28016397454`, and again on PR #98, where the job passed in 14 seconds with `Exiting due to workflow validation skip` in the log.
+An empty or absent `CLAUDE_CODE_OAUTH_TOKEN` here is the whole bug. Regenerate with `claude setup-token` and set it with `gh secret set CLAUDE_CODE_OAUTH_TOKEN`, then confirm the `Updated` timestamp moved.
 
-Re-running an older pull request's job does not test it either, because that branch still carries the unpinned file. `gh run rerun` replays the workflow as it exists on the head commit, not as it exists on `main`.
+**Confirming the fix, and the trap that hides it.** Two traps sit between a real fix and the green check that should prove it.
 
-The only real test is **the next pull request that does not touch `.github/workflows/`**. On that run, read the log rather than the check mark:
+The workflow-validation guard refuses to run on any pull request whose copy of the workflow file differs from `main`, and that refusal exits **green**. So a pull request that edits the workflow cannot test its own change. It flips the check to green while running no review. Verified on run `28016397454`, and again on PR #98, which passed in 14 seconds with `Exiting due to workflow validation skip`.
+
+And the check mark is not the signal. On PR #99 the check reported **pass** in 30 seconds while the log carried `is_error: true`, `num_turns: 1`, and no review was posted. Green here can mean the review ran, the guard skipped it, or the run failed and the action exited zero. All three look identical from the Checks tab.
+
+The only real confirmation is a run that both uses the current `main` workflow and reads the current secret, then the log rather than the check mark:
 
 ```bash
 gh run view <run_id> --log | grep -E "num_turns|total_cost_usd|is_error"
 ```
 
-A working run is roughly 10 turns with a non-zero cost and `is_error: false`. The broken one is always 1 turn and $0.
-
-**The check mark is not the signal.** On PR #99 the "Claude code review (read-only)" check reported **pass** in 30 seconds while the log carried `is_error: true`, `num_turns: 1`, `total_cost_usd: 0`, and no review was posted. A green check here can mean the review ran, or that the validation guard skipped it, or that the run failed and the action exited zero anyway. All three look identical from the Checks tab. Read the log.
+Because the secret is read fresh at run time, re-running a past job that already matched `main` is enough, and it costs nothing. That is how this was confirmed: re-running `30118079810` after the secret was set returned `is_error: false`, 11 turns, $0.2926. A working run is roughly 10 turns with a non-zero cost and `is_error: false`. The broken one is 1 turn and $0.
 
 ---
 
@@ -138,9 +144,10 @@ When one of these fails, start here rather than with the diff:
 
 | Symptom | First suspect |
 |---|---|
-| Claude review fails fast on every PR | Unresolved. The action version and the token are both eliminated. Do not add a fourth confident theory without a test that can falsify it. |
+| Claude review fails fast (1 turn, $0) on every PR | An empty or absent `CLAUDE_CODE_OAUTH_TOKEN` secret. `gh secret list` and check it exists. This was the 2026-07 cause after a supposed regeneration left it blank. |
 | Claude review went green the moment you edited its workflow | The validation guard skipped it. A skip exits green. Read the log for `workflow validation`. |
 | Claude review is green but posted no review | Green does not mean it ran. Check `is_error` and `num_turns` in the log. |
+| A fix for a ruled-out suspect that "was already applied" | Confirm the fix actually landed before trusting the elimination. The empty secret hid behind a regeneration nobody read back. |
 | A red check that never blocked anything before | It is advisory. Check whether it is a required status check before treating it as a gate. |
 | `hidden` element still visible | Cascade or specificity, usually `.btn` or an ID selector beating `.hidden`. Not a missing class. |
 | A new rule in a stylesheet does nothing | The file stopped parsing above it, or the server is serving a different copy. |
