@@ -57,7 +57,7 @@ If you want to try the tool before committing to your own rubric, the home page 
 
 ## 3. Building a scorer
 
-From the home page, choose **Build a new scorer**. The wizard has six steps and you can move back and forth between them.
+From the home page, choose **Build a scorer**. The wizard has six steps and you can move back and forth between them.
 
 The care you take here is the whole game. Every student's feedback is assembled from what you write in steps 4 and 5, so an hour spent on good descriptors pays back across the entire cohort, and a rushed rubric produces feedback that reads as though it was rushed.
 
