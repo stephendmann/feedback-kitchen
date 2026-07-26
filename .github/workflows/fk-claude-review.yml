@@ -13,9 +13,16 @@ concurrency:
 jobs:
   review:
     name: Claude code review (read-only)
-    # Fork PRs run with a read-only token and no secrets, so the API key and
-    # comment-post would fail — only review PRs from branches in this repo.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Two exclusions, both because the job would run without a usable credential:
+    #  - Fork PRs get a read-only token and no secrets.
+    #  - Dependabot PRs run in a separate context where GitHub withholds regular
+    #    Actions secrets, so CLAUDE_CODE_OAUTH_TOKEN resolves empty and the review
+    #    fails on turn 1 at $0 — the same signature as a genuinely empty secret.
+    #    Skipping keeps that permanent, misleading red off every dependency bump.
+    #    See docs/troubleshooting.md, "The Claude review fails only on Dependabot PRs".
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
