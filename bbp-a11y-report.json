@@ -1,8 +1,8 @@
 {
   "meta": {
-    "timestamp": "2026-07-06T02:54:33.827Z",
+    "timestamp": "2026-07-26T08:11:19.155Z",
     "baseUrl": "http://localhost:3000",
-    "elapsed": "10.2"
+    "elapsed": "13.8"
   },
   "results": [
     {
@@ -36,7 +36,8 @@
           "focused": "body (no focus)"
         }
       ],
-      "loadError": null
+      "loadError": null,
+      "hiddenUtilityLeaks": []
     },
     {
       "name": "Builder",
@@ -84,7 +85,8 @@
           "focused": "<button#btn-next.btn-primary> \"Next Step →\""
         }
       ],
-      "loadError": null
+      "loadError": null,
+      "hiddenUtilityLeaks": []
     },
     {
       "name": "Scorer",
@@ -117,7 +119,66 @@
           "focused": "<a.hover:text-emerald-600.whitespace-nowrap.text-slate-600> \"Penalty & grade override\""
         }
       ],
-      "loadError": null
+      "loadError": null,
+      "hiddenUtilityLeaks": []
+    },
+    {
+      "name": "Upload",
+      "url": "http://localhost:3000/upload.html",
+      "axe": {
+        "violations": [],
+        "passes": 46,
+        "incomplete": 1,
+        "inapplicable": 43
+      },
+      "keyboard": [
+        {
+          "desc": "Tab to first interactive element",
+          "status": "✅",
+          "focused": "<a.flex.items-center.gap-2.font-bold.text-blue-700.text-lg.hover:text-blue-900.transition-colors> \"Feedback Kitchen\""
+        },
+        {
+          "desc": "Tab through nav/actions",
+          "status": "✅",
+          "focused": "<div#json-card.task-card.flex.items-start.gap-4.bg-white.border.border-slate-200.rounded-2xl.p-5.cursor-pointer.hover:border-blue-400.hover:shadow-md> \"📂\n        \n          \n            Open \""
+        },
+        {
+          "desc": "Escape (no modal open)",
+          "status": "✅",
+          "focused": "<div#json-card.task-card.flex.items-start.gap-4.bg-white.border.border-slate-200.rounded-2xl.p-5.cursor-pointer.hover:border-blue-400.hover:shadow-md> \"📂\n        \n          \n            Open \""
+        }
+      ],
+      "loadError": null,
+      "hiddenUtilityLeaks": []
+    },
+    {
+      "name": "Convert",
+      "url": "http://localhost:3000/convert.html",
+      "axe": {
+        "violations": [],
+        "passes": 31,
+        "incomplete": 0,
+        "inapplicable": 58
+      },
+      "keyboard": [
+        {
+          "desc": "Tab to first interactive element",
+          "status": "✅",
+          "focused": "<a.flex.items-center.gap-2.font-bold.text-blue-700.text-lg.hover:text-blue-900.transition-colors> \"Feedback Kitchen\""
+        },
+        {
+          "desc": "Tab through nav/actions",
+          "status": "✅",
+          "focused": "<input#cred-pass.w-full.border.border-slate-200.rounded-lg.px-3.py-2.text-sm.focus:ring-2.focus:ring-blue-300.focus:border-blue-400.outline-none> \"\""
+        },
+        {
+          "desc": "Escape (no modal open)",
+          "status": "✅",
+          "focused": "<input#cred-pass.w-full.border.border-slate-200.rounded-lg.px-3.py-2.text-sm.focus:ring-2.focus:ring-blue-300.focus:border-blue-400.outline-none> \"\""
+        }
+      ],
+      "loadError": null,
+      "hiddenUtilityLeaks": []
     }
   ]
 }
