@@ -6,7 +6,9 @@
 (function () {
   'use strict';
 
-  function exportToExcel(config, student, scoreResult, feedbackText, additionalComments) {
+  const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+  async function exportToExcel(config, student, scoreResult, feedbackText, additionalComments) {
     if (typeof XLSX === 'undefined') {
       alert('Excel library not loaded. Please check your internet connection and try again.');
       return;
@@ -148,20 +150,25 @@
     /* ── Write file ────────────────────────────────────────── */
     const safeName    = (student.name || 'Student').replace(/[^a-zA-Z0-9 ]/g, '_').trim();
     const safeCourse  = (config.courseName || 'Assessment').replace(/[^a-zA-Z0-9]/g, '_');
+    const filename    = `${safeName}_${safeCourse}_Feedback.xlsx`;
     // FK-24: a failed download (quota/serialisation) must not pass silently.
+    let outcome;
     try {
-      XLSX.writeFile(wb, `${safeName}_${safeCourse}_Feedback.xlsx`);
+      const bytes = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      outcome = await FKSave.saveFile(new Blob([bytes], { type: XLSX_MIME }), filename);
     } catch (e) {
       alert('Could not generate the Excel file. Your browser may be low on memory or storage — close other tabs and try again.');
       return false;
     }
-    return true;
+    // A cancelled Save-As wrote nothing — same "not a success" signal as a
+    // caught serialisation failure above.
+    return outcome !== 'cancelled';
   }
 
   /* ══════════════════════════════════════════════════════════
      COHORT EXPORT — multi-student workbook
      ══════════════════════════════════════════════════════════ */
-  function exportCohortToExcel(config, cohort) {
+  async function exportCohortToExcel(config, cohort) {
     if (typeof XLSX === 'undefined') {
       alert('Excel library not loaded. Please check your internet connection and try again.');
       return false;
@@ -417,13 +424,17 @@
     const filename   = `${safeCourse}_${safeLabel}_Cohort.xlsx`;
     // FK-24: on a failed write, return false so the caller does NOT offer to
     // wipe the cohort — we must never prompt to delete data we failed to export.
+    let outcome;
     try {
-      XLSX.writeFile(wb, filename);
+      const bytes = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      outcome = await FKSave.saveFile(new Blob([bytes], { type: XLSX_MIME }), filename);
     } catch (e) {
       alert('Could not generate the cohort workbook. Your browser may be low on memory or storage — close other tabs and try again. Your cohort has not been changed.');
       return false;
     }
-    return filename;
+    // A cancelled Save-As wrote nothing — same "no wipe offer" rule as a
+    // caught write failure above.
+    return outcome === 'cancelled' ? false : filename;
   }
 
   window.SAExcel = { exportToExcel, exportCohortToExcel };
