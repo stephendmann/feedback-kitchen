@@ -83,7 +83,8 @@
     <div class="space-y-3" role="list">
 
       <!-- Card 1: Build manually (free) -->
-      <a href="builder.html" role="listitem"
+      <div role="listitem">
+      <a href="builder.html"
          class="task-card group flex items-start gap-4 bg-white border border-slate-200 rounded-2xl p-5 hover:border-emerald-400 hover:shadow-md">
         <div class="text-2xl shrink-0 mt-0.5" aria-hidden="true">🔨</div>
         <div class="flex-1 min-w-0">
@@ -95,6 +96,7 @@
         </div>
         <span class="text-slate-300 group-hover:text-emerald-500 transition-colors text-xl shrink-0 self-center" aria-hidden="true">→</span>
       </a>
+      </div>
 
       <!-- Card 2: Open saved JSON (free, acts as the drop zone) -->
       <div id="json-card" role="listitem"
@@ -113,7 +115,7 @@
             <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Free</span>
           </div>
           <p class="text-sm text-slate-500 mb-1">Open a saved scorer JSON to continue editing or use an existing setup. Shared by a colleague, or exported from another device.</p>
-          <p class="drop-hint text-xs text-slate-400 transition-colors">Drop a <code class="bg-slate-100 px-1 rounded">.json</code> file here, or click to browse</p>
+          <p class="drop-hint text-xs text-slate-600 transition-colors">Drop a <code class="bg-slate-100 px-1 rounded">.json</code> file here, or click to browse</p>
         </div>
         <input type="file" id="file-input" accept=".json,application/json" class="hidden" onchange="handleFileSelect(event)" />
       </div>
@@ -173,7 +175,7 @@
                 Go to PDF import →
               </a>
               <button onclick="revokeAccess()"
-                class="text-xs text-slate-400 hover:text-slate-600 transition-colors underline">
+                class="text-xs text-slate-600 hover:text-slate-800 transition-colors underline">
                 Remove saved access
               </button>
             </div>
@@ -192,10 +194,10 @@
         <p id="result-message" class="text-sm text-center text-slate-500"></p>
 
         <div id="preview-card" class="hidden mt-5 bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm space-y-1">
-          <div><span class="text-slate-400">Assessment:</span> <span id="prev-title" class="font-semibold text-slate-700"></span></div>
-          <div><span class="text-slate-400">Course:</span> <span id="prev-course" class="text-slate-700"></span></div>
-          <div><span class="text-slate-400">Criteria:</span> <span id="prev-criteria" class="text-slate-700"></span></div>
-          <div><span class="text-slate-400">Grade scale:</span> <span id="prev-scale" class="text-slate-700"></span></div>
+          <div><span class="text-slate-600">Assessment:</span> <span id="prev-title" class="font-semibold text-slate-700"></span></div>
+          <div><span class="text-slate-600">Course:</span> <span id="prev-course" class="text-slate-700"></span></div>
+          <div><span class="text-slate-600">Criteria:</span> <span id="prev-criteria" class="text-slate-700"></span></div>
+          <div><span class="text-slate-600">Grade scale:</span> <span id="prev-scale" class="text-slate-700"></span></div>
         </div>
 
         <div id="action-buttons" class="hidden mt-5 flex gap-3 justify-center">
@@ -231,7 +233,7 @@
 
     </div>
 
-    <p class="text-center text-xs text-slate-400 mt-4">
+    <p class="text-center text-xs text-slate-600 mt-4">
       Only <code>.json</code> files exported from Feedback Kitchen are supported for the open-scorer option.
     </p>
 

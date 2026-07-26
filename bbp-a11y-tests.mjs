@@ -12,6 +12,11 @@ const PAGES = [
   // baseline before 2026-06-12. seedDemo replicates tryDemoScorer()'s
   // localStorage writes using index.html's own DEMO_SCORER object.
   { name: 'Scorer', path: '/scorer.html?id=demo-written-response-v2', seedDemo: true },
+  // FK-43: convert.html + upload.html were outside the scan set, so a serious
+  // colour-contrast violation on convert.html survived on main. Both are
+  // real entry points (Add a Scorer / import a rubric PDF) and are now scanned.
+  { name: 'Upload', path: '/upload.html' },
+  { name: 'Convert', path: '/convert.html' },
   // Note: /results.html dropped from BBP v0.1 audit scope (2026-05-21).
   // Page does not exist in the repo and was never built. See fk-decisions.md § D15.
 ];
@@ -54,6 +59,16 @@ const KEYBOARD_TESTS = {
     { desc: 'Arrow key through score options', key: 'ArrowRight', repeat: 3 },
     { desc: 'Tab to submit/next', key: 'Tab', repeat: 5 },
     { desc: 'Activate submit with Space', key: 'Space' },
+  ],
+  '/upload.html': [
+    { desc: 'Tab to first interactive element', key: 'Tab' },
+    { desc: 'Tab through nav/actions', key: 'Tab', repeat: 4 },
+    { desc: 'Escape (no modal open)', key: 'Escape', bodyFocusOk: true },
+  ],
+  '/convert.html': [
+    { desc: 'Tab to first interactive element', key: 'Tab' },
+    { desc: 'Tab through nav/actions', key: 'Tab', repeat: 4 },
+    { desc: 'Escape (no modal open)', key: 'Escape', bodyFocusOk: true },
   ],
   // Note: /results.html keyboard tests removed (page not in scope; see fk-decisions.md § D15).
 };
