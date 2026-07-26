@@ -85,6 +85,38 @@ Because the secret is read fresh at run time, re-running a past job that already
 
 ---
 
+## The Claude review fails only on Dependabot PRs
+
+**Symptom.** Human pull requests get a real review, but every Dependabot bump (`ws`, `postcss`, and so on) fails the "Claude code review (read-only)" check with the same `is_error: true`, `num_turns: 1`, `total_cost_usd: 0` signature as the empty-secret outage above. It does not clear when the secret is healthy.
+
+**What it is.** GitHub withholds regular Actions secrets from workflow runs triggered by Dependabot. A `pull_request` opened by `dependabot[bot]` runs in a separate context with a read-only token, and `secrets.CLAUDE_CODE_OAUTH_TOKEN` resolves to empty there regardless of what is set in the normal Actions secret store (Dependabot secrets are a different store entirely). The action then receives a blank token and fails exactly as it does for a genuinely empty secret.
+
+The log tells the two apart from the credential line itself. A present secret is masked:
+
+```
+CLAUDE_CODE_OAUTH_TOKEN: ***
+```
+
+An absent one prints nothing after the colon, because there is no value to mask:
+
+```
+CLAUDE_CODE_OAUTH_TOKEN:
+```
+
+On a re-run of a Dependabot job after the secret was fixed, that line was still blank, which is what identified the isolation rather than the outage.
+
+**What to do.** Do not chase it as a credential bug, and do not add the token to Dependabot secrets unless bot PRs genuinely need reviewing (a dependency bump rarely does). The review job carries an `if:` guard that skips Dependabot outright:
+
+```yaml
+if: >-
+  github.event.pull_request.head.repo.full_name == github.repository
+  && github.actor != 'dependabot[bot]'
+```
+
+Skipping removes a check that could only ever be red for a policy reason. A check that always fails on a whole class of PR trains people to ignore it, which is worse than its absence. The same guard already excludes fork PRs, for the same underlying reason: no usable credential in that context.
+
+---
+
 ## An element has `class="hidden"` but still renders
 
 **Symptom.** A control carries the `hidden` utility in the markup, the class is present in DevTools, and it is visible on screen anyway. Meanwhile `hidden md:block` elements behave correctly, which makes it look like the class works in general.
@@ -147,6 +179,7 @@ When one of these fails, start here rather than with the diff:
 | Claude review fails fast (1 turn, $0) on every PR | An empty or absent `CLAUDE_CODE_OAUTH_TOKEN` secret. `gh secret list` and check it exists. This was the 2026-07 cause after a supposed regeneration left it blank. |
 | Claude review went green the moment you edited its workflow | The validation guard skipped it. A skip exits green. Read the log for `workflow validation`. |
 | Claude review is green but posted no review | Green does not mean it ran. Check `is_error` and `num_turns` in the log. |
+| Claude review fails only on Dependabot PRs | GitHub withholds Actions secrets from Dependabot runs, so the token is empty there. Not a credential bug. The `if:` guard skips it. |
 | A fix for a ruled-out suspect that "was already applied" | Confirm the fix actually landed before trusting the elimination. The empty secret hid behind a regeneration nobody read back. |
 | A red check that never blocked anything before | It is advisory. Check whether it is a required status check before treating it as a gate. |
 | `hidden` element still visible | Cascade or specificity, usually `.btn` or an ID selector beating `.hidden`. Not a missing class. |
