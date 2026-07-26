@@ -1363,6 +1363,7 @@
   </div>
 
   <script src="js/shared.js?v=2.9.0"></script>
+  <script src="js/save-file.js?v=1.0.0"></script>
   <script src="js/excel.js?v=2.9.0"></script>
   <script src="js/cohort-insights.js?v=1.0.0"></script>
   <!-- Moderation Export (privacy-reduced) — schema, opt-in, suppression, readme, engine -->
@@ -2945,8 +2946,8 @@
       };
       const feedbackText = el('feedback-text').value;
       const comments     = el('additional-comments').value;
-      loadSheetJS(function () {
-        SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
+      loadSheetJS(async function () {
+        await SAExcel.exportToExcel(config, student, scoreResult, feedbackText, comments);
         // Also auto-add to cohort
         saveCurrentStudentToCohort({ silent: false });
       });
@@ -3066,8 +3067,8 @@
         alert('No students in the cohort yet. Grade at least one student and click Copy Feedback or Marker\'s Record to add them.');
         return;
       }
-      loadSheetJS(function () {
-        const filename = SAExcel.exportCohortToExcel(config, cohort);
+      loadSheetJS(async function () {
+        const filename = await SAExcel.exportCohortToExcel(config, cohort);
         if (filename) showPostExportWipeModal(cohort.students.length, filename);
       });
     }
@@ -3632,17 +3633,13 @@
     function _meError(m) { const x = el('me-msg'); if (x) { x.textContent = m; x.classList.remove('hidden'); } }
     function _downloadText(filename, text) {
       const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename || 'FK_worksheet.csv';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      return FKSave.saveFile(blob, filename || 'FK_worksheet.csv');
     }
     function onMoodleExportFileChosen(input) {
       const file = input && input.files && input.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function () {
+      reader.onload = async function () {
         const cohort = config && SA.getCohort(config.id);
         const students = (cohort && cohort.students) || [];
         let res;
@@ -3653,7 +3650,10 @@
             ' Re-export it from Moodle and try again.');
           return;
         }
-        _downloadText(file.name, res.text);
+        // A cancelled Save-As means nothing was written — leave the modal
+        // open and stay silent, same as any other no-op cancel.
+        const outcome = await _downloadText(file.name, res.text);
+        if (outcome === 'cancelled') return;
         closeModal('moodle-export-modal');
         showCohortToast('Exported ' + res.summary.filled + ' grade' + (res.summary.filled === 1 ? '' : 's') +
           ' to ' + file.name +
@@ -4349,7 +4349,7 @@
       return result;
     }
 
-    function exportSnippetsCsv() {
+    async function exportSnippetsCsv() {
       function csvField(val) {
         var s = String(val);
         if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1 || s.indexOf('\r') !== -1) {
@@ -4363,18 +4363,11 @@
       });
       var csv = lines.join('\r\n');
       var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
       var today = new Date();
       var dd = String(today.getFullYear()) + '-' +
                String(today.getMonth() + 1).padStart(2, '0') + '-' +
                String(today.getDate()).padStart(2, '0');
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'feedback-kitchen-snippets-' + dd + '.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await FKSave.saveFile(blob, 'feedback-kitchen-snippets-' + dd + '.csv');
     }
 
     function importSnippetsCsv() {

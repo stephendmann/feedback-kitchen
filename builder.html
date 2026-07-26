@@ -437,11 +437,7 @@
               ⬆ Import JSON <input type="file" accept=".json" class="hidden" onchange="B.importJSON(event)">
             </label>
           </div>
-          <div id="export-tip" class="hidden mt-3 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs text-green-800">
-            ✅ <strong><span id="export-filename"></span></strong> is downloading now — check your <strong>Downloads folder</strong>.<br>
-            <span class="text-green-700">Move it somewhere memorable (e.g. your course folder on OneDrive or Desktop) so you can find it later.
-            To share with a colleague, just email them the file — they can load it via the <strong>Upload</strong> button on the home page.</span>
-          </div>
+          <div id="export-tip" class="hidden mt-3 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs text-green-800"></div>
           <p id="import-hint" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 hidden">
             💡 <strong>Got a file from a colleague?</strong> Use the
             <a href="index.html" class="underline font-semibold">Upload button on the home page</a>
@@ -477,6 +473,7 @@
 
 
   <script src="js/shared.js?v=2.9.0"></script>
+  <script src="js/save-file.js?v=1.0.0"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -1238,23 +1235,27 @@
     }
 
     /* ── JSON Import / Export ────────────────────────────── */
-    function exportJSON() {
+    async function exportJSON() {
       syncFromForms();
       const json     = JSON.stringify(config, null, 2);
       const blob     = new Blob([json], { type: 'application/json' });
-      const url      = URL.createObjectURL(blob);
-      const a        = document.createElement('a');
-      a.href         = url;
       const filename = (config.name || 'scorer').replace(/[^a-zA-Z0-9]/g, '_') + '.json';
-      a.download     = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-      // Show post-download guidance
+      const outcome  = await FKSave.saveFile(blob, filename);
+      showExportTip(outcome, filename);
+    }
+
+    // Post-save guidance. A cancelled Save-As is a silent no-op — no tip.
+    // The 'anchor' copy (Firefox/Safari, or picker unavailable) still points
+    // at the Downloads folder; the 'picker' copy doesn't, since the marker
+    // just chose the destination themselves.
+    function showExportTip(outcome, filename) {
       const tip = document.getElementById('export-tip');
-      if (tip) {
-        tip.querySelector('#export-filename').textContent = filename;
-        tip.classList.remove('hidden');
-      }
+      if (!tip || outcome === 'cancelled') return;
+      const shareNote = 'To share with a colleague, just email them the file — they can load it via the <strong>Upload</strong> button on the home page.';
+      tip.innerHTML = outcome === 'picker'
+        ? `✅ <strong>${escHtml(filename)}</strong> is saved.<br><span class="text-green-700">${shareNote}</span>`
+        : `✅ <strong>${escHtml(filename)}</strong> is downloading now — check your <strong>Downloads folder</strong>.<br><span class="text-green-700">Move it somewhere memorable (e.g. your course folder on OneDrive or Desktop) so you can find it later. ${shareNote}</span>`;
+      tip.classList.remove('hidden');
     }
 
     function importJSON(event) {

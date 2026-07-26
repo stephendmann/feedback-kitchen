@@ -547,21 +547,24 @@
     };
   }
 
-  function downloadJSON() {
+  async function downloadJSON() {
     const exportObj = buildExportJSON();
     if (!exportObj) return;
 
     const json = JSON.stringify(exportObj, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
     const safeName = (exportObj.assessmentTitle || 'scorer')
       .replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').slice(0, 60);
-    a.href = url;
-    a.download = `${safeName}_Scorer.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const filename = `${safeName}_Scorer.json`;
+    const outcome = await FKSave.saveFile(blob, filename);
+    // A cancelled Save-As wrote nothing — stay silent, same as any other no-op cancel.
+    if (outcome === 'cancelled') return;
 
+    // 'downloaded' only holds for the anchor fallback; the picker path means
+    // the marker chose the destination themselves.
+    setHTML('export-success',
+      `<p class="font-semibold mb-1">✓ Scorer JSON ${outcome === 'picker' ? 'saved' : 'downloaded'}</p>
+      <p class="text-green-700 text-xs">Import the file using <a href="upload.html" class="underline hover:text-green-900">Load a Shared Scorer</a> to add it to your Feedback Kitchen on this device.</p>`);
     show('export-success');
   }
 
