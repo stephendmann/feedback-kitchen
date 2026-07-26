@@ -16,7 +16,7 @@ Nothing you enter is sent anywhere. Student names, IDs, grades, and feedback sta
 
 ## 1. Build a scorer
 
-Go to [marking.stephendmann.com](https://marking.stephendmann.com/) and click **Build a new scorer**. The wizard has six steps:
+Go to [marking.stephendmann.com](https://marking.stephendmann.com/) and click **Build a scorer**. The wizard has six steps:
 
 1. **Assessment details.** Assessment name, paper code, institution, and your name as default tutor.
 2. **Grade scale.** Pick NZ University, Australian Honours, UK Degree, US Simple, or define your own labels and score bands.
