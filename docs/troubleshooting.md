@@ -115,6 +115,8 @@ if: >-
 
 Skipping removes a check that could only ever be red for a policy reason. A check that always fails on a whole class of PR trains people to ignore it, which is worse than its absence. The same guard already excludes fork PRs, for the same underlying reason: no usable credential in that context.
 
+**A note on why Dependabot PRs aren't auto-merged.** Considered and consciously deferred (2026-07-26). For FK's solo, low-volume profile, merging bot PRs by hand once CI is green is cheaper than the machinery auto-merge needs, and one gotcha makes that machinery sharp-edged: a merge performed with the default `GITHUB_TOKEN` does not trigger the post-merge Build & Test / CodeQL / Pages runs (GitHub's anti-recursion rule), so you'd merge without the verification you were trying to automate. Revisit only if bump volume grows enough to make the manual click a real tax; if revisited, use a dedicated PAT or GitHub App token for the merge, gate to patch/minor with `dependabot/fetch-metadata`, and add branch protection with admin bypass.
+
 ---
 
 ## An element has `class="hidden"` but still renders
