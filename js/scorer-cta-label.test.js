@@ -33,10 +33,20 @@ const CANONICAL = 'Build a scorer';
 
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
+// Remove tags to a fixed point so overlapping/nested angle brackets cannot
+// leave a residual tag behind (a single pass is incomplete sanitisation).
+const stripTags = (s) => {
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]*>/g, '');
+  } while (s !== prev);
+  return s;
+};
+
 // Inner text of an anchor with decoration + tags removed, whitespace collapsed.
 const normaliseLabel = (inner) =>
-  inner
-    .replace(/<[^>]+>/g, '')   // strip nested tags
+  stripTags(inner)
     .replace(/[+→]/g, '')      // strip "+" / "→" affordances
     .replace(/\s+/g, ' ')
     .trim();
