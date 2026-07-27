@@ -3316,7 +3316,25 @@
         const ovr = el('override-' + i);
         if (ovr) ovr.value = (studentGrades[i].override == null ? '' : studentGrades[i].override);
       });
-      if (savedGrades.length !== config.criteria.length) {
+      // FK-54: only warn about rubric drift for a record that was actually marked.
+      // A Moodle-imported placeholder is seeded with identity only — buildCohortImport
+      // deliberately writes no scoreResult and no grades — so savedGrades.length is 0
+      // against N criteria and the bare length test fired every single time. Nothing had
+      // changed and the record was never saved *from* marking, so the message was untrue,
+      // and once FK-53/FK-55 let a marker advance through a roster it fired once per
+      // student in every mode. A warning that cries wolf on every student trains markers
+      // to dismiss the one case where the rubric genuinely did change mid-cohort, which is
+      // the FK-11 / FK-25 signal this toast exists to carry.
+      //
+      // recordHasMarks, not `savedGrades.length &&`: it is the codebase's one definition of
+      // marked-ness, already shared by the worksheet export and FK-53's nextUnmarkedKey, so
+      // "was this marked?" cannot drift between them. It is also stricter where the two
+      // disagree — a grades array holding no grade values reads as unmarked, where a length
+      // test would see rows and fire. Fallback keeps the weaker length check rather than
+      // the old unconditional fire, so a missing module degrades, never regresses.
+      const _M = window.FKMoodle;
+      const wasMarked = (_M && _M.recordHasMarks) ? _M.recordHasMarks(rec) : savedGrades.length > 0;
+      if (wasMarked && savedGrades.length !== config.criteria.length) {
         showCohortToast('Rubric has changed since this record was saved — review each row.', 'amber');
       }
       _bulkFillSnapshot = null;
