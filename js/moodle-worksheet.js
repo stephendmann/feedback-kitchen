@@ -242,6 +242,34 @@
     return Array.isArray(rec.grades) && rec.grades.some(g => g && g.grade);
   }
 
+  /* ── Next student still to mark (FK-53) ──────────────────────
+     First record in cohort order that carries no marking, as a store key
+     ready for loadCohortRecordIntoSession. Deliberately reads the same
+     recordHasMarks that buildExportWorksheet uses to decide which rows to
+     fill, so "still to mark" here and "silently skipped at export" there
+     cannot drift apart — one definition of marked-ness, two callers.
+
+     excludeKey skips the record just saved, so a save-and-advance flow can
+     never re-land on the student it has this moment finished.
+     Records with no resolvable key are skipped: nothing can re-open them.
+     Returns null when the roster is exhausted, which the caller must treat
+     as "run complete", not as an error.
+
+     Lives here rather than in a scorer module because marked-ness is this
+     module's concept. It is not Moodle-specific in use: a non-Moodle cohort
+     answers the same question the same way. */
+  function nextUnmarkedKey(students, excludeKey) {
+    const list = students || [];
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i];
+      if (!s) continue;
+      const key = s.key || storeKey(s.studentId, s.name);
+      if (!key || key === excludeKey) continue;
+      if (!recordHasMarks(s)) return key;
+    }
+    return null;
+  }
+
   /* ── Commit decision (pure — does NOT touch the store) ───────
      Given the (UI-resolved) plan entries and the existing cohort
      students, decide what to actually add. Honours two locked rules:
@@ -361,7 +389,7 @@
 
   return {
     parseCsv, validateWorksheet, planImport, buildCohortImport, buildExportWorksheet, sidCollision,
-    statusBucket, storeKey, recordHasMarks,
+    statusBucket, storeKey, recordHasMarks, nextUnmarkedKey,
     REQUIRED_HEADER, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,
     PARTICIPANT_COLUMN, COL, BOM
   };
