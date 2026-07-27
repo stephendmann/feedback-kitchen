@@ -826,12 +826,9 @@
             <div class="flex gap-2">
               <button class="btn btn-ghost text-sm" onclick="S.regenerateFeedback()" title="Discard manual edits and regenerate feedback from current grades">↺ Regenerate</button>
               <button class="btn btn-green text-sm" onclick="S.copyFeedback()">Copy to clipboard</button>
-              <!-- FK-53: the only control named for saving. Hidden inline rather than with the
-                   `hidden` class — `.btn` beats `.hidden` in the cascade (FK-49). JS shows it
-                   whenever the open cohort still holds an unmarked student. -->
-              <button id="save-next-student" class="btn btn-blue text-sm" style="display:none"
-                      onclick="S.saveAndNextStudent()"
-                      title="Save this student's grades and feedback to the cohort, then open the next student who still needs marking">Save &amp; next student</button>
+              <!-- FK-55: "Save & next student" used to sit here. It now lives once in the
+                   sticky action bar, which is outside <main> and therefore visible in every
+                   mode. See the note there. -->
             </div>
           </div>
 
@@ -1336,6 +1333,27 @@
         </span>
         <button class="btn btn-ghost text-sm" onclick="S.newStudent()" title="Clear and start a new student">↺ New student</button>
         <button class="btn btn-green text-sm" onclick="S.copyFeedback()" title="Copy feedback + auto-save to cohort">Copy feedback</button>
+        <!-- FK-53 / FK-55: the only control named for saving, and the only way to reach the
+             next student from where marking happens.
+
+             It lives here, in the sticky bar, because this bar sits outside <main> and is
+             therefore visible in every mode. FK-53 first put it in #sec-feedback, which Focus
+             mode hides outright (`.fk-focus-on #sec-feedback { display:none !important }`), so
+             it rendered 0x0 there and the defect it closed survived on the fastest marking
+             path. A twin inside #focus-workspace fixed that but left the app one CSS rule away
+             from the same bug; one instance in a mode-independent container cannot regress that
+             way. It also groups the action with the other end-of-student controls, and sits
+             last in the row, matching where it sat after "Copy to clipboard" in #sec-feedback.
+
+             Deliberately NOT inside #focus-workspace: the nav row there reads "← Previous /
+             Next →", both scoped to criteria, and "Save & next student" beside them is the
+             "which one do I press?" trap FK-53's own risk list names.
+
+             Hidden inline, not with the `hidden` class — `.btn` beats `.hidden` in the cascade
+             (FK-49). JS shows it whenever the open cohort still holds an unmarked student. -->
+        <button id="save-next-student" class="btn btn-blue text-sm" style="display:none"
+                onclick="S.saveAndNextStudent()"
+                title="Save this student's grades and feedback to the cohort, then open the next student who still needs marking">Save &amp; next student</button>
       </div>
     </div>
   </div>
@@ -3116,6 +3134,8 @@
         const students = (cohort && cohort.students) || [];
         show = !!(M && M.nextUnmarkedKey && M.nextUnmarkedKey(students, null));
       } catch (e) { show = false; }
+      // FK-55: one instance, in the sticky bar, which no mode hides — so this needs no
+      // knowledge of the current mode and there is no second element to keep in step.
       btn.style.display = show ? '' : 'none';
     }
 

@@ -96,26 +96,11 @@ describe('FK-53 nextUnmarkedKey — selecting the next student to mark', () => {
   });
 });
 
-describe('FK-53 the control is in the marking area, not the cohort section', () => {
-  test('the button exists and calls the shared handler', () => {
+describe('FK-53 the control exists and is wired to the shared handler', () => {
+  test('the button exists and calls the handler', () => {
     expect(html).toMatch(/id="save-next-student"/);
     const btn = html.slice(idx('id="save-next-student"'), idx('id="save-next-student"') + 500);
     expect(btn).toMatch(/S\.saveAndNextStudent\(\)/);
-  });
-
-  test('it sits inside #sec-feedback, where marking ends', () => {
-    // Not #sec-student: that section holds name/ID/tutor/date and comes before the rubric,
-    // so a save control there would sit above everything it is meant to save.
-    const feedback = idx('id="sec-feedback"');
-    const button   = idx('id="save-next-student"');
-    const notes    = idx('id="sec-notes"');
-    expect(feedback).toBeGreaterThan(-1);
-    expect(button).toBeGreaterThan(feedback);
-    expect(button).toBeLessThan(notes);
-  });
-
-  test('it appears well before the cohort section a marker would otherwise scroll to', () => {
-    expect(idx('id="save-next-student"')).toBeLessThan(idx('id="sec-cohort"'));
   });
 
   test('it is hidden inline, not with the `hidden` class', () => {
@@ -134,6 +119,97 @@ describe('FK-53 the control is in the marking area, not the cohort section', () 
     const refresh = html.slice(idx('function refreshCohortUI()'),
                                idx('function refreshCohortUI()') + 1800);
     expect(refresh).toMatch(/refreshSaveNextVisibility\(\)/);
+  });
+});
+
+/**
+ * FK-55 — one instance, in a container no mode hides.
+ *
+ * FK-53 put the control in #sec-feedback. Focus mode hides that entire section
+ * (`.fk-focus-on #sec-rubric, .fk-focus-on #sec-feedback { display: none !important }`), so it
+ * rendered 0x0 and was unreachable there. The handler was never the problem: the button's own
+ * computed display was `flex`; its *ancestor* was `display: none`, which no amount of toggling
+ * the button could beat. In Focus mode the only reachable ways to persist a student were
+ * copyFeedback() and downloadExcel() — the unnamed side effects FK-53 exists to replace — so
+ * the defect was fully intact on the fastest marking path.
+ *
+ * The fix is placement, not duplication. #sticky-action-bar is `fixed` and sits outside
+ * <main>, so no mode hides it. One instance there is reachable everywhere, and cannot regress
+ * the way a mode-scoped container can. An earlier revision of this card added a twin inside
+ * #focus-workspace; that worked but left the app one CSS rule from the same class of bug, and
+ * needed a mutual-exclusion invariant to stay correct. Single instance needs no invariant.
+ *
+ * The original FK-53 guard asserted the control sat inside #sec-feedback, and passed happily
+ * while the bug was live, because single-section placement WAS the bug. It is gone. What
+ * replaces it asserts the property that actually matters: the control is not inside any
+ * container a mode can hide.
+ */
+describe('FK-55 the control lives where no mode can hide it', () => {
+  test('exactly one instance exists in the document', () => {
+    // Two instances would mean a mode-dependent invariant to keep them in step. There is none.
+    const instances = [...html.matchAll(/id="save-next-student"/g)];
+    expect(instances).toHaveLength(1);
+    expect(html).not.toMatch(/id="focus-save-next-student"/);
+  });
+
+  test('it sits in #sticky-action-bar, outside <main>', () => {
+    // The bar is `fixed bottom-0` and declared after </main>, so no section-level rule —
+    // present or future — can take it off screen with it.
+    const bar     = idx('id="sticky-action-bar"');
+    const button  = idx('id="save-next-student"');
+    const mainEnd = html.indexOf('</main>');
+    expect(bar).toBeGreaterThan(-1);
+    expect(button).toBeGreaterThan(bar);
+    expect(button).toBeGreaterThan(mainEnd);
+  });
+
+  test('it is not inside any container a mode hides', () => {
+    // Proof of non-containment, not merely of ordering: every section Focus mode manipulates
+    // opens AND closes inside <main>, and the button is after </main>, so it cannot be a
+    // descendant of any of them.
+    const button  = idx('id="save-next-student"');
+    const mainEnd = html.indexOf('</main>');
+    expect(mainEnd).toBeGreaterThan(-1);
+    ['id="sec-feedback"', 'id="sec-rubric"', 'id="focus-workspace"'].forEach(function (sectionId) {
+      const start = idx(sectionId);
+      expect(start).toBeGreaterThan(-1);
+      expect(start).toBeLessThan(mainEnd);
+    });
+    expect(button).toBeGreaterThan(mainEnd);
+  });
+
+  test('it is last in the sticky bar, after "Copy feedback"', () => {
+    // Matches where it sat after "Copy to clipboard" in #sec-feedback, so the action keeps the
+    // same relative position in its row. "New student" and "Copy feedback" precede it.
+    const bar   = html.slice(idx('id="sticky-action-bar"'));
+    const newSt = bar.indexOf('S.newStudent()');
+    const copy  = bar.indexOf('S.copyFeedback()');
+    const save  = bar.indexOf('id="save-next-student"');
+    expect(newSt).toBeGreaterThan(-1);
+    expect(copy).toBeGreaterThan(newSt);
+    expect(save).toBeGreaterThan(copy);
+  });
+
+  test('it is NOT in the criterion navigation row', () => {
+    // "← Previous" / "Next →" (#focus-prev / #focus-next) are criterion-scoped. A student-scoped
+    // control beside them is the "which one do I press?" trap FK-53's risk list names.
+    const button = idx('id="save-next-student"');
+    expect(button).toBeGreaterThan(idx('id="focus-next"'));
+    expect(button).toBeGreaterThan(idx('id="focus-prev"'));
+  });
+
+  test('the shared-hook indirection is gone with the twin', () => {
+    const fn = html.slice(idx('function refreshSaveNextVisibility()'),
+                          idx('function refreshSaveNextVisibility()') + 1200);
+    expect(fn).toMatch(/el\('save-next-student'\)/);
+    expect(html).not.toMatch(/data-fk-savenext/);
+  });
+
+  test('the sticky bar can wrap, so the row must not assume one line', () => {
+    // The bar is flex-wrap: a third button can push to a second line on a narrow viewport.
+    // That is acceptable (the bar grows upward), but the class must stay for it to be safe.
+    const bar = html.slice(idx('id="sticky-action-bar"'), idx('id="sticky-action-bar"') + 900);
+    expect(bar).toMatch(/flex-wrap/);
   });
 });
 
