@@ -826,6 +826,12 @@
             <div class="flex gap-2">
               <button class="btn btn-ghost text-sm" onclick="S.regenerateFeedback()" title="Discard manual edits and regenerate feedback from current grades">↺ Regenerate</button>
               <button class="btn btn-green text-sm" onclick="S.copyFeedback()">Copy to clipboard</button>
+              <!-- FK-53: the only control named for saving. Hidden inline rather than with the
+                   `hidden` class — `.btn` beats `.hidden` in the cascade (FK-49). JS shows it
+                   whenever the open cohort still holds an unmarked student. -->
+              <button id="save-next-student" class="btn btn-blue text-sm" style="display:none"
+                      onclick="S.saveAndNextStudent()"
+                      title="Save this student's grades and feedback to the cohort, then open the next student who still needs marking">Save &amp; next student</button>
             </div>
           </div>
 
@@ -3024,7 +3030,93 @@
             'green'
           );
         }
+        // FK-53: the only success signal this function has. It bails early three ways
+        // (nothing graded, no name or ID, cohort setup dismissed) and the write itself
+        // lands asynchronously inside ensureCohortInitialised, so a caller that needs to
+        // know the record was actually stored — rather than that the call returned —
+        // cannot use the return value. Reached only after result.saved.
+        if (typeof opts.onSaved === 'function') opts.onSaved(result, record);
       });
+    }
+
+    /* ── Save & next student (FK-53) ─────────────────────────────
+       Persisting a marked student is otherwise a side effect of two actions named
+       for something else: copyFeedback() and downloadExcel(). The Moodle worksheet
+       export reads the saved cohort record, never the clipboard, and silently skips
+       any record with no marking (buildExportWorksheet, js/moodle-worksheet.js), so
+       a marker who grades a student and moves on without pressing "Copy to
+       clipboard" ships that student's row blank — invisible when it happens,
+       invisible at export, visible only in Moodle after upload, if ever.
+
+       This names the persistence step and supplies the missing progression in one
+       control. It adds no persistence, navigation or export logic: the save is the
+       existing saveCurrentStudentToCohort, the advance is the FK-27 pattern
+       (loadCohortRecordIntoSession + scroll to top).
+
+       Relabelling "Copy to clipboard" to something Moodle-shaped was considered and
+       rejected: the clipboard write is the one part of copyFeedback() with no bearing
+       on the exported file, so that name would teach a model which breaks the moment
+       a marker uses the sticky-bar copy, the Excel path, or neither.
+
+       Advance runs inside onSaved, never after the call returns. The save bails early
+       three ways and completes asynchronously, so advancing on the straight-line
+       return would move on from a student who was never stored — the very defect this
+       closes. Saving first is also why there is no _sessionHasUnsavedWork() gate: by
+       the time we advance, nothing is unsaved. */
+    function saveAndNextStudent() {
+      saveCurrentStudentToCohort({
+        // Silent so the marker gets one combined message below, not "Added Ada" followed
+        // immediately by "now marking Alan". The button only renders when a cohort with
+        // unmarked records is open, so silent's dismissed-cohort skip path is unreachable here.
+        silent: true,
+        onSaved: function (result, record) {
+          const savedName = (record && (record.name || record.studentId)) || 'this student';
+          const M = window.FKMoodle;
+          let nextKey = null;
+          try {
+            const cohort   = SA.getCohort(config && config.id);
+            const students = (cohort && cohort.students) || [];
+            const savedKey = (M && M.storeKey) ? M.storeKey(record.studentId, record.name) : null;
+            if (M && M.nextUnmarkedKey) nextKey = M.nextUnmarkedKey(students, savedKey);
+          } catch (e) { nextKey = null; }
+
+          // Roster exhausted: end the run cleanly rather than advancing to nothing.
+          if (!nextKey) {
+            showCohortToast('Saved ' + savedName + ' · everyone in this cohort is now marked', 'green');
+            refreshSaveNextVisibility();
+            return;
+          }
+
+          let openedName = '';
+          try {
+            if (loadCohortRecordIntoSession(nextKey) !== false) {
+              openedName = (el('student-name').value || '').trim();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          } catch (e) { /* leave the marker on the current pane */ }
+          showCohortToast('Saved ' + savedName +
+            (openedName ? ' · now marking ' + openedName : ''), 'green');
+          refreshSaveNextVisibility();
+        }
+      });
+    }
+
+    /* Rendered only while the open cohort still holds someone to mark, so a marker with no
+       cohort, or one who has finished the roster, never sees it. Inline display, not the
+       `hidden` utility class: `.btn { display: inline-flex }` outranks `.hidden`, so toggling
+       the class would apply it and hide nothing — the FK-49 defect, which shipped to
+       production on three controls for exactly this reason. */
+    function refreshSaveNextVisibility() {
+      const btn = el('save-next-student');
+      if (!btn) return;
+      let show = false;
+      try {
+        const M = window.FKMoodle;
+        const cohort   = SA.getCohort(config && config.id);
+        const students = (cohort && cohort.students) || [];
+        show = !!(M && M.nextUnmarkedKey && M.nextUnmarkedKey(students, null));
+      } catch (e) { show = false; }
+      btn.style.display = show ? '' : 'none';
     }
 
     // Strip functions / circular refs for safe localStorage storage
@@ -3311,6 +3403,9 @@
       try { applyMoodleVisibility(); } catch (e) { /* no-op before the config is loaded */ }
       // FK-12: ambient cohort scale-use consistency signal (default-off; opt-in).
       try { refreshCohortConsistencyUI(cohort); } catch (e) { /* CohortInsights may be absent in tests */ }
+      // FK-53: Save & next appears only while someone in the cohort is still unmarked, so it
+      // has to be re-evaluated on every cohort change (import, save, open, remove, clear).
+      try { refreshSaveNextVisibility(); } catch (e) { /* FKMoodle may be absent in tests */ }
       refreshStatusChips();
     }
 
@@ -5496,6 +5591,8 @@
              // Cohort API
              exportCohort, renameCohort, confirmClearCohort, viewCohortList, removeCohortStudent,
              openCohortRecord, loadCohortRecordIntoSession,
+             // FK-53: save the current student and open the next one still to mark
+             saveAndNextStudent, refreshSaveNextVisibility,
              hideCohortListModal, hideCohortSetupModal, hideCohortWipeModal, wipeCohortAfterExport,
              refreshCohortUI, refreshStickySummary, refreshAIInputChips,
              // FK-19: Moodle worksheet import
