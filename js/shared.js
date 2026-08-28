@@ -1267,6 +1267,18 @@
     } catch (e) {
       return { saved: false, reason: e.quota ? 'quota' : 'write-error', message: e.message };
     }
+    // Usage telemetry: one event per student record committed to a cohort —
+    // the closest available proxy for "a student was actually marked". Fires
+    // only on a confirmed write, and sends the cohort size and whether this
+    // replaced an existing record. No student name, ID, score or feedback text
+    // is included.
+    if (typeof gtag === 'function') {
+      gtag('event', 'student_scored', {
+        event_category: 'workflow',
+        replaced: replaced,
+        cohort_size: cohort.students.length
+      });
+    }
     return { saved: true, replaced: replaced, count: cohort.students.length };
   }
 
