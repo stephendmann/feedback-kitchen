@@ -55,7 +55,16 @@
         var q = new URLSearchParams(location.search).get('fk-internal');
         if (q === '1') localStorage.setItem(KEY, '1');
         else if (q === '0') localStorage.removeItem(KEY);
-        window.FK_INTERNAL = localStorage.getItem(KEY) === '1';
+        /* Local development always counts as internal. GA4 fires from
+           localhost and 127.0.0.1 exactly as it does in production, and
+           dev sessions were reaching the live property — with far higher
+           views-per-user than real use, because a page under development
+           gets reloaded constantly. Storage is per-origin, so a flag set
+           on the production domain would never apply here. */
+        var host = location.hostname;
+        var isLocal = host === 'localhost' || host === '127.0.0.1' ||
+                      host === '[::1]' || host === '' || host.endsWith('.local');
+        window.FK_INTERNAL = isLocal || localStorage.getItem(KEY) === '1';
       } catch (e) {
         /* Private mode or blocked storage: treat as external, never break the page. */
         window.FK_INTERNAL = false;
