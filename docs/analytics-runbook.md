@@ -28,17 +28,17 @@ Every user-facing page carries all three: `index`, `scorer`, `builder`, `upload`
 
 ---
 
-## Before the first report using this procedure
+## Setup
 
-Two setup steps, both one-off.
+Two steps. The first is done. The second needs doing once per machine, and keeps needing doing.
 
-### 1. Activate the internal traffic filter in GA4
+### 1. The GA4 internal traffic filter — active since 28 August 2026
 
-The site sends `traffic_type: 'internal'` for browsers flagged as the project's own, but GA4 ignores that parameter until a filter is switched on.
+The site sends `traffic_type: 'internal'` for browsers flagged as the project's own, and GA4 ignores that parameter until a filter is switched on. That filter was activated on 28 August 2026 and no longer needs setting up.
 
-In GA4 → Admin → Data Streams → the FK stream → **Define internal traffic**, confirm a rule matching `traffic_type` equals `internal`, then Admin → **Data Filters** and set the internal traffic filter from *Testing* to **Active**.
+It lives in two places: GA4 → Admin → Data Streams → the FK stream → **Define internal traffic** holds the rule matching `traffic_type` equals `internal`, and Admin → **Data Filters** holds its Active or Testing state. If flagged sessions reappear in a later reading, check the filter is still **Active** before looking anywhere else.
 
-Until that filter is Active, GA4 still counts developer sessions. The Vercel side needs nothing further — the scripts are simply not loaded for flagged browsers.
+The Vercel side needs nothing further — those scripts are simply not loaded for flagged browsers.
 
 ### 2. Flag every machine used for development or demos
 
@@ -83,6 +83,16 @@ These are the mistakes the first report made. Each one is easy to repeat.
 - **Do not report month-over-month percentages at this scale.** On a base under a few hundred visitors, a nine-point move is a handful of people and reads as far more meaningful than it is. Report the raw counts.
 - **A zero function-invocation reading is a sampling artefact, not the architecture.** `api/garnish.js` and `api/parse-manual.js` are real serverless functions. They are simply not called on most page loads.
 - **Page visits do not imply completed work.** Arrival on the scorer is not a marked student. That is what the workflow events are for.
+
+### The 28 August 2026 boundary
+
+Three things landed on 28 August 2026: PRs #116 and #117 shipped, local hostnames stopped reporting to GA and Vercel at all, and the GA4 internal traffic filter went Active.
+
+**GA4 data filters are not retroactive.** They apply to data collected after activation. Everything gathered before that date still contains internal traffic and always will; everything after does not.
+
+So a window that starts after the boundary is not comparable with one that ends before it. Later readings will be cleaner and therefore **smaller**, and that difference is filtering rather than a decline. Do not present the two as one series, and do not read the gap as lost audience.
+
+The hostname filter survives the boundary intact — it is applied when the report is read, not when the data is collected, so it behaves identically on either side. Where a comparison across the boundary is unavoidable, make it on hostname-filtered figures and say plainly that the earlier one is dirtier.
 
 ---
 
