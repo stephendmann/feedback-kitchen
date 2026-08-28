@@ -19,7 +19,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'scorer.html'), 'utf8');
+/* Markup plus js/scorer-app.js: the scorer's logic is no longer inline,
+   so reading the page alone would stop seeing what this guard checks. */
+const html = require('./scorer-source')();
 // The jsdom test environment provides DOMParser; parseFromString does NOT
 // execute inline scripts, so this is a safe structural parse of the markup.
 const doc = new DOMParser().parseFromString(html, 'text/html');

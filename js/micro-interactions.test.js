@@ -19,7 +19,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'scorer.html'), 'utf8');
+/* Markup plus js/scorer-app.js: the scorer's logic is no longer inline,
+   so reading the page alone would stop seeing what this guard checks. */
+const html = require('./scorer-source')();
 const darkCss = fs.readFileSync(path.join(__dirname, '..', 'css', 'site-dark.css'), 'utf8');
 
 describe('FK-38 · button hover-lift', () => {
