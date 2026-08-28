@@ -73,6 +73,7 @@
     .error-msg { color: #dc2626; font-size: 0.8rem; margin-top: 0.3rem; display: none; }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
   <link rel="stylesheet" href="/css/site-dark.css">
 </head>
@@ -1222,6 +1223,11 @@
         showEl('err-save', 'Criteria weights must total 100% (Step 3).'); return;
       }
       show('err-save', false);
+      // Usage telemetry: distinguish a first save (a scorer that did not exist
+      // before) from re-saving an edit, so the count answers "how many people
+      // actually built a scorer" rather than "how many times Save was pressed".
+      // Read before the write, since saveConfig is what creates the record.
+      const _isNewScorer = !SA.loadAllConfigs().some(c => c.id === config.id);
       // FK-24: a quota/write failure must not look like a successful save.
       try {
         SA.saveConfig(config);
@@ -1231,6 +1237,15 @@
         return;
       }
       updateSaveStatus('Saved ✓');
+      // Fires only after a confirmed write. Counts and structure only — no
+      // rubric text, scorer name or student data is sent. Reuses the same GA
+      // property already loaded on every FK page; no new infrastructure.
+      if (_isNewScorer && typeof gtag === 'function') {
+        gtag('event', 'scorer_created', {
+          event_category: 'workflow',
+          criteria_count: config.criteria.length
+        });
+      }
       window.location.href = 'scorer.html?id=' + config.id;
     }
 
@@ -1270,6 +1285,16 @@
           }
           imported.id = imported.id || SA.uid(); // keep or assign id
           config = imported;
+          // Fires once the file has parsed and passed the shape check — before
+          // the populate calls, because the import itself has succeeded by this
+          // point and a downstream render error should not erase that fact.
+          // Counts and structure only; no rubric or scorer text is sent.
+          if (typeof gtag === 'function') {
+            gtag('event', 'scorer_imported', {
+              event_category: 'workflow',
+              criteria_count: imported.criteria.length
+            });
+          }
           populateStep1(); populateStep2(); populateStep3(); populateStep4(); populateStep5(); populateStep6();
           alert('Config imported successfully!');
         } catch(err) { alert('Could not parse JSON file: ' + err.message); }

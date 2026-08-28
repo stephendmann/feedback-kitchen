@@ -371,6 +371,7 @@
     .btn-finalise.fk-confirming { animation: fk-border-confirm 0.55s ease forwards; }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
   <link rel="stylesheet" href="/css/shared.css">
   <link rel="stylesheet" href="/css/site-dark.css">
   <!-- FK-22: removed the dead ?cinematic=1 easter egg — it loaded /css/dark-scorer.css,
@@ -2913,6 +2914,16 @@
       // Auto-add to cohort — check name/ID first so only one toast fires
       const _cpName = (el('student-name').value || '').trim();
       const _cpId   = (el('student-id').value   || '').trim();
+      // Usage telemetry: one event per copy, flagged by whether the draft also
+      // landed in the cohort — a copy with no name/ID is a different action
+      // from a copy that completes a student. Counts only; the feedback text
+      // and the student's name never leave the page.
+      if (typeof gtag === 'function') {
+        gtag('event', 'feedback_copied', {
+          event_category: 'workflow',
+          saved_to_cohort: !!(_cpName || _cpId)
+        });
+      }
       if (!_cpName && !_cpId) {
         showCohortToast('Feedback copied to clipboard · not saved to cohort — add a student name or ID', 'amber');
         return;
@@ -5035,6 +5046,18 @@
         if (!body) { alert('Empty response from AI. Try again, or use the copy-paste workflow.'); return; }
 
         el('ai-manual-suggestion').value = body;
+
+        // Usage telemetry: fires only on a successful, non-empty rewrite — not
+        // on auth failures, rate limits or empty responses, so the count means
+        // "the assistant produced usable wording". Model and prompt size only;
+        // no prompt or response text is sent.
+        if (typeof gtag === 'function') {
+          gtag('event', 'wording_assistant_used', {
+            event_category: 'workflow',
+            model: data.model || HAIKU_MODEL_ID,
+            prompt_chars: prompt.length
+          });
+        }
 
         // Log the run (same store used by the copy-paste flow)
         SA.logAssistantRun({

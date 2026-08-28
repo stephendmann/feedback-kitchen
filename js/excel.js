@@ -434,7 +434,18 @@
     }
     // A cancelled Save-As wrote nothing — same "no wipe offer" rule as a
     // caught write failure above.
-    return outcome === 'cancelled' ? false : filename;
+    if (outcome === 'cancelled') return false;
+    // Usage telemetry: fires only once the workbook is actually written, so a
+    // cancelled Save-As is not counted as an export. Student count only — no
+    // names, scores or feedback text.
+    if (typeof gtag === 'function') {
+      gtag('event', 'cohort_exported', {
+        event_category: 'workflow',
+        format: 'xlsx',
+        student_count: cohort.students.length
+      });
+    }
+    return filename;
   }
 
   window.SAExcel = { exportToExcel, exportCohortToExcel };
