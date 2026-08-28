@@ -22,15 +22,34 @@
   <meta name="twitter:description" content="Build a custom rubric-based scorer. Define criteria once, reuse forever.">
   <meta name="twitter:image" content="https://marking.stephendmann.com/og-image.png">
   <meta name="theme-color" content="#1e40af">
+  <!-- Internal-traffic flag. Visit any page once with ?fk-internal=1 to mark
+       this browser as the project's own; ?fk-internal=0 clears it. The flag
+       keeps development and testing sessions out of the usage figures, which
+       otherwise overstate outside interest by an unknown margin. Must run
+       before the analytics below, which both read it. -->
+  <script>
+    (function () {
+      var KEY = 'fk-internal';
+      try {
+        var q = new URLSearchParams(location.search).get('fk-internal');
+        if (q === '1') localStorage.setItem(KEY, '1');
+        else if (q === '0') localStorage.removeItem(KEY);
+        window.FK_INTERNAL = localStorage.getItem(KEY) === '1';
+      } catch (e) {
+        /* Private mode or blocked storage: treat as external, never break the page. */
+        window.FK_INTERNAL = false;
+      }
+    })();
+  </script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQSJNBBPKZ"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-LQSJNBBPKZ', {
-      anonymize_ip: true
-    });
+    gtag('config', 'G-LQSJNBBPKZ', window.FK_INTERNAL
+      ? { anonymize_ip: true, traffic_type: 'internal' }
+      : { anonymize_ip: true });
   </script>
   <!-- FOUC prevention: apply fk-dark class before any stylesheet is parsed -->
   <script>
@@ -41,7 +60,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tailwind.out.css">
+  <link rel="stylesheet" href="/css/tailwind.out.css?v=2.5.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -72,10 +91,22 @@
                 cursor: pointer; border: none; transition: all 0.15s; }
     .error-msg { color: #dc2626; font-size: 0.8rem; margin-top: 0.3rem; display: none; }
   </style>
-  <script defer src="/_vercel/insights/script.js"></script>
-  <script defer src="/_vercel/speed-insights/script.js"></script>
-  <link rel="stylesheet" href="/css/shared.css">
-  <link rel="stylesheet" href="/css/site-dark.css">
+  <!-- Vercel analytics: page views + real-user Web Vitals. Injected rather
+       than hard-coded so internal traffic can be excluded; see the
+       fk-internal flag above. -->
+  <script>
+    if (!window.FK_INTERNAL) {
+      ['/_vercel/insights/script.js', '/_vercel/speed-insights/script.js']
+        .forEach(function (src) {
+          var s = document.createElement('script');
+          s.defer = true;
+          s.src = src;
+          document.head.appendChild(s);
+        });
+    }
+  </script>
+  <link rel="stylesheet" href="/css/shared.css?v=2.5.1">
+  <link rel="stylesheet" href="/css/site-dark.css?v=2.5.1">
 </head>
 <body class="bg-slate-50 min-h-screen">
 
@@ -473,8 +504,8 @@
   </main>
 
 
-  <script src="js/shared.js?v=2.9.0"></script>
-  <script src="js/save-file.js?v=1.0.0"></script>
+  <script src="/js/shared.js?v=2.5.1"></script>
+  <script src="/js/save-file.js?v=2.5.1"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -1403,6 +1434,6 @@
   </script>
 
   <div id="site-footer"></div>
-  <script src="/js/footer.js"></script>
+  <script src="/js/footer.js?v=2.5.1"></script>
 </body>
 </html>
