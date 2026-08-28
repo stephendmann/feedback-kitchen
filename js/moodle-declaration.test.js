@@ -16,7 +16,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const scorer = fs.readFileSync(path.join(__dirname, '..', 'scorer.html'), 'utf8');
+/* Markup plus js/scorer-app.js: the scorer's logic is no longer inline,
+   so reading the page alone would stop seeing what this guard checks. */
+const scorer = require('./scorer-source')();
 const builder = fs.readFileSync(path.join(__dirname, '..', 'builder.html'), 'utf8');
 
 /* The shipped predicates, mirrored here so the semantics are pinned independently of the DOM. */

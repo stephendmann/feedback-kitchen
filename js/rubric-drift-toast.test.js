@@ -26,7 +26,9 @@ const fs = require('fs');
 const path = require('path');
 
 const FKMoodle = require('./moodle-worksheet.js');
-const html = fs.readFileSync(path.join(__dirname, '..', 'scorer.html'), 'utf8');
+/* Markup plus js/scorer-app.js: the scorer's logic is no longer inline,
+   so reading the page alone would stop seeing what this guard checks. */
+const html = require('./scorer-source')();
 const idx = (s) => html.indexOf(s);
 
 describe('FK-54 recordHasMarks separates "never marked" from "marked"', () => {
