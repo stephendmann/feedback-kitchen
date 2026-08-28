@@ -23,6 +23,8 @@ Two windows appear below, and every figure is labelled with the one it came from
 
 Do not compare a figure from one window against a figure from the other.
 
+Both windows also close on or before **28 August 2026**, and that date is a boundary. On it, local hostnames stopped reporting and the GA4 internal traffic filter went Active. GA4 filters are not retroactive, so every figure in this document was collected before that cleanup and still contains internal traffic. Later readings will be cleaner and therefore smaller — that is filtering, not a decline. `docs/analytics-runbook.md` carries the detail.
+
 ---
 
 ## Read these rules before the numbers
@@ -145,7 +147,6 @@ Verified live on `marking.stephendmann.com`:
 
 None of these are in this document's pull request.
 
-- **Activate the GA4 internal-traffic filter**, from Testing to Active. The pages already send `traffic_type: 'internal'`; GA ignores it until the filter is on.
 - **Flag demo machines** with `?fk-internal=1`. Local development is covered automatically; demo laptops and phones are not.
 - **Automating the monthly snapshot.** The Hobby plan's Web Analytics API returns `not_found`, so the figures stay hand-read.
 - **CodeQL relocation alerts** against `js/scorer-app.js` — pre-existing findings now reported at a new path. Separate work.
