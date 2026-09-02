@@ -415,10 +415,10 @@
       : 'Cohort consistency (α) — mixed-marker cohort';
     var QUALIFIER = '<span class="ci-qualifier">this cohort only</span>';
     var ALPHA_QUALIFIER = ctx.state === 'A' ? QUALIFIER
-      : '<span class="ci-qualifier">this cohort only · multiple markers · not a tutor metric</span>';
+      : '<span class="ci-qualifier">this cohort only · multiple markers · not a marker metric</span>';
 
     /* α tooltip — prepend mixed-marker note in States B and C */
-    var alphaTipBase = "Cronbach's α for this cohort only — a description of how the criterion marks moved together across these scripts. It is not a tutor performance metric. Some coupling is expected when criteria build on each other. FK is fully human-marked. A pooled, cross-cohort version sits in the Coordinator Dashboard, where pooling makes the interpretation reliable.";
+    var alphaTipBase = "Cronbach's α for this cohort only — a description of how the criterion marks moved together across these scripts. It is not a marker performance metric. Some coupling is expected when criteria build on each other. FK is fully human-marked. A pooled, cross-cohort version sits in the Coordinator Dashboard, where pooling makes the interpretation reliable.";
     var alphaTip = (ctx.state === 'B' || ctx.state === 'C')
       ? 'This cohort was marked by more than one person, so this α describes how the criteria moved together across all scripts collectively — not how any single marker behaved. ' + alphaTipBase
       : alphaTipBase;
@@ -548,7 +548,7 @@
         '<ul class="ci-summary-ul">' +
           summaryBullets.map(function (t) { return '<li>' + escHtml(t) + '</li>'; }).join('') +
         '</ul>' +
-        '<p class="ci-panel-note" style="margin-top:10px">These bullets describe this cohort only. They are not a comparison with other tutors or other cohorts and are not intended as a performance review.</p>' +
+        '<p class="ci-panel-note" style="margin-top:10px">These bullets describe this cohort only. They are not a comparison with other markers or other cohorts and are not intended as a performance review.</p>' +
       '</div>' +
 
       '<section class="ci-section">' +
@@ -590,7 +590,7 @@
         '<p class="ci-panel-note">Prompts are starting points for your own reflection — not rankings, scores, or judgements about your marking.</p>' +
       '</section>' +
 
-      '<footer class="ci-footer">Feedback Kitchen is a human-marked, comment-compilation tool. There is no AI grading. This view describes your cohort only and is intended as formative reflection — not a performance review and not a comparison with other tutors.</footer>' +
+      '<footer class="ci-footer">Feedback Kitchen is a human-marked, comment-compilation tool. There is no AI grading. This view describes your cohort only and is intended as formative reflection — not a performance review and not a comparison with other markers.</footer>' +
 
       '<div class="mt-5 mb-2 flex justify-center gap-3 flex-wrap">' +
         '<button onclick="S && S.hideCohortInsights && S.hideCohortInsights()" ' +
