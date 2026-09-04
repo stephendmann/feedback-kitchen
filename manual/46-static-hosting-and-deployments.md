@@ -2,8 +2,6 @@
 
 Feedback Kitchen is architected as a static web application. It requires no persistent backend server, application container, or database service, allowing deployment to any static hosting provider or content delivery network.
 
-![Deployment options diagram](images/ch46-deployment-options.png)
-
 ### Deploying to Vercel (Production Reference)
 
 The official live instance at [marking.stephendmann.com](https://marking.stephendmann.com/) is deployed via Vercel.

@@ -2,8 +2,6 @@
 
 Because Feedback Kitchen stores data locally in your browser's `localStorage` partition rather than on a remote database, adopting a deliberate backup routine ensures your work is preserved across device resets and browser maintenance.
 
-![Backup and preservation routine](images/ch44-backup-strategy.png)
-
 ### The three-tier backup strategy
 
 To prevent accidental data loss, maintain backups across three distinct asset types:

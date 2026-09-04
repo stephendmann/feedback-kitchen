@@ -2,8 +2,6 @@
 
 This chapter details diagnostic resolutions for common operational questions, calculation warnings, schema validation errors, and export discrepancies.
 
-![Troubleshooting diagnostic flow](images/ch42-troubleshooting.png)
-
 ### Common issues and diagnostic matrix
 
 | Symptom | Underlying Cause | Corrective Action |

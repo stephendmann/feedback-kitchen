@@ -2,8 +2,6 @@
 
 Feedback Kitchen allows markers and course coordinators to tailor the grading workspace, calculation precision, and UI layout to specific assessment workflows.
 
-![Scorer settings dialog](images/ch40-settings-panel.png)
-
 ### Scorer settings configuration
 
 The following operational preferences can be configured in the **Builder Wizard** or adjusted via **Scorer Settings** in the marking workspace:

@@ -2,8 +2,6 @@
 
 When cohort marking is complete, Feedback Kitchen writes student grades and assembled feedback back into the Moodle **Offline Grading Worksheet** for bulk upload to your course gradebook.
 
-![Moodle worksheet export modal](images/ch17-moodle-export.png)
-
 ### The round-trip requirement
 
 Moodle requires uploaded worksheets to contain specific participant keys (`Participant <id>`) and identical column ordering to accept the file.

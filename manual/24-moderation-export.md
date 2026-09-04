@@ -2,8 +2,6 @@
 
 The **Moderation Export** generates a privacy-reduced, de-identified Excel workbook for paper coordinators, second markers, and external moderation panels.
 
-![Moderation export interface](images/ch24-moderation-export.png)
-
 ### Purpose and privacy governance
 
 Institutional moderation requires reviewing grading consistency and rubric alignment without exposing student personal information or marker identities.

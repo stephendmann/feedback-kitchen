@@ -2,8 +2,6 @@
 
 When an assessment is evaluated by multiple teaching assistants or tutors, maintaining consistent grading standards across the cohort is essential. Feedback Kitchen coordinates team marking through portable JSON scorer configurations and de-identified moderation exports.
 
-![Team marking workflow](images/ch26-team-marking.png)
-
 ### The team coordination workflow
 
 ```

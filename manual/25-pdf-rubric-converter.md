@@ -2,8 +2,6 @@
 
 The **PDF Rubric Converter** (`convert.html`) converts legacy assessment briefs, syllabus PDFs, and plain-text rubric tables into structured Feedback Kitchen scorer configurations.
 
-![PDF rubric converter interface](images/ch25-converter-interface.png)
-
 ### Purpose and supporter access
 
 Manually typing an extensive rubric matrix with multiple criteria across four performance tiers can take significant time. The converter automates rubric extraction from existing institutional documents.

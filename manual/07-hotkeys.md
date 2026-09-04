@@ -2,8 +2,6 @@
 
 Feedback Kitchen provides keyboard shortcuts to accelerate repetitive marking operations without requiring a mouse.
 
-![Keyboard shortcuts modal](images/ch07-keyboard-shortcuts.png)
-
 ### Global keyboard shortcuts
 
 Global shortcuts are active throughout the marking workspace (`scorer.html`).

@@ -2,8 +2,6 @@
 
 When multiple tutors mark from shared departmental workstations or hot-desking lab computers, Feedback Kitchen provides safeguards to prevent attribution errors and student data leakage between markers.
 
-![Marker switching controls](images/ch37-marker-switching.png)
-
 ### The persistent marker readout (FK-33)
 
 To ensure the correct marker is recorded on student gradebooks, the primary top bar displays a persistent status readout:

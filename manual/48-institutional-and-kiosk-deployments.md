@@ -2,8 +2,6 @@
 
 Universities, polytechnics, and school faculties often deploy Feedback Kitchen across computer laboratories, shared marking hubs, and managed faculty laptops.
 
-![Institutional lab deployment](images/ch48-lab-deployment.png)
-
 ### Managing shared lab workstations
 
 In teaching labs where multiple tutors use the same physical terminals throughout the day:

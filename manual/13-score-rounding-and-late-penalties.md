@@ -2,8 +2,6 @@
 
 Feedback Kitchen provides dedicated calculation controls in the **Penalty & Grade Override** section (`#sec-adjust`) to manage decimal precision, late submission deductions, and borderline grade adjustments.
 
-![Rounding and penalty controls](images/ch13-rounding-penalties.png)
-
 ### Score rounding modes
 
 The section rail provides segmented buttons to control how weighted scores are formatted and displayed:

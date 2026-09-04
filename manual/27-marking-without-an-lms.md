@@ -2,8 +2,6 @@
 
 Feedback Kitchen operates as a completely standalone assessment application. It does not require an active connection to Moodle, Canvas, Blackboard, or any Learning Management System.
 
-![Standalone marking setup](images/ch27-non-lms-marking.png)
-
 ### Common standalone use cases
 
 Standalone marking workflows are commonly used for:

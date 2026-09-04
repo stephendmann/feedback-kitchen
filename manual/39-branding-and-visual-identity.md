@@ -2,8 +2,6 @@
 
 Feedback Kitchen pairs an ergonomic, academic-friendly interface with a clear visual identity and culinary conceptual metaphor.
 
-![Feedback Kitchen visual assets](images/ch39-brand-assets.png)
-
 ### The culinary metaphor system
 
 The user interface uses a cohesive culinary metaphor to describe assessment workflows:

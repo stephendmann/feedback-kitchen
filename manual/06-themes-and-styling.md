@@ -2,8 +2,6 @@
 
 Feedback Kitchen provides a responsive visual interface built with Tailwind CSS and custom stylesheets. It supports light mode, dark mode, system preference synchronization, and strict WCAG 2.1 AA contrast compliance.
 
-![Theme appearance comparison](images/ch06-theme-comparison.png)
-
 ### The theme switcher
 
 The navigation bar includes a theme toggle button (`#theme-toggle`) displaying a sun or moon icon.

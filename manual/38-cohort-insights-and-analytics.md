@@ -2,8 +2,6 @@
 
 Feedback Kitchen includes an in-app statistical diagnostics engine—**Cohort Insights**—located in the Cohort section (`#sec-cohort`). It transforms accumulated marking data into real-time visual distributions and formative diagnostic prompts.
 
-![Cohort insights dashboard](images/ch38-cohort-insights.png)
-
 ### Live statistical metrics
 
 Once at least eight students are saved to the cohort ledger, the insights engine computes core cohort metrics:

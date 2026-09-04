@@ -2,8 +2,6 @@
 
 Feedback Kitchen can run entirely offline on an isolated or air-gapped machine without an active internet connection.
 
-![Offline marking architecture](images/ch47-offline-setup.png)
-
 ### Downloading the repository
 
 To prepare an offline installation:

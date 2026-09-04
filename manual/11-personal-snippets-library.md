@@ -2,8 +2,6 @@
 
 While rubrics establish consistent grading criteria across a teaching team, individual tutors frequently need to insert specific guidance in their own voice. Feedback Kitchen provides a **Personal Snippets Library** to store reusable feedback phrases.
 
-![Personal snippets manager](images/ch11-snippets-manager.png)
-
 ### Snippet architecture and storage
 
 Personal snippets are stored in browser `localStorage` under the `SA_SNIPPETS` key as a list of text objects containing:

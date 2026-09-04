@@ -2,8 +2,6 @@
 
 Feedback Kitchen is built on a **zero-cloud architecture**. Student assessment data, marks, feedback transcripts, and marker notes remain strictly on your local computer.
 
-![Zero-cloud privacy architecture](images/ch35-privacy-architecture.png)
-
 ### The client-side storage boundary
 
 Feedback Kitchen executes entirely inside your browser tab:

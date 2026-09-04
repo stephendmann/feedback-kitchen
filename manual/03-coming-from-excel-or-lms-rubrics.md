@@ -2,8 +2,6 @@
 
 Feedback Kitchen bridges the gap between spreadsheet-based marking workflows and built-in Learning Management System (LMS) grading tools. Understanding how its architecture differs from traditional marking software will help you structure your assessment workflow efficiently.
 
-![Comparison of marking workflows](images/ch03-marking-workflows.png)
-
 ### Coming from Excel marking workbooks
 
 The original Feedback Kitchen was created as an Excel workbook by Dr Michael Harker at the University of Strathclyde. In that spreadsheet model, markers selected grades from dropdown cells, and Excel formulas assembled strings into a feedback block.

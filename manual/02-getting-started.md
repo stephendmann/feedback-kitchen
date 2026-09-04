@@ -2,8 +2,6 @@
 
 Feedback Kitchen runs directly in any modern web browser without user registration or software installation. You can configure a new assessment rubric, mark a student, and export a formal grading record in under thirty minutes.
 
-![Getting started with Feedback Kitchen](images/ch02-getting-started.png)
-
 ### Launching the application
 
 Open [marking.stephendmann.com](https://marking.stephendmann.com/) in Google Chrome, Microsoft Edge, Mozilla Firefox, or Apple Safari.

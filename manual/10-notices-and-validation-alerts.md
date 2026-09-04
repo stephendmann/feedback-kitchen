@@ -2,8 +2,6 @@
 
 Feedback Kitchen uses non-blocking visual notices, advisory warnings, and accessible live regions to alert you to calculation discrepancies, rubric drift, or uncommitted drafts without interrupting your marking flow.
 
-![Validation alerts and notices](images/ch10-validation-alerts.png)
-
 ### Criterion weight balancing
 
 Assessment criteria weights must total exactly 100%.

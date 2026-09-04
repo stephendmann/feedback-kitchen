@@ -2,8 +2,6 @@
 
 When marking complex assessments with multiple criteria, scrolling back and forth between a large rubric table and the full feedback box can create visual fatigue. **Focus Marking Mode** isolates one criterion at a time, pairing its grading controls directly with its individual feedback paragraph.
 
-![Focus marking workspace](images/ch12-focus-marking.png)
-
 ### Activating focus mode
 
 Click the **◎ Focus mode** button in the section rail or primary navigation bar.

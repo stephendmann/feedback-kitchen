@@ -2,8 +2,6 @@
 
 The Feedback Kitchen marking interface is structured for high-speed, top-to-bottom assessment. Two persistent navigation surfaces—the primary top bar and the secondary section rail—keep essential controls and section jumps accessible regardless of document scroll depth.
 
-![Feedback Kitchen navigation layout](images/ch04-navigation-layout.png)
-
 ### The primary top bar
 
 The primary top bar sticks to the top of the viewport (`sticky top-0 z-50`). It provides global session identity and persistent actions.

@@ -2,8 +2,6 @@
 
 The **Marker's Notes** section (`#sec-notes`) is a private scratchpad designed to capture marking rationale, moderation remarks, and borderline decisions without exposing them in student-facing feedback.
 
-![Marker's Notes editor](images/ch09-markers-notes.png)
-
 ### The student privacy boundary
 
 Marker's Notes are strictly separated from student communication:

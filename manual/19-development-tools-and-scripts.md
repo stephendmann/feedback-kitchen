@@ -2,8 +2,6 @@
 
 Feedback Kitchen is architected as a zero-dependency static web application with a comprehensive local testing, accessibility, and maintenance toolchain.
 
-![Development test runner](images/ch19-test-runner.png)
-
 ### The Jest test suite
 
 The codebase includes automated unit and characterisation tests powered by Jest:

@@ -2,8 +2,6 @@
 
 This chapter addresses frequently asked questions regarding grading calculations, data privacy, offline usage, and team coordination in Feedback Kitchen.
 
-![Frequently asked questions](images/ch43-faq.png)
-
 ### General and pedagogical questions
 
 **Does Feedback Kitchen use AI to read or grade student papers?**  

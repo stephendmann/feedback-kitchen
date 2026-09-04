@@ -2,8 +2,6 @@
 
 Feedback Kitchen adapts to both **formative** (developmental feedback on in-progress work) and **summative** (formal grading of final submissions) assessment models.
 
-![Formative vs summative configurations](images/ch29-assessment-types.png)
-
 ### Architectural comparison
 
 | Configuration Dimension | Formative Assessment | Summative Assessment |

@@ -2,8 +2,6 @@
 
 The central feature of Feedback Kitchen is real-time feedback synthesis. As you select criterion grades, the application assembles a complete, multi-paragraph written evaluation in the **Cooked Feedback** panel (`#sec-feedback`).
 
-![Assembled feedback editor](images/ch08-feedback-assembly.png)
-
 ### The feedback assembly structure
 
 The assembled feedback draft is constructed in five structured blocks:

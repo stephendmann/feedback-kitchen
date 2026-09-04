@@ -2,8 +2,6 @@
 
 Feedback Kitchen includes an optional AI-powered **Feedback Wording Assistant** to assist with rephrasing, clarifying, and polishing written feedback drafts.
 
-![Wording assistant panel](images/ch18-wording-assistant.png)
-
 ### Strict pedagogical boundaries
 
 The wording assistant operates under strict structural boundaries:

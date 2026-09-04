@@ -2,8 +2,6 @@
 
 Feedback Kitchen implements multi-layered privacy and security safeguards to ensure personally identifiable information (PII) is protected against data breaches, accidental leakage, and unauthorized access.
 
-![PII scrubbing and security architecture](images/ch45-security-boundaries.png)
-
 ### Client-side architectural isolation
 
 Because Feedback Kitchen is delivered as a static client-side web application:

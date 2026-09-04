@@ -2,8 +2,6 @@
 
 The **Cohort Workbench** (`#sec-cohort`) maintains a running record of all students evaluated under the active assessment scorer. It builds automatically as you mark and stores data locally in your browser (`SA_COHORT_<scorerId>`).
 
-![Cohort workbench manager](images/ch21-cohort-workbench.png)
-
 ### Automated cohort accumulation
 
 Students are added to the cohort ledger automatically whenever you:

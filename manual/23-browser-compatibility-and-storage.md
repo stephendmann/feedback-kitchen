@@ -2,8 +2,6 @@
 
 Feedback Kitchen is built on standard web technologies and operates across all current desktop and mobile web browsers without plugins or native extensions.
 
-![Browser storage architecture](images/ch23-storage-architecture.png)
-
 ### Browser support matrix
 
 | Browser Family | Supported Versions | File Save Experience |

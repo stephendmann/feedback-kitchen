@@ -2,8 +2,6 @@
 
 Maintaining grading consistency across dozens or hundreds of submissions requires ongoing self-calibration. Feedback Kitchen monitors rubric version integrity and cohort scale distribution in real time to alert markers to rubric drift and score compression.
 
-![Cohort calibration signals](images/ch28-cohort-calibration.png)
-
 ### Understanding rubric drift
 
 **Rubric drift** occurs when an assessment scorer is edited mid-cohort—such as tweaking a criterion weighting, rewording a descriptor, or changing a score threshold—after some students have already been marked and saved.

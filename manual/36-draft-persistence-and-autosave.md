@@ -2,8 +2,6 @@
 
 To prevent work loss from accidental browser closures, tab discards, or power interruptions, Feedback Kitchen continuously persists in-progress marking drafts to browser storage.
 
-![Draft restoration workflow](images/ch36-draft-persistence.png)
-
 ### The autosave engine
 
 As you grade a student, a background autosave handler records changes into browser local storage under `SA_DRAFT_<scorerId>`:

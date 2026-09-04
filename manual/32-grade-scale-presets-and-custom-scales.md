@@ -2,8 +2,6 @@
 
 Feedback Kitchen adapts to any institutional grading policy through built-in regional presets and a fully customisable grade scale engine configured in Step 2 of the **Builder Wizard** (`builder.html`).
 
-![Grade scale configuration](images/ch32-grade-scales.png)
-
 ### Built-in regional presets
 
 | Preset | Region / Policy | Grade Levels | Score Bands & Midpoints |

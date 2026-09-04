@@ -2,8 +2,6 @@
 
 Assessment rubrics often undergo iterative refinement between semesters or during initial marking calibration. Feedback Kitchen maintains an audit trail using configuration versioning and cryptographic rubric hashing.
 
-![Scorer versioning architecture](images/ch30-versioning-system.png)
-
 ### The versioning model
 
 Each assessment scorer encapsulates two version dimensions:

@@ -2,8 +2,6 @@
 
 Feedback Kitchen is engineered to meet **WCAG 2.1 Level AA** accessibility standards. The interface supports assistive screen readers, non-mouse keyboard navigation, high-contrast visual environments, and accessible modal dialogs.
 
-![Accessibility landmarks and focus order](images/ch34-accessibility-layout.png)
-
 ### Semantic structure and landmarks
 
 Every page uses standard HTML5 structural elements and ARIA landmarks to support screen reader navigation:

@@ -2,8 +2,6 @@
 
 Feedback Kitchen integrates with Moodle without requiring administrative plugins or API tokens. It uses Moodle's native **Offline Grading Worksheet** format to import class rosters and participant identifiers.
 
-![Moodle worksheet import modal](images/ch16-moodle-import.png)
-
 ### Downloading the worksheet from Moodle
 
 1. Navigate to your assignment in Moodle.

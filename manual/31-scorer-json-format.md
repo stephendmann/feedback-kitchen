@@ -2,8 +2,6 @@
 
 Feedback Kitchen exports assessment scorers as portable `.json` files. This format contains the complete assessment specification—rubrics, grading scales, criteria weights, and feedback templates—without containing any student-identifiable data.
 
-![JSON schema diagram](images/ch31-json-schema.png)
-
 ### Top-level metadata
 
 The root JSON object defines the assessment identity and version:

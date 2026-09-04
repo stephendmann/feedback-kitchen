@@ -2,8 +2,6 @@
 
 The home dashboard is the central hub for managing your assessment configurations. In Feedback Kitchen, each configured assessment is called a **Kitchen** (or **Scorer**). All kitchens are stored locally in your browser's `localStorage` under the `SA_CONFIGS` key.
 
-![Feedback Kitchen dashboard](images/ch05-dashboard-overview.png)
-
 ### The Kitchens manager
 
 When you open [marking.stephendmann.com](https://marking.stephendmann.com/), the dashboard scans local storage and renders your saved assessment cards under **Your Kitchens**.

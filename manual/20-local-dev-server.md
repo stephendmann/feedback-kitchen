@@ -2,8 +2,6 @@
 
 Feedback Kitchen requires no complex build pipelines or database containers for local development. A built-in Node.js server (`dev-server.js`) handles static file serving and serverless API emulation.
 
-![Local development terminal](images/ch20-dev-server.png)
-
 ### The two-terminal workflow
 
 When developing locally, run two processes in separate terminal windows:

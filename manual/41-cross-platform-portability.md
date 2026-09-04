@@ -2,8 +2,6 @@
 
 Feedback Kitchen is built on open web standards. It operates seamlessly across all major operating systems, device architectures, and hardware form factors without installation or platform-specific drivers.
 
-![Cross-platform compatibility](images/ch41-cross-platform.png)
-
 ### Supported operating systems
 
 Feedback Kitchen runs identical code across:

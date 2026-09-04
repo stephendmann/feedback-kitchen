@@ -4,8 +4,6 @@ Feedback Kitchen is a browser-based assessment feedback tool. It is adapted from
 
 The core philosophy is straightforward: build your rubric once, then deliver consistent, personalised feedback at scale.
 
-![Feedback Kitchen overview](images/ch01-feedback-kitchen-overview.png)
-
 ### Who it is for
 
 Feedback Kitchen is built for university lecturers, tutors, teaching assistants, markers, and school educators who mark student assessments against structured criteria.

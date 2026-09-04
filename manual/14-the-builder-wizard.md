@@ -2,8 +2,6 @@
 
 The **Builder Wizard** (`builder.html`) is the authoring environment for creating and editing assessment scorers. A scorer defines the complete evaluation framework: grading scales, criteria weights, rubric descriptors, and feedback templates.
 
-![Scorer builder wizard](images/ch14-builder-wizard.png)
-
 ### The six configuration steps
 
 The wizard guides you through six sequential steps:

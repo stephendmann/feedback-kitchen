@@ -2,8 +2,6 @@
 
 Feedback Kitchen generates formal Excel spreadsheets (`.xlsx`) directly in your browser using SheetJS. Workbooks are built completely on the client side without transmitting student marks to an external server.
 
-![Excel export options](images/ch22-excel-exports.png)
-
 ### The two primary export workbooks
 
 Feedback Kitchen produces two distinct Excel formats:

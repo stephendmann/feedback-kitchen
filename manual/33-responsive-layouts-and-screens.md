@@ -2,8 +2,6 @@
 
 Feedback Kitchen adapts dynamically across desktop monitors, laptops, tablets, and mobile devices through a responsive layout system built with Tailwind CSS.
 
-![Responsive layout adaptation](images/ch33-responsive-layout.png)
-
 ### Desktop layout (≥768px)
 
 On desktop viewports:
