@@ -6,8 +6,8 @@ Feedback Kitchen uses non-blocking visual notices, advisory warnings, and access
 
 Assessment criteria weights must total exactly 100%.
 
-- **Balanced State:** When weights equal 100%, the interface displays a green checkmark (`✓ 100%`).
-- **Unbalanced Warning:** If criteria weights sum to any value other than 100%, an amber warning displays the actual total (e.g. `Weights total 95% — must equal 100%`). In the builder wizard, saving is blocked until weights are resolved.
+- **Balanced State:** When weights equal 100%, the Step 3 indicator reads `✅ Weights total 100% — good to go!`.
+- **Unbalanced Warning:** Otherwise it reads `⚠️ Weights must total 100%`. The running total is not shown in that line, but attempting to advance produces `Weights must total exactly 100%. Current total: N%.`, which does give the figure. Saving on Step 6 is blocked for the same reason.
 
 ### Out-of-band score override notices
 

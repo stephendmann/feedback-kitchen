@@ -29,10 +29,10 @@ There is no export control on the card. To back a scorer up, open it with **Edit
 
 If you open Feedback Kitchen in a fresh browser with no saved scorers, the dashboard displays a first-run orientation banner.
 
-Click **Or try the demo scorer →** to load a pre-configured short written response assessment (`DEMO101`). The demo includes:
+Click **Or try the demo scorer →** to load *Demo Scorer — Written Response*, a pre-configured short written response assessment on course `DEMO101 / 2026`. The demo includes:
 
-- Four weighted criteria (Argument, Evidence & Literature, Structure & Flow, Presentation & Referencing)
-- Standard NZ University grade scale mapping
+- Five weighted criteria: Understanding of the topic (25%), Use of evidence or examples (20%), Organisation and structure (20%), Critical thinking or insight (20%), and Writing style and mechanics (15%)
+- A custom five-band scale (`A`, `B`, `C`, `D`, `F`) rather than one of the regional presets, with the tiers relabelled Excellent, Very good, Good, Satisfactory, and Needs Work
 - Pre-populated tier-level rubric descriptors and feedback templates
 
 Using the demo lets you test criterion selection, override mechanics, and Excel exports without entering assessment data from scratch.

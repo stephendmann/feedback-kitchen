@@ -41,6 +41,6 @@ Feedback Kitchen establishes a calibrated baseline:
 To transition an existing assessment into Feedback Kitchen:
 
 1. **Extract your rubric criteria:** Identify the four to six core dimensions of your assignment and their respective percentage weights.
-2. **Map performance tiers:** Write self-contained descriptors for each performance tier (Excellent, Proficient, Developing, Unsatisfactory).
+2. **Map performance tiers:** Write self-contained descriptors for each performance tier (Excellent, Proficient, Developing, Satisfactory, Unsatisfactory).
 3. **Load student rosters:** If you use Moodle, download the offline grading worksheet to import the full student list in a single operation.
 4. **Distribute to marking teams:** Export the completed scorer as a `.json` configuration file and email it to your marking team, ensuring all markers evaluate against identical standards.

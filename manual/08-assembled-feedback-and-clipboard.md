@@ -7,7 +7,7 @@ The central feature of Feedback Kitchen is real-time feedback synthesis. As you 
 The assembled feedback draft is constructed in five structured blocks:
 
 1. **Opening Paragraph (Intro):** Selected from the feedback templates based on the student's overall calculated or overridden letter grade (pre-penalty).
-2. **Criterion Breakdown:** The specific rubric descriptor for each criterion corresponding to the selected performance tier (e.g. Excellent, Proficient, Developing, Unsatisfactory).
+2. **Criterion Breakdown:** The specific rubric descriptor for each criterion corresponding to the selected performance tier (Excellent, Proficient, Developing, Satisfactory, or Unsatisfactory).
 3. **Total Score Line:** A clear statement of the overall weighted score, formatted according to your selected rounding mode (Exact, Half, or Whole).
 4. **Closing Paragraph (Outro):** Selected from the grade templates to provide forward-looking advice and next steps aligned with the student's overall achievement band.
 5. **Late Submission Notice (Conditional):** If a late penalty is applied, a closing notice is appended specifying the deduction percentage and the final penalised grade/score.

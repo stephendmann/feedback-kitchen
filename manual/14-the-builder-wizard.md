@@ -27,7 +27,7 @@ Select an institutional grading preset or define a custom scale:
 
 - **Presets:** NZ University (10 bands: `A+` to `D`), Australian Honours (`HD` to `F`), UK Degree (`1st` to `Fail`), or US Simple (`A` to `F`).
 - **Midpoint Mapping:** Each grade letter maps to a numeric midpoint (e.g. `A` = 87) used when selecting grades during marking.
-- **Tier Mapping:** Maps each grade to one of four rubric tiers: Excellent, Proficient, Developing, or Unsatisfactory.
+- **Tier Mapping:** Maps each grade to one of five rubric tiers: Excellent, Proficient, Developing, Satisfactory, or Unsatisfactory. The NZ preset uses four of these and leaves satisfactory unused.
 
 ### Step 3: Criteria and weights
 
@@ -35,7 +35,7 @@ Define the dimensions of student assessment:
 
 - Click **+ Add Criterion** to create a new dimension (four to six criteria recommended).
 - Assign an integer percentage weight to each criterion.
-- **Weight Verification:** The total percentage must equal exactly 100% (`✓ 100%`). The wizard blocks advancement to Step 4 if weights do not balance.
+- **Weight Verification:** The total percentage must equal exactly 100%, at which point the indicator reads `✅ Weights total 100% — good to go!`. The wizard blocks advancement to Step 4 if weights do not balance, and blocks saving on Step 6 for the same reason.
 
 ### Step 4: Rubric descriptors
 
@@ -44,6 +44,7 @@ For each criterion, write performance descriptors across each tier:
 - **Excellent:** What distinguishes top-tier execution and conceptual mastery.
 - **Proficient:** Clear demonstration of required standards and analytical competence.
 - **Developing:** Partial achievement naming specific gaps or missing elements.
+- **Satisfactory:** The threshold is cleared, with the limits named. Not shown when the scale is the NZ preset.
 - **Unsatisfactory:** Fundamental requirements not met.
 
 Descriptors must be written in the second person (*"Your analysis..."*) and be self-contained, as students see only the single descriptor matching their awarded tier.

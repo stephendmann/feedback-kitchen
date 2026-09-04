@@ -44,18 +44,19 @@ The `gradeScale` array maps letter grades to numeric score bands, calculation mi
 
 ### Criteria and rubric descriptors (`criteria`)
 
-The `criteria` array defines each evaluation dimension and its four or five tier descriptors:
+The `criteria` array defines each evaluation dimension and its five tier descriptors. A scale that does not use the satisfactory tier still carries the key, left empty:
 
 ```json
 "criteria": [
   {
-    "id": "crit_arg_01",
+    "id": "mo6ljpr2taayp3",
     "name": "Argument & Analysis",
     "weight": 30,
     "rubric": {
       "excellent": "Your argument demonstrates exceptional critical analysis...",
       "proficient": "Your argument is clear, well-supported, and logical...",
       "developing": "Your argument is present but relies heavily on description...",
+      "satisfactory": "Your argument meets the threshold but stays close to the source material.",
       "unsatisfactory": "A central argument is absent or poorly articulated."
     }
   }
@@ -87,7 +88,7 @@ The configuration concludes with deduction schedules and UI preference flags:
   { "label": "More than 3 days late", "deduction": 0, "fail": true }
 ],
 "enableLatePenalties": true,
-"markedInMoodle": true,
+"moodleEnabled": true,
 "scoreRounding": "none"
 ```
 
