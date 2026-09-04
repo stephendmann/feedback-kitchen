@@ -28,7 +28,7 @@ What reaches the `/api/garnish` proxy is the assessment criteria, rubric descrip
 To protect student anonymity during external examiner audits, the **Moderation Export** engine enforces *k*-anonymity:
 
 - **Cohort Size Gate:** Exports are blocked if the cohort contains fewer than 15 students (*n* < 15), preventing re-identification via small sample size.
-- **Identity Erasure:** Replaces all student and marker identities with pseudonymous labels (`Student 01`, `Student 02`).
+- **Identity Erasure:** Rows are shuffled and relabelled `R001`, `R002` and so on, and markers become `T1`, `T2`, or `T_other` where they marked fewer than five students in the cohort.
 
 ### API proxy security and rate limiting
 
