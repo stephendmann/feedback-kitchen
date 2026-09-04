@@ -36,6 +36,6 @@ Feedback Kitchen collects anonymous pageview and performance metrics to monitor 
 On shared office or university lab computers, student records stored in browser storage could be inspected by subsequent users if not cleared.
 
 Feedback Kitchen provides three safeguards:
-1. **Switch Marker:** Clears the active tutor name and drops uncommitted session drafts.
+1. **Switch Marker:** Clears the active marker name and drops uncommitted session drafts.
 2. **Post-Export Wipe:** Prompts you to clear local cohort storage immediately after downloading class Excel workbooks.
 3. **Private Browsing:** Marking in incognito mode automatically destroys all stored data when the browser window closes.

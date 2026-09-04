@@ -37,12 +37,12 @@ Click **Save & Launch** on Step 6. The newly created scorer opens immediately in
 
 The marking interface arranges grading controls in a top-to-bottom sequence.
 
-1. **Enter Student Details:** Type the student name and student ID. The date fills automatically, and your tutor name persists across submissions.
+1. **Enter Student Details:** Type the student name and student ID. The date fills automatically, and your marker name persists across submissions.
 2. **Assign Criterion Grades:** Select a letter grade from the dropdown for each criterion. The midpoint score populates instantly. Enter a custom value in **Override** to adjust the points directly.
 3. **Check Suggested Grade:** Review the calculated weighted score and suggested overall letter grade. Set a late submission penalty band if the assignment was submitted past the deadline.
 4. **Edit Feedback Draft:** Review the real-time generated feedback in the **Cooked Feedback** panel. Edit sentences directly or insert saved snippets.
 5. **Add Private Notes:** Record borderline rationale or moderation notes in the **Marker's Notes** area.
-6. **Copy and Advance:** Click **Copy feedback** to place the finished text on your system clipboard for pasting into your LMS grading portal. Click **New student** to reset the form while preserving your tutor identity.
+6. **Copy and Advance:** Click **Copy feedback** to place the finished text on your system clipboard for pasting into your LMS grading portal. Click **New student** to reset the form while preserving your marker name.
 
 ### Exporting your cohort
 

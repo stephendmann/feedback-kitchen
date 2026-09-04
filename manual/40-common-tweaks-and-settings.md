@@ -14,7 +14,7 @@ The following operational preferences can be configured in the **Builder Wizard*
 | **Score Rounding Mode** | `Exact` | Selects default rounding precision (`Exact`, `Half`, `Whole`) for score badges, feedback text, and spreadsheet exports. |
 | **Late Submission Deductions** | Enabled | Controls whether late penalty dropdowns and calculation rules appear in the workspace. |
 | **Cohort Consistency Signal** | Disabled | Toggles the ambient scale-use indicator (`#cohort-consistency-badge`) in the Cohort section header. |
-| **Auto-Clear Marker Name** | Disabled | When enabled, clears the tutor name on every **↺ New student** action instead of persisting it. |
+| **Auto-Clear Marker Name** | Disabled | When enabled, clears the marker name on every **↺ New student** action instead of persisting it. |
 
 ### Layout and density tweaks
 

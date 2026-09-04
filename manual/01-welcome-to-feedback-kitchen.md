@@ -10,7 +10,7 @@ The core philosophy is straightforward: build your rubric once, then deliver con
 
 Feedback Kitchen is built for university lecturers, tutors, teaching assistants, markers, and school educators who mark student assessments against structured criteria.
 
-When marking large cohorts or coordinating multi-tutor teams, feedback quality frequently degrades toward the end of a long marking session. Feedback Kitchen eliminates repetitive typing while keeping every grading decision in your hands.
+When marking large cohorts or coordinating multi-marker teams, feedback quality frequently degrades toward the end of a long marking session. Feedback Kitchen eliminates repetitive typing while keeping every grading decision in your hands.
 
 ### What it is and is not
 
