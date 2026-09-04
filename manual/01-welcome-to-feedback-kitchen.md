@@ -8,7 +8,7 @@ The core philosophy is straightforward: build your rubric once, then deliver con
 
 ### Who it is for
 
-Feedback Kitchen is built for university lecturers, tutors, teaching assistants, and school educators who mark student assessments against structured criteria.
+Feedback Kitchen is built for university lecturers, tutors, teaching assistants, markers, and school educators who mark student assessments against structured criteria.
 
 When marking large cohorts or coordinating multi-tutor teams, feedback quality frequently degrades toward the end of a long marking session. Feedback Kitchen eliminates repetitive typing while keeping every grading decision in your hands.
 
