@@ -1,60 +1,61 @@
-# Getting Started
+# Getting started
 
-Feedback Kitchen runs directly in any modern web browser without user registration or software installation. The home page puts the wizard at around 10 to 20 minutes for a new assessment, after which marking a student and exporting the record takes a few minutes more.
+Open [marking.stephendmann.com](https://marking.stephendmann.com/) in any current browser and you are ready to mark. There is no account to create, nothing to install, and no administrator to ask. Building the scorer for a new assessment takes 10 to 20 minutes. After that, each student takes as long as your judgement takes.
 
-### Launching the application
+The home page lists the scorers you have already built under **Your Kitchens**, with **+ Build a scorer** and **⬆ Upload** beside them. If the list is empty, **Or try the demo scorer →** loads a worked example you can take apart without setting anything up.
 
-Open [marking.stephendmann.com](https://marking.stephendmann.com/) in Google Chrome, Microsoft Edge, Mozilla Firefox, or Apple Safari.
+## The loop
 
-The home page displays your saved assessment scorers under **Your Kitchens**, alongside shortcuts to create a new scorer, import a JSON configuration, or load a pre-configured demo assessment.
+Three moves, and the first one happens once per assessment rather than once per student.
 
-### The three-step marking loop
+You **build a scorer**: the criteria, their weights, the grade scale, and the sentence a student sees at each tier of each criterion. You **mark** each student by choosing a grade per criterion, while the draft feedback assembles itself from your descriptors. You **export** the record when the pile is done.
 
-Using Feedback Kitchen centers on three core actions:
+Most of the work sits in the first move, and it is worth doing carefully, because every student after it inherits the care.
 
-1. **Build a Scorer:** Configure assessment criteria, percentage weights, grade bands, and rubric descriptors once per assignment.
-2. **Mark Students:** Select a grade per criterion for each student while the application synthesises formatted feedback in real time.
-3. **Export Records:** Save individual feedback to the clipboard, download structured Excel gradebooks, or export batch Moodle worksheets.
+## Building your first scorer
 
-### Building your first scorer
+Click **Build a scorer**. The wizard has six steps, and the stepper across the top names them.
 
-Click **Build a scorer** on the home page to launch the six-step configuration wizard.
+**Details** takes the scorer name, the assessment title, your course code and year, and your institution. It also sets **Score display**, which decides whether marks read as 73.3, 73.5 or 73 throughout. Full precision is the default, and you can change it live while marking, so it is not a decision to agonise over now.
 
-| Step | Configuration Target | Purpose |
-|---|---|---|
-| 1 | Details | Rubric name, assessment title, course code and year, institution, version, score display, and spelling. |
-| 2 | Scale | Select a regional preset (NZ, AU, UK, US) or define custom grade thresholds. |
-| 3 | Criteria | Specify assessment dimensions and ensure percentage weights sum to 100%. |
-| 4 | Rubric | Write second-person performance statements across each grade tier. |
-| 5 | Feedback | Define introductory and concluding remarks keyed to overall letter grades. |
-| 6 | Settings | Configure late penalty bands, declare whether the assessment is marked in Moodle, and export a JSON backup. |
+**Scale** offers NZ University, Australian Honours, UK Degree and US Simple, or a custom scale of your own labels and bands. Settle this before you reach step 5: changing the scale afterwards resets the feedback templates keyed to it, and the wizard warns you about that on the step itself.
 
-Click **Save & Start Scoring** on Step 6. The newly created scorer opens immediately in the marking workspace.
+**Criteria** is where you name what you are assessing and weight each one. The weights must total exactly 100%, and the wizard will not let you past this step until they do. Four to six criteria is a comfortable range.
 
-### Marking your first student
+**Rubric** is the step that earns its time. For each criterion you write the sentence a student sees at each tier, and students see only the one sentence that matched their grade, never the set side by side. Write in second person, and make each descriptor stand on its own. "Below the required standard" tells a student nothing their grade did not already tell them.
 
-The marking interface arranges grading controls in a top-to-bottom sequence.
+**Feedback** holds the opening and closing paragraph for each individual grade. Defaults are supplied and are usable as they stand, so you can leave them alone on a first pass and come back once you have seen how they read against real work.
 
-1. **Enter Student Details:** Type the student name and student ID. The date fills automatically, and your marker name persists across submissions.
-2. **Assign Criterion Grades:** Select a letter grade from the dropdown for each criterion. The midpoint score populates instantly. Enter a custom value in **Override** to adjust the points directly.
-3. **Check Suggested Grade:** Review the calculated weighted score and suggested overall letter grade. Set a late submission penalty band if the assignment was submitted past the deadline.
-4. **Edit Feedback Draft:** Review the real-time generated feedback in the **Cooked Feedback** panel. Edit sentences directly or insert saved snippets.
-5. **Add Private Notes:** Record borderline rationale or moderation notes in the **Marker's Notes** area.
-6. **Copy and Advance:** Click **Copy feedback** to place the finished text on your system clipboard for pasting into your LMS grading portal. Click **New student** to reset the form while preserving your marker name.
+**Settings** carries the late penalty bands and the Moodle declaration, and it is where you back the scorer up. Use **Export (Save / Share)** to save a `.json` file somewhere durable before you mark anyone. That file is the only backup: scorers live in this browser, and clearing site data deletes them. It is also how you hand the rubric to a co-marker.
 
-### Exporting your cohort
+Then **Save & Start Scoring** opens the scorer.
 
-Every time you copy feedback or click **Finalise & Export**, the student record is automatically saved to the local cohort storage.
+## Marking your first student
 
-At the end of your marking session, scroll to the **Cohort** section at the bottom of the page and click **Export cohort (Excel)**. This downloads a multi-sheet spreadsheet containing:
+The marking page runs top to bottom, and the rail under the header jumps between sections.
 
-- Individual student feedback transcripts
-- Complete grade and score matrices
-- Cohort performance summaries
-- Full rubric matrices and feedback templates for moderation audits
+Enter the student's name and ID in **Student**. The date fills itself, and your name in **Marker** persists between students, so you type it once a session. The **Marking as** readout in the top bar shows whose name is going on the record.
 
-### Immediate safety practice
+In **Rubric**, choose a grade for each criterion. The midpoint for that grade drops into the score automatically, and the weighted total updates as you go. To award something other than the midpoint, type the mark into **Override**. If the number you type falls outside the band for the grade you chose, the field turns amber. That is advisory, not a block: the score is accepted and counted, on the assumption that a typo is more likely than a deliberate mismatch.
 
-Feedback Kitchen stores all active data in your browser's local storage. If you clear browser cache or use an ephemeral private browsing window, stored scorers and unexported cohort records will be deleted.
+**Penalty & grade override** holds the late penalty bands and, separately, an override for the overall grade. An overall override only ever raises a mark to the bottom of the band you choose; it will not lower one.
 
-Export your scorer configuration as a `.json` file with **Export (Save / Share)** on Step 6 of the builder immediately after creation, and export your cohort Excel workbook at the end of every marking block.
+**Feedback** shows the assembled draft, updating as you grade. Edit it freely. Use **Insert snippet…** to drop in a phrase from your own library, and **↺ Regenerate** if you have edited yourself into a corner and want the draft rebuilt from the current grades.
+
+**Notes** is a private scratchpad. It never reaches the student and never reaches Moodle, but it does travel into your Excel records, which is what makes it the right place for the reasoning behind a borderline call.
+
+Then **Copy feedback** puts the finished text on the clipboard for pasting into your LMS, and **↺ New student** clears the form for the next one while keeping your marker name.
+
+## The cohort builds itself
+
+Copying feedback or using **✓ Finalise & Export** also saves that student into the **Cohort** section at the foot of the page. You do not have to maintain it, and the first save asks you to name the cohort and say whether more than one person is marking it.
+
+At the end of a marking block, **Export cohort (Excel)** downloads the whole class as one workbook named `<Course>_<CohortLabel>_Cohort.xlsx`. It holds the feedback text for every student, a grade matrix, a summary, and the rubric and templates for reference, which is what a moderator asks for.
+
+## The thing to do today
+
+Everything lives in this browser. Clearing site data, or working in a private window that you then close, takes the scorers and any unexported cohort with it.
+
+So export the scorer as `.json` the moment you finish building it, and export the cohort workbook at the end of every session rather than at the end of the marking. Neither takes ten seconds, and both are the difference between a bad afternoon and a lost one.
+
+Chapter 3 is worth reading next if you are arriving from an Excel marking workbook or an LMS rubric grid, since the habits transfer unevenly.

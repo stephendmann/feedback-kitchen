@@ -1,38 +1,37 @@
-# Security and PII Protection
+# What protects student information
 
-Feedback Kitchen implements multi-layered privacy and security safeguards to ensure personally identifiable information (PII) is protected against data breaches, accidental leakage, and unauthorized access.
+Feedback Kitchen protects student information mostly by not having it. There is no server holding marks, no account to compromise, and no database to breach, because the marking happens in your browser and the data stays there. The parts that need active protection are the two places where anything leaves: the wording assistant, and the moderation export.
 
-### Client-side architectural isolation
+This chapter is about where the boundaries actually sit, including where they stop.
 
-Because Feedback Kitchen is delivered as a static client-side web application:
+## Why there is so little to attack
 
-- **Zero Server-Side Attack Surface:** The application has no central database, no persistent user sessions, and no server-side user credentials susceptible to SQL injection or credential stuffing.
-- **Origin Sandboxing:** All local data (`localStorage`) is protected by browser same-origin policies, inaccessible to external scripts or third-party web domains.
+The application is static files. No login, no session, no server-side store of anything you type. The usual questions an institutional security review asks, about credential handling, injection into a marks database, or what happens when the vendor is breached, have no surface here to land on.
 
-### Automated client-side PII scrubbing
+Your data sits in this browser's local storage for this origin, which the browser keeps from other sites by the same-origin policy. That is real protection against another website reading it. It is not protection against another person using your computer, and it is not encryption. A laptop holding a marked cohort should be treated like a bag holding the marked scripts. Chapter 37 covers shared machines specifically.
 
-When using the optional AI Feedback Wording Assistant, the client-side scrubbing engine (`scrubPII`) sanitises all outgoing prompt payloads before network transmission:
+## What the wording assistant strips, and what it does not
 
-| PII Category | Scrubbing Logic | Handled Edge Cases |
-|---|---|---|
-| **Student Names** | Takes the name in the Student field, and each whitespace-separated part of it, and replaces every occurrence with `[REDACTED]`. Longest match first, so *John Smith* goes before *John*. | Unicode-aware word boundaries, so macrons (*Ngāti*), diacritics (*Renée*), apostrophes (*O'Brien*) and hyphenated surnames (*Smith-Jones*) match correctly. |
-| **Student ID Numbers** | Replaces the ID in the Student ID field wherever it appears. | Any ID, in any format, because the value is taken from the field rather than matched by pattern. |
-| **Email Addresses** | Replaces anything matching a conventional email pattern with `[REDACTED]`, as a safety net. | Ordinary addresses. |
+The wording assistant is the one feature that sends text off the device, and only when you invoke it. Before anything goes, `scrubPII` rewrites the prompt.
 
-Understand the boundary this draws. The scrubber removes **the identifiers of the student you are marking**, because those are the values it has. It is not a general PII detector: another student's name or ID typed into your notes is not recognised and would be sent. Keep third-party identifiers out of the Marker's Notes field.
+It takes the name in the **Student** field and the value in **Student ID**, and replaces every occurrence of either with `[REDACTED]`. It also takes each part of the name separately, so a first name alone is caught, and it matches longest first so that "John Smith" is replaced before "John". The matching is Unicode-aware, which matters more here than it sounds: macrons, diacritics, apostrophes and hyphens are all treated as part of a name, so Ngāti, Renée, O'Brien and Smith-Jones are matched properly rather than half-redacted. Anything shaped like an email address is replaced as a safety net.
 
-What reaches the `/api/garnish` proxy is the assessment criteria, rubric descriptors, letter grades and feedback prose, with those identifiers removed.
+Now the limit, because it is the part that changes what you should type.
 
-### Moderation k-anonymity enforcement
+The scrubber removes the identifiers **of the student currently on screen**, because those are the only values it has. It has no pattern for student IDs in general and no list of people at your institution. Another student's name in your notes, a tutor's name, a reference to a complainant or a classmate, will not be recognised, and will be sent.
 
-To protect student anonymity during external examiner audits, the **Moderation Export** engine enforces *k*-anonymity:
+So the rule is about your own habits rather than the software: keep other people's identifiers out of **Marker's Notes** when you use the assistant. Write "the co-author" rather than the co-author's name. What reaches the proxy is then the criteria, the rubric descriptors, the grades and the prose.
 
-- **Cohort Size Gate:** Exports are blocked if the cohort contains fewer than 15 students (*n* < 15), preventing re-identification via small sample size.
-- **Identity Erasure:** Rows are shuffled and relabelled `R001`, `R002` and so on, and markers become `T1`, `T2`, or `T_other` where they marked fewer than five students in the cohort.
+The proxy itself restricts which origins may call it, through `FK_ALLOWED_ORIGINS`, and rate limits each IP address to 20 requests a minute.
 
-### API proxy security and rate limiting
+## The moderation export, and its floor of fifteen
 
-The serverless proxy endpoint (`/api/garnish.js`) implements:
+The moderation pack is built for people who need to check marking consistency without knowing whose work they are looking at.
 
-- **Strict CORS Filtering:** Restricts incoming requests to authorized origins via `FK_ALLOWED_ORIGINS`.
-- **Per-IP Rate Limiting:** Enforces an in-memory rate limit (20 requests per IP per minute) to prevent denial-of-service and API abuse.
+It refuses to build at all for a cohort under fifteen students. That floor is not caution for its own sake. In a class of eight, a moderator who knows the tutorial group can often work out who a row belongs to by elimination, and no amount of removing names prevents it. Below fifteen, use the ordinary cohort workbook and accept that it is not anonymous.
+
+Above the floor, rows are shuffled before they are labelled, so the order carries no trace of who was marked first. Rows become `R001`, `R002`, and markers become `T1`, `T2`, with any marker who handled fewer than five scripts collapsed into `T_other` so that a small teaching load cannot be picked out.
+
+One identity survives on purpose. The manifest records the name and role of the coordinator who opted the paper in, because a moderation pack has to say who authorised its release. No student identity survives anywhere in the file.
+
+Chapter 24 covers what the pack contains sheet by sheet, and chapter 35 covers the wider privacy architecture these two features sit inside.

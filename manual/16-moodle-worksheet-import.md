@@ -1,25 +1,16 @@
-# Moodle Worksheet Import
+# Importing a Moodle class list
 
-Feedback Kitchen integrates with Moodle without requiring administrative plugins or API tokens. It uses Moodle's native **Offline Grading Worksheet** format to import class rosters and participant identifiers.
+If your students come from Moodle, do this before you mark anyone. Feedback Kitchen reads Moodle's own offline grading worksheet, so you never retype a name or an ID, and there is no plugin to install and no API token to request. It is a CSV file exchange in both directions.
 
-### Downloading the worksheet from Moodle
+## Getting the file out of Moodle
 
-1. Navigate to your assignment in Moodle.
-2. In the grading navigation menu, select **Download grading worksheet**.
-3. Save the resulting `.csv` file to your computer. Do not edit or rename the file.
+Open the assignment in Moodle and choose **Download grading worksheet** from the grading menu. Save the `.csv` somewhere you will find it again, and leave it alone. You will need this same file at the end to send grades back, and Feedback Kitchen fills in the copy you downloaded rather than building a new one.
 
-### Initiating the import in Feedback Kitchen
+## Starting the import
 
-You can trigger the import from two locations in the marking interface:
+In the scorer, either use the prompt in **Student**, or **Import Moodle worksheet…** in the **Cohort** section. Both open the same dialog. Choose the file and Feedback Kitchen checks it before showing you anything.
 
-- **Student Section:** Click the prompt in the Student details panel (`#sec-student`).
-- **Cohort Section:** Click **Import Moodle worksheet…** in the Cohort manager (`#sec-cohort`).
-
-Select the downloaded CSV file. Feedback Kitchen executes an automated validation pass before any data is loaded.
-
-### Structural validation and schema verification
-
-Feedback Kitchen enforces strict validation against Moodle's canonical 14-column header contract:
+The check is strict. Moodle's worksheet has fourteen columns in a fixed order:
 
 ```text
 Identifier, Full name, ID number, Email address, Status, Group, Marker,
@@ -27,25 +18,29 @@ Grade, Maximum grade, Marking workflow state, Grade can be changed,
 Last modified (submission), Last modified (grade), Feedback comments
 ```
 
-If columns have been modified, added, or deleted, a file-blocking error (`E_HEADER_MISMATCH`) is displayed to prevent corrupted imports.
+Rename one, reorder them, or add a column of your own, and the import stops with `E_HEADER_MISMATCH` naming the column that broke it. This is deliberate rather than fussy: Moodle will reject the file on the way back for the same reason, and it is better to find out now than after an afternoon of marking. The usual cause is opening the CSV in Excel and saving it again.
 
-### Import preview and row dispositions
+## Reading the preview
 
-Before committing the import, Feedback Kitchen presents a preview table detailing the action planned for every row:
+Nothing is imported until you say so. The preview lists every row with a badge saying what will happen to it.
 
-| Status Badge | What it means | Action taken |
+| Badge | What it means | What happens |
 |---|---|---|
-| `Import` (`.mw-import`) | The row has an ID number | Keyed on that ID and queued for marking. |
-| `Verify` (`.mw-verify`) | The row has a name but no ID number | Held back. Matching on a name alone risks attaching one student's grades to another, so the row is never imported automatically. Use **Assign ID** to supply the missing identifier, or **Ignore** to drop the row. |
-| `Skip` (`.mw-skip`) | Unusable or duplicate | No ID and no name, or an ID already claimed by another row or by a student already in the cohort. |
-| `Non-markable` (`.mw-nonmarkable`) | No submission | Listed so the roster is complete, but not queued for marking. |
+| `Import` | The row has an ID number | Queued for marking, keyed on that ID |
+| `Verify` | A name, but no ID number | Held back until you resolve it |
+| `Skip` | No ID and no name, or an ID already in use | Left out |
+| `Non-markable` | No submission | Shown so the roster is complete, but not queued |
 
-Students you have already marked are not shown as `Verify`. They are skipped as duplicates, and their existing grades and feedback are left untouched.
+`Verify` is the one that stops you, and it is worth understanding why. A row with no ID number can only be matched on the student's name, and names are not unique. Attaching one student's grades to another student's record is the worst thing this tool could do, so it refuses to guess. Use **Assign ID** on the row to supply the identifier from your own records, or **Ignore** to leave that student out of the import. The commit button stays disabled while any `Verify` row is unresolved.
 
-### Committing the class roster
+Students you have already marked do not appear as `Verify`. They are skipped as duplicates, and their existing grades and feedback are left untouched, so re-importing a worksheet part-way through a cohort is safe.
 
-The commit button reads **Import N students**, counting only the rows in the `Import` disposition. It stays disabled while any `Verify` row is unresolved, with the tooltip "Resolve every verify row first".
+If the list is long, tick **Show only rows needing attention** to hide everything already sorted.
 
-- The class roster is loaded directly into the Cohort workbench.
-- The first imported student opens automatically in the marking workspace.
-- If you were part-way through marking someone when you imported, that draft is left on screen and no student is opened over the top of it.
+## Committing
+
+The button reads **Import N students**, counting only the `Import` rows, so the number tells you what you are actually about to add.
+
+The roster lands in the Cohort section, and the first imported student opens ready to mark. If you were part-way through marking someone when you imported, that draft is left alone and nothing is opened over the top of it.
+
+When the cohort is marked, chapter 17 covers sending the grades and feedback back to Moodle, using the same file you downloaded here.
