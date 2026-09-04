@@ -24,7 +24,7 @@ No. Before any prompt is sent to `/api/garnish`, a client-side PII scrubbing eng
 ### Team marking and file management
 
 **How do I share a rubric with my marking team?**  
-Open the scorer in the builder and click **Export JSON** on Step 6. Email the resulting `.json` file to your tutors. Each tutor imports the file via `upload.html` to mark against identical rubric standards.
+Open the scorer in the builder and click **Export (Save / Share)** on Step 6. Email the resulting `.json` file to your tutors. Each tutor imports the file via `upload.html` to mark against identical rubric standards.
 
 **Are my personal feedback snippets shared when I export a scorer?**  
 No. Scorer JSON files contain assessment configuration only. Personal snippets remain in your private local browser storage and are never included in scorer exports.

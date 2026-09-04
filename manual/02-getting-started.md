@@ -1,6 +1,6 @@
 # Getting Started
 
-Feedback Kitchen runs directly in any modern web browser without user registration or software installation. You can configure a new assessment rubric, mark a student, and export a formal grading record in under thirty minutes.
+Feedback Kitchen runs directly in any modern web browser without user registration or software installation. The home page puts the wizard at around 10 to 20 minutes for a new assessment, after which marking a student and exporting the record takes a few minutes more.
 
 ### Launching the application
 
@@ -18,18 +18,18 @@ Using Feedback Kitchen centers on three core actions:
 
 ### Building your first scorer
 
-Click **Build a New Scorer** on the home page to launch the six-step configuration wizard.
+Click **Build a scorer** on the home page to launch the six-step configuration wizard.
 
 | Step | Configuration Target | Purpose |
 |---|---|---|
-| 1 | Assessment Details | Paper code, assessment title, institution, and default tutor name. |
-| 2 | Grade Scale | Select a regional preset (NZ, AU, UK, US) or define custom grade thresholds. |
-| 3 | Criteria & Weights | Specify assessment dimensions and ensure percentage weights sum to 100%. |
-| 4 | Rubric Descriptors | Write second-person performance statements across each grade tier. |
-| 5 | Feedback Templates | Define introductory and concluding remarks keyed to overall letter grades. |
-| 6 | Settings & Review | Configure late penalty deduction schedules and export a JSON backup. |
+| 1 | Details | Rubric name, assessment title, course code and year, institution, version, score display, and spelling. |
+| 2 | Scale | Select a regional preset (NZ, AU, UK, US) or define custom grade thresholds. |
+| 3 | Criteria | Specify assessment dimensions and ensure percentage weights sum to 100%. |
+| 4 | Rubric | Write second-person performance statements across each grade tier. |
+| 5 | Feedback | Define introductory and concluding remarks keyed to overall letter grades. |
+| 6 | Settings | Configure late penalty bands, declare whether the assessment is marked in Moodle, and export a JSON backup. |
 
-Click **Save & Launch** on Step 6. The newly created scorer opens immediately in the marking workspace.
+Click **Save & Start Scoring** on Step 6. The newly created scorer opens immediately in the marking workspace.
 
 ### Marking your first student
 
@@ -57,4 +57,4 @@ At the end of your marking session, scroll to the **Cohort** section at the bott
 
 Feedback Kitchen stores all active data in your browser's local storage. If you clear browser cache or use an ephemeral private browsing window, stored scorers and unexported cohort records will be deleted.
 
-Export your scorer configuration as a `.json` file from Step 6 of the builder immediately after creation, and export your cohort Excel workbook at the end of every marking block.
+Export your scorer configuration as a `.json` file with **Export (Save / Share)** on Step 6 of the builder immediately after creation, and export your cohort Excel workbook at the end of every marking block.

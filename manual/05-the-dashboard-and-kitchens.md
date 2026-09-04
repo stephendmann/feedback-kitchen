@@ -8,10 +8,10 @@ When you open [marking.stephendmann.com](https://marking.stephendmann.com/), the
 
 Each kitchen card displays:
 
-- **Assessment Name:** The descriptive assignment title (e.g. *Case Study Analysis*).
-- **Course Code:** The institutional paper or module code (e.g. *MKTG201*).
-- **Configuration Summary:** Total number of weighted criteria and the selected grade scale preset.
-- **Last Modified Timestamp:** Date and time of the most recent configuration edit.
+- **Scorer Name:** The name you gave the rubric (e.g. *MRKTG101 5Cs Analysis Scorer*).
+- **Course and Institution:** The course code and year, followed by the institution name where one is set (e.g. *MKTG201 2026 · University of Waikato*).
+- **Configuration Summary:** The number of criteria and the assessment title.
+- **Active Badge:** A green *Active* chip on the scorer you last opened.
 
 ### Card actions
 
@@ -19,10 +19,11 @@ Every kitchen card provides direct operational controls:
 
 | Action | Target Destination | Purpose |
 |---|---|---|
-| **Open Scorer** | `scorer.html?id=<id>` | Launches the live marking workspace for evaluating student submissions. |
-| **Edit** | `builder.html?edit=<id>` | Opens the six-step wizard to update criteria, weights, rubric descriptors, or grade templates. |
-| **Export JSON** | Direct browser download | Downloads a standalone `.json` configuration file containing the complete rubric and scoring schema. |
-| **Delete** | Modal confirmation | Permanently removes the scorer configuration from local storage. |
+| **Use Scorer** | `scorer.html?id=<id>` | Launches the live marking workspace for evaluating student submissions. |
+| **Edit** | `builder.html?id=<id>` | Opens the six-step wizard to update criteria, weights, rubric descriptors, or grade templates. |
+| **×** | Modal confirmation | Permanently removes the scorer configuration from local storage. |
+
+There is no export control on the card. To back a scorer up, open it with **Edit** and use **Export (Save / Share)** on Step 6.
 
 ### First-run orientation and demo loading
 

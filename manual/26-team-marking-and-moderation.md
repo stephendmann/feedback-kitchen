@@ -20,7 +20,7 @@ Coordinator collects Workbooks / Moderation Exports ◄──────┘
 ### 1. Authoring and distributing the master scorer
 
 1. The course coordinator builds the assessment scorer in the **Builder Wizard** (`builder.html`), defining criteria, percentage weightings, and rubric descriptors.
-2. In Step 6 of the builder, the coordinator clicks **Export JSON** to download `<AssessmentName>.json`.
+2. In Step 6 of the builder, the coordinator clicks **Export (Save / Share)** to download `<AssessmentName>.json`.
 3. The coordinator distributes the JSON file to all tutors via email or shared course storage.
 
 ### 2. Tutor onboarding and personal customization

@@ -61,5 +61,5 @@ Finalise configuration and export backups:
 
 - **Late Submission Penalties:** Customise deduction percentages per day late or accept default university bands.
 - **Moodle Integration Toggle:** Enable or disable Moodle worksheet import/export controls.
-- **Backup and Share:** Click **Export JSON** to save a permanent `.json` backup file.
-- **Save and Launch:** Saves the configuration to browser local storage (`SA_CONFIGS`) and opens the live marking workspace (`scorer.html`).
+- **Backup and Share:** Click **Export (Save / Share)** to save a permanent `.json` backup file.
+- **Save and Start Scoring:** Click **Save & Start Scoring** to save the configuration to browser local storage (`SA_CONFIGS`) and open the live marking workspace (`scorer.html`).

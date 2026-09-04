@@ -20,7 +20,7 @@ To prevent accidental data loss, maintain backups across three distinct asset ty
 
 Whenever you build a new rubric or edit an existing assessment:
 
-- Advance to Step 6 of the **Builder Wizard** (`builder.html`) and click **Export JSON**.
+- Advance to Step 6 of the **Builder Wizard** (`builder.html`) and click **Export (Save / Share)**.
 - Save `<AssessmentName>.json` into your course materials folder on your institutional cloud drive (OneDrive, Google Drive, or network share).
 - The JSON file contains the complete rubric schema, criteria weights, grade bands, and feedback templates.
 

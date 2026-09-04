@@ -4,26 +4,29 @@ The **PDF Rubric Converter** (`convert.html`) converts legacy assessment briefs,
 
 ### Purpose and supporter access
 
-Manually typing an extensive rubric matrix with multiple criteria across four performance tiers can take significant time. The converter automates rubric extraction from existing institutional documents.
+Manually typing an extensive rubric matrix with multiple criteria across five performance tiers can take significant time. The converter automates rubric extraction from existing institutional documents.
 
-This convenience feature is available to [Ko-fi](https://ko-fi.com/smann) supporters and is unlocked using your supporter key.
+This convenience feature is available to [Ko-fi](https://ko-fi.com/smann) supporters. Access is unlocked with the supporter username and password, entered once and stored in this browser.
 
 ### The conversion workflow
 
 ```
-[1. Upload PDF or Text] ──► [2. Automated Extraction] ──► [3. Review & Edit] ──► [4. Save / Export JSON]
+[Step 1 — Upload your manual] ──► [Step 2 — Select an assessment] ──► [Step 3 — Review and edit]
 ```
 
-1. **Upload Document:** Drag and drop your course outline PDF or paste plain-text rubric tables into the conversion area.
-2. **Automated Parsing:** The extraction engine identifies:
-   - Assignment title, paper code, and institutional details
-   - Assessment criteria and percentage weightings
-   - Performance tier descriptors (mapped into Excellent, Proficient, Developing, Unsatisfactory)
-   - Suggested grade scale mappings
-3. **Interactive Review:** An editable preview table renders the extracted schema. You can edit criterion names, adjust percentage weights to ensure they equal 100%, and refine descriptor text.
-4. **Save or Export:**
-   - Click **Save as Scorer** to add the configuration directly to **Your Kitchens** in local storage (`SA_CONFIGS`).
-   - Click **Export JSON** to download a `.json` configuration file for backup or team distribution.
+1. **Step 1 — Upload your manual:** Upload the course outline or assessment brief. The converter reads a whole document rather than a single rubric table.
+2. **Step 2 — Select an assessment:** A document often describes several assessments. The converter lists what it found and you pick the one to build a scorer for.
+3. **Step 3 — Review and edit:** An editable preview renders the extracted schema: assessment title, criteria, percentage weights, and tier descriptors. Adjust the weights until they total 100%, refine the descriptor text, then tick the rubric confirmation box.
+
+The two finishing actions sit below the review panel:
+
+- **Import directly to FK** adds the configuration straight to **Your Kitchens** in local storage (`SA_CONFIGS`). If a scorer with the same assessment title already exists, it asks before replacing it.
+- **Download scorer JSON** saves a `.json` configuration file for backup or team distribution.
+- **Start over** clears the uploaded document and the draft.
+
+**Download scorer JSON** stays disabled until the weights total 100%, every criterion has an assessment title and filled descriptors, and you have ticked the rubric confirmation box.
+
+The converter fills four tiers: excellent, proficient, developing, and unsatisfactory. Feedback Kitchen scorers carry a fifth, satisfactory, which the converter leaves empty. Open the new scorer in the builder and write that tier before you mark anyone, or students who land in it receive no criterion commentary.
 
 ### The review imperative
 
