@@ -15,11 +15,13 @@ When using the optional AI Feedback Wording Assistant, the client-side scrubbing
 
 | PII Category | Scrubbing Logic | Handled Edge Cases |
 |---|---|---|
-| **Student Names** | Replaces full names, given names, and surnames with generic syntactic tokens. | Recognises macrons (e.g. *Māori*), diacritics, apostrophes (e.g. *D'Angelo*, *O'Connor*), and hyphenated names. |
-| **Student ID Numbers** | Redacts numeric and alphanumeric institutional student identifiers. | Matches standard university ID regex patterns. |
-| **Email Addresses** | Replaces email strings with placeholder tokens. | Matches standard RFC-5322 email patterns. |
+| **Student Names** | Takes the name in the Student field, and each whitespace-separated part of it, and replaces every occurrence with `[REDACTED]`. Longest match first, so *John Smith* goes before *John*. | Unicode-aware word boundaries, so macrons (*Ngāti*), diacritics (*Renée*), apostrophes (*O'Brien*) and hyphenated surnames (*Smith-Jones*) match correctly. |
+| **Student ID Numbers** | Replaces the ID in the Student ID field wherever it appears. | Any ID, in any format, because the value is taken from the field rather than matched by pattern. |
+| **Email Addresses** | Replaces anything matching a conventional email pattern with `[REDACTED]`, as a safety net. | Ordinary addresses. |
 
-Only de-identified assessment criteria, rubric descriptors, letter grades, and anonymised feedback text are transmitted to the `/api/garnish` proxy.
+Understand the boundary this draws. The scrubber removes **the identifiers of the student you are marking**, because those are the values it has. It is not a general PII detector: another student's name or ID typed into your notes is not recognised and would be sent. Keep third-party identifiers out of the Marker's Notes field.
+
+What reaches the `/api/garnish` proxy is the assessment criteria, rubric descriptors, letter grades and feedback prose, with those identifiers removed.
 
 ### Moderation k-anonymity enforcement
 

@@ -9,7 +9,7 @@ Every page uses standard HTML5 structural elements and ARIA landmarks to support
 - `<header>`: Page chrome and product positioning announcements.
 - `<nav aria-label="Primary">`: Global brand and session actions.
 - `<nav aria-label="Sections">`: Persistent in-page section navigation.
-- `<main id="main">`: Main assessment and marking content.
+- `<main>`: Main assessment and marking content.
 - `<details open>`: Accessible collapsible sections with `<summary>` headings.
 
 ### Screen reader announcements (WCAG 4.1.3)

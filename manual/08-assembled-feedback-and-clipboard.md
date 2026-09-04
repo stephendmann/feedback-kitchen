@@ -18,21 +18,21 @@ The assembled feedback renders inside an editable textarea (`#feedback-text`).
 
 You can edit any sentence, insert specific examples from the student's submission, or adjust tone directly in the editor. Your manual edits are preserved in memory and autosaved into browser local storage.
 
-If you make extensive edits and wish to revert to the raw rubric text, click **↺ Regenerate feedback** to re-synthesise the draft from the current grade selections.
+If you make extensive edits and wish to revert to the raw rubric text, click **↺ Regenerate** to re-synthesise the draft from the current grade selections.
 
 ### Inserting personal snippets
 
 To layer your personal voice into the assembled draft:
 
 1. Place your text cursor at the desired position inside the feedback editor.
-2. Click the **💬 Insert snippet…** dropdown menu.
+2. Open the **Insert snippet…** dropdown.
 3. Select any saved phrase from your personal snippet library.
 
 The snippet text is inserted immediately at the cursor position without disturbing the surrounding rubric text.
 
 ### Copying to the clipboard
 
-Click **Copy feedback** in the Finish section or press `Ctrl + Shift + C` (`Cmd + Shift + C` on macOS).
+Click **Copy feedback** in the bar at the bottom of the page, or **Copy to clipboard** beside the draft, or press `Ctrl + Shift + C` (`Cmd + Shift + C` on macOS).
 
 Feedback Kitchen executes three simultaneous actions:
 

@@ -9,7 +9,7 @@ Students are added to the cohort ledger automatically whenever you:
 - Click **Copy feedback** (or press `Ctrl + Shift + C`)
 - Click **Finalise & Export** (or press `Ctrl + Shift + E`)
 
-Each record requires at least a student name or student ID. The first save prompts you to name the cohort (e.g. *PHIL102 — Semester 2 2026*).
+Each record requires at least a student name or student ID. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
 
 ### What each record stores
 
@@ -19,7 +19,7 @@ Every saved cohort entry captures the complete state of the evaluation:
 - Criterion letter grades, raw scores, and point overrides
 - Total calculated score, late penalty deduction, and final grade
 - Full edited feedback draft and private marker notes
-- Rubric version timestamp
+- The 8-character rubric version hash in force when the record was saved
 
 ### Reviewing and searching records
 

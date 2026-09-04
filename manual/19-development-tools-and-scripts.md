@@ -19,7 +19,8 @@ The test suite validates pure functional contracts without DOM overhead:
 | **Scoring Engine** | `js/score-engine.test.js` | Verifies weighting formulas, midpoint selections, and custom score band mappings. |
 | **Moodle Parser** | `js/moodle-worksheet.test.js` | Tests RFC-4180 parsing, quoted delimiters, newline handling, and poisoned CSV fixtures. |
 | **Cohort Import** | `js/moodle-cohort-import.test.js` | Validates duplicate suppression, identifier matching, and overwrite protection. |
-| **Moderation Privacy** | `js/moderation-suppression.test.js` | Confirms k-anonymity suppression rules and schema v1 compliance. |
+| **Moderation Suppression** | `js/moderation-suppression.test.js` | Confirms the cohort minimum, tutor collapsing and grade-band suppression thresholds. |
+| **Moderation Privacy** | `js/moderation-privacy.test.js` | Confirms no student or marker identity reaches the exported pack. |
 | **Draft Persistence** | `js/draft-persistence.test.js` | Tests debounced autosave, quota error hardening, and session restore mechanics. |
 
 ### Automated accessibility test battery

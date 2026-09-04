@@ -32,7 +32,7 @@ Feedback Kitchen uses consistent color and structural cues to distinguish input 
 
 ### Typography
 
-The interface uses the **Inter** font family (`wght@400;500;600;700;800;900`) for all UI labels, tables, headings, and instructional copy.
+The interface uses the **Inter** font family (`wght@400;500;600;700;800`) for all UI labels, tables, headings, and instructional copy.
 
 The **Cooked Feedback** editor uses a clean monospace font stack (`font-family: monospace; font-size: 0.82rem; line-height: 1.65;`). Monospace rendering ensures consistent character spacing, paragraph alignment, and clear visibility of indentation or punctuation errors before copying.
 

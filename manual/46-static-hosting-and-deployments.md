@@ -26,9 +26,10 @@ You can host Feedback Kitchen directly from a GitHub repository for free:
 1. Navigate to repository **Settings** → **Pages**.
 2. Under **Build and deployment**, select **Deploy from a branch**.
 3. Choose the `main` branch and `/ (root)` folder, then click **Save**.
-4. GitHub Pages publishes the static marking app within seconds.
 
-*(Note: GitHub Pages provides the complete core marking tool, SheetJS Excel exports, and Moodle integrations. Serverless AI proxy routes require Node hosting such as Vercel or local dev servers).*
+Two caveats before you rely on this. Every page loads its assets from root-absolute paths (`/js/...`, `/css/...`), so the site works from a user or organisation page served at the domain root, and breaks on a project page served under `/<repository>/`, where those paths resolve above the site. And the CSS is compiled by `npm run build:css`; GitHub Pages runs no build, so `css/tailwind.out.css` has to be committed.
+
+The serverless routes behind the wording assistant and the PDF converter need Node hosting such as Vercel, or the local dev server. Everything else, including the Excel exports and the Moodle round trip, is client-side and works on Pages.
 
 ### Self-hosting with Caddy, Nginx, or Apache
 

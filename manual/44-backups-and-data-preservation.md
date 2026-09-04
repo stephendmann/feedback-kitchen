@@ -29,16 +29,16 @@ Whenever you build a new rubric or edit an existing assessment:
 At the conclusion of every marking block:
 
 - Scroll to the **Cohort** section in the marking workspace and click **Export cohort (Excel)**.
-- This produces a comprehensive five-sheet spreadsheet containing all individual feedback transcripts, criteria mark matrices, and summary statistics.
+- This produces a six-sheet spreadsheet containing all individual feedback transcripts, criteria mark matrices, and summary statistics.
 - Store this workbook in your formal departmental grade repository. This workbook is your permanent audit record if browser storage is cleared.
 
 ### 3. Personal snippets library (`.csv`)
 
 Once you have built a library of personal feedback phrases:
 
-- Open the **Manage snippets…** dialog from the feedback editor dropdown.
-- Click **Export to CSV** to download `snippets.csv`.
-- If you migrate to a new computer or switch browsers, click **Import from CSV** to restore your saved phrases instantly.
+- Open the **Manage Snippets** dialog from the feedback editor dropdown.
+- Click **Export CSV** to download `feedback-kitchen-snippets-YYYY-MM-DD.csv`.
+- If you migrate to a new computer or switch browsers, click **Import CSV** to restore your saved phrases.
 
 ### Disaster recovery procedure
 
@@ -46,5 +46,5 @@ If a computer reset or browser cleanup empties your dashboard:
 
 1. Open Feedback Kitchen at [marking.stephendmann.com](https://marking.stephendmann.com/).
 2. Click **Upload** on the home dashboard and select your backed-up `.json` scorer file.
-3. Open the scorer, navigate to the Snippet Manager, and import your `snippets.csv`.
+3. Open the scorer, navigate to the snippet manager, and import your snippets CSV.
 4. Your complete marking workspace is restored in seconds.

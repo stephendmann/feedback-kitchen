@@ -17,7 +17,7 @@ All core styling (`css/tailwind.out.css`) and spreadsheet generation libraries (
 
 ### Running with a lightweight local server
 
-Modern browsers enforce strict security boundaries on some APIs when loading raw `file://` URLs. Running a minimal local static server provides the cleanest offline experience:
+Feedback Kitchen has to be served over HTTP, even offline. Any of these will do it, and none of them needs a network:
 
 #### Option A: Node.js Built-in Dev Server
 ```bash
@@ -36,12 +36,11 @@ python3 -m http.server 8000
 caddy file-server --listen :8000
 ```
 
-### Direct filesystem execution (`file://`)
+### Why `file://` does not work
 
-You can also double-click `index.html` to open Feedback Kitchen directly from your filesystem:
+Opening `index.html` by double-clicking it will not run Feedback Kitchen. Every page loads its scripts and stylesheets from root-absolute paths (`/js/shared.js`, `/css/tailwind.out.css`), which a `file://` URL resolves against the root of your filesystem rather than the repository folder. The page appears unstyled and nothing works, because `shared.js` never loads.
 
-- All core grading calculations, rubric builders, personal snippets, and draft autosaves operate normally.
-- Single Marker Records and Cohort Workbooks generate offline using the local SheetJS binary.
+Use one of the local servers above. They need no internet connection, only a process on your own machine.
 
 ### Air-gapped marking environments
 

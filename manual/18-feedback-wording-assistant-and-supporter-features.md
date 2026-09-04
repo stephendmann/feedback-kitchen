@@ -13,9 +13,9 @@ The wording assistant operates under strict structural boundaries:
 
 ### Client-side PII scrubbing
 
-Before any text is transmitted to the AI proxy endpoint (`/api/garnish.js`), a client-side PII scrubbing engine sanitises the payload:
+Before any text is transmitted to the AI proxy endpoint (`/api/garnish`, served by `api/garnish.js`), a client-side PII scrubbing engine sanitises the payload:
 
-- Strips student full names and ID numbers from the feedback draft and marker's notes.
+- Strips the name and ID of the student currently on screen, including each part of the name on its own, from the prompt.
 - Unicode-aware processing handles macrons (e.g. *Ngāti*), diacritics, apostrophes, and hyphenated surnames (e.g. *Smith-Jones*).
 - Transmits only anonymised assessment criteria, rubric descriptors, score bands, and feedback prose.
 
@@ -36,7 +36,7 @@ Two convenience features are reserved for project supporters on [Ko-fi](https://
 
 To uphold the core architectural principle that **your data never leaves your browser**, Feedback Kitchen maintains no central user database, login accounts, or payment tracking servers.
 
-- Supporters receive an unlock code on Ko-fi.
-- Clicking **Wording key** in the navigation bar lets you enter your code.
-- The unlock flag is stored locally in your browser (`localStorage`).
+- Supporters receive a username and password on Ko-fi.
+- Clicking **Wording key** in the navigation bar opens **Wording Assistant Login**, where you enter them once.
+- They are stored in this browser only (`SA_FK_USER` and `SA_FK_PASS`) and sent with each assistant request so the proxy can authorise it. Nothing about who you are is stored on a server.
 - Trusting supporters eliminates the need for privacy-invasive user accounts and tracking telemetry.

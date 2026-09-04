@@ -30,9 +30,9 @@ The brand voice is defined in the project's **Brand Voice Canon**:
 The application includes a complete suite of multi-resolution vector and raster assets:
 
 - **Chef Brand Mark:** Vector SVG (`fk-chef.svg`) and high-density badge (`fk-chef-badge.png`) rendered in the primary navigation bar.
-- **Favicon Suite:** Multi-resolution icons (`favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png`) for desktop browser tabs.
+- **Favicon Suite:** The pages link `/favicon.ico`, `/fk-chef.svg`, `/favicon-32.png` and `/icon-192.png`. A fuller set at 16, 32 and 48 pixels is generated into `public/favicon/` by `scripts/generate-favicons.mjs` but is not currently referenced by any page.
 - **Apple Touch Icon:** High-resolution 180×180 PNG (`apple-touch-icon.png`) for iOS home-screen bookmarks.
-- **Progressive Web App (PWA) Manifest:** Standard web manifest (`site.webmanifest`) supporting standalone installation with `icon-192.png` and `icon-512.png`.
+- **Web Manifest:** A `site.webmanifest` exists in `public/favicon/`, along with `icon-192.png` and `icon-512.png` at the repository root. No page links the manifest, so standalone installation is not wired up.
 
 ### Design principles
 

@@ -4,15 +4,16 @@ Feedback Kitchen allows markers and course coordinators to tailor the grading wo
 
 ### Scorer settings configuration
 
-The following operational preferences can be configured in the **Builder Wizard** or adjusted via **Scorer Settings** in the marking workspace:
+**Scorer Settings** in the marking workspace holds the settings below. The first belongs to the scorer and travels with its JSON; the rest are device settings and stay in this browser.
 
 | Setting | Default | Purpose |
 |---|---|---|
-| **Moodle Marking Integration** | Enabled | Controls visibility of Moodle offline worksheet import prompts and export buttons. Disable for non-LMS assessments. |
-| **Score Rounding Mode** | `Exact` | Selects default rounding precision (`Exact`, `Half`, `Whole`) for score badges, feedback text, and spreadsheet exports. |
-| **Late Submission Deductions** | Enabled | Controls whether late penalty dropdowns and calculation rules appear in the workspace. |
-| **Cohort Consistency Signal** | Disabled | Toggles the ambient scale-use indicator (`#cohort-consistency-badge`) in the Cohort section header. |
-| **Auto-Clear Marker Name** | Disabled | When enabled, clears the marker name on every **↺ New student** action instead of persisting it. |
+| **This assessment is marked in Moodle** | Enabled | Shows the Moodle worksheet import and export tools. Saved with the scorer and included when you export it, so your marking team gets the same setting. |
+| **Show advanced wording tools** | Disabled | Adds the manual fallback, prompt builder and local run log to the wording assistant. |
+| **Show cohort consistency indicator** | Disabled | Toggles the ambient scale-use badge (`#cohort-consistency-badge`) in the Cohort section header. Hidden anyway for fewer than 12 scripts. |
+| **Clear marker name between students** | Disabled | Clears the Marker field on every **↺ New student**, and keeps the marker name out of the on-device draft. |
+
+Two settings live elsewhere. **Score display** (`Exact`, `Half`, `Whole`) is set on Step 1 of the builder and can be changed live from the section rail while marking. **Late submission penalties** are configured on Step 6 of the builder.
 
 ### Layout and density tweaks
 

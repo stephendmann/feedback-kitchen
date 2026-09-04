@@ -10,16 +10,16 @@ Feedback Kitchen executes entirely inside your browser tab:
 - **No Central Database:** Student submissions and marks are never stored in a central cloud database.
 - **Local Persistence:** Assessment scorers, personal snippets, and cohort records reside exclusively in your browser's private `localStorage` partition.
 
-### Institutional privacy compliance (FERPA, GDPR, NZ Privacy Act)
+### How the architecture bears on institutional privacy obligations
 
-University grading policies and international student data regulations require strict control over student identifiable information:
+Whether a given deployment satisfies FERPA, the GDPR, the NZ Privacy Act or your own institution's policy is a determination for your privacy officer, not something software can assert. What can be stated is the behaviour those determinations usually turn on:
 
-| Regulatory Requirement | Feedback Kitchen Compliance Mechanism |
+| Consideration | What Feedback Kitchen does |
 |---|---|
-| **Data Sovereignty** | No student records cross national borders or third-party cloud servers. |
-| **Data Minimisation** | Only assessment metadata required for grading is processed in browser memory. |
-| **Audit Trails** | Complete assessment records export to secure institutional formats (Excel/Moodle CSV). |
-| **Data Purging** | Local cohort data can be wiped immediately at the conclusion of marking. |
+| **Data sovereignty** | Student records are not transmitted to Feedback Kitchen servers and do not cross a border, because they are never sent anywhere. The exception is the optional wording assistant, covered in the next section. |
+| **Data minimisation** | Only what you type for grading is held, in browser memory and local storage. |
+| **Audit trails** | Complete assessment records export to Excel and to the Moodle worksheet format. |
+| **Data purging** | Local cohort data can be wiped from the browser at the conclusion of marking. |
 
 ### Analytics and telemetry boundaries
 
