@@ -31,7 +31,7 @@ Feedback Kitchen provides multiple methods for delivering feedback directly to s
 | **Printed Feedback Slip** | Click **Print page** | Generates a clean, formatted feedback summary suitable for physical handout or stapling to returned scripts. |
 | **Individual PDF Attachment** | Print dialog → **Save as PDF** | Generates a professional single-page PDF feedback document to email directly to the student. |
 | **Email Body Text** | Click **Copy feedback** | Copies plain-text feedback to the clipboard for pasting directly into an individual email message. |
-| **Individual Excel Record** | Click **Finalise & Export** | Downloads `<Student>_Marker_Record.xlsx` for student distribution or department archiving. |
+| **Individual Excel Record** | Click **Finalise & Export** | Downloads `<Student>_<Course>_Feedback.xlsx` for student distribution or department archiving. |
 
 ### Cohort record keeping
 

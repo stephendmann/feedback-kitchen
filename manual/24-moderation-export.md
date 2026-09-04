@@ -8,9 +8,12 @@ Institutional moderation requires reviewing grading consistency and rubric align
 
 The moderation export guarantees:
 
-- **Complete PII Stripping:** Student names, student ID numbers, and marker names are completely eliminated from the dataset.
-- **Pseudonymisation:** Each submission is assigned an anonymous sequential identifier (`Student 01`, `Student 02`, ...).
-- **Rubric Audit Baseline:** The workbook embeds the exact rubric descriptors and version hash used during grading.
+- **PII Stripping:** Student names, student ID numbers and marker names are removed from the data rows.
+- **Row Pseudonymisation:** Rows are shuffled, then labelled `R001`, `R002` and so on, so row order carries no information about marking order.
+- **Marker Pseudonymisation:** Each marker becomes `T1`, `T2` and so on. A marker with fewer than five students in the cohort is collapsed into `T_other` rather than given their own label.
+- **Rubric Audit Baseline:** The workbook records the 8-character rubric version hash each record was scored against, and says so explicitly when a cohort carries more than one.
+
+One identity is deliberately retained. The manifest records the `lecturer_name` and `lecturer_role` captured when the coordinator opted the paper in, because the pack has to say who authorised its release. No student identity is retained anywhere.
 
 ### The k-anonymity guard (n ≥ 15)
 
@@ -33,13 +36,16 @@ Moderation export operates on an opt-in basis configured per course:
 
 ### Moderation workbook structure (Schema v1)
 
-The downloaded moderation workbook (`<PaperCode>_Moderation_<AssessmentId>.xlsx`) contains three structured sheets:
+The downloaded workbook is named `FK_ModExport_<PaperCode>_<CohortId>_<AssessmentId>_<YYYYMMDD>.xlsx` and contains four sheets, in this order:
 
 | Sheet Name | Contents |
 |---|---|
-| `README` | Formal metadata record containing schema version (`v1`), date of export, anonymisation rules applied, and the 8-character rubric version hash. |
-| `Cohort Matrix` | De-identified assessment records showing criterion-by-criterion letter grades, raw scores, manual overrides, weighted totals, and final grades. |
-| `Rubric Reference` | Complete rubric criteria definitions and performance tier descriptors for audit validation. |
+| `00_README` | The metadata record: schema version, export date, the opt-in details, and a plain description of every suppression rule applied. |
+| `10_rows` | One row per submission. Row label, paper, cohort and assessment identifiers, rubric version hash, marker label, then a score and a maximum for each criterion, then the total, the grade band, the submission window, an edit count, and the suppression and extreme-row flags. |
+| `20_methods` | How the figures were derived, including the schema version, the application version, and the suppression thresholds in force. |
+| `90_manifest` | A two-column key and value summary: student and criterion counts, criterion names, rubric version or versions, suppressed bands, and the opt-in record. |
+
+Two things the workbook deliberately does not contain. There are no per-criterion letter grades and no override values, only the resulting numeric scores. And there is no rubric descriptor sheet: the pack identifies the rubric by hash rather than reproducing it, so a moderator comparing rubric wording needs the scorer JSON or the whole-cohort workbook alongside it.
 
 ### Decoupled architecture
 
