@@ -15,7 +15,7 @@ To ensure compatibility, Feedback Kitchen performs an in-place merge:
 
 ### Column injection rules
 
-Feedback Kitchen modifies only two columns in the 14-column Moodle schema:
+Feedback Kitchen modifies only two columns in the 14-column Moodle schema, and only for students it has actually marked. Rows it cannot match, or matched rows with no marks, are left exactly as they were:
 
 | Column | Data Source | Output Format |
 |---|---|---|
@@ -31,12 +31,12 @@ All other twelve columns—including group allocations, marker assignments, work
 1. Scroll to the **Cohort** section (`#sec-cohort`) in the marking workspace.
 2. Click **Export Moodle worksheet…**.
 3. Select the original Moodle CSV file when prompted.
-4. Feedback Kitchen displays a summary of matched and populated rows (e.g. `Populated 42 of 42 student records`).
+4. Feedback Kitchen reports what it filled, for example `Exported 42 grades to grading_worksheet.csv. Upload it back to Moodle.`, naming any rows it left unchanged.
 5. The processed CSV downloads automatically to your computer.
 
 ### Uploading grades back to Moodle
 
 1. Open your assignment in Moodle.
 2. In the grading navigation menu, select **Upload grading worksheet**.
-3. Choose the exported CSV file. Ensure the original filename is preserved.
+3. Choose the exported CSV file. Feedback Kitchen writes it back under the name you supplied, so it will already match.
 4. Confirm the upload preview in Moodle to publish grades and feedback to your students.
