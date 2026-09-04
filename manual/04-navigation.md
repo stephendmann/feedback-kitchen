@@ -9,7 +9,7 @@ The primary top bar sticks to the top of the viewport (`sticky top-0 z-50`). It 
 | Control | Position | Function |
 |---|---|---|
 | **Feedback Kitchen Brand** | Left | Links back to the home dashboard (`index.html`). |
-| **Marking As Readout** | Center-Left | Displays the active marker name. Click **Switch marker** to clear the marker name and drop uncommitted session state for the next user. |
+| **Marking As Readout** | Center-Left | Displays the active marker name. Click **Switch marker** to clear it for the next user. A draft holding unfinished marking is kept, not discarded. |
 | **Theme Toggle** | Right | Toggles between light and dark display modes. |
 | **Wording Key** | Right | Opens AI wording assistant credentials and access settings. |
 | **↺ New Student** | Right | Resets grading selections, feedback drafts, and notes while preserving the active marker name. |

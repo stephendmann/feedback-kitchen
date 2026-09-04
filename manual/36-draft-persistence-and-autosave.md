@@ -4,16 +4,15 @@ To prevent work loss from accidental browser closures, tab discards, or power in
 
 ### The autosave engine
 
-As you grade a student, a background autosave handler records changes into browser local storage under `SA_DRAFT_<scorerId>`:
+As you grade a student, a background autosave handler records changes into browser local storage under `SA_DRAFT_V1_<scorerId>`. A draft is written only once at least one criterion has been graded and something has changed since the last save, so an untouched form leaves nothing behind:
 
 - Student Name, Student ID, and Date
 - Selected criterion grades, midpoint values, and manual overrides
 - Late submission penalty selections and overall grade overrides
 - Live edits inside the feedback draft editor
 - Private text inside the **Marker's Notes** scratchpad
-- Active Focus Mode index
 
-Writes are debounced by 300 milliseconds to maintain smooth typing performance without disk thrashing.
+Writes are debounced by one second, and flushed immediately when the page is hidden or closed so the last edits survive a hard close. If browser storage is full the write is abandoned silently rather than interrupting marking.
 
 ### Resuming an uncommitted draft
 
@@ -34,5 +33,7 @@ The temporary draft record is cleared automatically when you complete an assessm
 - Clicking **Copy feedback** (saves student into the cohort and clears the active draft)
 - Clicking **Finalise & Export** (generates Marker's Record and clears the draft)
 - Clicking **↺ New student** (resets inputs and purges the draft)
+
+Clicking **Switch marker** also purges it, but only when there is no unsaved work; see [chapter 37](37-shared-machine-privacy-and-marker-switching.md).
 
 This ensures previous student data does not contaminate the next submission.

@@ -21,7 +21,9 @@ All application state is stored locally in the browser's `localStorage` partitio
 | `SA_ACTIVE` | Identifier string of the currently open scorer. | Global origin |
 | `SA_SNIPPETS` | Personal feedback snippets library (`label`, `text`, `category`). | Global origin |
 | `SA_COHORT_<scorerId>` | Array of marked student records for that specific assessment scorer. | Per Scorer |
-| `SA_SCORER_SETTINGS_V1` | Scorer preferences (Moodle integration toggle, marker persistence). | Global origin |
+| `SA_DRAFT_V1_<scorerId>` | The in-progress student for that scorer, offered back by the resume banner. | Per Scorer |
+| `SA_SCORER_SETTINGS_V1` | Device settings: advanced wording tools, cohort consistency indicator, clear marker name between students. | Global origin |
+| `SA_SECTION_STATE_V1` | Which sections you left open or collapsed. | Global origin |
 | `fk-theme` | Visual theme preference (`"light"` or `"dark"`). | Global origin |
 
 ### Storage quotas and write-hardening

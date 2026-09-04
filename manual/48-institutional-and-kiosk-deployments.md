@@ -7,7 +7,7 @@ Universities, polytechnics, and school faculties often deploy Feedback Kitchen a
 In teaching labs where multiple tutors use the same physical terminals throughout the day:
 
 1. **Ephemeral Browser Profiles:** Configure lab computers with guest browsing profiles or reboot restoration software (such as Deep Freeze) so that browser local storage purges automatically when a marker logs out.
-2. **Mandatory Marker Switching:** Instruct markers to use the **Switch marker** button in the top bar upon completing a marking block to clear in-progress session state.
+2. **Mandatory Marker Switching:** Instruct markers to click **↺ New student** and then **Switch marker** at the end of a marking block. Switch marker alone keeps a draft that still holds unfinished marking, so the New student step is the one that clears it.
 3. **Post-Export Purge Policy:** Enforce a standard policy requiring markers to click **Export cohort (Excel)** followed immediately by **Clear cohort** before leaving the workstation.
 
 ### Pre-configuring institutional default scorers
