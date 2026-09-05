@@ -26,7 +26,7 @@
     R.push([]);
 
     // Student details
-    R.push(['Student Name', student.name || '', 'Student ID', student.id || '', 'Tutor', student.tutor || '']);
+    R.push(['Student Name', student.name || '', 'Student ID', student.id || '', 'Marker', student.tutor || '']);
     R.push([]);
 
     // Criteria table header
@@ -253,7 +253,7 @@
 
     /* ── Sheet 2: Grade Matrix ────────────────────────────── */
     const MTX = [];
-    const headerRow = ['Student Name', 'Student ID', 'Tutor', 'Date'];
+    const headerRow = ['Student Name', 'Student ID', 'Marker', 'Date'];
     criteria.forEach(c => {
       headerRow.push(c.name + ' (grade)');
       headerRow.push(c.name + ' (weighted /' + c.weight + ')');
@@ -331,7 +331,7 @@
 
     /* ── Sheet 3: Student Feedback (one row per student) ─── */
     const FB = [];
-    FB.push(['Student Name', 'Student ID', 'Tutor', 'Date', 'Suggested Grade',
+    FB.push(['Student Name', 'Student ID', 'Marker', 'Date', 'Suggested Grade',
              'Final Score /100', 'Criteria reviewed %', 'Cooked Feedback', "Marker's Notes"]);
     cohort.students.forEach(s => {
       const sr = s.scoreResult || {};
