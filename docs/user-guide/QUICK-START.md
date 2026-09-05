@@ -52,6 +52,8 @@ At the bottom of the page, the **Cohort** section holds everything you have mark
 - **View list → Open.** Reload any saved student to re-mark or correct them. Saving again updates that record rather than duplicating it.
 - **Cohort Insights.** Grade distribution and marking patterns, once you have enough students saved.
 
+> **Changed September 2026:** the marker column in every exported workbook is now headed **Marker** rather than **Tutor**, matching the field name in the scorer. Workbooks you exported before this change still say Tutor. If you have a spreadsheet formula or script reading that column by name, point it at the new heading.
+
 ---
 
 ## Marking a Moodle cohort
