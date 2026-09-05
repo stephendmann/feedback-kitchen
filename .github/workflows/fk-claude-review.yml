@@ -55,10 +55,29 @@ jobs:
           # for consistent behaviour between local and CI reviews.
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
-          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # --comment is what makes the review reach the PR. Posting is opt-in in
+          # the code-review skill: without the flag it reviews normally and reports
+          # to its caller, which in CI is log output nobody reads. That is why every
+          # run from #69 to #130 was green, silent, and — after the OAuth fix — paid
+          # for (#130 cost $2.32 for 24 turns that produced nothing). See #112.
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }} --comment"
           claude_args: >-
             --append-system-prompt "Feedback Kitchen is an academic assessment / rubrics
             web app. Treat student data as sensitive: never recommend logging or exposing
             raw student identifiers. Weight findings toward grading/rubric correctness,
             data privacy, and performance on large cohorts. The repo CLAUDE.md and
             planning docs carry FK conventions — honour them."
+
+      # The job log carries only the action's init and result JSON, not the turns.
+      # The full transcript — including which tools hit permission_denials_count —
+      # is written to the runner temp and dies with the runner, so a silent or
+      # failed review cannot be diagnosed after the fact. Keeping it makes the next
+      # instance debuggable. if: always() so a failed review is the case it covers.
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-output-${{ github.event.pull_request.number }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          if-no-files-found: warn
+          retention-days: 30

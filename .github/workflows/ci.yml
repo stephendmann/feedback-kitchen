@@ -4,7 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    # Filters on the PR's BASE branch, so `manual` is needed here for the
+    # 48-chapter manual rewrite to get any CI at all. Without it a PR into
+    # manual runs nothing — no Build & Test, no CodeQL.
+    branches: [main, manual]
 
 jobs:
   ci:
