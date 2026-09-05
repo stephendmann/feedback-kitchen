@@ -63,7 +63,7 @@ The care you take here is the whole game. Every student's feedback is assembled 
 
 ### Step 1: Assessment details
 
-Assessment name, paper code, institution, and the default tutor name. The paper code matters later if your team uses moderation export, so use the real one.
+Assessment name, paper code, institution, and the default marker name. The paper code matters later if your team uses moderation export, so use the real one.
 
 ### Step 2: Grade scale
 
@@ -161,7 +161,7 @@ A private scratchpad for your marking rationale, borderline calls, or anything t
 
 **Copy feedback** puts the assembled text on your clipboard, ready to paste into Moodle, Canvas, Turnitin, or wherever your institution collects it. **Print page** produces a PDF snapshot.
 
-Then **New student** clears the grades, feedback, and notes, keeps your tutor name, and starts the next one.
+Then **New student** clears the grades, feedback, and notes, keeps your marker name, and starts the next one.
 
 Copying feedback or finishing a student also saves that student to the cohort. The first time, you are asked to name the cohort. Records need at least a name or an ID.
 
@@ -229,7 +229,7 @@ The **Cohort** section is the running record of everyone you have marked with th
 
 **Cohort insights** shows the grade distribution and marking patterns across the cohort once enough students are saved. It is a calibration aid: it tells you that you have given eleven B+ grades and no A grades, and leaves the interpretation to you. Some of it is off by default, because a tool that tells you what you have been awarding can nudge what you award next.
 
-**Export for moderation** is a separate, opt-in export for paper-level moderation. It strips student and tutor names, and it requires a minimum of fifteen students so individuals cannot be identified by elimination. A lecturer or coordinator configures it per paper; tutors then see a banner telling them it is enabled. If you are a tutor and the option is blocked, that is the paper's configuration, not a fault.
+**Export for moderation** is a separate, opt-in export for paper-level moderation. It strips student and marker names, and it requires a minimum of fifteen students so individuals cannot be identified by elimination. A lecturer or coordinator configures it per paper; tutors then see a banner telling them it is enabled. If you are a tutor and the option is blocked, that is the paper's configuration, not a fault.
 
 **Clear cohort** deletes every locally stored record for this scorer. It asks twice. There is no undo, and no copy anywhere else, so export first.
 
