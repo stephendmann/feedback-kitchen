@@ -30,9 +30,10 @@ If you reload the page, close the browser, or navigate away while marking:
 
 The temporary draft record is cleared automatically when you complete an assessment action:
 
-- Clicking **Copy feedback** (saves student into the cohort and clears the active draft)
-- Clicking **Finalise & Export** (generates Marker's Record and clears the draft)
-- Clicking **↺ New student** (resets inputs and purges the draft)
+- Clicking **↺ New student**, which resets the inputs and purges the draft outright.
+- Clicking **Copy feedback** or **✓ Finalise & Export**, but only once the student has a name or an ID.
+
+The condition on those last two is worth knowing. Neither clears the draft itself: they add the student to the cohort, and it is that cohort save which drops the draft, on the reasoning that work now held in a record no longer needs a scratch copy. Try it without a name or an ID and Feedback Kitchen declines the cohort save, says so in an amber notice, and leaves the draft where it is. Copy feedback on an unnamed student therefore copies the text to your clipboard and changes nothing else.
 
 Clicking **Switch marker** also purges it, but only when there is no unsaved work; see [chapter 37](37-shared-machine-privacy-and-marker-switching.md).
 
