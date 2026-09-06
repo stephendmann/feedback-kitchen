@@ -257,29 +257,3 @@ jobs:
             exit 0
           fi
           verdict "$LOG"
-
-  # Encodes the two-run budget that was being applied by hand: when the review
-  # abandons itself mid-flight, re-run it once, automatically.
-  #
-  # Only abandonment. An errored run or an empty review can be about the diff, so
-  # retrying those spends money to reach the same answer, and the red check is the
-  # signal wanted. Abandonment is transient: on #146 the second attempt succeeded,
-  # on #156 it did not, which is exactly why the budget stops at one.
-  #
-  # `github.run_attempt < 2` is what makes a loop impossible. A re-run increments
-  # it, so the retried attempt cannot retry itself, whatever it does.
-  retry-abandoned-review:
-    name: Retry an abandoned review
-    needs: review
-    if: always() && needs.review.outputs.abandoned == 'true' && github.run_attempt < 2
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write        # rerunning a workflow run needs it; nothing else here does
-    steps:
-      - name: Re-run the review job once
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "The review abandoned itself waiting on background agents (#136). Retrying once."
-          gh run rerun "${{ github.run_id }}" --failed \
-            --repo "${{ github.repository }}"
