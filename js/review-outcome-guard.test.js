@@ -119,3 +119,28 @@ describe('strict mode, for chapter PRs into manual', () => {
     expect(classify(result({ result: '**Skipped review**: trivial.' })).ok).toBe(true);
   });
 });
+
+describe('posted mode, where the workflow already knows findings exist', () => {
+  test('a run that wrote findings passes without any prose matching', () => {
+    const v = classify(result({ result: 'Wrote my findings to chapter-review.md.' }), { posted: true });
+    expect(v.ok).toBe(true);
+    expect(v.reason).toMatch(/findings written/);
+  });
+
+  test('an abandoned run still fails even though a file exists', () => {
+    // Partial findings can be on disk while the run died mid-flight.
+    const v = classify(result({ result: "I'll wait for the background agents to report back." }), { posted: true });
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/abandoned/);
+  });
+
+  test('an errored run still fails', () => {
+    const v = classify(result({ is_error: true, result: "You've hit your session limit" }), { posted: true });
+    expect(v.ok).toBe(false);
+  });
+
+  test('skip wording is irrelevant once posting is a fact', () => {
+    const v = classify(result({ result: 'Skipped review of the trivial parts; findings written.' }), { posted: true });
+    expect(v.ok).toBe(true);
+  });
+});

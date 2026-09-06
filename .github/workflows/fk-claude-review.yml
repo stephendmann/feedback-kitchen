@@ -93,7 +93,12 @@ jobs:
 
             Read each changed chapter IN FULL, not just the diff. Then verify every
             statement it makes about how the application behaves against the source,
-            and post your findings as a PR comment using `gh pr comment`.
+            and write your findings to $GITHUB_WORKSPACE/chapter-review.md.
+
+            Do not try to post them yourself. Network commands are not available to
+            you here, and a later workflow step posts that file to the PR. Write the
+            file even when you find nothing, saying so and naming what you checked: a
+            missing or empty file fails the build.
 
             How to verify:
             - Open the code a claim depends on and read it. Follow the call chain far
@@ -127,6 +132,29 @@ jobs:
             marker to leave student work on a shared machine, so accuracy about storage,
             transmission and clearing behaviour matters more than any style concern.
             Honour the repo CLAUDE.md conventions."
+
+      # The chapter review writes its findings to a file and this step posts them.
+      # The review cannot post for itself: `gh` and `curl` are both blocked inside
+      # that session, which cost a whole review on #146 (65 turns, $1.94, findings
+      # stranded in the transcript). Posting from the runner, where the token
+      # already works, removes the dependency rather than trying to grant it.
+      #
+      # It also gives the guard a fact to check. Whether a review posted was
+      # previously decided by matching its own prose, the fragility #142 traced;
+      # now the file either exists with content or it does not.
+      - name: Post chapter review findings
+        if: always() && github.event.pull_request.base.ref == 'manual'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          F="${GITHUB_WORKSPACE}/chapter-review.md"
+          if [ ! -s "$F" ]; then
+            echo "No chapter-review.md, or it is empty: the review produced nothing to post."
+            exit 1
+          fi
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" --body-file "$F"
+          echo "Posted $(wc -c < "$F") bytes of findings."
 
       # The job log carries only the action's init and result JSON, not the turns.
       # The full transcript — including which tools hit permission_denials_count —
@@ -169,11 +197,16 @@ jobs:
           LOG="${{ runner.temp }}/claude-execution-output.json"
 
           if [ "${{ github.event.pull_request.base.ref }}" = "manual" ]; then
-            # Chapter reviews run a direct prompt told to review every push and
-            # never to skip. So there is no expected-skip path here at all: a run
-            # that posts nothing failed to do its job, including on an amended
-            # push. --strict stops skip wording earning a pass.
-            node scripts/check-review-outcome.js --strict "$LOG"
+            # Chapter reviews have no legitimate skip: the prompt reviews every
+            # push. Whether one produced findings is settled by the file the
+            # posting step above consumed, not by reading the review's prose,
+            # which is the fragility #142 traced. --posted says that fact is
+            # already established, leaving only errors and abandonment to catch.
+            if [ -s "${GITHUB_WORKSPACE}/chapter-review.md" ]; then
+              node scripts/check-review-outcome.js --posted "$LOG"
+            else
+              node scripts/check-review-outcome.js --strict "$LOG"
+            fi
             exit $?
           fi
 
