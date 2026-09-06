@@ -75,18 +75,30 @@ const has = (text, markers) => markers.some((m) => text.includes(m));
 
 /**
  * Decide whether a run counts as reviewed.
+ *
+ * `strict` is for PRs into `manual`, which run a direct prompt rather than the
+ * code-review skill. That prompt is told to review every push and never to skip
+ * as trivial, so a run that posts nothing has failed to do its job whatever it
+ * says about itself. Skip wording earns no pass there.
+ *
  * @param {object|null} result the `result` entry from the execution log
+ * @param {{strict?: boolean}} [opts]
  * @returns {{ok: boolean, reason: string}}
  */
-function classify(result) {
+function classify(result, opts) {
+  const strict = !!(opts && opts.strict);
   if (!result) return { ok: false, reason: 'no result entry in the execution log' };
   if (result.is_error) {
     return { ok: false, reason: `run errored: ${String(result.result || '').trim() || 'no message'}` };
   }
 
   const text = String(result.result || '').toLowerCase();
-  if (has(text, SKIP_MARKERS)) return { ok: true, reason: 'deliberate skip' };
   if (has(text, POSTED_MARKERS)) return { ok: true, reason: 'review posted' };
+  if (has(text, SKIP_MARKERS)) {
+    return strict
+      ? { ok: false, reason: 'skipped, but a chapter review must review every push' }
+      : { ok: true, reason: 'deliberate skip' };
+  }
   if (has(text, ABANDON_MARKERS)) {
     return { ok: false, reason: 'abandoned waiting on background agents (see #136)' };
   }
@@ -94,9 +106,11 @@ function classify(result) {
 }
 
 function main() {
-  const file = process.argv[2];
+  const args = process.argv.slice(2);
+  const strict = args.includes('--strict');
+  const file = args.find((a) => !a.startsWith('--'));
   if (!file) {
-    console.error('usage: check-review-outcome.js <execution-log.json>');
+    console.error('usage: check-review-outcome.js [--strict] <execution-log.json>');
     process.exit(2);
   }
   if (!fs.existsSync(file)) {
@@ -117,14 +131,14 @@ function main() {
   }
 
   const result = (Array.isArray(events) ? events : []).find((e) => e && e.type === 'result') || null;
-  const verdict = classify(result);
+  const verdict = classify(result, { strict });
 
   if (result) {
     console.log(
       `is_error=${result.is_error} turns=${result.num_turns} cost=$${result.total_cost_usd}`
     );
   }
-  console.log(`${verdict.ok ? 'OK' : 'FAIL'}: ${verdict.reason}`);
+  console.log(`${verdict.ok ? 'OK' : 'FAIL'}${strict ? ' (strict)' : ''}: ${verdict.reason}`);
   process.exit(verdict.ok ? 0 : 1);
 }
 

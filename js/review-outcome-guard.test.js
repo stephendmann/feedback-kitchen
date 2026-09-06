@@ -87,3 +87,35 @@ describe('runs that should pass the job', () => {
     })).ok).toBe(true);
   });
 });
+
+describe('strict mode, for chapter PRs into manual', () => {
+  test('a skip is a failure, because the chapter prompt must review every push', () => {
+    const v = classify(result({ result: '**Skipped review**: trivial documentation change.' }), { strict: true });
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/every push/);
+  });
+
+  test('the one-shot wording is also a failure under strict', () => {
+    const v = classify(result({
+      result: "PR #141 already has a Claude review comment on it, so I'm stopping here without posting anything further.",
+    }), { strict: true });
+    expect(v.ok).toBe(false);
+  });
+
+  test('a posted review still passes', () => {
+    const v = classify(result({
+      result: 'Findings posted: https://github.com/stephendmann/feedback-kitchen/pull/144#issuecomment-1',
+    }), { strict: true });
+    expect(v.ok).toBe(true);
+  });
+
+  test('an abandoned run fails for its own reason, not the skip reason', () => {
+    const v = classify(result({ result: "I'll wait for the background agents to report back." }), { strict: true });
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/abandoned/);
+  });
+
+  test('non-strict is unchanged, so code PRs keep their skip path', () => {
+    expect(classify(result({ result: '**Skipped review**: trivial.' })).ok).toBe(true);
+  });
+});
