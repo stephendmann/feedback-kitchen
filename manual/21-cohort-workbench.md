@@ -9,7 +9,7 @@ Students are added to the cohort ledger automatically whenever you:
 - Click **Copy feedback** (or press `Ctrl + Shift + C`)
 - Click **Finalise & Export** (or press `Ctrl + Shift + E`)
 
-Each record requires at least a student name or student ID. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
+A record needs at least a student name or student ID, and the save has to complete: if you dismissed the cohort setup earlier in the session, or the browser refuses the write because storage is full, nothing is added and an amber notice says so. Chapter 36 covers what that means for the draft. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
 
 ### What each record stores
 
@@ -21,12 +21,13 @@ Every saved cohort entry captures the complete state of the evaluation:
 - Full edited feedback draft and private marker notes
 - The 8-character rubric version hash in force when the record was saved
 
-### Reviewing and searching records
+### Reviewing saved records
 
-Click **View list** in the Cohort section to open the class roster dialog:
+Click **View list** in the Cohort section to open the class roster dialog. It shows the cohort label and a running count, then one numbered line per student: the name and ID, then the awarded grade, the score out of 100, and when you saved it. That timestamp is when you marked the student, not when they submitted.
 
-- **Instant Search:** Filter records by student name, ID number, or awarded letter grade.
-- **Summary Overview:** View overall scores, percentage contributions, and submission dates at a glance.
+There is no search box. The list is the order you saved in, so on a large cohort use your browser's own find on the page.
+
+Each line carries two controls. **Open** loads that record back into the marking workspace, covered below. **Remove** deletes the record from the cohort after one confirmation, and it deletes only that student, leaving the rest untouched.
 
 ### Re-opening students for correction
 
