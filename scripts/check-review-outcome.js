@@ -29,13 +29,28 @@
 
 const fs = require('fs');
 
-/** Phrases a deliberate skip uses about itself. */
+/**
+ * Phrases a deliberate skip uses about itself.
+ *
+ * This list is the weak point of the approach: it matches prose the review
+ * writes freely, so each new phrasing is a false failure until it is added.
+ * The one-shot skip alone has appeared three ways, as "no further review is
+ * performed", "I did not proceed further", and "I'm stopping here without
+ * posting anything further". The workflow therefore establishes the one-shot
+ * case by fact, checking whether a Claude comment already exists, before
+ * consulting this list at all. These stay as a second line.
+ */
 const SKIP_MARKERS = [
   'skipped review',
   'stopped after the eligibility check',
   'did not proceed',
   'no further review',
+  'no further action',
   'not eligible',
+  'already has a claude review',
+  'already commented on this pr',
+  'double-reviewing',
+  'stopping here',
 ];
 
 /** Phrases an abandoned run uses when it ends waiting on background agents. */
