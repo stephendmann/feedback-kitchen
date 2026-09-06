@@ -7,9 +7,16 @@ The **Cohort Workbench** (`#sec-cohort`) maintains a running record of all stude
 Students are added to the cohort ledger automatically whenever you:
 
 - Click **Copy feedback** (or press `Ctrl + Shift + C`)
-- Click **Finalise & Export** (or press `Ctrl + Shift + E`)
+- Click **✓ Finalise & Export** (or press `Ctrl + Shift + E`)
+- Click **Save & next student**, where a cohort is already running
 
-A record needs at least a student name or student ID, and the save has to complete. If the write is refused, most often because browser storage is full, an amber notice tells you. If you dismissed the cohort setup earlier in the session, a silent auto-save skips instead, and that one is quiet: nothing is written and nothing tells you so. Chapter 36 covers what both mean for the draft. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
+A record needs at least a student name or student ID, and the save has to complete. If the write is refused, most often because browser storage is full, an amber notice tells you.
+
+There is one case where a save can go missing quietly, and it matters because the screen currently says the opposite. **Copy feedback** and **Save & next student** save in the background. If you dismissed the cohort setup dialog earlier in the session and no cohort was ever created, those two skip the save rather than reopening the dialog. **Copy feedback** still reports "added to cohort" in green when that happens, which is wrong, and it is the one message in the application not to take at face value. If you dismissed that dialog, open **View list** and confirm the student is there before moving on.
+
+**✓ Finalise & Export** does not have this problem. It reopens the setup dialog rather than skipping, so either the cohort gets set up or you see the prompt.
+
+Chapter 36 covers what all of this means for the draft. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
 
 ### What each record stores
 
