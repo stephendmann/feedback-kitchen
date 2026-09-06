@@ -141,6 +141,23 @@ describe('FK-56 · Copy feedback reports the save it actually made', () => {
     expect(toast().colour).toBe('amber');
   });
 
+  test('a save that already reported its own failure gets no second toast', () => {
+    // The FK-24 paths (full quota, failed write) explain themselves in amber before
+    // copyFeedback hears back. showCohortToast appends, so adding the clipboard half
+    // here would stack a second amber under the message that matters. Raised on #155.
+    type('student-name', 'Ada Lovelace');
+    grade(S, 0, 'A');
+    window.SA.initCohort(CONFIG.id, 'TEST101 S2', false);
+    window.SA.addToCohort = () => ({ saved: false, reason: 'quota', message: 'Storage is full.' });
+
+    S.copyFeedback();
+    jest.advanceTimersByTime(100);
+
+    const toasts = document.querySelectorAll('div[class*="bg-amber-600"]');
+    expect(toasts.length).toBe(1);
+    expect(toasts[0].textContent).toMatch(/storage is full/i);
+  });
+
   test('an unidentified student is told, and not told they were saved', () => {
     grade(S, 0, 'A');                  // graded, but no name and no ID
 

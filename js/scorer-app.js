@@ -1540,21 +1540,23 @@
       // FK-56: the green message used to fire here unconditionally, so a marker who
       // had dismissed cohort setup, or whose browser refused the write, was told the
       // student was added when nothing was stored (#140). Both messages now wait for
-      // the outcome. `notified` keeps the FK-24 distinction intact: where the save
-      // already explained itself in amber, this adds the clipboard half rather than
-      // a second verdict on top of it.
+      // the outcome.
+      //
+      // `notified` says the save has already spoken for itself, which it does on the
+      // FK-24 paths that matter most: a full quota or a failed write, where data is at
+      // risk. Those get no message from here. showCohortToast appends rather than
+      // replaces, so anything added would stack a second amber under the first and
+      // dilute the one the marker needs to act on. The clipboard write has succeeded
+      // by then in any case, so silence on that half costs nothing.
       saveCurrentStudentToCohort({
         silent: true,
         onSaved: function () {
           showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
         },
         onSkipped: function (reason, notified) {
-          if (notified) {
-            showCohortToast('Feedback copied to clipboard, but not saved to the cohort.', 'amber');
-            return;
-          }
+          if (notified) return;
           showCohortToast(
-            'Feedback copied to clipboard · not saved to cohort — set up the cohort to store this student',
+            'Feedback copied to clipboard · not saved to cohort: set up the cohort to store this student',
             'amber'
           );
         }
