@@ -29,7 +29,7 @@ When you open the Cohort section:
 When a drift warning appears, decide deliberately between two corrective paths:
 
 - **Re-mark affected students:** Open the earlier student records from the cohort list, review their marks against the updated rubric, and re-save. The updated version hash is stamped onto their record, clearing the drift flag.
-- **Document for moderation:** If the rubric change was approved mid-marking (e.g. relaxing an ambiguous criterion), accept the mixed cohort and use **Marker's Notes** to document the rationale for the moderation panel.
+- **Document for moderation:** If the rubric change was approved mid-marking (e.g. relaxing an ambiguous criterion), accept the mixed cohort and use **Marker's notes** to document the rationale for the moderation panel.
 
 ### Cohort scale-use consistency signal
 

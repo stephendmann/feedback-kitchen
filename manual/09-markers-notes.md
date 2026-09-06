@@ -1,10 +1,10 @@
-# Marker's Notes
+# Marker's notes
 
-The **Marker's Notes** section (`#sec-notes`) is a private scratchpad designed to capture marking rationale, moderation remarks, and borderline decisions without exposing them in student-facing feedback.
+The **Marker's notes** section (`#sec-notes`) is a private scratchpad designed to capture marking rationale, moderation remarks, and borderline decisions without exposing them in student-facing feedback.
 
 ### The student privacy boundary
 
-Marker's Notes are strictly separated from student communication:
+Marker's notes are strictly separated from student communication:
 
 - **Never copied to clipboard:** Clicking **Copy feedback** excludes marker notes entirely.
 - **Never sent to the LMS:** Moodle offline worksheet exports omit marker notes from student feedback columns.
@@ -22,7 +22,7 @@ While excluded from student feedback, notes are preserved in your administrative
 
 ### Practical use cases
 
-Marker's Notes are designed for recording internal assessment context:
+Marker's notes are designed for recording internal assessment context:
 
 - **Borderline grade justification:** Explaining why an overall mark of 49% or 79% was rounded or overridden.
 - **Academic integrity observations:** Noting unusual phrasing, uncited passages, or AI-generated structures for subsequent investigation.
@@ -31,6 +31,6 @@ Marker's Notes are designed for recording internal assessment context:
 
 ### Integration with the wording assistant
 
-If you use the optional AI Feedback Wording Assistant, the text in your Marker's Notes is supplied as contextual guidance to help shape the rephrased feedback.
+If you use the optional AI Feedback Wording Assistant, the text in your Marker's notes is supplied as contextual guidance to help shape the rephrased feedback.
 
 Because external AI processing is involved, never paste direct student identifiers (such as national identity numbers or private medical details) into the notes field.

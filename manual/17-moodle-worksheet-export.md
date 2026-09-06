@@ -24,7 +24,7 @@ Feedback Kitchen modifies only two columns in the 14-column Moodle schema, and o
 
 All other twelve columns—including group allocations, marker assignments, workflow states, and submission timestamps—remain byte-identical to the original Moodle export.
 
-**Marker's Notes are never written to the Moodle worksheet.** Internal notes remain strictly in your local archive and Excel workbooks.
+**Marker's notes are never written to the Moodle worksheet.** Internal notes remain strictly in your local archive and Excel workbooks.
 
 ### Exporting the completed worksheet
 

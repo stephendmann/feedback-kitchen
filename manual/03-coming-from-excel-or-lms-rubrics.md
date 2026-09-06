@@ -34,7 +34,7 @@ Feedback Kitchen establishes a calibrated baseline:
 
 1. **Criterion-level rigor:** Every student receives detailed, second-person commentary calibrated to the exact performance tier achieved.
 2. **Separation of concerns:** Rubric descriptors define core standards, while inline editing and personal snippets let you address individual student idiosyncrasies.
-3. **Private moderation records:** Internal grading notes are stored in a dedicated **Marker's Notes** scratchpad, ensuring private marker reasoning is captured in the archive without exposing unmoderated remarks to the student.
+3. **Private moderation records:** Internal grading notes are stored in a dedicated **Marker's notes** scratchpad, ensuring private marker reasoning is captured in the archive without exposing unmoderated remarks to the student.
 
 ### Migration strategy
 
