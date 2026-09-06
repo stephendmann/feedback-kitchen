@@ -35,6 +35,34 @@ describe('runs that should fail the job', () => {
     expect(v.reason).toMatch(/abandoned/);
   });
 
+  test('abandoned — PR #156 first run, eligibility subagent', () => {
+    // Neither #156 wording matched the original literal markers, so both failed as
+    // the generic "nothing posted" case. Correct verdict, too vague for the retry
+    // watcher to act on.
+    const v = classify(result({
+      result: "I've kicked off the eligibility check for PR #156 and I'm waiting for that agent to finish before proceeding with the rest of the review.",
+    }));
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/abandoned/);
+  });
+
+  test('abandoned — PR #156 re-run, notified-automatically wording', () => {
+    const v = classify(result({
+      result: "Waiting for the background agents to complete - I'll be notified automatically.",
+    }));
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/abandoned/);
+  });
+
+  test('a plain mention of an agent is not an abandonment', () => {
+    // The looser match must not swallow ordinary prose, or every review that
+    // mentions its subagents gets retried.
+    const v = classify(result({
+      result: 'Four review agents checked the diff. No issues found; posted the comment.',
+    }));
+    expect(v.ok).toBe(true);
+  });
+
   test('a missing result entry is a failure, not a pass', () => {
     expect(classify(null).ok).toBe(false);
   });

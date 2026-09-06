@@ -53,7 +53,19 @@ const SKIP_MARKERS = [
   'stopping here',
 ];
 
-/** Phrases an abandoned run uses when it ends waiting on background agents. */
+/**
+ * Phrases an abandoned run uses when it ends waiting on a subagent.
+ *
+ * Kept deliberately loose after #156, where both runs ended waiting and neither
+ * matched: "I'm waiting for that agent to finish" and "Waiting for the background
+ * agents to complete" both slip past markers written around "waiting on" and
+ * "wait for the background". The failure was still caught, but as the generic
+ * "nothing posted" case, which is not specific enough for the retry watcher to
+ * act on.
+ *
+ * The shape that generalises is a wait paired with an agent, so that is what this
+ * matches now, with the older literals kept for the phrasings already seen.
+ */
 const ABANDON_MARKERS = [
   'report back',
   'waiting on',
@@ -62,6 +74,13 @@ const ABANDON_MARKERS = [
   'as soon as they report',
   'finish; i',
 ];
+
+/** True when the result reads as a run that ended waiting for a subagent. */
+function isAbandoned(text) {
+  if (has(text, ABANDON_MARKERS)) return true;
+  return /\bwait(?:ing|s)?\b[^.]{0,80}\bagents?\b/.test(text)
+      || /\bagents?\b[^.]{0,80}\bto (?:finish|complete|report)\b/.test(text);
+}
 
 /** Evidence the review actually reached the PR. */
 const POSTED_MARKERS = [
@@ -99,7 +118,7 @@ function classify(result, opts) {
   // review was produced is already settled as a fact before this runs. Only
   // genuine failures are left to detect, and no prose decides the outcome.
   if (posted) {
-    if (has(text, ABANDON_MARKERS)) {
+    if (isAbandoned(text)) {
       return { ok: false, reason: 'findings written, but the run abandoned before finishing (see #136)' };
     }
     return { ok: true, reason: 'findings written and posted' };
@@ -111,7 +130,7 @@ function classify(result, opts) {
       ? { ok: false, reason: 'skipped, but a chapter review must review every push' }
       : { ok: true, reason: 'deliberate skip' };
   }
-  if (has(text, ABANDON_MARKERS)) {
+  if (isAbandoned(text)) {
     return { ok: false, reason: 'abandoned waiting on background agents (see #136)' };
   }
   return { ok: false, reason: 'nothing posted and no deliberate skip recorded' };
