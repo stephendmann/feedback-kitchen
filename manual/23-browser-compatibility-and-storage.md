@@ -25,7 +25,9 @@ Application state is stored locally in the browser's `localStorage` partition un
 | `SA_SCORER_SETTINGS_V1` | Device settings: advanced wording tools, cohort consistency indicator, clear marker name between students. | Global origin |
 | `SA_SECTION_STATE_V1` | Which sections you left open or collapsed. | Global origin |
 | `fk-theme` | Visual theme preference (`"light"` or `"dark"`). | Global origin |
-| `SA_FK_USER`, `SA_FK_PASS` | Ko-fi supporter username and password, as ordinary text, unlocking the wording assistant and the PDF converter. Also copied into `sessionStorage` so the upload and convert pages share them within a session. See chapter 45. | Global origin |
+| `SA_FK_USER`, `SA_FK_PASS` | Ko-fi supporter username and password, as ordinary text, unlocking the wording assistant and the PDF converter. This is the copy that persists. See chapter 45. | Global origin |
+| `fk_conv_user`, `fk_conv_pass` | The same credentials in `sessionStorage` rather than `localStorage`, so the upload page can hand them to the convert page in the same tab. Scoped to that tab and gone when it closes. | Session, per tab |
+| `SA_AI_LOG` | The last twenty wording-assistant runs. An entry holds the model, prompt and reply lengths, and validation flags; depending on the path used it can also hold the scrubbed prompt or the current student's name. Local only, never sent. Cleared by **Clear log** in the assistant panel and by **↺ New student**. | Global origin |
 
 Other keys hold interface state that matters to nobody but you: whether focus mode was on, the audience and length last chosen for generated feedback, and a local counter (`scorer.usage.v1`) that records how often you use each feature and never leaves the device.
 
