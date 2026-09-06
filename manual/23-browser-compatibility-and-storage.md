@@ -27,7 +27,7 @@ Application state is stored locally in the browser's `localStorage` partition un
 | `fk-theme` | Visual theme preference (`"light"` or `"dark"`). | Global origin |
 | `SA_FK_USER`, `SA_FK_PASS` | Ko-fi supporter username and password, as ordinary text, unlocking the wording assistant and the PDF converter. Also copied into `sessionStorage` so the upload and convert pages share them within a session. See chapter 45. | Global origin |
 
-Other keys hold interface state that matters to nobody but you: which sections you left open, whether focus mode was on, wording assistant preferences, and a local counter (`scorer.usage.v1`) that records how often you use each feature and never leaves the device.
+Other keys hold interface state that matters to nobody but you: whether focus mode was on, the audience and length last chosen for generated feedback, and a local counter (`scorer.usage.v1`) that records how often you use each feature and never leaves the device.
 
 ### Storage quotas and write-hardening
 
