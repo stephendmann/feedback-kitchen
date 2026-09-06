@@ -109,6 +109,11 @@ jobs:
             Write the file even when you find nothing, saying so and naming what you
             checked. A missing or empty file fails the build.
 
+            Then state your complete findings in your final response as well, in full
+            rather than as a summary. If the heredoc is blocked too, that response is
+            the copy that survives: it is captured in the execution log this workflow
+            keeps, and nothing you produce is stranded.
+
             How to verify:
             - Open the code a claim depends on and read it. Follow the call chain far
               enough to see what actually happens, including paths the chapter does not
