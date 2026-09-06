@@ -34,7 +34,7 @@ Coordinator collects Workbooks / Moderation Exports ◄──────┘
 Before marking their individual class streams:
 
 - Tutors mark three sample benchmark papers using the shared scorer.
-- The team compares awarded criterion tiers, numeric overrides, and private notes recorded in the **Marker's Notes** panel.
+- The team compares awarded criterion tiers, numeric overrides, and private notes recorded in the **Marker's notes** panel.
 - Any ambiguities in rubric interpretation are clarified before full-cohort marking commences.
 
 ### 4. Post-marking moderation and audit

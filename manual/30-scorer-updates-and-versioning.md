@@ -30,7 +30,7 @@ This ensures that:
 
 - Previously marked students permanently retain the descriptors and weights active at the moment of evaluation.
 - If an assessment is edited mid-marking, historical records are not silently retrofitted with new wording.
-- The **Cohort Workbench** can instantly detect mixed-rubric cohorts and display the **Rubric drift detected** alert.
+- The **Cohort Workbench** can instantly detect mixed-rubric cohorts and display the **⚠ Rubric drift** indicator.
 
 ### Preserving audit trails in exports
 
