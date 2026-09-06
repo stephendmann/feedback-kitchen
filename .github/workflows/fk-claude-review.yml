@@ -95,10 +95,24 @@ jobs:
             statement it makes about how the application behaves against the source,
             and write your findings to $GITHUB_WORKSPACE/chapter-review.md.
 
-            Do not try to post them yourself. Network commands are not available to
-            you here, and a later workflow step posts that file to the PR. Write the
-            file even when you find nothing, saying so and naming what you checked: a
-            missing or empty file fails the build.
+            Write that file with a Bash heredoc, not the Write tool:
+
+              cat > "$GITHUB_WORKSPACE/chapter-review.md" <<'FINDINGS'
+              ...your markdown...
+              FINDINGS
+
+            This is not a style preference. In this session the Write tool is gated
+            and network commands are blocked, and both have already cost a completed
+            review that could not deliver it. Bash works. Do not try to post to the
+            PR yourself: a later workflow step posts the file for you.
+
+            Write the file even when you find nothing, saying so and naming what you
+            checked. A missing or empty file fails the build.
+
+            Then state your complete findings in your final response as well, in full
+            rather than as a summary. If the heredoc is blocked too, that response is
+            the copy that survives: it is captured in the execution log this workflow
+            keeps, and nothing you produce is stranded.
 
             How to verify:
             - Open the code a claim depends on and read it. Follow the call chain far
