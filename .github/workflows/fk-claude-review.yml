@@ -93,26 +93,17 @@ jobs:
 
             Read each changed chapter IN FULL, not just the diff. Then verify every
             statement it makes about how the application behaves against the source,
-            and write your findings to $GITHUB_WORKSPACE/chapter-review.md.
+            and state your COMPLETE findings in your final response.
 
-            Write that file with a Bash heredoc, not the Write tool:
+            Your final response is the deliverable. A later workflow step reads it
+            out of the execution log and posts it to the PR for you. Do not try to
+            post it yourself and do not try to write it to a file: network commands,
+            the Write tool and shell redirection are all blocked in this session, and
+            each has already cost a finished review. Nothing gates your response.
 
-              cat > "$GITHUB_WORKSPACE/chapter-review.md" <<'FINDINGS'
-              ...your markdown...
-              FINDINGS
-
-            This is not a style preference. In this session the Write tool is gated
-            and network commands are blocked, and both have already cost a completed
-            review that could not deliver it. Bash works. Do not try to post to the
-            PR yourself: a later workflow step posts the file for you.
-
-            Write the file even when you find nothing, saying so and naming what you
-            checked. A missing or empty file fails the build.
-
-            Then state your complete findings in your final response as well, in full
-            rather than as a summary. If the heredoc is blocked too, that response is
-            the copy that survives: it is captured in the execution log this workflow
-            keeps, and nothing you produce is stranded.
+            Write it as the PR comment you would have posted: markdown, complete, no
+            summary held back for a file that will never exist. Say so plainly if you
+            find nothing, naming what you checked.
 
             How to verify:
             - Open the code a claim depends on and read it. Follow the call chain far
@@ -174,11 +165,14 @@ jobs:
             echo "This PR edits fk-claude-review.yml, so the review was skipped and wrote no findings. Nothing to post."
             exit 0
           fi
-          F="${GITHUB_WORKSPACE}/chapter-review.md"
-          if [ ! -s "$F" ]; then
-            echo "No chapter-review.md, or it is empty: the review produced nothing to post."
-            exit 1
-          fi
+          # The findings come out of the execution log rather than a file the
+          # review wrote, because it cannot write one: network, the Write tool
+          # and shell redirection are all blocked in that session, each of which
+          # cost a completed review (#146 twice, #151). Its final response is the
+          # one channel no permission gate touches, and the action records it.
+          F="${RUNNER_TEMP}/chapter-review.md"
+          node scripts/extract-review-findings.js \
+            "${{ runner.temp }}/claude-execution-output.json" "$F"
           gh pr comment "${{ github.event.pull_request.number }}" \
             --repo "${{ github.repository }}" --body-file "$F"
           echo "Posted $(wc -c < "$F") bytes of findings."
@@ -226,10 +220,10 @@ jobs:
           if [ "${{ github.event.pull_request.base.ref }}" = "manual" ]; then
             # Chapter reviews have no legitimate skip: the prompt reviews every
             # push. Whether one produced findings is settled by the file the
-            # posting step above consumed, not by reading the review's prose,
-            # which is the fragility #142 traced. --posted says that fact is
-            # already established, leaving only errors and abandonment to catch.
-            if [ -s "${GITHUB_WORKSPACE}/chapter-review.md" ]; then
+            # posting step extracted and posted, not by reading the review's own
+            # prose, which is the fragility #142 traced. --posted says that fact
+            # is already established, leaving errors and abandonment to catch.
+            if [ -s "${RUNNER_TEMP}/chapter-review.md" ]; then
               node scripts/check-review-outcome.js --posted "$LOG"
             else
               node scripts/check-review-outcome.js --strict "$LOG"
