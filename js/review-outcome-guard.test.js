@@ -69,6 +69,18 @@ describe('runs that should pass the job', () => {
     expect(v.reason).toMatch(/posted/);
   });
 
+  test('deliberate skip — PR #141, the one-shot policy on a later push', () => {
+    // Third distinct phrasing of the same skip. The workflow also settles this
+    // case by checking for an existing Claude comment, but the classifier
+    // should not fail it on its own.
+    const v = classify(result({
+      num_turns: 3,
+      result: "PR #141 already has a Claude review comment on it, so per the review policy of not double-reviewing, I'm stopping here without posting anything further. **Verdict: STOP** No further action taken.",
+    }));
+    expect(v.ok).toBe(true);
+    expect(v.reason).toMatch(/skip/);
+  });
+
   test('review posted — PR #131, the first ever post', () => {
     expect(classify(result({
       result: 'Review complete. No issues found — comment posted: https://github.com/stephendmann/feedback-kitchen/pull/131#issuecomment-5555028965',
