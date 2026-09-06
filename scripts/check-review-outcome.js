@@ -87,12 +87,24 @@ const has = (text, markers) => markers.some((m) => text.includes(m));
  */
 function classify(result, opts) {
   const strict = !!(opts && opts.strict);
+  const posted = !!(opts && opts.posted);
   if (!result) return { ok: false, reason: 'no result entry in the execution log' };
   if (result.is_error) {
     return { ok: false, reason: `run errored: ${String(result.result || '').trim() || 'no message'}` };
   }
 
   const text = String(result.result || '').toLowerCase();
+
+  // Chapter reviews write findings to a file the workflow posts, so whether a
+  // review was produced is already settled as a fact before this runs. Only
+  // genuine failures are left to detect, and no prose decides the outcome.
+  if (posted) {
+    if (has(text, ABANDON_MARKERS)) {
+      return { ok: false, reason: 'findings written, but the run abandoned before finishing (see #136)' };
+    }
+    return { ok: true, reason: 'findings written and posted' };
+  }
+
   if (has(text, POSTED_MARKERS)) return { ok: true, reason: 'review posted' };
   if (has(text, SKIP_MARKERS)) {
     return strict
@@ -108,9 +120,10 @@ function classify(result, opts) {
 function main() {
   const args = process.argv.slice(2);
   const strict = args.includes('--strict');
+  const posted = args.includes('--posted');
   const file = args.find((a) => !a.startsWith('--'));
   if (!file) {
-    console.error('usage: check-review-outcome.js [--strict] <execution-log.json>');
+    console.error('usage: check-review-outcome.js [--strict] [--posted] <execution-log.json>');
     process.exit(2);
   }
   if (!fs.existsSync(file)) {
@@ -131,7 +144,7 @@ function main() {
   }
 
   const result = (Array.isArray(events) ? events : []).find((e) => e && e.type === 'result') || null;
-  const verdict = classify(result, { strict });
+  const verdict = classify(result, { strict, posted });
 
   if (result) {
     console.log(
