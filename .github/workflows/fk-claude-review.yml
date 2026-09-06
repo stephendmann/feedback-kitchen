@@ -147,6 +147,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Same exemption the guard takes. A PR editing this workflow is skipped
+          # by the action's own validation guard before the review runs at all,
+          # so there is no findings file to post and its absence is expected, not
+          # a failure. Sync PRs are unaffected, since their copy of the file
+          # matches the default branch, but a deliberate workflow change into
+          # manual would go red here without this.
+          if gh pr view "${{ github.event.pull_request.number }}" \
+               --repo "${{ github.repository }}" --json files \
+               --jq '.files[].path' \
+             | grep -qx '.github/workflows/fk-claude-review.yml'; then
+            echo "This PR edits fk-claude-review.yml, so the review was skipped and wrote no findings. Nothing to post."
+            exit 0
+          fi
           F="${GITHUB_WORKSPACE}/chapter-review.md"
           if [ ! -s "$F" ]; then
             echo "No chapter-review.md, or it is empty: the review produced nothing to post."
