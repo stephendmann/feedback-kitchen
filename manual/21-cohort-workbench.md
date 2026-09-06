@@ -9,7 +9,7 @@ Students are added to the cohort ledger automatically whenever you:
 - Click **Copy feedback** (or press `Ctrl + Shift + C`)
 - Click **Finalise & Export** (or press `Ctrl + Shift + E`)
 
-A record needs at least a student name or student ID, and the save has to complete: if you dismissed the cohort setup earlier in the session, or the browser refuses the write because storage is full, nothing is added and an amber notice says so. Chapter 36 covers what that means for the draft. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
+A record needs at least a student name or student ID, and the save has to complete. If the write is refused, most often because browser storage is full, an amber notice tells you. If you dismissed the cohort setup earlier in the session, a silent auto-save skips instead, and that one is quiet: nothing is written and nothing tells you so. Chapter 36 covers what both mean for the draft. The first save opens a short setup dialog asking for a cohort label (e.g. *PHIL102 Semester 2 2026*) and whether more than one marker will work on it. The multi-marker answer is what Cohort Insights uses to decide whether its consistency figures describe one marker or several.
 
 ### What each record stores
 
