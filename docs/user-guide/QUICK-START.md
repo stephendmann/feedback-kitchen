@@ -18,7 +18,7 @@ Nothing you enter is sent anywhere. Student names, IDs, grades, and feedback sta
 
 Go to [marking.stephendmann.com](https://marking.stephendmann.com/) and click **Build a scorer**. The wizard has six steps:
 
-1. **Assessment details.** Assessment name, paper code, institution, and your name as default tutor.
+1. **Assessment details.** Assessment name, paper code, institution, and your name as default marker.
 2. **Grade scale.** Pick NZ University, Australian Honours, UK Degree, US Simple, or define your own labels and score bands.
 3. **Criteria and weights.** Name each criterion and give it a percentage. The weights must total exactly 100%.
 4. **Rubric descriptors.** For each criterion, write the sentence a student sees at each of four tiers: Excellent, Proficient, Developing, Unsatisfactory. Write them in second person ("You have..."), because they appear verbatim in the student's feedback.
@@ -35,7 +35,7 @@ If you would rather not start from scratch, open **Upload** on the home page and
 
 Work down the page; the rail on the left jumps between sections.
 
-1. **Student.** Name, ID, tutor, date. Your tutor name persists between students.
+1. **Student.** Name, ID, marker, date. Your marker name persists between students.
 2. **Rubric scores.** Choose a grade per criterion. The midpoint score fills in automatically. Type in **Override** to fine-tune. An amber field means the override sits outside the grade's band; it is a prompt to check, not a block.
 3. **Penalty and grade override.** Set a late penalty band, or set the overall grade directly where your judgement warrants it.
 4. **Editable feedback draft.** The assembled feedback appears here and updates live. Edit it freely, and use **Insert snippet** to drop in a phrase from your own saved library.
@@ -51,6 +51,8 @@ At the bottom of the page, the **Cohort** section holds everything you have mark
 - **Export cohort (Excel).** One workbook for the whole class, with feedback, a grade matrix, a summary, and the rubric for reference. Do this at the end of each marking session.
 - **View list → Open.** Reload any saved student to re-mark or correct them. Saving again updates that record rather than duplicating it.
 - **Cohort Insights.** Grade distribution and marking patterns, once you have enough students saved.
+
+> **Changed September 2026:** the marker column in every exported workbook is now headed **Marker** rather than **Tutor**, matching the field name in the scorer. Workbooks you exported before this change still say Tutor. If you have a spreadsheet formula or script reading that column by name, point it at the new heading.
 
 ---
 

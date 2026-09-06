@@ -63,7 +63,7 @@ The care you take here is the whole game. Every student's feedback is assembled 
 
 ### Step 1: Assessment details
 
-Assessment name, paper code, institution, and the default tutor name. The paper code matters later if your team uses moderation export, so use the real one.
+Assessment name, paper code, institution, and the default marker name. The paper code matters later if your team uses moderation export, so use the real one.
 
 ### Step 2: Grade scale
 
@@ -131,7 +131,7 @@ Open the scorer. The rail on the left jumps between sections; the page is design
 
 ### Student
 
-Name, ID, tutor, and date. The date fills in automatically. Your tutor name persists between students, and **Marking as** in the top bar always shows whose name is going on the record. On a shared marking machine, **Switch tutor** clears the field and drops any half-finished draft, so the next person does not inherit your session.
+Name, ID, marker, and date. The date fills in automatically. Your marker name persists between students, and **Marking as** in the top bar always shows whose name is going on the record. On a shared marking machine, **Switch marker** clears the active marker name but does not discard unfinished marking. After saving or exporting any needed record, use **↺ New student** to clear the current student's in-progress fields and draft, then use **Switch marker** to leave the machine unassigned.
 
 ### Rubric scores
 
@@ -161,7 +161,7 @@ A private scratchpad for your marking rationale, borderline calls, or anything t
 
 **Copy feedback** puts the assembled text on your clipboard, ready to paste into Moodle, Canvas, Turnitin, or wherever your institution collects it. **Print page** produces a PDF snapshot.
 
-Then **New student** clears the grades, feedback, and notes, keeps your tutor name, and starts the next one.
+Then **New student** clears the grades, feedback, and notes, keeps your marker name, and starts the next one.
 
 Copying feedback or finishing a student also saves that student to the cohort. The first time, you are asked to name the cohort. Records need at least a name or an ID.
 
@@ -229,7 +229,7 @@ The **Cohort** section is the running record of everyone you have marked with th
 
 **Cohort insights** shows the grade distribution and marking patterns across the cohort once enough students are saved. It is a calibration aid: it tells you that you have given eleven B+ grades and no A grades, and leaves the interpretation to you. Some of it is off by default, because a tool that tells you what you have been awarding can nudge what you award next.
 
-**Export for moderation** is a separate, opt-in export for paper-level moderation. It strips student and tutor names, and it requires a minimum of fifteen students so individuals cannot be identified by elimination. A lecturer or coordinator configures it per paper; tutors then see a banner telling them it is enabled. If you are a tutor and the option is blocked, that is the paper's configuration, not a fault.
+**Export for moderation** is a separate, opt-in export for paper-level moderation. It strips student and marker names, and it requires a minimum of fifteen students so individuals cannot be identified by elimination. A lecturer or coordinator configures it per paper; tutors then see a banner telling them it is enabled. If you are a tutor and the option is blocked, that is the paper's configuration, not a fault.
 
 **Clear cohort** deletes every locally stored record for this scorer. It asks twice. There is no undo, and no copy anywhere else, so export first.
 
@@ -281,7 +281,7 @@ The one exception is the wording assistant in part 11, which sends text to an AI
 
 Saved scorers, your snippets, cohort records, and in-progress drafts are all held in your browser's local storage, on that device, in that browser profile. Student names and IDs are part of cohort records, so cohort data is real student data sitting in your browser.
 
-That has consequences worth being deliberate about. A shared marking machine means a shared cohort record, which is why **Switch tutor** exists and why there is an optional setting to clear the tutor field between students. Browser storage is not encrypted, so a device holding cohort data should be one you would be comfortable holding a marked script pile on. And storage is finite: very large cohorts can fill it, in which case Feedback Kitchen will tell you rather than fail silently.
+That has consequences worth being deliberate about. A shared marking machine means a shared cohort record, which is why **Switch marker** exists and why there is an optional setting to clear the marker name between students. Browser storage is not encrypted, so a device holding cohort data should be one you would be comfortable holding a marked script pile on. And storage is finite: very large cohorts can fill it, in which case Feedback Kitchen will tell you rather than fail silently.
 
 ### The failure mode to plan for
 
@@ -339,7 +339,7 @@ The honesty system is the whole mechanism, deliberately. Feedback Kitchen holds 
 
 **Feedback is not updating as I change grades.** The draft panel is editable, and heavy manual editing can leave it out of step with the grades. **Regenerate** rebuilds it from the current grades, discarding your edits to that draft.
 
-**I am marking on a shared machine.** Use **Switch tutor** between markers, which clears the tutor name and drops the in-progress draft. Consider enabling the setting that clears the tutor field between students. Export and clear the cohort at the end of the session rather than leaving class data on a shared device.
+**I am marking on a shared machine.** First save or export the current record, then click **↺ New student** to clear the unfinished student state and draft. Click **Switch marker** to clear the marker name. **Switch marker alone does not remove an in-progress draft.** At the end of the session, export as needed and clear the cohort so student records are not left in browser storage.
 
 ---
 
