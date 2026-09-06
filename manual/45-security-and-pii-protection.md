@@ -6,7 +6,9 @@ This chapter is about where the boundaries actually sit, including where they st
 
 ## Why there is so little to attack
 
-The application is static files. No login, no session, no server-side store of anything you type. The usual questions an institutional security review asks, about credential handling, injection into a marks database, or what happens when the vendor is breached, have no surface here to land on.
+The application is static files. No account to sign in to, no session on a server, no server-side store of anything you type. Most of what an institutional security review asks about, injection into a marks database or what happens when the vendor is breached, has no surface here to land on.
+
+Credential handling is the exception, and it is worth stating plainly because a review will ask. Supporters unlock the wording assistant and the PDF converter with a Ko-fi username and password. Those are held in this browser as ordinary text, in local storage under `SA_FK_USER` and `SA_FK_PASS`, and copied into session storage so the converter picks them up within the same session. They are sent with each assistant request so the proxy can authorise it. They guard a small paid feature rather than student data, and no student work depends on them, but they are not encrypted and they sit on the same device as the cohort. Use a password you do not use anywhere else.
 
 Your data sits in this browser's local storage for this origin, which the browser keeps from other sites by the same-origin policy. That is real protection against another website reading it. It is not protection against another person using your computer, and it is not encryption. A laptop holding a marked cohort should be treated like a bag holding the marked scripts. Chapter 37 covers shared machines specifically.
 
