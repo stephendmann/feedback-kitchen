@@ -20,12 +20,15 @@ const path = require('path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'scorer.html'), 'utf8');
 
 describe('the marker\'s notes panel is named consistently', () => {
-  test('no capitalised "Notes" survives', () => {
-    expect(html).not.toMatch(/[Mm]arker(?:'|&rsquo;)s Notes/);
+  // \s+ rather than a literal space, because the first version of this guard used
+  // a space and missed an occurrence wrapped across two source lines. A name split
+  // by a newline is still the name, and formatting must not be able to hide drift.
+  test('no capitalised "Notes" survives, wrapped or not', () => {
+    expect(html).not.toMatch(/[Mm]arker(?:'|&rsquo;)s\s+Notes/);
   });
 
-  test('no curly apostrophe survives in the name', () => {
-    expect(html).not.toMatch(/[Mm]arker&rsquo;s [Nn]otes/);
+  test('no curly apostrophe survives in the name, wrapped or not', () => {
+    expect(html).not.toMatch(/[Mm]arker&rsquo;s\s+[Nn]otes/);
   });
 
   test('the accordion title is the form everything else follows', () => {
