@@ -13,7 +13,7 @@ Feedback Kitchen is built on standard web technologies and operates across all c
 
 ### Local storage engine
 
-All application state is stored locally in the browser's `localStorage` partition under specific namespaced keys:
+Application state is stored locally in the browser's `localStorage` partition under namespaced keys. The ones worth knowing about:
 
 | Storage Key | Stored Content | Scope |
 |---|---|---|
@@ -25,6 +25,11 @@ All application state is stored locally in the browser's `localStorage` partitio
 | `SA_SCORER_SETTINGS_V1` | Device settings: advanced wording tools, cohort consistency indicator, clear marker name between students. | Global origin |
 | `SA_SECTION_STATE_V1` | Which sections you left open or collapsed. | Global origin |
 | `fk-theme` | Visual theme preference (`"light"` or `"dark"`). | Global origin |
+| `SA_FK_USER`, `SA_FK_PASS` | Ko-fi supporter username and password, as ordinary text, unlocking the wording assistant and the PDF converter. This is the copy that persists. See chapter 45. | Global origin |
+| `fk_conv_user`, `fk_conv_pass` | The same credentials in `sessionStorage` rather than `localStorage`, so the upload page can hand them to the convert page in the same tab. Scoped to that tab and gone when it closes. | Session, per tab |
+| `SA_AI_LOG` | The last twenty wording-assistant runs. An entry holds the model, prompt and reply lengths, and validation flags; depending on the path used it can also hold the scrubbed prompt or the current student's name. Local only, never sent. Cleared by **Clear log** in the assistant panel and by **↺ New student**. | Global origin |
+
+Other keys hold interface state that matters to nobody but you: whether focus mode was on, the audience and length last chosen for generated feedback, and a local counter (`scorer.usage.v1`) that records how often you use each feature and never leaves the device.
 
 ### Storage quotas and write-hardening
 
@@ -32,7 +37,7 @@ Modern browsers allocate between 5MB and 10MB of storage to `localStorage` per o
 
 - **Typical Consumption:** A complete assessment scorer consumes approximately 10KB. A cohort of 100 students with full feedback transcripts occupies roughly 150KB.
 - **Write-Hardening:** All write operations are wrapped in structured exception guards.
-- **Quota Warnings:** If local storage reaches browser capacity (`QuotaExceededError`), Feedback Kitchen displays an advisory banner prompting you to export your active cohort to Excel and clear completed historical cohorts.
+- **Quota Warnings:** If local storage reaches browser capacity (`QuotaExceededError`), the save is refused and an amber notice tells you so, rather than the write failing silently. Export your active cohort to Excel and clear completed historical cohorts to make room. The student on screen is not saved until that succeeds, so do not clear the page first.
 
 ### Private and incognito browsing
 
