@@ -1537,8 +1537,28 @@
         showCohortToast('Feedback copied to clipboard · not saved to cohort — add a student name or ID', 'amber');
         return;
       }
-      saveCurrentStudentToCohort({ silent: true });
-      showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
+      // FK-56: the green message used to fire here unconditionally, so a marker who
+      // had dismissed cohort setup, or whose browser refused the write, was told the
+      // student was added when nothing was stored (#140). Both messages now wait for
+      // the outcome. `notified` keeps the FK-24 distinction intact: where the save
+      // already explained itself in amber, this adds the clipboard half rather than
+      // a second verdict on top of it.
+      saveCurrentStudentToCohort({
+        silent: true,
+        onSaved: function () {
+          showCohortToast('Feedback copied to clipboard · added to cohort', 'green');
+        },
+        onSkipped: function (reason, notified) {
+          if (notified) {
+            showCohortToast('Feedback copied to clipboard, but not saved to the cohort.', 'amber');
+            return;
+          }
+          showCohortToast(
+            'Feedback copied to clipboard · not saved to cohort — set up the cohort to store this student',
+            'amber'
+          );
+        }
+      });
     }
 
     /* ── SheetJS lazy loader ─────────────────────────────── */
@@ -1614,20 +1634,30 @@
 
     function saveCurrentStudentToCohort(opts) {
       opts = opts || {};
-      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) return;
+      // FK-56: every path out of this function now says which one it took. onSaved
+      // fires only on a confirmed write; onSkipped fires on every other exit, with
+      // the reason and whether the marker has already been told. A caller that
+      // announces a result needs this, because the function bails several ways and
+      // finishes asynchronously, so returning is not evidence of a save (#140).
+      const skipped = function (reason, notified) {
+        if (typeof opts.onSkipped === 'function') opts.onSkipped(reason, !!notified);
+      };
+      if (!scoreResult || !scoreResult.rows.some(r => r.grade)) { skipped('not-graded', false); return; }
       const studentName = (el('student-name').value || '').trim();
       const studentId   = (el('student-id').value   || '').trim();
       if (!studentName && !studentId) {
         showCohortToast('Enter a student name or ID before saving to the cohort.', 'amber');
+        skipped('no-identifier', true);
         return;
       }
       // Silent auto-save (Copy / Download): if the marker dismissed cohort setup
       // this session and no cohort exists yet, skip rather than re-popping the modal.
       if (opts.silent && !SA.getCohort(config.id) && _cohortSetupDismissedThisSession) {
+        skipped('setup-dismissed', false);
         return;
       }
       ensureCohortInitialised(function (cohort) {
-        if (!cohort) return;  // dismissed during silent save — no-op
+        if (!cohort) { skipped('setup-dismissed', false); return; }  // dismissed during this save
         // Persist the overridden scoreResult so Excel exports reflect the marker bump.
         // FK-09: inputs come from the single boundary adapter, not ad-hoc DOM reads.
         const overrideRaw = readScoringInputs().overrideGrade;
@@ -1656,6 +1686,7 @@
             ? (result.message || 'Could not save — this browser’s storage is full. Export your cohort, then try again.')
             : 'Could not save — please add a name or student ID.';
           showCohortToast(msg, 'amber');
+          skipped(result.reason || 'write-failed', true);
           return;
         }
         refreshCohortUI();
