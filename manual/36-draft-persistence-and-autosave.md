@@ -35,7 +35,7 @@ The temporary draft record is cleared automatically when you complete an assessm
 
 The condition on those last two is worth knowing, because this chapter is about what stays on the device. Neither clears the draft itself. They add the student to the cohort, and it is that save, once it succeeds, which drops the draft: work now held in a record no longer needs a scratch copy.
 
-Three things stop the save, and the draft survives all of them. Without a name or an ID, Feedback Kitchen declines and says so in an amber notice. If you dismissed the cohort setup earlier in the session and no cohort exists yet, a silent auto-save skips rather than reopening the dialog. And if the write itself fails, most often because browser storage is full, you get an amber notice and nothing is stored.
+Three things stop the save, and the draft survives all of them. Without a name or an ID, Feedback Kitchen declines and says so in an amber notice. If you dismissed the cohort setup, earlier in the session or during the save itself, nothing is written and a silent auto-save skips rather than reopening the dialog. And if the write itself fails, most often because browser storage is full, you get an amber notice and nothing is stored.
 
 So treat a cleared draft as the consequence of a confirmed save, not of clicking the button. If you are clearing a shared machine, **↺ New student** is the control that does it unconditionally.
 
