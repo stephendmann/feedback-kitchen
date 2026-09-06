@@ -26,7 +26,7 @@ Coordinator collects Workbooks / Moderation Exports ◄──────┘
 ### 2. Tutor onboarding and personal customization
 
 1. Each tutor navigates to `upload.html` and imports the coordinator's `.json` file.
-2. The scorer opens immediately in the tutor's browser with the exact criteria, grade scales, and rubric descriptors locked in place.
+2. Feedback Kitchen saves the scorer and returns to the dashboard with a confirmation. The tutor then opens it from its card there; it does not open by itself. The criteria, grade scales and rubric descriptors are fixed, since the scorer has no editing controls.
 3. Tutors build and maintain their own **Personal Snippets Library** in their local browser, allowing them to provide feedback in their own voice while remaining anchored to the shared rubric baseline.
 
 ### 3. Calibration and benchmark marking
@@ -43,4 +43,4 @@ When marking is complete:
 
 - Each tutor downloads their **Whole-Cohort Class Workbook** (`.xlsx`) and submits it to the coordinator.
 - The coordinator inspects the `Cohort Summary` and `Grade Matrix` sheets to identify marker variance (e.g. comparing average scores and grade distributions between tutorial streams).
-- If formal institutional moderation is required, the coordinator enables **Moderation Export** to generate a de-identified, *k*-anonymous dataset for external examiners.
+- If formal institutional moderation is required, the coordinator enables **Moderation Export** to generate a privacy-reduced dataset for external examiners. The pack says of itself that it is not fully anonymised, and chapter 24 explains what it does and does not guarantee.
