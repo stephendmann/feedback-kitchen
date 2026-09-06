@@ -21,14 +21,13 @@ When completing a marking shift or handing over a computer to a colleague:
 3. It then drops the stored draft **only if there is no unsaved work in the session**. A draft holding real marking is deliberately kept, so that switching marker cannot destroy work someone has not finished.
 4. The incoming marker enters their name in the Student details section (`#sec-student`), which becomes the active marker for all subsequent submissions.
 
-That third step is the one to understand before you rely on this button on a shared machine. **Switch marker is a handover control, not a wipe.** If the outgoing marker left a part-marked student on screen, that student's details, scores and feedback remain in `SA_DRAFT_V1_<scorerId>` and the next person will be offered them by the resume banner. To leave nothing behind, use **↺ New student** first, which discards the draft outright, and then **Switch marker**.
+That third step is the one to understand before you rely on this button on a shared machine. **Switch marker is a handover control, not a wipe.** It clears the Marker field and nothing else on the page. If the outgoing marker left a part-marked student on screen, that student's details, scores, feedback and notes stay visible in the current session, and are also retained in `SA_DRAFT_V1_<scorerId>`. The resume banner is the path back after a reload, not what happens at the moment you switch: the incoming marker does not need it, because the previous student is still in front of them. To leave nothing behind, use **↺ New student** first, which discards the draft outright, and then **Switch marker**.
 
-### Auto-clear marker preferences
+### Clearing the marker name between students
 
-In **Scorer Settings**, you can configure marker persistence behaviour:
+Marker persistence is one setting, not two. In **Scorer settings**, **Clear marker name between students** is off by default, which is why your name survives from one student to the next through a batch you mark yourself.
 
-- **Persist Marker Name (Default):** Retains your marker name across consecutive submissions during a single marking session.
-- **Auto-Clear Between Students:** Clears the Marker field on every **↺ New student** action, requiring explicit marker confirmation for each paper (useful for multi-marker round-robin marking).
+Turn it on and the Marker field is cleared on every **↺ New student**, so each paper needs the name entered again. It also keeps the marker name out of the on-device draft. That combination suits a shared terminal or round-robin marking, where the cost of retyping a name is smaller than the risk of a paper being recorded under the wrong marker.
 
 ### End-of-shift sanitisation checklist
 
