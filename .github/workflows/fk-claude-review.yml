@@ -106,4 +106,16 @@ jobs:
             echo "This PR edits fk-claude-review.yml, so the action's validation guard skips it. Exempt."
             exit 0
           fi
+          # The action reviews a PR once. Every later push legitimately stops
+          # without posting, and it words that differently each time, so decide
+          # it by fact rather than by matching prose. The consequence, worth
+          # knowing: after the first review this check can no longer tell a skip
+          # from an abandonment, so it is only meaningful on the first push.
+          if gh pr view "${{ github.event.pull_request.number }}" \
+               --repo "${{ github.repository }}" --json comments \
+               --jq '.comments[].author.login' \
+             | grep -qi '^claude$'; then
+            echo "A Claude review comment already exists, so the action's one-shot policy skips this run. Exempt."
+            exit 0
+          fi
           node scripts/check-review-outcome.js "${{ runner.temp }}/claude-execution-output.json"
