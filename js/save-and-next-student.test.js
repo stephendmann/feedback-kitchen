@@ -253,7 +253,13 @@ describe('FK-53 the rejected fix stays rejected', () => {
   test('the two incidental save paths are untouched', () => {
     // copyFeedback + downloadExcel still save, silently and non-silently as before. This
     // card adds a third, named path; it does not move or rename the existing two.
-    expect(html).toMatch(/saveCurrentStudentToCohort\(\{ silent: true \}\)/);
+    //
+    // Asserted on the silent/non-silent choice rather than the exact call text: FK-56
+    // gave copyFeedback onSaved and onSkipped handlers so it stops claiming a save that
+    // did not happen (#140), which spread its call over several lines. That changes what
+    // it says afterwards, not which path it takes, so the original regex was matching
+    // formatting rather than the decision this guard exists to protect.
+    expect(html).toMatch(/function copyFeedback[\s\S]{0,2500}?saveCurrentStudentToCohort\(\{[\s\S]{0,120}?silent: true/);
     expect(html).toMatch(/saveCurrentStudentToCohort\(\{ silent: false \}\)/);
   });
 });
