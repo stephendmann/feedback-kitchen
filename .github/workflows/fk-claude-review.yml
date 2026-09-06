@@ -81,3 +81,29 @@ jobs:
           path: ${{ runner.temp }}/claude-execution-output.json
           if-no-files-found: warn
           retention-days: 30
+
+      # The action exits zero whatever happens, so a green check has never meant
+      # "this PR was reviewed" (#136). This reads the log uploaded above and
+      # fails the job when the run errored or abandoned itself mid-flight, while
+      # letting a deliberate skip on a trivial PR stay green. Runs after the
+      # upload so the artifact survives a failing job.
+      #
+      # Non-blocking: this check is not required and main has no branch
+      # protection, so it makes a dead review visible without stopping a merge.
+      - name: Check the review actually reviewed
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A PR that edits this workflow is skipped by the action's own
+          # validation guard before it writes any log, so the missing log is
+          # expected there rather than a failure. gh rather than `git diff`
+          # because actions/checkout is shallow and has no merge base.
+          if gh pr view "${{ github.event.pull_request.number }}" \
+               --repo "${{ github.repository }}" --json files \
+               --jq '.files[].path' \
+             | grep -qx '.github/workflows/fk-claude-review.yml'; then
+            echo "This PR edits fk-claude-review.yml, so the action's validation guard skips it. Exempt."
+            exit 0
+          fi
+          node scripts/check-review-outcome.js "${{ runner.temp }}/claude-execution-output.json"
