@@ -200,10 +200,24 @@ jobs:
       # Non-blocking: this check is not required and main has no branch
       # protection, so it makes a dead review visible without stopping a merge.
       - name: Check the review actually reviewed
+        id: outcome
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Runs the classifier and echoes its verdict. That printed line is what
+          # the retry watcher reads: fk-review-retry.yml greps this job's failed
+          # step log for "FAIL: ... abandoned" and re-runs once when it finds it.
+          # The retry cannot live in this workflow, because a run in progress
+          # cannot re-run itself, so the verdict has to survive as log output.
+          verdict () {
+            set +e
+            OUT=$(node scripts/check-review-outcome.js "$@" 2>&1)
+            CODE=$?
+            set -e
+            printf '%s\n' "$OUT"
+            exit $CODE
+          }
           # A PR that edits this workflow is skipped by the action's own
           # validation guard before it writes any log, so the missing log is
           # expected there rather than a failure. gh rather than `git diff`
@@ -224,11 +238,10 @@ jobs:
             # prose, which is the fragility #142 traced. --posted says that fact
             # is already established, leaving errors and abandonment to catch.
             if [ -s "${RUNNER_TEMP}/chapter-review.md" ]; then
-              node scripts/check-review-outcome.js --posted "$LOG"
+              verdict --posted "$LOG"
             else
-              node scripts/check-review-outcome.js --strict "$LOG"
+              verdict --strict "$LOG"
             fi
-            exit $?
           fi
 
           # Code reviews use the skill, which reviews a PR once. Every later push
@@ -241,4 +254,4 @@ jobs:
             echo "A Claude review comment already exists, so the skill's one-shot policy skips this run. Exempt."
             exit 0
           fi
-          node scripts/check-review-outcome.js "$LOG"
+          verdict "$LOG"
