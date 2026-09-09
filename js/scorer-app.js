@@ -64,7 +64,6 @@
         studentName:        v('student-name'),
         studentId:          v('student-id'),
         studentTutor:       getSetting('clearTutorBetweenStudents', false) ? '' : v('student-tutor'),  // FK-33: keep the marker name out of the on-device draft on shared machines
-        studentDate:        v('student-date'),
         feedbackText:       v('feedback-text'),
         additionalComments: v('additional-comments')
       };
@@ -162,7 +161,6 @@
       set('student-name', d.studentName);
       set('student-id', d.studentId);
       set('student-tutor', d.studentTutor);
-      set('student-date', d.studentDate);
       set('grade-override', d.gradeOverride);
       set('late-penalty-select', d.latePenalty || '0');
       const banner = el('draft-resume-banner'); if (banner) banner.classList.add('hidden');
@@ -340,7 +338,8 @@
       document.getElementById('footer-edit-link').href = 'builder.html?id=' + config.id;
       document.getElementById('edit-scorer-btn').href = 'builder.html?id=' + config.id;
 
-      // Date
+      // Date: shown as today. The saved record is stamped at save time, so this
+      // field is an indicator, never a data source (see confirmNewStudent).
       document.getElementById('student-date').value = SA.formatDate();
 
       // Student grades array
@@ -1668,7 +1667,7 @@
           name:         studentName,
           studentId:    studentId,
           tutor:        (el('student-tutor').value || '').trim(),
-          date:         (el('student-date').value || ''),
+          date:         SA.formatDate(),   // the day this record was marked; re-saving re-stamps
           grades:       JSON.parse(JSON.stringify(studentGrades || [])),
           penaltyIdx:   parseInt(el('late-penalty-select').value, 10) || 0,
           scoreResult:  cloneScoreResultForStorage(effectiveForSave),
@@ -1943,12 +1942,12 @@
         return false;
       }
 
-      // Student fields (date restored as saved; tutor may differ from session)
+      // Student fields (tutor may differ from session; the date stays today,
+      // because re-saving stamps the record with the day it is re-marked)
       el('student-name').value  = rec.name || '';
       el('student-id').value    = rec.studentId || '';
       el('student-tutor').value = rec.tutor || '';
       updateMarkingAs();   // FK-33: reflect the opened record's tutor in the topbar readout
-      if (rec.date) el('student-date').value = rec.date;
 
       // Grades: rebuild state array against the CURRENT criteria list, then
       // mirror into the table selects/override inputs. Extra saved rows are
@@ -2854,6 +2853,7 @@
       // Tutor name kept by default (same marker for the whole batch) — but the
       // FK-33 shared-machine opt-in clears it on every New student.
       if (getSetting('clearTutorBetweenStudents', false)) el('student-tutor').value = '';
+      el('student-date').value   = SA.formatDate();   // a session can cross midnight; each student is dated when marked
       el('grade-override').value = '';
       const commentsEl = el('additional-comments');
       if (commentsEl) { commentsEl.value = ''; commentsEl.dispatchEvent(new Event('input')); }
