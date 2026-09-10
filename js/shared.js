@@ -532,6 +532,16 @@
     return parts.join('\n');
   }
 
+  // Presentation-only marker attribution for the student-facing print/PDF
+  // preview. Never merged into feedbackText — see computeMarkerFooter callers
+  // in scorer-app.js. Displays the Marker field verbatim (trimmed only): it
+  // may legitimately hold one name, several names, or a group/unit name, and
+  // FK does not parse or reformat it.
+  function computeMarkerFooter(tutor, markerDisclosure) {
+    const name = (tutor || '').trim();
+    return (markerDisclosure && name) ? `Marked by: ${name}` : '';
+  }
+
   /* ── AI Garnish (beta) — Stage 0 prompt builder ──────────── */
   // SANDBOX ONLY. Builds a prompt string the marker can paste into Claude Pro
   // (or similar). The model rewrites ONLY the criterion-by-criterion body —
@@ -1395,7 +1405,7 @@
     isQuotaError, safeSetItem,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,
-    computeScores, generateFeedbackText, formatScore, rubricVersionHash, detectRubricDrift,
+    computeScores, generateFeedbackText, computeMarkerFooter, formatScore, rubricVersionHash, detectRubricDrift,
     buildAIGarnishPrompt, buildAIAssistPrompt, assembleFinalFeedback, substituteFeedbackVars, scrubPII,
     postProcessAIBody, postProcessSingle, shouldApplyAuNzSpelling,
     validateAIBody, annotateAIBodyWithValidation, VALID_ACTION_VERBS, BANNED_PHRASES,
