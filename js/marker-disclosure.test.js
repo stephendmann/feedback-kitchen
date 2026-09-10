@@ -175,6 +175,30 @@ describe('session-default vs. persisted-record model', () => {
   });
 });
 
+describe('draft resumption — a resumed draft continues the prior session', () => {
+  // A resumed unsaved draft is treated as a continuation of the marker's prior
+  // session, not as reopening a saved record: it restores the checkbox AND
+  // rolls that value into sessionMarkerDisclosureDefault, so later NEW students
+  // in the same resumed session keep carrying it forward — exactly like tutor.
+  // On shared devices, clearTutorBetweenStudents already zeroes both studentTutor
+  // and markerDisclosure at draft-save time (previous describe block), so there
+  // is nothing sensitive left in the draft for a resumed session to restore.
+  test('resumeDraft restores the checkbox and session default from the draft, not from a reopened record', () => {
+    const fn = html.slice(html.indexOf('function resumeDraft('), html.indexOf('function resumeDraft(') + 1600);
+    expect(fn).toMatch(/_mdResume\.checked\s*=\s*!!d\.markerDisclosure/);
+    expect(fn).toMatch(/sessionMarkerDisclosureDefault\s*=\s*!!d\.markerDisclosure/);
+    expect(fn).toMatch(/_reopenedRecordActive\s*=\s*false/);
+  });
+
+  test('clearTutorBetweenStudents prevents marker name and disclosure from being restored on shared devices', () => {
+    // Same guard, same shape, so a shared-device draft carries neither the
+    // marker's name nor their disclosure preference — restoring the draft on
+    // the next marker's session can't leak either one.
+    expect(html).toMatch(/studentTutor:\s*getSetting\('clearTutorBetweenStudents',\s*false\)\s*\?\s*''\s*:/);
+    expect(html).toMatch(/markerDisclosure:\s*getSetting\('clearTutorBetweenStudents',\s*false\)\s*\?\s*false\s*:/);
+  });
+});
+
 describe('Moodle CSV / Excel export regression — footer must never appear there', () => {
   const fs = require('fs');
   const path = require('path');
