@@ -26,6 +26,13 @@
     let lastScoreResult = null;
     let lastConfig = null;
 
+    // Marker-name disclosure (student-facing print/PDF footer). Transient
+    // session default — never persisted itself, and never derived from a
+    // reopened record's value (see loadCohortRecordIntoSession / confirmNewStudent).
+    // The authority for any SAVED student's disclosure is record.markerDisclosure.
+    let sessionMarkerDisclosureDefault = false;
+    let _reopenedRecordActive = false;
+
     // Focus mode (criterion-by-criterion workspace) — additive view over the same data.
     const FK_FOCUS_KEY = 'SA_FOCUS_MODE';
     let focusMode = false;
@@ -64,6 +71,7 @@
         studentName:        v('student-name'),
         studentId:          v('student-id'),
         studentTutor:       getSetting('clearTutorBetweenStudents', false) ? '' : v('student-tutor'),  // FK-33: keep the marker name out of the on-device draft on shared machines
+        markerDisclosure:   getSetting('clearTutorBetweenStudents', false) ? false : !!(el('marker-disclosure') && el('marker-disclosure').checked),
         feedbackText:       v('feedback-text'),
         additionalComments: v('additional-comments')
       };
@@ -161,6 +169,10 @@
       set('student-name', d.studentName);
       set('student-id', d.studentId);
       set('student-tutor', d.studentTutor);
+      const _mdResume = el('marker-disclosure');
+      if (_mdResume) _mdResume.checked = !!d.markerDisclosure;
+      sessionMarkerDisclosureDefault = !!d.markerDisclosure;
+      _reopenedRecordActive = false; // resuming an in-progress draft, not opening a saved record
       set('grade-override', d.gradeOverride);
       set('late-penalty-select', d.latePenalty || '0');
       const banner = el('draft-resume-banner'); if (banner) banner.classList.add('hidden');
@@ -174,6 +186,7 @@
       lastGeneratedText = '';   // saved feedback is now authoritative, not generated
       refreshStatusChips();
       updateMarkingAs();        // FK-33: reflect the resumed tutor in the topbar readout
+      updateMarkerFooter();
       try { _refreshAllAutoPills(); } catch (e) {}
       showCohortToast('Draft restored.', 'green');
       // The restored state IS genuine unsaved work — keep the draft and leave
@@ -322,6 +335,7 @@
       const navParts = [config.name, config.assessmentTitle].filter(Boolean);
       document.getElementById('nav-scorer-name').textContent = navParts.join(' · ');
       updateMarkingAs();   // FK-33: initialise the "Marking as" topbar readout
+      updateMarkerFooter();
       const hdrTitle = [config.courseName, config.assessmentTitle].filter(Boolean).join(' — ') || 'Feedback Kitchen';
       document.getElementById('hdr-title').textContent = hdrTitle;
       document.title = hdrTitle === 'Feedback Kitchen' ? 'Feedback Kitchen' : 'Feedback Kitchen — ' + hdrTitle;
@@ -703,6 +717,13 @@
       const ti = el('student-tutor');
       if (ti) { ti.value = ''; ti.dispatchEvent(new Event('input')); }  // fires onStudentChange + draft autosave reschedule
       if (!_sessionHasUnsavedWork()) clearDraft();   // no work in progress → drop any stale draft so it can't be resumed by the next marker
+      // Marker-name disclosure must not carry from one marker to the next on a
+      // shared machine, same reasoning as clearing the tutor name above.
+      sessionMarkerDisclosureDefault = false;
+      _reopenedRecordActive = false;
+      const md = el('marker-disclosure');
+      if (md) md.checked = false;
+      updateMarkerFooter();
       updateMarkingAs();
       if (ti) ti.focus();
     }
@@ -1038,7 +1059,32 @@
     }
 
     /* ── Feedback generation ─────────────────────────────── */
+    // Presentation-only marker-name footer for the student-facing print/PDF
+    // preview. Never touches feedbackText/lastGeneratedText — see
+    // computeMarkerFooter in shared.js. Safe to call whenever the tutor field,
+    // the disclosure checkbox, or feedback is refreshed.
+    function updateMarkerFooter() {
+      const footer = el('marker-footer');
+      const tutorVal = el('student-tutor') ? el('student-tutor').value : '';
+      const md = el('marker-disclosure');
+      const checked = !!(md && md.checked);
+      if (footer) footer.textContent = SA.computeMarkerFooter(tutorVal, checked);
+      const hint = el('marker-disclosure-hint');
+      if (hint) hint.classList.toggle('hidden', !(checked && !tutorVal.trim()));
+    }
+
+    // Marker toggles "Show my name on student feedback for this marking
+    // session". Only updates the transient session default while marking a
+    // NEW/unsaved student — reopening a saved record (_reopenedRecordActive)
+    // must never leak that record's value into the default for later students.
+    function onMarkerDisclosureChange() {
+      const md = el('marker-disclosure');
+      if (md && !_reopenedRecordActive) sessionMarkerDisclosureDefault = md.checked;
+      updateMarkerFooter();
+    }
+
     function updateFeedback() {
+      updateMarkerFooter();
       if (!scoreResult || !scoreResult.rows.some(r => r.grade)) {
         el('feedback-text').value = '';
         lastGeneratedText = '';
@@ -1667,6 +1713,7 @@
           name:         studentName,
           studentId:    studentId,
           tutor:        (el('student-tutor').value || '').trim(),
+          markerDisclosure: !!(el('marker-disclosure') && el('marker-disclosure').checked),
           date:         SA.formatDate(),   // the day this record was marked; re-saving re-stamps
           grades:       JSON.parse(JSON.stringify(studentGrades || [])),
           penaltyIdx:   parseInt(el('late-penalty-select').value, 10) || 0,
@@ -1947,6 +1994,14 @@
       el('student-name').value  = rec.name || '';
       el('student-id').value    = rec.studentId || '';
       el('student-tutor').value = rec.tutor || '';
+      // Marker-name disclosure is per-record, not session-driven, once a record
+      // is opened: reflect THIS record's own saved choice, and mark that we're
+      // viewing a reopened record so the checkbox's own change handler doesn't
+      // leak this value into sessionMarkerDisclosureDefault for later students.
+      _reopenedRecordActive = true;
+      const _mdOpen = el('marker-disclosure');
+      if (_mdOpen) _mdOpen.checked = !!rec.markerDisclosure;
+      updateMarkerFooter();
       updateMarkingAs();   // FK-33: reflect the opened record's tutor in the topbar readout
 
       // Grades: rebuild state array against the CURRENT criteria list, then
@@ -2853,6 +2908,12 @@
       // Tutor name kept by default (same marker for the whole batch) — but the
       // FK-33 shared-machine opt-in clears it on every New student.
       if (getSetting('clearTutorBetweenStudents', false)) el('student-tutor').value = '';
+      // Marker-name disclosure: this is a genuinely new/unsaved student, not a
+      // reopened record, so seed the checkbox from the session default rather
+      // than from any previously opened record's value.
+      _reopenedRecordActive = false;
+      const _mdNew = el('marker-disclosure');
+      if (_mdNew) _mdNew.checked = sessionMarkerDisclosureDefault;
       el('student-date').value   = SA.formatDate();   // a session can cross midnight; each student is dated when marked
       el('grade-override').value = '';
       const commentsEl = el('additional-comments');
@@ -2872,6 +2933,7 @@
       // Clear Cooked Feedback textarea
       const fbEl = el('feedback-text');
       if (fbEl) { fbEl.value = ''; fbEl.dispatchEvent(new Event('input')); }
+      updateMarkerFooter();
 
       // Clear AI Garnish panel inputs/outputs
       const aiIn  = el('ai-manual-suggestion');
@@ -4313,6 +4375,8 @@
              refreshCohortConsistencyUI, applyCohortConsistencyVisibility, setShowCohortConsistency,
              // FK-33: tutor shared-machine safety
              switchTutor, updateMarkingAs, setClearTutorBetweenStudents, applyClearTutorSetting,
+             // Marker-name disclosure (student-facing print/PDF footer)
+             onMarkerDisclosureChange, updateMarkerFooter,
              // Cohort Insights (Phase 1)
              showCohortInsights, hideCohortInsights, copyCohortInsights,
              setAllDetails, persistSectionState, restoreSectionState,
