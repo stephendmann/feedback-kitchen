@@ -64,7 +64,21 @@ jobs:
           # run from #69 to #130 was green, silent, and — after the OAuth fix — paid
           # for (#130 cost $2.32 for 24 turns that produced nothing). See #112.
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }} --comment"
+          # --allowedTools: the skill's own tool-permission gate, not the GitHub
+          # token's scope (that stays contents:read below, and cannot push
+          # regardless). Confirmed by downloading the execution-log artifact for
+          # PR #165's run: every one of 32 permission_denials was Claude's own
+          # interactive-approval prompt for a Bash call (git clone, gh pr diff,
+          # gh api .../contents/..., and — the one that mattered — the literal
+          # posting command `gh pr review ... --comment`) or for Write, materialising
+          # a PR file locally to diff against. A CI run has no one to answer that
+          # prompt, so it silently denies every time, on every attempt: the review
+          # was never flaky, it was deterministically unable to post. Retrying
+          # (manually or via fk-review-retry.yml) reproduces the identical block.
+          # Allowing Bash/Write here only removes Claude's own confirmation gate;
+          # it grants no capability the GitHub token doesn't already bound above.
           claude_args: >-
+            --allowedTools "Bash,Write"
             --append-system-prompt "Feedback Kitchen is an academic assessment / rubrics
             web app. Treat student data as sensitive: never recommend logging or exposing
             raw student identifiers. Weight findings toward grading/rubric correctness,
