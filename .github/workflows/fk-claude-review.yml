@@ -261,9 +261,18 @@ jobs:
           # Code reviews use the skill, which reviews a PR once. Every later push
           # legitimately stops without posting, and words that differently each
           # time (#142), so settle it by fact rather than by matching prose.
+          #
+          # BOTH kinds of comment count as evidence. `comments` holds only ISSUE
+          # comments; a review that posts its findings as INLINE comments lands in
+          # `reviews` instead, and is invisible here. PR #167 hit exactly that: the
+          # review ran clean (49 turns, is_error=false) and posted 7 inline
+          # comments, then this step failed it with "nothing posted and no
+          # deliberate skip recorded". Both fields report a bot author as plain
+          # `claude` over GraphQL (no `[bot]` suffix), so the existing pattern
+          # matches either without change.
           if gh pr view "${{ github.event.pull_request.number }}" \
-               --repo "${{ github.repository }}" --json comments \
-               --jq '.comments[].author.login' \
+               --repo "${{ github.repository }}" --json comments,reviews \
+               --jq '.comments[].author.login, .reviews[].author.login' \
              | grep -qi '^claude$'; then
             echo "A Claude review comment already exists, so the skill's one-shot policy skips this run. Exempt."
             exit 0
