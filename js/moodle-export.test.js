@@ -41,10 +41,10 @@ gen.VARIANTS.forEach(variant => {
     test('preserves the BOM and the source CRLF terminators', () => {
       expect(out.text.charCodeAt(0)).toBe(0xfeff);
       expect(out.text).toContain('\r\n');
-      expect(out.summary.eol).toBe('\r\n');
+      expect(out.summary).toMatchObject({ eol: '\r\n', bom: true });
     });
 
-    test('the header comes back byte-identical — same columns, same order', () => {
+    test('the header comes back intact — same columns, same order', () => {
       expect(FK.parseCsv(out.text)[0]).toEqual(gen.headerFor(variant));
     });
 
@@ -148,6 +148,74 @@ describe('buildExportWorksheet — line endings round-trip, both conventions', (
       const twice = FK.buildExportWorksheet(once, marked).text;
       expect(twice).toBe(once);
     });
+  });
+});
+
+/* FK does not "correct" the encoding of the file the marker uploaded: they are
+   about to hand it back to the same Moodle that produced it. */
+describe('buildExportWorksheet — BOM presence is preserved, not imposed', () => {
+  test('a BOM-less upload comes back BOM-less', () => {
+    const original = gen.corruptWorksheet('no-bom', { rows: 6 });
+    expect(original.charCodeAt(0)).not.toBe(0xfeff);
+    const out = FK.buildExportWorksheet(original, marked);
+    expect(out.ok).toBe(true);
+    expect(out.text.charCodeAt(0)).not.toBe(0xfeff);
+    expect(out.summary.bom).toBe(false);
+    expect(out.text.slice(0, 10)).toBe('Identifier');
+  });
+
+  test('a BOM-bearing upload keeps its BOM', () => {
+    const out = FK.buildExportWorksheet(gen.buildWorksheet({ rows: 6 }), marked);
+    expect(out.text.charCodeAt(0)).toBe(0xfeff);
+    expect(out.summary.bom).toBe(true);
+  });
+
+  test('the data round-trips either way, and the marks still land', () => {
+    const original = gen.corruptWorksheet('no-bom', { rows: 6 });
+    const cols = colsOf(original);
+    const out = FK.buildExportWorksheet(original, marked);
+    expect(FK.validateWorksheet(out.text, 'export').isValid).toBe(true);
+    expect(FK.parseCsv(out.text)[0]).toEqual(gen.headerFor(gen.DEFAULT_VARIANT));
+    expect(FK.parseCsv(out.text)[1][cols.Grade]).toBe('85.00');
+  });
+
+  test('W_NO_BOM says FK preserves the file, not that it will fix it', () => {
+    const w = FK.validateWorksheet(gen.corruptWorksheet('no-bom', { rows: 4 }))
+                .warnings.find(x => x.code === 'W_NO_BOM');
+    expect(w.message).toMatch(/preserves/i);
+    expect(w.message).not.toMatch(/save as UTF-8 to be safe/i);
+  });
+});
+
+/* The round trip is SEMANTIC. Real Moodle quotes fields that need no quoting;
+   csvField quotes minimally, so a real export re-serialised by FK carries the
+   same values in fewer bytes. These tests pin the guarantee we actually make. */
+describe('buildExportWorksheet — semantic, not lexical, preservation', () => {
+  const overQuoted =
+    '﻿"Identifier","Full name","ID number","Status","Grade","Feedback comments"\r\n' +
+    '"Participant 1","Aroha Example","9900001","Submitted for grading - Released -  - ","",""\r\n';
+
+  test('values survive a source that quotes every field', () => {
+    const out = FK.buildExportWorksheet(overQuoted, marked);
+    expect(out.ok).toBe(true);
+    expect(FK.parseCsv(out.text)).toEqual([
+      ['Identifier', 'Full name', 'ID number', 'Status', 'Grade', 'Feedback comments'],
+      ['Participant 1', 'Aroha Example', '9900001', 'Submitted for grading - Released -  - ',
+       '85.00', 'Strong argument, Aroha.\n\nTighten the conclusion next time.']
+    ]);
+  });
+
+  test('the bytes legitimately differ — quoting is re-derived, so do not assert equality', () => {
+    const out = FK.buildExportWorksheet(overQuoted, []);      // nobody marked: values identical
+    expect(FK.parseCsv(out.text)).toEqual(FK.parseCsv(overQuoted));
+    expect(out.text).not.toBe(overQuoted);                    // ...but not the same bytes
+    expect(out.text.length).toBeLessThan(overQuoted.length);
+  });
+
+  test('re-exporting FK’s own output IS stable (it is already minimally quoted)', () => {
+    const once  = FK.buildExportWorksheet(overQuoted, marked).text;
+    const twice = FK.buildExportWorksheet(once, marked).text;
+    expect(twice).toBe(once);
   });
 });
 

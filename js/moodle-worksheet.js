@@ -20,17 +20,22 @@
    time, requires only the columns the chosen workflow operates
    on, and carries every other column through verbatim.
 
-   ENCODING is variable too. Exports carry a UTF-8 BOM, but the
-   record terminator is not fixed: a 2026-06 export used CRLF and
-   a 2026-09 export from the same Moodle used lone LF. Both are
-   valid RFC-4180 and Moodle accepts either on upload, so FK reads
-   both and writes back whichever the source used rather than
-   normalising to one.
+   ENCODING is variable too. A 2026-06 export used CRLF record
+   terminators and a 2026-09 export from the same Moodle used lone
+   LF; a file re-saved by another program may lack the BOM. All are
+   valid and Moodle accepts them, so FK reads each and writes back
+   whatever the source had rather than normalising.
 
-   Only `Grade` and `Feedback comments` are marker-editable on
-   upload; export rewrites those two cells in place and leaves the
-   rest of the record untouched, so the uploaded file's full
-   schema, column order and line endings survive the round trip.
+   ROUND TRIP IS SEMANTIC, NOT LEXICAL. Only `Grade` and `Feedback
+   comments` are marker-editable; export rewrites those two cells
+   and re-serialises the rest, preserving every field VALUE, the
+   column set and order, the record terminator and BOM presence.
+   It does NOT reproduce the source byte for byte: Moodle quotes
+   fields that do not need quoting and csvField does not, so the
+   output is a smaller file carrying identical data, which Moodle
+   parses back to the same values on upload. Nothing here should be
+   described as byte-faithful — if lexical fidelity is ever needed,
+   the parser must retain each field's original raw span.
 
    See: scripts/gen-moodle-fixture.js (synthetic fixtures for both
         the Group/Marker and date/override real layouts).
@@ -55,7 +60,8 @@
   const GRADE_COLUMN       = 'Grade';
   const FEEDBACK_COLUMN    = 'Feedback comments';
 
-  // Marker-editable on upload. Everything else is preserved verbatim.
+  // Marker-editable on upload. Every other field VALUE is carried through
+  // unchanged (quoting is re-derived — see _serializeWorksheet).
   const EDITABLE_COLUMNS = [GRADE_COLUMN, FEEDBACK_COLUMN];
 
   /* Only the OPERATIONAL columns for the workflow being run are required.
@@ -70,21 +76,43 @@
   };
   const DEFAULT_WORKFLOW = 'import';
 
-  /* ── RFC-4180 parser ────────────────────────────────────────
-     Records terminate on CRLF or lone LF/CR; quoted fields may
-     hold commas, CR, LF, and doubled quotes (""). Strips a leading
-     BOM. Throws { code:'E_UNBALANCED_QUOTE' } if EOF is reached
-     inside an open quote. Returns an array of records (arrays of
-     field strings); a trailing blank line is ignored. Width is
-     whatever the file has — the parser imposes no column count. */
-  function parseCsv(text) {
+  /* ── RFC-4180 scanner ───────────────────────────────────────
+     Records terminate on CRLF or lone LF/CR; quoted fields may hold
+     commas, CR, LF, and doubled quotes (""). Strips a leading BOM.
+     Throws { code:'E_UNBALANCED_QUOTE' } if EOF is reached inside an
+     open quote. A trailing blank line is ignored, and width is
+     whatever the file has — no column count is imposed.
+
+     The one scanner. parseCsv and detectEol are both thin wrappers over it, so
+     the definition of "this is a record terminator" cannot drift between what
+     FK parses and what FK writes back. Returns { records, bom, eol, eols }:
+
+       records — array of records, each an array of field strings
+
+       bom  — the source began with a BOM
+       eol  — the FIRST terminator found OUTSIDE quotes (the header's own), or
+              null when the file holds a single unterminated record
+       eols — { '\r\n': n, '\n': n, '\r': n } counts, also outside quotes only,
+              so a caller can see a file with mixed terminators
+
+     Quote state is why this has to be one function. A feedback cell may hold
+     CRLF (a marker pastes Windows-typed text into Moodle), and a regex over
+     the raw text would then read an LF-terminated worksheet as CRLF and FK
+     would rewrite every record terminator in the file on export. */
+  function scanCsv(text) {
     let s = String(text == null ? '' : text);
-    if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
+    const bom = s.charCodeAt(0) === 0xfeff;
+    if (bom) s = s.slice(1);
     const records = [];
+    const eols = { '\r\n': 0, '\n': 0, '\r': 0 };
+    let eol = null;
     let row = [], field = '', inQuotes = false, i = 0;
     const n = s.length;
     const endField = () => { row.push(field); field = ''; };
-    const endRow   = () => { endField(); records.push(row); row = []; };
+    const endRow   = (term) => {
+      endField(); records.push(row); row = [];
+      eols[term]++; if (eol === null) eol = term;
+    };
     while (i < n) {
       const c = s[i];
       if (inQuotes) {
@@ -92,22 +120,29 @@
           if (s[i + 1] === '"') { field += '"'; i += 2; continue; }
           inQuotes = false; i++; continue;
         }
-        field += c; i++; continue;
+        field += c; i++; continue;      // CR / LF in here are CONTENT, not terminators
       }
       if (c === '"') { inQuotes = true; i++; continue; }
       if (c === ',') { endField(); i++; continue; }
-      if (c === '\r') { if (s[i + 1] === '\n') i++; endRow(); i++; continue; }
-      if (c === '\n') { endRow(); i++; continue; }
+      if (c === '\r') {
+        if (s[i + 1] === '\n') { endRow('\r\n'); i += 2; continue; }
+        endRow('\r'); i++; continue;
+      }
+      if (c === '\n') { endRow('\n'); i++; continue; }
       field += c; i++;
     }
     if (inQuotes) { const e = new Error('Unterminated quoted field'); e.code = 'E_UNBALANCED_QUOTE'; throw e; }
     // flush the last field/row unless the file ended exactly on a terminator
-    if (field !== '' || row.length) endRow();
-    return records;
+    if (field !== '' || row.length) { endField(); records.push(row); }
+    return { records: records, bom: bom, eol: eol, eols: eols };
+  }
+
+  function parseCsv(text) {
+    return scanCsv(text).records;
   }
 
   /* ── Column resolution (literal name → index) ────────────────
-     Header cells are matched LITERALLY, byte for byte, after removing a
+     Header cells are matched LITERALLY, character for character, after removing a
      leading BOM and nothing else. Recognised names are not trimmed: a
      header of " Grade " is a different column from "Grade", because it
      is a column Moodle did not write, and quietly accepting it would
@@ -170,7 +205,9 @@
 
     if (!raw.trim()) { err('E_EMPTY', 'The file is empty.'); return fail(); }
     if (raw.charCodeAt(0) !== 0xfeff) {
-      warn('W_NO_BOM', 'File has no UTF-8 BOM; Moodle exports include one. Re-export or save as UTF-8 to be safe.');
+      // States what FK does, not what the marker should do. Export preserves
+      // this file as it is; it does not add a BOM the upload did not have.
+      warn('W_NO_BOM', 'This file has no UTF-8 BOM, though Moodle exports normally include one — it may have been re-saved by another program. FK preserves that on export rather than adding one, so the file you upload will match. Re-export from Moodle if you want the BOM back.');
     }
     // NO line-ending warning. INS-10 pinned CRLF from one 2026-06 export, but a
     // 2026-09 export from the same Moodle (BOM present, 91 lone LF, 0 CRLF)
@@ -423,26 +460,38 @@
     const s = (v == null) ? '' : String(v);
     return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
-  /* The source file's RECORD terminator. Newlines inside a quoted feedback
-     cell are LF in both conventions and are irrelevant here: one CRLF
-     anywhere in the raw text can only be a record terminator, since csvField
-     never emits a bare CR. Real exports have been seen using each. */
+  /* The source file's RECORD terminator, found with full quote awareness via
+     scanCsv — a CRLF inside a quoted feedback cell is content and must not be
+     mistaken for the file's convention. Falls back to LF for a file with no
+     terminator at all (a single unterminated record), and on a parse failure,
+     which the caller will be reporting as a fatal error anyway. */
   function detectEol(text) {
-    return /\r\n/.test(String(text == null ? '' : text)) ? '\r\n' : '\n';
+    try { return scanCsv(text).eol || '\n'; }
+    catch (e) { return '\n'; }
   }
-  function _serializeWorksheet(records, eol) {
-    const nl = eol || '\r\n';
-    return BOM + records.map(r => r.map(csvField).join(',')).join(nl) + nl;
+
+  /* Re-serialise records. SEMANTIC round trip, not lexical: field VALUES,
+     column order, the record terminator and BOM presence are preserved, but
+     quoting is re-derived by csvField. Moodle quotes fields that do not
+     require it (`"Participant 8880001","Aroha Example",9900001,...`), so the
+     output is a different byte sequence carrying identical data. Moodle
+     parses it back to the same values on upload, which is what the round
+     trip needs; do not describe this as byte-faithful. */
+  function _serializeWorksheet(records, eol, bom) {
+    const nl = eol || '\n';
+    return (bom ? BOM : '') + records.map(r => r.map(csvField).join(',')).join(nl) + nl;
   }
 
   /* ── Export (the other half of the round-trip) ───────────────
      Fills Grade + Feedback comments back into the ORIGINAL worksheet
      for students FK has marked. Every record is re-serialised from the
-     file's own parse, so the uploaded worksheet's complete schema —
-     its column set, its column order, its optional Group / Marker /
-     Due date columns, its identifiers and timestamps, its BOM and its
-     own line endings (detectEol, not a normalised CRLF) — comes back
-     out unchanged apart from the two editable cells. The
+     file's own parse, preserving the uploaded worksheet's complete
+     schema — its column set, its column order, its optional Group /
+     Marker / Due date columns, its identifiers and timestamps, its BOM
+     presence and its own record terminator — with every field VALUE
+     equal to what came in apart from the two editable cells. Quoting
+     is re-derived, so this is a semantic round trip and the bytes will
+     differ from the source (see _serializeWorksheet). The
      marker re-supplies (or FK caches) the original file: FK can't
      reconstruct Email/Status/timestamps, so the round-trip is "fill
      the file you downloaded", which is also Moodle's own mental model.
@@ -461,7 +510,8 @@
     const validation = validateWorksheet(originalText, 'export');
     if (!validation.isValid) return { ok: false, errors: validation.errors, text: null, summary: null };
 
-    const records = parseCsv(originalText);            // [header, ...dataRows]
+    const scan    = scanCsv(originalText);             // [header, ...dataRows] + encoding
+    const records = scan.records;
     const columns = validation.columns;
     const width   = validation.header.length;
     const byKey = {};
@@ -483,10 +533,14 @@
       cells[fbCol]    = String(rec.feedbackText || ''); // feedbackText ONLY — never markerNotes
       filled++;
     }
+    // Write back the encoding the file arrived with — terminator AND BOM
+    // presence. FK does not "correct" a BOM-less upload into a BOM-bearing
+    // download: the marker uploads this to the same Moodle that produced it.
     const total = records.length - 1;
-    const eol = detectEol(originalText);               // write back what the file used
-    return { ok: true, errors: [], text: _serializeWorksheet(records, eol),
-             summary: { total: total, filled: filled, unmatched: total - filled, eol: eol } };
+    const eol = scan.eol || '\n';
+    return { ok: true, errors: [], text: _serializeWorksheet(records, eol, scan.bom),
+             summary: { total: total, filled: filled, unmatched: total - filled,
+                        eol: eol, bom: scan.bom } };
   }
 
   /* Verify re-assignment guard (Gemini): when the user assigns an ID to a
@@ -506,7 +560,7 @@
   }
 
   return {
-    parseCsv, resolveColumns, detectEol, validateWorksheet, planImport, buildCohortImport,
+    parseCsv, scanCsv, resolveColumns, detectEol, validateWorksheet, planImport, buildCohortImport,
     buildExportWorksheet, sidCollision, statusBucket, storeKey, worksheetKey,
     cellAt, recordHasMarks, nextUnmarkedKey,
     REQUIRED_COLUMNS, EDITABLE_COLUMNS, IDENTIFIER_COLUMN, NAME_COLUMN,

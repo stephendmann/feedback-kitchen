@@ -189,6 +189,71 @@ describe('validateWorksheet — encoding', () => {
   });
 });
 
+/* REGRESSION — detectEol was once `/\r\n/.test(raw)`. A marker who pastes
+   Windows-typed text into Moodle's feedback box produces a CRLF inside a
+   quoted cell, and that regex then reported an LF-terminated worksheet as
+   CRLF, so export rewrote every record terminator in the file. Terminator
+   detection must run with quote state, which is why it shares scanCsv. */
+describe('detectEol — CRLF inside quoted feedback must not be read as the terminator', () => {
+  // LF records, but the feedback cell of row 5 holds a CRLF.
+  const lfRecordsCrlfFeedback = gen.buildWorksheet({
+    rows: 12, lf: true,
+    overrides: { 4: { 'Feedback comments': 'Line one.\r\nLine two, with a comma.\r\n\r\nLine four.' } }
+  });
+
+  test('the fixture really does contain a CRLF, inside quotes only', () => {
+    expect(lfRecordsCrlfFeedback).toContain('\r\n');
+    expect(lfRecordsCrlfFeedback.replace(/"[^"]*"/g, '""')).not.toContain('\r\n');
+  });
+
+  test('detectEol returns LF, the RECORD terminator', () => {
+    expect(FKMoodle.detectEol(lfRecordsCrlfFeedback)).toBe('\n');
+  });
+
+  test('scanCsv counts only out-of-quote terminators', () => {
+    const scan = FKMoodle.scanCsv(lfRecordsCrlfFeedback);
+    expect(scan.eol).toBe('\n');
+    expect(scan.eols['\r\n']).toBe(0);               // the in-cell CRLFs are content
+    expect(scan.eols['\n']).toBe(13);                // header + 12 rows
+    expect(scan.records).toHaveLength(13);           // and the file still parses as 13 records
+  });
+
+  test('the CRLF survives inside the cell as content', () => {
+    const v = FKMoodle.validateWorksheet(lfRecordsCrlfFeedback);
+    expect(v.isValid).toBe(true);
+    const fb = v.rows[4][v.columns['Feedback comments']];
+    expect(fb).toBe('Line one.\r\nLine two, with a comma.\r\n\r\nLine four.');
+  });
+
+  test('export keeps LF record terminators and does not touch the in-cell CRLF', () => {
+    const out = FKMoodle.buildExportWorksheet(lfRecordsCrlfFeedback, []);
+    expect(out.ok).toBe(true);
+    expect(out.summary.eol).toBe('\n');
+    expect(out.text.replace(/"[^"]*"/g, '""')).not.toContain('\r\n');
+    expect(FKMoodle.parseCsv(out.text)[5][FKMoodle.validateWorksheet(out.text).columns['Feedback comments']])
+      .toBe('Line one.\r\nLine two, with a comma.\r\n\r\nLine four.');
+  });
+
+  test('the mirror case: CRLF records with a lone LF inside feedback', () => {
+    const crlfRecords = gen.buildWorksheet({ rows: 12 });   // feedback already holds lone LFs
+    const scan = FKMoodle.scanCsv(crlfRecords);
+    expect(scan.eol).toBe('\r\n');
+    expect(scan.eols['\n']).toBe(0);                 // in-cell LFs are not counted
+    expect(scan.eols['\r\n']).toBe(13);
+  });
+});
+
+describe('scanCsv — BOM reporting', () => {
+  test('reports a BOM when present and absent when not', () => {
+    expect(FKMoodle.scanCsv(gen.buildWorksheet({ rows: 4 })).bom).toBe(true);
+    expect(FKMoodle.scanCsv(gen.corruptWorksheet('no-bom', { rows: 4 })).bom).toBe(false);
+  });
+
+  test('the BOM is never left in the first header cell', () => {
+    expect(FKMoodle.scanCsv(gen.buildWorksheet({ rows: 4 })).records[0][0]).toBe('Identifier');
+  });
+});
+
 describe('validateWorksheet — missing required columns BLOCK', () => {
   each(variant => {
     test(variant + ': dropping "ID number" from header and rows is fatal', () => {

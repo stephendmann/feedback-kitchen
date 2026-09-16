@@ -2,11 +2,20 @@
 /* ============================================================
    FK-19 — Moodle offline-grading-worksheet FAKE fixture generator.
 
-   Produces 100% SYNTHETIC Moodle grading-worksheet CSVs that are
-   byte-faithful to real exports' SCHEMAS (column sets, order, BOM,
-   quoting, edge-case rows) — WITHOUT ever reading or embedding a
-   real, PII-bearing worksheet. Real downloads stay gitignored;
-   FK-19 logic and tests are developed against THIS generator only.
+   Produces 100% SYNTHETIC Moodle grading-worksheet CSVs reproducing
+   real exports' SCHEMAS (column sets, order, BOM, quoting style,
+   edge-case rows) — WITHOUT ever reading or embedding a real,
+   PII-bearing worksheet. Real downloads stay gitignored; FK-19 logic
+   and tests are developed against THIS generator only.
+
+   One caveat these fixtures do NOT reproduce: real Moodle quotes
+   fields that need no quoting (`"Participant 8880001","Aroha Example",…`),
+   whereas csvField here quotes minimally, exactly as FK's export does.
+   That difference is why FK's round trip is semantic and not lexical —
+   a real file re-serialised by FK is a smaller byte sequence carrying
+   identical values. Fixture-based round-trip tests can therefore
+   compare output to input directly; tests against a real export must
+   compare parsed VALUES, never bytes.
 
    TWO REAL LAYOUTS, because the worksheet has no fixed column set.
    Moodle exports the grading table's visible columns, and those
@@ -28,10 +37,11 @@
    by NAME, never by position — which is what both fixtures exist
    to prove.
 
-   Real-export encoding (INS-10, byte-checked): UTF-8 **with BOM** and
-   **CRLF** record terminators (field-internal newlines in quoted
-   feedback stay LF). FK-19's export must reproduce BOM+CRLF to
-   round-trip byte-faithfully, so CRLF is this generator's default.
+   ENCODING is not fixed either. The 2026-06 export was UTF-8 with BOM
+   and CRLF record terminators; the 2026-09 export was UTF-8 with BOM
+   and lone LF. FK preserves whichever the source used rather than
+   normalising, so `--lf` exists to build the LF half of that matrix.
+   CRLF remains the default because the INS-10 export used it.
 
    Usage:
      node scripts/gen-moodle-fixture.js                      # → stdout
