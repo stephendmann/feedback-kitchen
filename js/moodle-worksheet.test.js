@@ -24,7 +24,7 @@ describe('parseCsv (RFC-4180)', () => {
       const csv = gen.buildWorksheet({ rows: 12, variant });
       const width = gen.headerFor(variant).length;
 
-      test('strips BOM, splits on CRLF, returns rows at the file’s own width', () => {
+      test("strips BOM, splits on CRLF, returns rows at the file's own width", () => {
         const recs = FKMoodle.parseCsv(csv);
         expect(recs[0]).toEqual(gen.headerFor(variant));
         expect(recs.slice(1).every(r => r.length === width)).toBe(true);
@@ -136,7 +136,7 @@ describe('validateWorksheet — both real layouts are accepted', () => {
   });
 });
 
-describe('validateWorksheet — only the workflow’s operational columns are required', () => {
+describe("validateWorksheet — only the workflow's operational columns are required", () => {
   test('import needs identity + status, not the export columns', () => {
     expect(FKMoodle.REQUIRED_COLUMNS.import).toEqual(
       ['Identifier', 'Full name', 'ID number', 'Status']);
@@ -298,7 +298,7 @@ describe('validateWorksheet — duplicate header columns BLOCK', () => {
   });
 });
 
-describe('validateWorksheet — malformed rows BLOCK, measured against the file’s own width', () => {
+describe("validateWorksheet — malformed rows BLOCK, measured against the file's own width", () => {
   each(variant => {
     const width = gen.headerFor(variant).length;
 

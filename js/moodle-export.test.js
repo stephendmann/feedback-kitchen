@@ -212,7 +212,7 @@ describe('buildExportWorksheet — semantic, not lexical, preservation', () => {
     expect(out.text.length).toBeLessThan(overQuoted.length);
   });
 
-  test('re-exporting FK’s own output IS stable (it is already minimally quoted)', () => {
+  test("re-exporting FK's own output IS stable (it is already minimally quoted)", () => {
     const once  = FK.buildExportWorksheet(overQuoted, marked).text;
     const twice = FK.buildExportWorksheet(once, marked).text;
     expect(twice).toBe(once);

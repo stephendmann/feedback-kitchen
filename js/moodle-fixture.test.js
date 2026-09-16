@@ -60,7 +60,7 @@ gen.VARIANTS.forEach(variant => {
       expect(csv.charCodeAt(0)).toBe(0xfeff);
     });
 
-    test('the first record is that variant’s header, in order', () => {
+    test("the first record is that variant's header, in order", () => {
       expect(csv.replace(/^﻿/, '').split('\r\n')[0]).toBe(header.join(','));
     });
 

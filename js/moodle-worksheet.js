@@ -207,7 +207,7 @@
     if (raw.charCodeAt(0) !== 0xfeff) {
       // States what FK does, not what the marker should do. Export preserves
       // this file as it is; it does not add a BOM the upload did not have.
-      warn('W_NO_BOM', 'This file has no UTF-8 BOM, though Moodle exports normally include one — it may have been re-saved by another program. FK preserves that on export rather than adding one, so the file you upload will match. Re-export from Moodle if you want the BOM back.');
+      warn('W_NO_BOM', 'This file has no UTF-8 BOM, though Moodle exports normally include one (it may have been re-saved by another program). FK preserves that on export rather than adding one, so the file you upload will match. Re-export from Moodle if you want the BOM back.');
     }
     // NO line-ending warning. INS-10 pinned CRLF from one 2026-06 export, but a
     // 2026-09 export from the same Moodle (BOM present, 91 lone LF, 0 CRLF)
@@ -227,7 +227,7 @@
     const header = records[0];
     const resolved = resolveColumns(header, required);
     resolved.duplicates.forEach(name => {
-      err('E_HEADER_DUPLICATE_COLUMN', 'The column "' + name + '" appears more than once — column names must be unique.',
+      err('E_HEADER_DUPLICATE_COLUMN', 'The column "' + name + '" appears more than once: column names must be unique.',
         { column: name });
     });
     resolved.missing.forEach(name => {
@@ -343,7 +343,7 @@
       } else {
         // Name present, ID blank. NOT keyed by name: assign an ID or ignore.
         disposition = 'verify';
-        reason = 'No ID number — assign one before importing (FK never matches on name alone).';
+        reason = 'No ID number: assign one before importing (FK never matches on name alone).';
         codes.push('E_ROW_NO_ID');
       }
 

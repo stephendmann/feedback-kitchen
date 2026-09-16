@@ -2298,7 +2298,7 @@
           '<p class="text-red-700 font-semibold mb-1">This file can’t be imported.</p>' +
           // Column order and any extra columns are fine — FK matches by name — so the
           // advice is only about renaming or dropping the columns FK reads.
-          '<p class="text-sm text-slate-600 mb-3">Re-export the worksheet from Moodle without renaming or removing columns — then try again. Extra columns are fine.</p>' +
+          '<p class="text-sm text-slate-600 mb-3">Re-export the worksheet from Moodle without renaming or removing columns, then try again. Extra columns are fine.</p>' +
           '<ul class="text-sm space-y-1">' + errs.map(function (e) {
             return '<li class="text-red-700">• ' + escHtml(e.message) +
               (e.row != null ? ' <span class="text-slate-400">(row ' + e.row + ')</span>' : '') + '</li>';
