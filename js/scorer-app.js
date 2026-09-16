@@ -2296,10 +2296,11 @@
         const errs = _mw.plan.validation.errors;
         body.innerHTML =
           '<p class="text-red-700 font-semibold mb-1">This file can’t be imported.</p>' +
-          '<p class="text-sm text-slate-600 mb-3">Re-export the worksheet from Moodle without renaming, moving, adding, or removing columns — then try again.</p>' +
+          // Column order and any extra columns are fine — FK matches by name — so the
+          // advice is only about renaming or dropping the columns FK reads.
+          '<p class="text-sm text-slate-600 mb-3">Re-export the worksheet from Moodle without renaming or removing columns, then try again. Extra columns are fine.</p>' +
           '<ul class="text-sm space-y-1">' + errs.map(function (e) {
             return '<li class="text-red-700">• ' + escHtml(e.message) +
-              (e.column != null ? ' <span class="text-slate-400">(column ' + (e.column + 1) + ')</span>' : '') +
               (e.row != null ? ' <span class="text-slate-400">(row ' + e.row + ')</span>' : '') + '</li>';
           }).join('') + '</ul>';
         footer.innerHTML = _mwCancelBtn();
@@ -2353,7 +2354,9 @@
           : 'That ID number is already used by row ' + conflict.row + ' in this worksheet.');
         return; // stays in verify → Commit remains blocked
       }
-      e.identifier = sid; e.keyType = 'sid'; e.key = 'sid:' + sid; e.disposition = 'import'; e.reason = null;
+      // worksheetKey, not a hand-built string: the cohort key is lower-cased.
+      e.identifier = sid; e.keyType = 'sid'; e.key = window.FKMoodle.worksheetKey(sid);
+      e.disposition = 'import'; e.reason = null;
       _mwRecount(); renderMoodleImport();
     }
 
