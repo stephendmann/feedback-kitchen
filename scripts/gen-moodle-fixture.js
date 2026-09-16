@@ -2,16 +2,31 @@
 /* ============================================================
    FK-19 — Moodle offline-grading-worksheet FAKE fixture generator.
 
-   Produces a 100% SYNTHETIC Moodle grading-worksheet CSV that is
-   byte-faithful to the real export's SCHEMA (column order, BOM,
-   quoting, edge-case rows) — WITHOUT ever reading or embedding the
-   real, PII-bearing worksheet. The real download stays gitignored
-   (planning/Example Moodle Worksheet/Grades-*.csv); FK-19 logic and
-   tests are developed against THIS generated fixture only.
+   Produces 100% SYNTHETIC Moodle grading-worksheet CSVs that are
+   byte-faithful to real exports' SCHEMAS (column sets, order, BOM,
+   quoting, edge-case rows) — WITHOUT ever reading or embedding a
+   real, PII-bearing worksheet. Real downloads stay gitignored;
+   FK-19 logic and tests are developed against THIS generator only.
 
-   Schema source: INS-10 (real worksheet analysed, header-only). The
-   14 columns and the editable pair (Grade, Feedback comments) are
-   from that inspection; all DATA below is invented.
+   TWO REAL LAYOUTS, because the worksheet has no fixed column set.
+   Moodle exports the grading table's visible columns, and those
+   depend on the assignment's configuration:
+
+     variant 'group-marker' (default, 14 columns) — the INS-10
+       export. Carries `Group` and `Marker` (group submission +
+       marking allocation enabled), no per-user date columns.
+
+     variant 'dates' (15 columns) — a second real export from the
+       same institution. No `Group` / `Marker`, but gains `Allow
+       submissions from`, `Due date` and `Cut-off date`, which
+       Moodle adds once per-user dates can diverge (an extension
+       or override has been granted). Note this is not merely the
+       first layout plus columns: two columns are absent and three
+       are added, at a different offset.
+
+   Anything that reads a worksheet must therefore resolve columns
+   by NAME, never by position — which is what both fixtures exist
+   to prove.
 
    Real-export encoding (INS-10, byte-checked): UTF-8 **with BOM** and
    **CRLF** record terminators (field-internal newlines in quoted
@@ -19,31 +34,48 @@
    round-trip byte-faithfully, so CRLF is this generator's default.
 
    Usage:
-     node scripts/gen-moodle-fixture.js                 # → stdout (BOM+CRLF)
-     node scripts/gen-moodle-fixture.js --out path.csv  # → file
-     node scripts/gen-moodle-fixture.js --lf            # LF EOLs (override)
+     node scripts/gen-moodle-fixture.js                      # → stdout
+     node scripts/gen-moodle-fixture.js --variant dates      # date/override layout
+     node scripts/gen-moodle-fixture.js --out path.csv       # → file
+     node scripts/gen-moodle-fixture.js --lf                 # LF EOLs (override)
+     node scripts/gen-moodle-fixture.js --all                # rewrite both committed fixtures
    Also importable: require('./gen-moodle-fixture.js').buildWorksheet()
    ============================================================ */
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 
 const BOM = '﻿';
 
-// Canonical column order (INS-10). Only `Grade` and `Feedback comments`
-// are marker-editable on upload; everything else is identity/technical.
-const HEADER = [
-  'Identifier', 'Full name', 'ID number', 'Email address', 'Status',
-  'Group', 'Marker', 'Grade', 'Maximum grade', 'Marking workflow state',
-  'Grade can be changed', 'Last modified (submission)', 'Last modified (grade)',
-  'Feedback comments'
-];
+/* Column sets, verbatim from the two real exports. Only `Grade` and
+   `Feedback comments` are marker-editable on upload; everything else is
+   identity/technical and must round-trip untouched. */
+const HEADERS = {
+  'group-marker': [
+    'Identifier', 'Full name', 'ID number', 'Email address', 'Status',
+    'Group', 'Marker', 'Grade', 'Maximum grade', 'Marking workflow state',
+    'Grade can be changed', 'Last modified (submission)', 'Last modified (grade)',
+    'Feedback comments'
+  ],
+  dates: [
+    'Identifier', 'Full name', 'ID number', 'Email address', 'Status',
+    'Allow submissions from', 'Due date', 'Cut-off date',
+    'Grade', 'Maximum grade', 'Marking workflow state',
+    'Grade can be changed', 'Last modified (submission)', 'Last modified (grade)',
+    'Feedback comments'
+  ]
+};
+const DEFAULT_VARIANT = 'group-marker';
+const VARIANTS = Object.keys(HEADERS);
 
-// Fixed (non-random) so the committed fixture is reproducible.
+// Fixed (non-random) so the committed fixtures are reproducible.
 const STAMP = 'Wednesday, 10 June 2026, 2:14 PM';
 const STATUS_OK   = 'Submitted for grading - Released -  - ';
 const STATUS_LATE = 'Submitted for grading - 3 mins 31 secs late - Released -  - ';
 const STATUS_NONE = 'No submission - Released -  - ';
+const DUE_DEFAULT  = 'Friday, 12 June 2026, 5:00 PM';
+const DUE_EXTENDED = 'Wednesday, 17 June 2026, 5:00 PM';   // the override that summons the date columns
 
 // RFC-4180-style quoting, matching Moodle: quote a field only if it
 // contains a comma, double-quote, CR or LF; double any internal quotes.
@@ -62,8 +94,10 @@ function longFeedback() {
 const FIRST = ['Aroha', 'Ben', 'Carla', 'Demo', 'Erin', 'Felix', 'Grace', 'Hemi', 'Ines', 'Jack', 'Kiri', 'Liam', 'Mere', 'Noa', 'Olivia', 'Pita', 'Quinn', 'Rangi', 'Sefa', 'Tama'];
 const LAST  = ['Example', 'Fixture', 'Sample', 'Tanaka', 'Placeholder', 'Mocke', 'Testley', 'Specimen', 'Dummy', 'Synthetic', 'Modell', 'Pretend', 'Stand-in', 'Proxy', 'Faux', 'Notreal', 'Stub', 'Mockup', 'Decoy', 'Token'];
 
-// Build a deterministic synthetic row. Index drives a few edge cases so a
-// small fixture still exercises the round-trip-critical shapes.
+/* Build a deterministic synthetic row as a NAME→VALUE map. Index drives a few
+   edge cases so a small fixture still exercises the round-trip-critical
+   shapes. The map carries every field either variant might ask for; the
+   serializer takes only the columns that variant's header declares. */
 function makeRow(i) {
   const n = i + 1;
   const first = FIRST[i % FIRST.length];
@@ -80,6 +114,9 @@ function makeRow(i) {
     Status: STATUS_OK,
     Group: '',
     Marker: '',
+    'Allow submissions from': '',
+    'Due date': DUE_DEFAULT,
+    'Cut-off date': '',
     Grade: '',
     'Maximum grade': '100.00',
     'Marking workflow state': 'Released',
@@ -107,32 +144,46 @@ function makeRow(i) {
   } else if (i === 9) {                            // no submission (non-markable)
     row.Status = STATUS_NONE;
     row['Last modified (submission)'] = '-';
-  } else if (i === 10) {                           // name-only row: EMPTY ID number (sid-fallback edge)
+  } else if (i === 10) {                           // blank ID number → manual 'verify', never name-matched
     row['ID number'] = '';
   }
+
+  // The per-user override that makes Moodle emit the date columns at all.
+  if (i === 3 || i === 9) row['Due date'] = DUE_EXTENDED;
+
   return row;
+}
+
+function headerFor(variant) {
+  return HEADERS[variant] || HEADERS[DEFAULT_VARIANT];
 }
 
 // Assemble the full worksheet string (BOM + header + rows).
 function buildWorksheet(opts) {
   opts = opts || {};
+  const header = headerFor(opts.variant);
   const rows = Math.max(1, opts.rows || 12);
   const eol = opts.lf ? '\n' : '\r\n';   // real Moodle export is CRLF (default)
-  const lines = [HEADER.map(csvField).join(',')];
+  const lines = [header.map(csvField).join(',')];
   for (let i = 0; i < rows; i++) {
     const r = makeRow(i);
     if (opts.overrides && opts.overrides[i]) Object.assign(r, opts.overrides[i]); // per-row field overrides
-    lines.push(HEADER.map(h => csvField(r[h])).join(','));
+    lines.push(header.map(h => csvField(r[h])).join(','));
   }
   return BOM + lines.join(eol) + eol;
 }
 
 /* Poisoned variants for FK-19's dry-run validator (Q5.2 error handling).
    Each returns a deliberately malformed worksheet so the validator's error
-   reporting can be tested against synthetic data — never the real file. */
+   reporting can be tested against synthetic data — never a real file.
+   `opts.variant` selects the base layout, so every poison can be applied to
+   either real column set. */
 function corruptWorksheet(kind, opts) {
+  opts = opts || {};
   const base = buildWorksheet(opts);
+  const header = headerFor(opts.variant);
   const recs = base.replace(/^﻿/, '').split('\r\n'); // record terminators only (field-internal \n stay)
+  const rebuild = () => BOM + recs.join('\r\n');
   switch (kind) {
     case 'no-bom':
       return base.replace(/^﻿/, '');
@@ -140,18 +191,45 @@ function corruptWorksheet(kind, opts) {
       return base.replace(/\r\n/g, '\n');
     case 'no-header':
       recs.shift();
-      return BOM + recs.join('\r\n');
-    case 'wrong-header':                       // a renamed column → header mismatch
+      return rebuild();
+    case 'renamed-col':                        // required column renamed → missing
       return base.replace('Feedback comments', 'Comments');
-    case 'extra-col':                          // 15th column appended to header only
-      return base.replace('Feedback comments', 'Feedback comments,Rogue column');
-    case 'short-row': {                         // drop the last field of the first data row
-      recs[1] = recs[1].replace(/,[^,]*$/, '');
-      return BOM + recs.join('\r\n');
+    case 'missing-col': {                      // drop the `ID number` column from header AND every row
+      const at = header.indexOf('ID number');
+      return BOM + recs.filter(Boolean).map(line => {
+        const fields = splitRecord(line);
+        fields.splice(at, 1);
+        return fields.map(csvField).join(',');
+      }).join('\r\n') + '\r\n';
     }
+    case 'dup-header': {                       // the same column name twice (ambiguous target)
+      const at = header.indexOf('Grade');
+      return BOM + recs.filter(Boolean).map((line, r) => {
+        const fields = splitRecord(line);
+        fields.splice(at + 1, 0, r === 0 ? 'Grade' : '');
+        return fields.map(csvField).join(',');
+      }).join('\r\n') + '\r\n';
+    }
+    case 'unknown-col': {                      // an EXTRA non-FK column, header AND rows — must stay valid
+      return BOM + recs.filter(Boolean).map((line, r) => {
+        const fields = splitRecord(line);
+        fields.splice(1, 0, r === 0 ? 'Institution note' : 'note-' + r);
+        return fields.map(csvField).join(',');
+      }).join('\r\n') + '\r\n';
+    }
+    case 'extra-col':                          // extra column in the HEADER only → ragged rows
+      return base.replace('Feedback comments', 'Feedback comments,Rogue column');
+    case 'short-row':                           // drop the last field of the first data row
+      recs[1] = recs[1].replace(/,[^,]*$/, '');
+      return rebuild();
+    case 'long-row':                            // one field too many on the first data row
+      recs[1] = recs[1] + ',surplus';
+      return rebuild();
     case 'bad-quote':                          // unterminated quoted field at EOF
-      return base + 'Participant 8889999,Broken Row,9999999,broken@example.edu,' +
-        STATUS_OK + ',,,,100.00,Released,Yes,' + STAMP + ',-,"unterminated feedback\r\n';
+      return base + header.map((h, i) => i === 0 ? 'Participant 8889999'
+        : h === 'Full name' ? 'Broken Row'
+        : h === 'ID number' ? '9999999'
+        : h === 'Feedback comments' ? '"unterminated feedback' : '').join(',') + '\r\n';
     // ── row-level (data-integrity) poisons — classified by planImport, not
     //    the file validator; Moodle likewise skips these rows on import ──
     case 'no-key-row':                          // blank ID number AND Full name
@@ -163,24 +241,67 @@ function corruptWorksheet(kind, opts) {
   }
 }
 
-module.exports = { buildWorksheet, corruptWorksheet, HEADER, csvField, BOM };
+/* Minimal RFC-4180 record splitter, for the poison helpers above: they need
+   to add/remove a column from an already-serialised line without mangling
+   quoted feedback cells. */
+function splitRecord(line) {
+  const out = [];
+  let field = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { field += '"'; i++; continue; }
+        inQuotes = false; continue;
+      }
+      field += c; continue;
+    }
+    if (c === '"') { inQuotes = true; continue; }
+    if (c === ',') { out.push(field); field = ''; continue; }
+    field += c;
+  }
+  out.push(field);
+  return out;
+}
+
+module.exports = { buildWorksheet, corruptWorksheet, headerFor, splitRecord,
+                   HEADERS, VARIANTS, DEFAULT_VARIANT, csvField, BOM };
 
 // ── CLI ────────────────────────────────────────────────────────────────
+const COMMITTED = {
+  'group-marker': 'test/fixtures/moodle-worksheet.fake.csv',
+  dates: 'test/fixtures/moodle-worksheet-dates.fake.csv'
+};
+
 if (require.main === module) {
   const argv = process.argv.slice(2);
   const get = (flag, def) => {
     const i = argv.indexOf(flag);
     return i >= 0 && argv[i + 1] ? argv[i + 1] : def;
   };
-  const out = buildWorksheet({
-    rows: parseInt(get('--rows', '12'), 10),
-    lf: argv.includes('--lf')
-  });
-  const dest = get('--out', null);
-  if (dest) {
-    fs.writeFileSync(dest, out);
-    process.stderr.write('Wrote synthetic Moodle fixture → ' + dest + '\n');
+  const rows = parseInt(get('--rows', '12'), 10);
+  const lf = argv.includes('--lf');
+
+  if (argv.includes('--all')) {
+    const root = path.resolve(__dirname, '..');
+    VARIANTS.forEach(variant => {
+      const dest = path.join(root, COMMITTED[variant]);
+      fs.writeFileSync(dest, buildWorksheet({ rows: rows, lf: lf, variant: variant }));
+      process.stderr.write('Wrote synthetic Moodle fixture (' + variant + ') → ' + COMMITTED[variant] + '\n');
+    });
   } else {
-    process.stdout.write(out);
+    const variant = get('--variant', DEFAULT_VARIANT);
+    if (VARIANTS.indexOf(variant) === -1) {
+      process.stderr.write('Unknown --variant "' + variant + '"; expected one of: ' + VARIANTS.join(', ') + '\n');
+      process.exit(1);
+    }
+    const out = buildWorksheet({ rows: rows, lf: lf, variant: variant });
+    const dest = get('--out', null);
+    if (dest) {
+      fs.writeFileSync(dest, out);
+      process.stderr.write('Wrote synthetic Moodle fixture (' + variant + ') → ' + dest + '\n');
+    } else {
+      process.stdout.write(out);
+    }
   }
 }

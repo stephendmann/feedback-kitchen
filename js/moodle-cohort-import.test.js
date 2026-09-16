@@ -15,11 +15,15 @@ const imp = (name, id, participant, keyType) => ({
   name, identifier: id, participant, keyType, disposition: 'import'
 });
 
-describe('storeKey / recordHasMarks', () => {
-  test('storeKey mirrors studentMatchKey (sid lower-cased, name fallback)', () => {
+describe('storeKey / worksheetKey / recordHasMarks', () => {
+  test('storeKey mirrors studentMatchKey for EXISTING cohort students', () => {
     expect(FK.storeKey('9900001', 'X')).toBe('sid:9900001');
     expect(FK.storeKey('', 'Kiri Modell')).toBe('name:kiri modell');
     expect(FK.storeKey('', '')).toBeNull();
+  });
+  test('worksheetKey has no name fallback — that is the whole point', () => {
+    expect(FK.worksheetKey('9900001')).toBe('sid:9900001');
+    expect(FK.worksheetKey('')).toBeNull();
   });
   test('recordHasMarks detects graded rows or grades[]', () => {
     expect(FK.recordHasMarks({ scoreResult: { rows: [{ grade: 'A' }] } })).toBe(true);
@@ -33,7 +37,7 @@ describe('buildCohortImport — overwrite guard (skip-if-marked)', () => {
   const entries = [
     imp('Aroha Example', '9900001', 'Participant 8880001', 'sid'),
     imp('Ben Fixture',   '9900002', 'Participant 8880002', 'sid'),
-    imp('Kiri Modell',   '',        'Participant 8880011', 'name'), // verify→import, name-keyed
+    imp('Kiri Modell',   '',        'Participant 8880011', null),  // blank ID — must never commit
     { name: 'Jack', identifier: '9900010', participant: 'P', keyType: 'sid', disposition: 'non-markable' },
     { name: '', identifier: '', participant: 'P', keyType: null, disposition: 'skip' },
   ];
@@ -54,17 +58,25 @@ describe('buildCohortImport — overwrite guard (skip-if-marked)', () => {
     expect(res.summary.skippedRow).toBe(2);
     expect(res.toAdd.find(r => r.name === 'Jack')).toBeUndefined();
   });
-  test('summary tallies add / skippedExisting / skippedRow', () => {
-    expect(res.summary).toEqual({ add: 2, skippedExisting: 1, skippedRow: 2 });
+  test('an import entry with no ID number is refused, not name-matched', () => {
+    expect(res.toAdd.find(r => r.name === 'Kiri Modell')).toBeUndefined();
+    expect(res.summary.skippedUnkeyed).toBe(1);
+  });
+  test('summary tallies add / skippedExisting / skippedRow / skippedUnkeyed', () => {
+    expect(res.summary).toEqual({ add: 1, skippedExisting: 1, skippedRow: 2, skippedUnkeyed: 1 });
+  });
+  test('every committed record carries a studentId', () => {
+    res.toAdd.forEach(r => expect(r.studentId).toMatch(/\S/));
   });
 });
 
 describe('buildCohortImport — identity-only placeholder shape', () => {
-  const res = FK.buildCohortImport([imp('Kiri Modell', '', 'Participant 8880011', 'name')], []);
+  const res = FK.buildCohortImport([imp('Kiri Modell', '9900011', 'Participant 8880011', 'sid')], []);
   const rec = res.toAdd[0];
-  test('name-keyed import seeds name + retained Moodle participant, blank studentId', () => {
+  test('import seeds name + studentId + retained Moodle participant', () => {
     expect(rec).toMatchObject({
-      name: 'Kiri Modell', studentId: '', moodleIdentifier: 'Participant 8880011', source: 'moodle-worksheet'
+      name: 'Kiri Modell', studentId: '9900011',
+      moodleIdentifier: 'Participant 8880011', source: 'moodle-worksheet'
     });
   });
   test('the placeholder carries NO marking (no scoreResult / markerNotes)', () => {
@@ -76,7 +88,7 @@ describe('buildCohortImport — identity-only placeholder shape', () => {
 describe('sidCollision — verify re-assignment guard', () => {
   const entries = [
     { row: 2, name: 'A', identifier: '9900001', keyType: 'sid' },
-    { row: 4, name: 'Kiri', identifier: '', keyType: 'name' }, // the verify row being resolved
+    { row: 4, name: 'Kiri', identifier: '', keyType: null },   // the verify row being resolved
   ];
   const existing = [{ name: 'Z', studentId: '9900009', key: 'sid:9900009' }];
 
@@ -98,10 +110,19 @@ describe('sidCollision — verify re-assignment guard', () => {
 });
 
 describe('buildCohortImport — dedup is case-insensitive (matches store keying)', () => {
-  test('a name-only import matches an existing record keyed lower-case', () => {
-    const existing = [{ name: 'Kiri Modell', key: 'name:kiri modell', scoreResult: { rows: [{ grade: 'B' }] } }];
-    const res = FK.buildCohortImport([imp('Kiri Modell', '', 'P', 'name')], existing);
-    expect(res.toAdd).toHaveLength(0);                 // matched the marked record → skipped
+  test('an import matches an existing record whose sid key differs only in case', () => {
+    const existing = [{ name: 'Kiri Modell', studentId: 'AB1234', key: 'sid:ab1234',
+                        scoreResult: { rows: [{ grade: 'B' }] } }];
+    const res = FK.buildCohortImport([imp('Kiri Modell', 'AB1234', 'P', 'sid')], existing);
+    expect(res.toAdd).toHaveLength(0);                 // matched the marked record -> skipped
     expect(res.skippedExisting).toHaveLength(1);
+  });
+
+  test('a name-keyed existing student does NOT absorb a sid-keyed import', () => {
+    const existing = [{ name: 'Kiri Modell', key: 'name:kiri modell',
+                        scoreResult: { rows: [{ grade: 'B' }] } }];
+    const res = FK.buildCohortImport([imp('Kiri Modell', '9900011', 'P', 'sid')], existing);
+    expect(res.toAdd).toHaveLength(1);                 // no name fallback, so no false match
+    expect(res.skippedExisting).toHaveLength(0);
   });
 });
