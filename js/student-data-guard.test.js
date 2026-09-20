@@ -125,3 +125,76 @@ describe('scope', () => {
     expect(guard.scanText(self, fs.readFileSync(self, 'utf8'))).toEqual([]);
   });
 });
+
+describe('staged mode scans the index blob, not the working copy', () => {
+  // The defect this pins: the file LIST came from the index while the CONTENT
+  // came from disk, so the hook judged something other than what was being
+  // committed. Merely annoying in one direction (it blocked a commit whose
+  // staged content was clean) and a leak in the other (it passed a commit
+  // whose staged content held a real identifier, because the working file had
+  // been fixed without re-staging).
+  //
+  // The blob reader is injected, so both sides can be set independently and no
+  // test here has to stage anything. The on-disk file is real and deliberately
+  // holds the OPPOSITE of the staged content: if the guard ever reads from
+  // disk again in this mode, the first two tests invert and fail.
+  const fs = require('fs'), os = require('os'), path = require('path');
+
+  const dirty = '// ID number ' + SID + ' pasted while debugging';
+  const clean = '// ID number 9900001 pasted while debugging';
+
+  let dir;
+  beforeAll(() => { dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fk-guard-')); });
+  afterAll(() => { fs.rmSync(dir, { recursive: true, force: true }); });
+
+  const onDisk = (name, text) => {
+    const p = path.join(dir, name);
+    fs.writeFileSync(p, text, 'utf8');
+    return p;
+  };
+
+  test('staged content is flagged even when the working copy is clean', () => {
+    const file = onDisk('probe-dirty-staged.txt', clean);
+    const findings = [];
+    guard.checkStagedFile(file, findings, () => dirty);
+    expect(findings.map(f => f.rule)).toEqual([
+      'non-synthetic student id beside worksheet text'
+    ]);
+    expect(findings[0].detail).toBe(SID);
+  });
+
+  test('clean staged content passes even when the working copy is dirty', () => {
+    const file = onDisk('probe-dirty-worktree.txt', dirty);
+    const findings = [];
+    guard.checkStagedFile(file, findings, () => clean);
+    expect(findings).toEqual([]);
+  });
+
+  test('a staged path whose blob will not read fails closed', () => {
+    // Staged but deleted from the working tree, a corrupt index, a permission
+    // error: none of these is a file the guard can clear, so none of them may
+    // pass silently.
+    const findings = [];
+    guard.checkStagedFile('js/gone.js', findings, () => {
+      throw new Error('fatal: path does not exist in the index');
+    });
+    expect(findings).toHaveLength(1);
+    expect(findings[0].rule).toBe('staged content could not be read');
+    expect(findings[0].fix.length).toBeGreaterThan(20);
+  });
+
+  test('an export filename is refused on the path alone, without reading the blob', () => {
+    const findings = [];
+    guard.checkStagedFile('Grades-STMGT101-Essay-' + [22, 92229].join('') + '.csv', findings, () => {
+      throw new Error('the blob must not be read');
+    });
+    expect(findings.map(f => f.rule)).toEqual(['real Moodle export committed']);
+  });
+
+  test('a binary blob is skipped rather than scanned as text', () => {
+    const findings = [];
+    guard.checkStagedFile('assets/blob.bin', findings,
+      () => 'PK' + String.fromCharCode(0) + dirty);
+    expect(findings).toEqual([]);
+  });
+});

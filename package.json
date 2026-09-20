@@ -10,7 +10,7 @@
     "test": "jest",
     "guard:lazy-load": "node scripts/check-lazy-load.js",
     "guard:student-data": "node scripts/check-no-real-student-data.js",
-    "prepare": "git config core.hooksPath .githooks || exit 0"
+    "prepare": "node scripts/install-hooks.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
