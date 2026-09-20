@@ -8,7 +8,9 @@
     "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./css/tailwind.src.css -o ./css/tailwind.out.css --watch=always",
     "build": "npm run build:css",
     "test": "jest",
-    "guard:lazy-load": "node scripts/check-lazy-load.js"
+    "guard:lazy-load": "node scripts/check-lazy-load.js",
+    "guard:student-data": "node scripts/check-no-real-student-data.js",
+    "prepare": "git config core.hooksPath .githooks || exit 0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
