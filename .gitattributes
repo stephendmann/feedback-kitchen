@@ -1,1 +1,5 @@
-test/fixtures/moodle-worksheet.fake.csv -text
+# Moodle worksheet fixtures are byte fixtures: their record terminators (CRLF
+# or lone LF) and the LF newlines inside quoted feedback cells are the thing
+# under test. Never let autocrlf rewrite them, or a fresh clone on Windows
+# checks out a file the generator no longer reproduces.
+test/fixtures/*.csv -text

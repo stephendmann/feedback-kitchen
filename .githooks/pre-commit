@@ -1,0 +1,12 @@
+#!/bin/sh
+# Blocks a commit that stages a real student identifier.
+#
+# Wired by `git config core.hooksPath .githooks`, which package.json's
+# `prepare` script runs for you on `npm install`. .git/hooks is not cloned,
+# so a committed hooks directory is the only way to share this.
+#
+# Local hooks are bypassable with --no-verify, which is deliberate: this is a
+# fast safety net, not an access control. The same guard runs in CI as the
+# backstop for a bypass. Do not use --no-verify to get past a real finding on
+# a PUBLIC repo; fix the line instead.
+exec node scripts/check-no-real-student-data.js --staged
