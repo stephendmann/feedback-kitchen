@@ -311,11 +311,11 @@
       b.push('Marking spread looks balanced in this cohort — both across the scale and across criteria within each script.');
     }
     if (m.notes_completion_rate === 1) {
-      b.push("Marker's Notes completed on every script — strong audit trail if any grade is queried.");
+      b.push("Marker's notes completed on every script — strong audit trail if any grade is queried.");
     } else if (m.notes_completion_rate === 0) {
-      b.push("Marker's Notes were not used; even short notes per script make later moderation conversations easier.");
+      b.push("Marker's notes were not used; even short notes per script make later moderation conversations easier.");
     } else {
-      b.push("Marker's Notes recorded on " + pct(m.notes_completion_rate) + ' of scripts.');
+      b.push("Marker's notes recorded on " + pct(m.notes_completion_rate) + ' of scripts.');
     }
 
     var isVerySmall = m.n < 12;
@@ -356,9 +356,9 @@
     }
 
     if (m.notes_completion_rate === 0) {
-      p.push("Marker's Notes weren't used on any script — even a brief note per student makes later moderation conversations easier and provides an audit trail if any grade is queried.");
+      p.push("Marker's notes weren't used on any script — even a brief note per student makes later moderation conversations easier and provides an audit trail if any grade is queried.");
     } else if (m.notes_completion_rate < 0.5) {
-      p.push("Marker's Notes were recorded on " + pct(m.notes_completion_rate) + ' of scripts — aiming for notes on every script gives you a stronger audit trail.');
+      p.push("Marker's notes were recorded on " + pct(m.notes_completion_rate) + ' of scripts — aiming for notes on every script gives you a stronger audit trail.');
     }
 
     if (m.fail_rate_pre_penalty > TH.fail_rate_soft_flag) {
