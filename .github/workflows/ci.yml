@@ -33,5 +33,12 @@ jobs:
       - name: Lazy-load guard
         run: npm run guard:lazy-load
 
+      # Backstop for the pre-commit hook, which is local and bypassable with
+      # --no-verify. CI cannot prevent a leak on its own (by the time it runs,
+      # the push has already published to a public repo), so this catches a
+      # bypass and a clone that never ran `npm install` to wire the hook.
+      - name: Student-data guard
+        run: npm run guard:student-data
+
       - name: Test
         run: npm test
