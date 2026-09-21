@@ -26,7 +26,7 @@ Now the limit, because it is the part that changes what you should type.
 
 The scrubber removes the identifiers **of the student currently on screen**, because those are the only values it has. It has no pattern for student IDs in general and no list of people at your institution. Another student's name in your notes, a tutor's name, a reference to a complainant or a classmate, will not be recognised, and will be sent.
 
-So the rule is about your own habits rather than the software: keep other people's identifiers out of **Marker's Notes** when you use the assistant. Write "the co-author" rather than the co-author's name. What reaches the proxy is then the criteria, the rubric descriptors, the grades and the prose.
+So the rule is about your own habits rather than the software: keep other people's identifiers out of **Marker's notes** when you use the assistant. Write "the co-author" rather than the co-author's name. What reaches the proxy is then the criteria, the rubric descriptors, the grades and the prose.
 
 The proxy itself restricts which origins may call it, through `FK_ALLOWED_ORIGINS`, and rate limits each IP address to 20 requests a minute.
 

@@ -12,7 +12,9 @@ Students are added to the cohort ledger automatically whenever you:
 
 A record needs at least a student name or student ID, and the save has to complete. If the write is refused, most often because browser storage is full, an amber notice tells you.
 
-There is one case where a save can go missing quietly, and it matters because the screen currently says the opposite. **Copy feedback** and **Save & next student** save in the background. If you dismissed the cohort setup dialog earlier in the session and no cohort was ever created, those two skip the save rather than reopening the dialog. **Copy feedback** still reports "added to cohort" in green when that happens, which is wrong, and it is the one message in the application not to take at face value. If you dismissed that dialog, open **View list** and confirm the student is there before moving on.
+One case is worth knowing about. **Copy feedback** saves in the background, so if you dismissed the cohort setup dialog earlier in the session and no cohort was ever created, it skips the save rather than reopening the dialog. It says so in amber when that happens, and the green confirmation appears only when a student has actually been stored, so the message can be taken at face value either way.
+
+**Save & next student** only appears once a cohort is open, so the question does not arise there.
 
 **✓ Finalise & Export** does not have this problem. It reopens the setup dialog rather than skipping, so either the cohort gets set up or you see the prompt.
 
