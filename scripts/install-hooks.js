@@ -21,9 +21,9 @@
    the new one, so a bad value propagates to every worktree cut from it.
 
    Note what is NOT the problem: a relative `.githooks` resolves correctly in
-   a linked worktree. git returns it unresolved from `rev-parse --git-path
-   hooks` and resolves it against the working tree the hook runs in, so each
-   worktree finds its own copy. The relative value is therefore kept for the
+   a linked worktree. git runs hooks from the top of the working tree they
+   belong to and resolves a relative hooksPath from there, so each worktree
+   finds its own copy. The relative value is therefore kept for the
    main checkout, and only a linked worktree gets an absolute override, to
    defeat any stale one it inherited.
 
@@ -112,8 +112,9 @@ function installHooks(git, io) {
         return fail(error, 'could not enable extensions.worktreeConfig: ' + turnOn.why);
       }
     }
-    // Computed from the worktree root, not process.cwd(): npm install can run
-    // from a subdirectory.
+    // Computed from the worktree root, not process.cwd(). `npm install` runs
+    // lifecycle scripts from the package root, so via npm the two agree; this
+    // matters when the script is invoked directly from a subdirectory.
     const absolute = path.posix.join(topLevel.out.split(path.sep).join('/'), HOOKS_DIR_NAME);
     const set = git(['config', '--worktree', 'core.hooksPath', absolute]);
     if (!set.ok) {
@@ -127,13 +128,21 @@ function installHooks(git, io) {
   }
 
   // Verify against what git will actually use, rather than trusting the write.
-  const resolved = git(['rev-parse', '--git-path', 'hooks']);
+  // Absolute, because a relative hooksPath comes back relative to the current
+  // directory (`../.githooks` from js/), and joining that onto the top level
+  // checked a directory outside the repository when the script was run
+  // directly from a subdirectory. --path-format needs git 2.31 or later.
+  const resolved = git(['rev-parse', '--path-format=absolute', '--git-path', 'hooks']);
   if (!resolved.ok) {
     return fail(error, 'git rev-parse --git-path hooks failed: ' + resolved.why);
   }
-  const hooksDir = path.isAbsolute(resolved.out)
-    ? resolved.out
-    : path.join(topLevel.out, resolved.out);
+  const hooksDir = resolved.out;
+  if (!path.isAbsolute(hooksDir) || hooksDir.indexOf(String.fromCharCode(10)) !== -1) {
+    // Anything other than one absolute path means this git did not honour
+    // --path-format (older than 2.31). Refuse to guess from that output.
+    return fail(error, 'git did not return an absolute hooks path (got "' + hooksDir +
+      '"). This needs git 2.31 or later.');
+  }
   if (!exists(path.join(hooksDir, HOOK_NAME))) {
     return fail(error, 'git resolves hooks to ' + hooksDir + ', which has no ' + HOOK_NAME +
       '. If your working tree is on a commit from before ' + HOOKS_DIR_NAME +
