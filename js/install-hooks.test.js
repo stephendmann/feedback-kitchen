@@ -15,10 +15,23 @@
  * checkout's config from inside a worktree would be its own quiet failure.
  */
 
-const { installHooks, samePath } = require('../scripts/install-hooks.js');
+const { installHooks, samePath, isNotARepository } = require('../scripts/install-hooks.js');
 
 const ok  = (out) => ({ ok: true,  status: 0, out: out === undefined ? '' : out, why: '' });
-const bad = (why) => ({ ok: false, status: 1, out: '', why: why || 'git exited 1' });
+const bad = (why, err) => ({
+  ok: false, status: 1, out: '', err: err || '', why: why || 'git exited 1'
+});
+
+/* The installer tells the one tolerated failure apart from the rest by what
+   git printed to stderr, so these carry a plausible message for each shape:
+   no repository, a repository git refuses to read, and no usable git at all
+   (which arrives as a spawn error, with no stderr). */
+const noRepo = () =>
+  bad('not a git repository',
+      'fatal: not a git repository (or any of the parent directories): .git');
+const otherGitFailure = (msg) => bad(msg, msg);
+const gitMissing = () =>
+  ({ ok: false, status: null, out: '', err: '', why: 'spawn git ENOENT' });
 
 /* Dispatches on an args prefix and records every call. Anything unmatched
    succeeds with empty output, so a test states only what it cares about. */
@@ -137,14 +150,45 @@ describe('linked worktree', () => {
   });
 });
 
-describe('no git repository', () => {
-  test('exits 0, says so, and attempts nothing further', () => {
-    const git = fakeGit([['rev-parse --git-dir', bad('not a git repository')]]);
+describe('the probe for a repository', () => {
+  test('no repository: exits 0, says so, and attempts nothing further', () => {
+    const git = fakeGit([['rev-parse --git-dir', noRepo()]]);
     const io = fakeIo();
     expect(installHooks(git, io)).toBe(0);
     expect(git.calls).toEqual(['rev-parse --git-dir']);
     expect(io.err).toEqual([]);
     expect(io.out.join(' ')).toMatch(/not a git repository/);
+  });
+
+  test('git missing or unrunnable is a loud failure, not a skip', () => {
+    // The distinction this pins. Both arrive as a failed rev-parse, but only
+    // one of them means there is no hook to install. An unrunnable git left
+    // the guard uninstalled on a machine that does have a repository.
+    const git = fakeGit([['rev-parse --git-dir', gitMissing()]]);
+    const io = fakeIo();
+    expect(installHooks(git, io)).toBe(1);
+    expect(io.out).toEqual([]);
+    expect(io.err.join(' ')).toMatch(/ENOENT/);
+    expect(io.err.join(' ')).toMatch(/NOT installed/);
+  });
+
+  test('a repository git will not read is a loud failure, not a skip', () => {
+    const git = fakeGit([
+      ['rev-parse --git-dir', otherGitFailure('fatal: detected dubious ownership in repository')]
+    ]);
+    const io = fakeIo();
+    expect(installHooks(git, io)).toBe(1);
+    expect(io.out).toEqual([]);
+    expect(io.err.join(' ')).toMatch(/dubious ownership/);
+    expect(io.err.join(' ')).toMatch(/NOT installed/);
+  });
+
+  test('the tolerated case is decided by what git says, not by exit status', () => {
+    expect(isNotARepository({ err: 'fatal: not a git repository (or any of the parent directories): .git' }))
+      .toBe(true);
+    expect(isNotARepository({ err: 'fatal: detected dubious ownership in repository' })).toBe(false);
+    expect(isNotARepository({ err: '' })).toBe(false);
+    expect(isNotARepository({})).toBe(false);
   });
 });
 

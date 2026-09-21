@@ -44,12 +44,23 @@ const HOOK_NAME = 'pre-commit';
    logic can be tested without a repository to stand in. */
 function realGit(args) {
   const r = spawnSync('git', args, { encoding: 'utf8' });
+  const err = (r.stderr || '').trim();
   return {
     ok: !r.error && r.status === 0,
     status: r.status,
     out: (r.stdout || '').trim(),
-    why: r.error ? r.error.message : 'git exited ' + r.status
+    err,
+    why: r.error
+      ? r.error.message
+      : 'git exited ' + r.status + (err ? ': ' + err.split(String.fromCharCode(10))[0] : '')
   };
+}
+
+/* The one tolerated failure, told apart from every other one by what git says.
+   A missing or unrunnable git binary reports through r.error with no stderr,
+   so it cannot be mistaken for this. */
+function isNotARepository(result) {
+  return /not a git repository/i.test(result.err || '');
 }
 
 const CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin';
@@ -68,11 +79,17 @@ function installHooks(git, io) {
 
   const gitDir = git(['rev-parse', '--git-dir']);
   if (!gitDir.ok) {
-    // The one tolerated case: no repository, so there is no hook to wire and
-    // nothing is wrong. Happens when this package is installed as a dependency
-    // or unpacked from a tarball rather than cloned.
-    log('install-hooks: not a git repository, skipping hook wiring.');
-    return 0;
+    if (isNotARepository(gitDir)) {
+      // The one tolerated case: no repository, so there is no hook to wire and
+      // nothing is wrong. Happens when this package is installed as a
+      // dependency or unpacked from a tarball rather than cloned.
+      log('install-hooks: not a git repository, skipping hook wiring.');
+      return 0;
+    }
+    // Anything else here is git missing, unrunnable, or a repository in a
+    // state git will not read. None of those means "no hook needed", and
+    // treating them as such is how the guard ends up quietly uninstalled.
+    return fail(error, 'git rev-parse --git-dir failed: ' + gitDir.why);
   }
 
   const commonDir = git(['rev-parse', '--git-common-dir']);
@@ -146,4 +163,4 @@ if (require.main === module) {
   }));
 }
 
-module.exports = { installHooks, samePath, realGit };
+module.exports = { installHooks, samePath, realGit, isNotARepository };
