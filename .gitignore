@@ -41,3 +41,10 @@ graphify-out/
 
 # Claude Code local settings (machine-specific paths, session IDs)
 .claude/settings.local.json
+
+# Real Moodle exports. These carry live student names, institutional IDs and
+# email addresses, and this repo is public. Moodle names them Grades-<course>-
+# <assignment>-<cmid>.csv; keep them outside the repo entirely. The
+# guard:student-data check is the backstop if one is force-added anyway.
+Grades-*.csv
+*grading-worksheet*.csv
