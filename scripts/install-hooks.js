@@ -28,8 +28,11 @@
    defeat any stale one it inherited.
 
    The install is verified rather than assumed: after configuring, this checks
-   that the hooks directory git will actually use contains pre-commit. An
-   unverified install is the thing this file exists to prevent.
+   that the hooks directory git will actually use contains pre-commit, and that
+   git can run it. Outside Windows git skips a hook without the executable bit,
+   with at most a hint, so a pre-commit present but tracked as 100644 is the
+   same silent no-op as a missing one. An unverified install is the thing this
+   file exists to prevent.
    ============================================================ */
 'use strict';
 
@@ -73,9 +76,22 @@ function samePath(a, b) {
   return norm(a) === norm(b);
 }
 
+/* Whether git will run the file as a hook. Git for Windows runs hooks through
+   its bundled sh and ignores mode bits, and NTFS has no executable bit to read
+   anyway, so there the answer is always yes. */
+function isExecutable(file) {
+  if (process.platform === 'win32') return true;
+  try {
+    fs.accessSync(file, fs.constants.X_OK);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 /* Returns the process exit code. `git` and `io` are injected. */
 function installHooks(git, io) {
-  const log = io.log, error = io.error, exists = io.exists;
+  const log = io.log, error = io.error, exists = io.exists, executable = io.executable;
 
   const gitDir = git(['rev-parse', '--git-dir']);
   if (!gitDir.ok) {
@@ -143,10 +159,17 @@ function installHooks(git, io) {
     return fail(error, 'git did not return an absolute hooks path (got "' + hooksDir +
       '"). This needs git 2.31 or later.');
   }
-  if (!exists(path.join(hooksDir, HOOK_NAME))) {
+  const hookFile = path.join(hooksDir, HOOK_NAME);
+  if (!exists(hookFile)) {
     return fail(error, 'git resolves hooks to ' + hooksDir + ', which has no ' + HOOK_NAME +
       '. If your working tree is on a commit from before ' + HOOKS_DIR_NAME +
       ' existed, check out a current one and run npm install again.');
+  }
+  if (!executable(hookFile)) {
+    return fail(error, hookFile + ' is not executable, so git will skip it without' +
+      ' running it. Run `chmod +x ' + HOOKS_DIR_NAME + '/' + HOOK_NAME + '` from the root of' +
+      ' this working tree. If it comes back after a checkout, check that core.fileMode is' +
+      ' true and that the file is tracked as 100755.');
   }
 
   log('install-hooks: ' + HOOK_NAME + ' wired from ' + hooksDir +
@@ -168,8 +191,9 @@ if (require.main === module) {
   process.exit(installHooks(realGit, {
     log: console.log,
     error: console.error,
-    exists: fs.existsSync
+    exists: fs.existsSync,
+    executable: isExecutable
   }));
 }
 
-module.exports = { installHooks, samePath, realGit, isNotARepository };
+module.exports = { installHooks, samePath, realGit, isNotARepository, isExecutable };

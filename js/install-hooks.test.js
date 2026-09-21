@@ -15,7 +15,7 @@
  * checkout's config from inside a worktree would be its own quiet failure.
  */
 
-const { installHooks, samePath, isNotARepository } = require('../scripts/install-hooks.js');
+const { installHooks, samePath, isNotARepository, isExecutable } = require('../scripts/install-hooks.js');
 
 const ok  = (out) => ({ ok: true,  status: 0, out: out === undefined ? '' : out, why: '' });
 const bad = (why, err) => ({
@@ -52,12 +52,13 @@ function fakeGit(routes) {
   return git;
 }
 
-function fakeIo(exists) {
+function fakeIo(exists, executable) {
   const out = [], err = [];
   return {
     log: (m) => out.push(m),
     error: (m) => err.push(m),
     exists: exists === undefined ? () => true : exists,
+    executable: executable === undefined ? () => true : executable,
     out, err
   };
 }
@@ -251,6 +252,28 @@ describe('loud failure', () => {
     saysGuardIsNotInstalled(io);
   });
 
+  test('a hook git would skip for want of the executable bit is caught', () => {
+    // The same silent no-op by another route: pre-commit is there, but outside
+    // Windows git will not run a file without +x, and says at most a hint.
+    const checked = [];
+    const io = fakeIo(() => true, (p) => { checked.push(p); return false; });
+    expect(installHooks(fakeGit(worktreeRoutes()), io)).toBe(1);
+    expect(checked).toHaveLength(1);
+    expect(checked[0].split(String.fromCharCode(92)).join('/')).toBe(WT_TOP + '/.githooks/pre-commit');
+    expect(io.err.join(' ')).toMatch(/not executable/);
+    expect(io.err.join(' ')).toMatch(/chmod \+x \.githooks\/pre-commit/);
+    expect(io.out).toEqual([]);
+    saysGuardIsNotInstalled(io);
+  });
+
+  test('a missing hook is reported as missing, before executability is asked', () => {
+    const checked = [];
+    const io = fakeIo(() => false, (p) => { checked.push(p); return false; });
+    expect(installHooks(fakeGit(worktreeRoutes()), io)).toBe(1);
+    expect(checked).toEqual([]);
+    expect(io.err.join(' ')).toMatch(/no pre-commit/);
+  });
+
   test('a failing rev-parse is reported rather than assumed', () => {
     const io = fakeIo();
     const git = fakeGit([
@@ -292,7 +315,10 @@ describe('direct invocation from a subdirectory (real git)', () => {
     const init = spawnSync('git', ['init', '-q', repo], { encoding: 'utf8' });
     if (init.status !== 0) throw new Error('git init failed: ' + init.stderr);
     fs.mkdirSync(path.join(repo, '.githooks'));
-    fs.writeFileSync(path.join(repo, '.githooks', 'pre-commit'), '#!/bin/sh' + String.fromCharCode(10));
+    // Executable, as the tracked hook is: the installer now refuses one that
+    // is not, which on Linux CI would fail these for the wrong reason.
+    fs.writeFileSync(path.join(repo, '.githooks', 'pre-commit'), '#!/bin/sh' + String.fromCharCode(10),
+      { mode: 0o755 });
     fs.mkdirSync(path.join(repo, 'js'));
   });
   afterAll(() => { fs.rmSync(repo, { recursive: true, force: true }); });
@@ -314,5 +340,42 @@ describe('direct invocation from a subdirectory (real git)', () => {
     const get = spawnSync('git', ['-C', repo, 'config', '--local', '--get', 'core.hooksPath'],
       { encoding: 'utf8' });
     expect(get.stdout.trim()).toBe('.githooks');
+  });
+});
+
+describe('executability', () => {
+  const fs = require('fs'), os = require('os'), path = require('path');
+  const { spawnSync } = require('child_process');
+  const posixOnly = process.platform === 'win32' ? test.skip : test;
+  const windowsOnly = process.platform === 'win32' ? test : test.skip;
+
+  let dir;
+  beforeAll(() => { dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fk-exec-')); });
+  afterAll(() => { fs.rmSync(dir, { recursive: true, force: true }); });
+
+  const writeHook = (name, mode) => {
+    const p = path.join(dir, name);
+    fs.writeFileSync(p, '#!/bin/sh' + String.fromCharCode(10));
+    fs.chmodSync(p, mode);
+    return p;
+  };
+
+  posixOnly('a 0644 file is not executable, a 0755 one is', () => {
+    expect(isExecutable(writeHook('plain', 0o644))).toBe(false);
+    expect(isExecutable(writeHook('runnable', 0o755))).toBe(true);
+  });
+
+  windowsOnly('on Windows every file counts, because git ignores mode bits there', () => {
+    expect(isExecutable(writeHook('plain', 0o644))).toBe(true);
+  });
+
+  test('the tracked hook is committed as 100755', () => {
+    // The root cause. A clone checks the hook out with the mode git stored,
+    // so a 100644 entry reaches every Linux and macOS clone non-executable,
+    // whatever the installer does. Windows never shows the difference.
+    const r = spawnSync('git', ['ls-files', '--stage', '--', '.githooks/pre-commit'],
+      { cwd: path.join(__dirname, '..'), encoding: 'utf8' });
+    expect(r.status).toBe(0);
+    expect(r.stdout.split(' ')[0]).toBe('100755');
   });
 });
