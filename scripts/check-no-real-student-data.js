@@ -117,23 +117,63 @@ function scanText(file, text) {
   return findings;
 }
 
+function exportFinding(file, findings) {
+  if (!EXPORT_FILENAME.test(file)) return false;
+  findings.push({
+    file, line: 0, rule: 'real Moodle export committed',
+    detail: path.basename(file),
+    fix: 'Real exports must never be tracked. Move it outside the repo, then `git rm --cached` it.'
+  });
+  return true;                                // do not read a real export's contents
+}
+
+/* Full-repo mode (CI) scans committed state, so reading from disk is right. */
 function checkFile(file, findings) {
-  if (EXPORT_FILENAME.test(file)) {
-    findings.push({
-      file, line: 0, rule: 'real Moodle export committed',
-      detail: path.basename(file),
-      fix: 'Real exports must never be tracked. Move it outside the repo, then `git rm --cached` it.'
-    });
-    return;                                   // do not read a real export's contents
-  }
+  if (exportFinding(file, findings)) return;
 
   let text;
   try { text = fs.readFileSync(file, 'utf8'); } catch (e) { return; }
-  // String.fromCharCode, not a '\u0000' literal: an escape written here gets
-  // stored as a real NUL byte, which makes git treat this very file as binary
-  // and makes the guard skip itself.
-  if (text.indexOf(String.fromCharCode(0)) !== -1) return;  // binary
+  if (isBinary(text)) return;
   scanInto(file, text, findings);
+}
+
+/* Staged mode (pre-commit) must scan the INDEX blob, not the working copy.
+   The file list comes from `git diff --cached`, so judging what is on disk is
+   wrong in both directions: it blocks a commit whose staged content is clean,
+   and, the one that matters, it passes a commit whose staged content holds a
+   real identifier because the working file was fixed without re-staging. */
+function readIndexBlob(file) {
+  return execFileSync('git', ['show', ':' + file], {
+    encoding: 'utf8', maxBuffer: 256 * 1024 * 1024
+  });
+}
+
+function checkStagedFile(file, findings, readBlob) {
+  if (exportFinding(file, findings)) return;
+
+  let text;
+  try {
+    text = (readBlob || readIndexBlob)(file);
+  } catch (e) {
+    // Fail closed. A staged path whose blob will not read is not a file the
+    // guard can clear, and skipping it silently is how the thing this guard
+    // exists for gets through.
+    findings.push({
+      file, line: 0, rule: 'staged content could not be read',
+      detail: String(e && e.message ? e.message : e).split(String.fromCharCode(10))[0].trim(),
+      fix: 'The guard could not read this path from the index, so it cannot clear it. Re-stage the file (`git add <path>`) and commit again.'
+    });
+    return;
+  }
+  if (isBinary(text)) return;
+  scanInto(file, text, findings);
+}
+
+// String.fromCharCode, and deliberately no NUL escape literal anywhere in this
+// file: such an escape gets stored as a real NUL byte, which makes git treat
+// this very file as binary and makes the guard skip itself.
+function isBinary(text) {
+  return text.indexOf(String.fromCharCode(0)) !== -1;
 }
 
 function scanInto(file, text, findings) {
@@ -178,7 +218,7 @@ function main() {
   const staged = process.argv.includes('--staged');
   const files = tracked(staged).filter(scannable);
   const findings = [];
-  files.forEach(f => checkFile(f, findings));
+  files.forEach(f => (staged ? checkStagedFile : checkFile)(f, findings));
 
   if (!findings.length) {
     const scope = staged ? 'staged' : 'tracked';
@@ -202,4 +242,6 @@ function main() {
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { checkFile, scanText, scannable, isObviousPlaceholder, EXPORT_FILENAME };
+module.exports = {
+  checkFile, checkStagedFile, scanText, scannable, isObviousPlaceholder, EXPORT_FILENAME
+};
