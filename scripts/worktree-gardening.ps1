@@ -7,7 +7,8 @@
     to remove. A worktree is safe only if ALL of the following hold:
 
       1. Its path/branch does NOT match a protected pattern (see -Protected).
-      2. Its branch is fully merged into main.
+      2. Its branch is fully merged into main (for a detached HEAD, the
+         checked-out commit is an ancestor of main).
       3. Its working tree is clean (no uncommitted OR untracked changes).
       4. Its last commit is older than 14 days.
 
@@ -60,6 +61,7 @@ $worktrees = @()
 $current = @{}
 git -C $repo worktree list --porcelain | ForEach-Object {
     if ($_ -match '^worktree (.+)$') { $current = @{ Path = $Matches[1] } }
+    elseif ($_ -match '^HEAD ([0-9a-f]+)$') { $current.Head = $Matches[1] }
     elseif ($_ -match '^branch refs/heads/(.+)$') { $current.Branch = $Matches[1] }
     elseif ($_ -eq '') { if ($current.Path) { $worktrees += $current }; $current = @{} }
 }
@@ -72,19 +74,27 @@ foreach ($wt in $worktrees) {
     $why = @()
     $isProtected = $Protected | Where-Object { $wt.Path -like "*$_*" -or $wt.Branch -like "*$_*" }
     if ($isProtected) { $why += "protected ($($isProtected -join ', '))" }
-    if ($merged -notcontains $wt.Branch) { $why += 'branch not merged into main' }
+    if ($wt.Branch) {
+        if ($merged -notcontains $wt.Branch) { $why += 'branch not merged into main' }
+    } else {
+        # Detached HEAD: no branch to check, so test the commit itself.
+        git -C $repo merge-base --is-ancestor $wt.Head main
+        if ($LASTEXITCODE -ne 0) { $why += 'detached HEAD not merged into main' }
+    }
     if (git -C $wt.Path status --porcelain) { $why += 'working tree dirty' }
     $lastCommit = [DateTimeOffset]::FromUnixTimeSeconds([long](git -C $wt.Path log -1 --format=%ct))
     if ($lastCommit -gt [DateTimeOffset]::Now.AddDays(-14)) { $why += "last commit $($lastCommit.ToString('yyyy-MM-dd')) (<14 days)" }
 
+    $label = if ($wt.Branch) { $wt.Branch } else { 'detached' }
     if ($why) {
-        Write-Host "KEEP   $($wt.Path) [$($wt.Branch)] — $($why -join '; ')"
+        Write-Host "KEEP   $($wt.Path) [$label] — $($why -join '; ')"
     } elseif ($Apply) {
-        git -C $repo worktree remove $wt.Path && git -C $repo branch -d $wt.Branch
-        Write-Host "REMOVED $($wt.Path) [$($wt.Branch)]"
+        git -C $repo worktree remove $wt.Path
+        if ($LASTEXITCODE -eq 0 -and $wt.Branch) { git -C $repo branch -d $wt.Branch }
+        Write-Host "REMOVED $($wt.Path) [$label]"
         $removed++
     } else {
-        Write-Host "WOULD REMOVE $($wt.Path) [$($wt.Branch)] — rerun with -Apply"
+        Write-Host "WOULD REMOVE $($wt.Path) [$label] — rerun with -Apply"
     }
 }
 
