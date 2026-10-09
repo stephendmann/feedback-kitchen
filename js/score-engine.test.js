@@ -92,6 +92,22 @@ describe('computeScores — late penalties', () => {
     const r = SA.computeScores(cfg('none'), [G('A'), G('A')], 4);
     expect(r.isFail).toBe(true);
     expect(r.penalisedScore).toBe(0);
+    expect(r.suggestedGrade).toBe('E');
+  });
+});
+
+describe('computeScores — E band', () => {
+  test('12% total → E, tier unsatisfactory', () => {
+    const c = cfg('none');
+    c.criteria[1].weight = 50;
+    const r = SA.computeScores(c, [G('E'), G('E', 4)], 0);
+    expect(r.weightedTotal).toBe(12);
+    expect(r.suggestedGrade).toBe('E');
+    expect(r.rows[0].tier).toBe('unsatisfactory');
+  });
+  test('40% total still → D', () => {
+    const r = SA.computeScores(cfg('none'), [G('D', 40), G('D', 40)], 0);
+    expect(r.weightedTotal).toBe(40);
     expect(r.suggestedGrade).toBe('D');
   });
 });
