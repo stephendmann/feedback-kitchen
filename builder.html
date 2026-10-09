@@ -266,9 +266,9 @@
           <div class="grid sm:grid-cols-5 gap-3" id="preset-cards">
             <button onclick="B.loadPreset('nz')" id="preset-nz"
               class="preset-card text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all"
-              title="Standard NZ university scale (Waikato and most NZ institutions). A+ (90–100) down to D (40–49). 10 grade bands with +/− modifiers.">
+              title="Standard NZ university scale (Waikato and most NZ institutions). A+ (90–100) down to E (0–39). 11 grade bands with +/− modifiers.">
               <div class="font-bold text-slate-800 text-sm mb-1">🇳🇿 NZ University</div>
-              <div class="text-xs text-slate-500">A+→D  ·  10 grades  ·  Waikato / standard NZ</div>
+              <div class="text-xs text-slate-500">A+→E  ·  11 grades  ·  Waikato / standard NZ</div>
             </button>
             <button onclick="B.loadPreset('au')" id="preset-au"
               class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all"
@@ -714,7 +714,8 @@
         { grade: 'C+', midpoint: 62, bandLow: 60, bandHigh: 64,  tier: 'developing' },
         { grade: 'C',  midpoint: 57, bandLow: 55, bandHigh: 59,  tier: 'developing' },
         { grade: 'C-', midpoint: 52, bandLow: 50, bandHigh: 54,  tier: 'developing' },
-        { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' }
+        { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' },
+        { grade: 'E',  midpoint: 20, bandLow: 0,  bandHigh: 39,  tier: 'unsatisfactory' }
       ],
       au: [
         { grade: 'HD', midpoint: 92, bandLow: 85, bandHigh: 100, tier: 'excellent' },
