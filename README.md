@@ -99,13 +99,13 @@ To edit an existing Scorer, find it in Your Kitchens on the home page and click 
 
 | Preset | Grades | Typical use |
 |---|---|---|
-| 🇳🇿 NZ University | A+, A, A–, B+, B, B–, C+, C, C–, D | University of Waikato / standard NZ |
+| 🇳🇿 NZ University | A+, A, A–, B+, B, B–, C+, C, C–, D, E | University of Waikato / standard NZ |
 | 🎓 Australian Honours | HD, D, C, P, F | High Distinction scale |
 | 🇬🇧 UK Degree | 1st, 2:1, 2:2, 3rd, F | Degree classification |
 | 🇺🇸 US Simple | A, B, C, D, F | Standard A–F |
 | ✏️ Custom | Your own | Define labels, score bands, tiers, and midpoints from scratch |
 
-The default NZ scale maps grades to score midpoints (A+ = 95, A = 87, A– = 82, B+ = 77 … D = 44) and to four rubric tiers: A+/A/A– → Excellent, B+/B/B– → Proficient, C+/C/C– → Developing, D → Unsatisfactory.
+The default NZ scale maps grades to score midpoints (A+ = 95, A = 87, A– = 82, B+ = 77 … D = 44, E = 20) and to four rubric tiers: A+/A/A– → Excellent, B+/B/B– → Proficient, C+/C/C– → Developing, D/E → Unsatisfactory. E covers 0–39.
 
 ### Rubric Design
 
