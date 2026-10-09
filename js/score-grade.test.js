@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  *
  * FK-01 — Characterization tests for scoreToGrade / scoreToGradeFromScale
- * (js/shared.js:158 and :167).
+ * (js/shared.js).
  *
  * These tests lock in CURRENT behaviour, including oddities. They assert what
  * the code DOES, not what it should do. Any surprising behaviour captured here
@@ -22,7 +22,7 @@ function loadShared() {
 let SA;
 beforeAll(() => { SA = loadShared(); });
 
-/* Default NZ thresholds (shared.js:83–88), floors descending:
+/* The default NZ threshold table, floors descending:
    90 A+ · 85 A · 80 A- · 75 B+ · 70 B · 65 B- · 60 C+ · 55 C · 50 C- · 40 D · 0 E */
 const NZ_BANDS = [
   [90, 'A+'], [85, 'A'], [80, 'A-'],
