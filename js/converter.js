@@ -537,7 +537,7 @@
       universityName:  d.universityName || '',
       assignmentInfo:  d.assignmentInfo || '',
       version:         d.version || '1.0',
-      appVersion:      d.appVersion || '2.5.1',
+      appVersion:      d.appVersion || '2.6.0',
       gradeScale:      d.gradeScale,
       criteria:        cleanCriteria,
       gradeFeedback:   d.gradeFeedback,

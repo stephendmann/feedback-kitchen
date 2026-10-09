@@ -10,13 +10,13 @@
   const ACTIVE_KEY  = 'SA_ACTIVE';
 
   /* ── Grade constants (NZ default — used as fallback) ─────── */
-  const GRADES = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D'];
+  const GRADES = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
 
   const GRADE_MIDPOINTS = {
     'A+': 95, 'A': 87, 'A-': 82,
     'B+': 77, 'B': 72, 'B-': 67,
     'C+': 62, 'C': 57, 'C-': 52,
-    'D': 44
+    'D': 44, 'E': 20
   };
 
   // Maps grade → rubric tier key (lowercase, used to index criterion.rubric)
@@ -24,7 +24,7 @@
     'A+': 'excellent', 'A': 'excellent', 'A-': 'excellent',
     'B+': 'proficient', 'B': 'proficient', 'B-': 'proficient',
     'C+': 'developing',  'C': 'developing',  'C-': 'developing',
-    'D':  'unsatisfactory'
+    'D':  'unsatisfactory', 'E':  'unsatisfactory'
   };
 
   // Tier severity order (highest → lowest). Used everywhere to render tiers consistently.
@@ -35,7 +35,7 @@
     proficient:     'Proficient (B+ / B / B-)',
     developing:     'Developing (C+ / C / C-)',
     satisfactory:   'Satisfactory',
-    unsatisfactory: 'Unsatisfactory (D)'
+    unsatisfactory: 'Unsatisfactory (D / E)'
   };
 
   // Short default labels (no band suffix) — used as placeholders for the
@@ -84,7 +84,7 @@
     [90, 'A+'], [85, 'A'], [80, 'A-'],
     [75, 'B+'], [70, 'B'], [65, 'B-'],
     [60, 'C+'], [55, 'C'], [50, 'C-'],
-    [0,  'D']
+    [40, 'D'], [0,  'E']
   ];
 
   /* ── Defaults ─────────────────────────────────────────────── */
@@ -146,6 +146,11 @@
       grade: 'D',
       intro: "Thank you for submitting your work. The submission does not yet meet the expected standard for this assessment, and the criterion feedback below sets out the gaps clearly. This is an important moment to engage with that feedback closely rather than move on.",
       outro: "The most useful next steps are practical: re-read the assessment brief and rubric alongside this feedback, book a meeting at office hours to discuss the gaps, and engage the academic support team early. Improvement from this point is achievable, but it requires deliberate, supported effort starting now."
+    },
+    {
+      grade: 'E',
+      intro: "Thank you for submitting your work. This result sits below the pass threshold for this assessment. That can reflect the work itself, a missing required section, or a late-submission penalty, so read the criterion feedback and the notes below to see which applies.",
+      outro: "The most useful next steps are practical: re-read the assessment brief and rubric alongside this feedback, check the submission requirements and deadline, and book a meeting at office hours to talk through what happened. Support is available, and the sooner you reach out the more options you have."
     }
   ];
 
@@ -167,11 +172,11 @@
   //   caller's contract; penalty math clamps the floor at 0 upstream.
   function scoreToGrade(score) {
     const n = Number(score);
-    if (!Number.isFinite(n)) return 'D';
+    if (!Number.isFinite(n)) return 'E';
     for (const [floor, grade] of GRADE_THRESHOLDS) {
       if (n >= floor) return grade;
     }
-    return 'D';
+    return 'E';
   }
 
   // scoreToGrade using a custom gradeScale array
@@ -200,6 +205,23 @@
     }
     // Below all bands (or non-finite): return the lowest grade in the scale
     return sorted[sorted.length - 1].grade;
+  }
+
+  // Look up the intro/outro entry for a grade. Falls back to another entry in
+  // the same tier when the grade has none: scorers saved before the E band
+  // existed have no 'E' feedback, so an E result borrows the D entry
+  // (both are 'unsatisfactory'). Returns undefined if nothing matches.
+  function findGradeFeedback(config, grade) {
+    const list = (config && config.gradeFeedback) || [];
+    const exact = list.find(gf => gf.grade === grade);
+    if (exact) return exact;
+    const scale = Array.isArray(config && config.gradeScale) ? config.gradeScale : [];
+    const tierOf = g => {
+      const s = scale.find(x => x.grade === g);
+      return s ? s.tier : GRADE_TIERS[g];
+    };
+    const tier = tierOf(grade);
+    return tier ? list.find(gf => tierOf(gf.grade) === tier) : undefined;
   }
 
   // Return the band minimum (lower threshold) for a grade letter, for either
@@ -275,7 +297,7 @@
       universityName: '',
       assignmentInfo: '',
       version:        '1.0',
-      appVersion:     '2.5.1',   // Feedback Kitchen app version for export provenance
+      appVersion:     '2.6.0',   // Feedback Kitchen app version for export provenance
       gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
       tierLabels:     null,   // null = use defaults; object {excellent, proficient, developing, unsatisfactory} = custom labels
       criteria: [
@@ -296,7 +318,7 @@
   // Single source of truth for "which FK shipped this artefact".
   // Mirrors the appVersion baked into newConfig() above; used by the
   // moderation export opt-in record and the workbook 90_manifest sheet.
-  const FK_VERSION = '2.5.1';
+  const FK_VERSION = '2.6.0';
   function getFKVersion() { return FK_VERSION; }
 
   /* ── Storage write hardening (FK-24) ─────────────────────────
@@ -450,7 +472,7 @@
     const roundedPenalisedScore = parseFloat(formatScore(penalisedScore, rounding));
 
     // Use custom scale thresholds for grade suggestion if available
-    const suggestedGrade = isFail ? (useCustomScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'D')
+    const suggestedGrade = isFail ? (useCustomScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'E')
       : useCustomScale
         ? scoreToGradeFromScale(roundedPenalisedScore, config.gradeScale)
         : scoreToGrade(roundedPenalisedScore);
@@ -469,7 +491,7 @@
     const prepenaltyGrade  = useCustomScale
       ? scoreToGradeFromScale(weightedTotal, config.gradeScale)
       : scoreToGrade(weightedTotal);
-    const entry = config.gradeFeedback.find(gf => gf.grade === prepenaltyGrade);
+    const entry = findGradeFeedback(config, prepenaltyGrade);
 
     // Phase 4: per-scorer intro/outro overrides with {name}/{group}/{grade}/{course} substitution.
     const audienceMode = (opts.audienceMode === 'group' || opts.audienceMode === 'group-named') ? 'group' : 'individual';
@@ -520,7 +542,7 @@
       if (isFail) {
         const failGrade = config.gradeScale
           ? config.gradeScale[config.gradeScale.length - 1].grade
-          : 'D';
+          : 'E';
         parts.push(`LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.`);
         parts.push(`FINAL SCORE (after late penalty): 0 / 100`);
       } else {
@@ -803,7 +825,7 @@
     const prepenaltyGrade = useCustomScale
       ? scoreToGradeFromScale(weightedTotal, config.gradeScale)
       : scoreToGrade(weightedTotal);
-    const entry = config.gradeFeedback.find(function (gf) { return gf.grade === prepenaltyGrade; });
+    const entry = findGradeFeedback(config, prepenaltyGrade);
 
     const subs = {
       name:   studentName,
@@ -864,7 +886,7 @@
       if (isFail) {
         const failGrade = useCustomScale
           ? config.gradeScale[config.gradeScale.length - 1].grade
-          : 'D';
+          : 'E';
         parts.push('LATE SUBMISSION NOTICE: This ' + item + ' was submitted more than 3 days late and receives a grade of ' + failGrade + ' as per university policy.');
         parts.push('FINAL SCORE (after late penalty): 0 / 100');
       } else {
@@ -1391,7 +1413,7 @@
     GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_LABELS_SHORT, TIER_BADGE_COLOURS, TIER_ORDER,
     getTierLabel, migrateConfig,
     GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
-    uid, scoreToGrade, scoreToGradeFromScale, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
+    uid, scoreToGrade, scoreToGradeFromScale, findGradeFeedback, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
     isQuotaError, safeSetItem,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,

@@ -1161,3 +1161,28 @@ Signed: Stephen Mann   Date: 2026-07-06
 - PR #84 — Sonnet gated to `improve_criterion_body` for unlocked supporters (+ `api/garnish.js` downgrade guard).
 - `upload.html` / `js/converter.js` `checkSupporterAccess()` — existing trust-based PDF-import unlock.
 - Brand principle 5 (privacy-first); D15 locked brand-voice principles; `brand-voice-canon.md`.
+
+---
+
+## D18 — NZ scale gains an E band (0–39)
+
+**Date:** 2026-10-09
+**Status:** ✅ Approved — add E as a real band. Implemented in the same change.
+**Owner:** Stephen Mann (product).
+
+### Context
+
+The University of Waikato grading system (effective 1 January 2016) lists E for 0–39, GPA 0. The NZ preset stopped at D (40–49), and `scoreToGrade` fell back to D for anything below 40, so a 12% mark was labelled D.
+
+### Decision
+
+- The NZ preset has 11 bands: A+ to D as before, plus `E` (midpoint 20, band 0–39, tier `unsatisfactory`). The midpoint is 20, not 19.5, to match the existing convention (D uses 44, not 44.5).
+- E shares the `unsatisfactory` tier with D, so rubric descriptors are unchanged.
+- A late-penalty fail (more than 3 days late) returns the bottom grade of the active scale: E on the NZ default, so a lateness fail is no longer reported as D.
+- The default E feedback is worded to cover a weak submission, a missing required section and a lateness fail.
+- Saved scorers are not migrated. A config with no `gradeScale` takes the shared threshold path and grades 0–39 as E, borrowing the D feedback text through `findGradeFeedback` (same tier). A config whose own `gradeScale` has no E keeps that scale as authoritative: 0–39 lands in its lowest band, as before.
+- `index.html` keeps its A/B/C/D/F demo scale (it is not the NZ table). `_snapshots/` is frozen history and was not touched.
+
+### Refs
+
+Waikato grading system table · `js/e-band-backcompat.test.js` · `js/score-grade.test.js`.
