@@ -48,6 +48,20 @@ jobs:
         # still worth avoiding. See docs/troubleshooting.md, "The Claude review job
         # fails in seconds", for the full post-mortem.
         uses: anthropics/claude-code-action@558b1d6cab4085c7753fe402c10bef0fbb92ac7a # v1 as of 2026-07-06
+        # The code-review skill starts its subagents in the background by default
+        # and then ends its turn to wait for them. A one-shot CI run has no later
+        # turn to wake into, so the review ended mid-flight with nothing posted
+        # (#163). This variable removes the run_in_background option, so every
+        # subagent runs in the foreground and returns its result inline.
+        #
+        # Verified before merging, on a throwaway PR running a copy of this step:
+        # 9 of 9 Agent calls returned inline, no ScheduleWakeup, review posted. The
+        # same PR and commit without the variable abandoned (execution-log excerpts
+        # on #163). If abandonment ever returns after a Claude Code upgrade, open the
+        # execution artifact and look for "Async agent launched": that means the
+        # variable is no longer honoured, and #163 has the fallback.
+        env:
+          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1"
         with:
           # Authenticates with the Claude Pro subscription (claude setup-token),
           # so CI reviews draw from the plan allocation rather than API billing.
