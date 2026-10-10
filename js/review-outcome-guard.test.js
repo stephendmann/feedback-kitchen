@@ -109,10 +109,57 @@ describe('runs that should pass the job', () => {
     expect(v.reason).toMatch(/skip/);
   });
 
+  test('deliberate skip — PR #181, the gate stops on a draft PR', () => {
+    // Real result text from two runs on PR #181 while it was a draft. None of
+    // the SKIP_MARKERS phrases appear in it, so it failed as "nothing posted".
+    const v = classify(result({
+      num_turns: 4,
+      total_cost_usd: 0.39,
+      result: "The gate check returned **PROCEED: NO** \u2014 PR #181 is a draft. Per the review instructions, I must stop here without proceeding to further review steps or posting any comments.\n\n**Summary:** PR #181 (\"Add E band (0\u201339) to the NZ grade scale\") is currently a draft PR. Per the code-review workflow's gating rule, draft PRs are not reviewed. No analysis was performed beyond the gate check, and no comments were posted.",
+    }));
+    expect(v.ok).toBe(true);
+    expect(v.reason).toMatch(/draft/);
+  });
+
+  test('a draft skip is recognised from the sentence alone, without the gate verdict', () => {
+    const v = classify(result({ result: 'Pull request #200 is currently a draft, so I am not reviewing it.' }));
+    expect(v.ok).toBe(true);
+    expect(v.reason).toMatch(/draft/);
+  });
+
   test('review posted — PR #131, the first ever post', () => {
     expect(classify(result({
       result: 'Review complete. No issues found — comment posted: https://github.com/stephendmann/feedback-kitchen/pull/131#issuecomment-5555028965',
     })).ok).toBe(true);
+  });
+});
+
+describe('the draft-skip match stays narrow', () => {
+  test('"draft" in ordinary prose is not a skip', () => {
+    // FK is full of drafts (the feedback draft, drafted comments). The word alone
+    // must not turn a run that posted nothing into a pass.
+    const v = classify(result({ result: 'I reviewed the feedback draft in scorer.html and found the wording reasonable.' }));
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/nothing posted/);
+  });
+
+  test('a sentence about a draft that is not about the PR is not a skip', () => {
+    const v = classify(result({ result: 'The output text is a draft of the feedback, ready for the marker to edit.' }));
+    expect(v.ok).toBe(false);
+  });
+
+  test('an abandoned run that mentions drafting is still abandoned', () => {
+    const v = classify(result({ result: "I'm waiting for the agent that is drafting the findings to finish." }));
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/abandoned/);
+  });
+
+  test('a posted review that mentions a draft PR still reads as posted', () => {
+    const v = classify(result({
+      result: 'Review complete. The base PR is a draft in the stack, which is fine. comment posted: https://github.com/stephendmann/feedback-kitchen/pull/1#issuecomment-1',
+    }));
+    expect(v.ok).toBe(true);
+    expect(v.reason).toMatch(/posted/);
   });
 });
 
@@ -141,6 +188,12 @@ describe('strict mode, for chapter PRs into manual', () => {
     const v = classify(result({ result: "I'll wait for the background agents to report back." }), { strict: true });
     expect(v.ok).toBe(false);
     expect(v.reason).toMatch(/abandoned/);
+  });
+
+  test('a draft skip is also a failure under strict', () => {
+    const v = classify(result({ result: 'The gate check returned **PROCEED: NO** \u2014 PR #7 is a draft.' }), { strict: true });
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/every push/);
   });
 
   test('non-strict is unchanged, so code PRs keep their skip path', () => {
