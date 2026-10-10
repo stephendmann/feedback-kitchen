@@ -102,6 +102,11 @@ function isAbandoned(text) {
 
 /** Evidence the review actually reached the PR. */
 const POSTED_MARKERS = [
+  // A link to an issue comment, or to an inline review comment (#discussion_r<id>).
+  // Inline comments are how a review posts findings, and the result links to each
+  // one, so this is evidence by fact rather than by the review's own wording: a
+  // result that says "Both inline comments posted" matches none of the phrases below.
+  'discussion_r',
   'issuecomment-',
   'posting the summary',
   'posted the',
