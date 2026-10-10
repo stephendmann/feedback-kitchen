@@ -43,11 +43,11 @@ describe('which failures the watcher retries', () => {
   });
 
   test('an abandoned run is retried', () => {
-    expect(matches(logOf('FAIL: abandoned waiting on background agents (see #136)'))).toBe(true);
+    expect(matches(logOf('FAIL: abandoned waiting on background agents (see #163)'))).toBe(true);
   });
 
   test('the chapter-review wording of an abandoned run is retried', () => {
-    expect(matches(logOf('FAIL: findings written, but the run abandoned before finishing (see #136)'))).toBe(true);
+    expect(matches(logOf('FAIL: findings written, but the run abandoned before finishing (see #163)'))).toBe(true);
   });
 
   test('"nothing posted" is not retried, despite the echoed script comment', () => {

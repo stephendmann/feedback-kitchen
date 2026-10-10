@@ -137,7 +137,7 @@ function classify(result, opts) {
   // genuine failures are left to detect, and no prose decides the outcome.
   if (posted) {
     if (isAbandoned(text)) {
-      return { ok: false, reason: 'findings written, but the run abandoned before finishing (see #136)' };
+      return { ok: false, reason: 'findings written, but the run abandoned before finishing (see #163)' };
     }
     return { ok: true, reason: 'findings written and posted' };
   }
@@ -150,7 +150,7 @@ function classify(result, opts) {
       : { ok: true, reason: draftSkip ? 'deliberate skip (draft PR)' : 'deliberate skip' };
   }
   if (isAbandoned(text)) {
-    return { ok: false, reason: 'abandoned waiting on background agents (see #136)' };
+    return { ok: false, reason: 'abandoned waiting on background agents (see #163)' };
   }
   return { ok: false, reason: 'nothing posted and no deliberate skip recorded' };
 }
