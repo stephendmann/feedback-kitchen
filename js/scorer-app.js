@@ -948,7 +948,8 @@
         'A-': 'bg-green-100 text-green-800', 'B+': 'bg-blue-100 text-blue-800',
         'B':  'bg-blue-100 text-blue-800',   'B-': 'bg-blue-100 text-blue-800',
         'C+': 'bg-yellow-100 text-yellow-800','C': 'bg-yellow-100 text-yellow-800',
-        'C-': 'bg-yellow-100 text-yellow-800','D':  'bg-red-100 text-red-800'
+        'C-': 'bg-yellow-100 text-yellow-800','D':  'bg-red-100 text-red-800',
+        'E':  'bg-red-100 text-red-800'
       });
       gradeBadge.className = 'grade-badge text-2xl px-4 py-1 ' + (gradeColours[suggestedGrade] || 'bg-slate-100 text-slate-600');
       // FK-38: the className reassignment above wipes any prior `.updated`, so a
@@ -1084,8 +1085,8 @@
       const oldGrade = lastScoreResult.suggestedGrade;
       const newGrade = effectiveRes.suggestedGrade;
       if (oldGrade !== newGrade) {
-        const oldEntry = lastConfig.gradeFeedback.find(gf => gf.grade === oldGrade);
-        const newEntry = config.gradeFeedback.find(gf => gf.grade === newGrade);
+        const oldEntry = SA.findGradeFeedback(lastConfig, oldGrade);
+        const newEntry = SA.findGradeFeedback(config, newGrade);
         if (oldEntry && newEntry) {
           if (oldEntry.intro && mergedText.includes(oldEntry.intro)) {
             mergedText = mergedText.replace(oldEntry.intro, newEntry.intro);
@@ -1154,7 +1155,7 @@
       if (lastScoreResult.latePenalty && (lastScoreResult.deduction > 0 || lastScoreResult.isFail)) {
           const item = lastConfig.assessmentTitle || 'submission';
           if (lastScoreResult.isFail) {
-            const failGrade = lastConfig.gradeScale ? lastConfig.gradeScale[lastConfig.gradeScale.length - 1].grade : 'D';
+            const failGrade = lastConfig.gradeScale ? lastConfig.gradeScale[lastConfig.gradeScale.length - 1].grade : 'E';
             oldPenaltyStr = `LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.\nFINAL SCORE (after late penalty): 0 / 100`;
           } else {
             oldPenaltyStr = `LATE SUBMISSION NOTICE: As your ${item} was submitted ${lastScoreResult.latePenalty.label.toLowerCase()}, a further ${lastScoreResult.deduction}% (out of 100%) has been deducted from the total above.\nFINAL SCORE (after late penalty): ${SA.formatScore(lastScoreResult.penalisedScore, oldRounding)} / 100`;
@@ -1165,7 +1166,7 @@
       if (effectiveRes.latePenalty && (effectiveRes.deduction > 0 || effectiveRes.isFail)) {
           const item = config.assessmentTitle || 'submission';
           if (effectiveRes.isFail) {
-            const failGrade = config.gradeScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'D';
+            const failGrade = config.gradeScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'E';
             newPenaltyStr = `LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.\nFINAL SCORE (after late penalty): 0 / 100`;
           } else {
             newPenaltyStr = `LATE SUBMISSION NOTICE: As your ${item} was submitted ${effectiveRes.latePenalty.label.toLowerCase()}, a further ${effectiveRes.deduction}% (out of 100%) has been deducted from the total above.\nFINAL SCORE (after late penalty): ${SA.formatScore(effectiveRes.penalisedScore, rounding)} / 100`;

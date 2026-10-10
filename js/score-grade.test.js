@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  *
  * FK-01 — Characterization tests for scoreToGrade / scoreToGradeFromScale
- * (js/shared.js:158 and :167).
+ * (js/shared.js).
  *
  * These tests lock in CURRENT behaviour, including oddities. They assert what
  * the code DOES, not what it should do. Any surprising behaviour captured here
@@ -22,20 +22,21 @@ function loadShared() {
 let SA;
 beforeAll(() => { SA = loadShared(); });
 
-/* Default NZ thresholds (shared.js:83–88), floors descending:
-   90 A+ · 85 A · 80 A- · 75 B+ · 70 B · 65 B- · 60 C+ · 55 C · 50 C- · 0 D */
+/* The default NZ threshold table, floors descending:
+   90 A+ · 85 A · 80 A- · 75 B+ · 70 B · 65 B- · 60 C+ · 55 C · 50 C- · 40 D · 0 E */
 const NZ_BANDS = [
   [90, 'A+'], [85, 'A'], [80, 'A-'],
   [75, 'B+'], [70, 'B'], [65, 'B-'],
   [60, 'C+'], [55, 'C'], [50, 'C-'],
-  [0, 'D']
+  [40, 'D'],
+  [0, 'E']
 ];
 
 /* A custom gradeScale mirroring the NZ defaults, deliberately shuffled to
    exercise the internal sort in scoreToGradeFromScale. */
 const NZ_MIRROR_SCALE_SHUFFLED = [
   { grade: 'C',  bandLow: 55 }, { grade: 'A+', bandLow: 90 },
-  { grade: 'B-', bandLow: 65 }, { grade: 'D',  bandLow: 0 },
+  { grade: 'B-', bandLow: 65 }, { grade: 'D',  bandLow: 40 }, { grade: 'E', bandLow: 0 },
   { grade: 'A-', bandLow: 80 }, { grade: 'C+', bandLow: 60 },
   { grade: 'B+', bandLow: 75 }, { grade: 'A',  bandLow: 85 },
   { grade: 'C-', bandLow: 50 }, { grade: 'B',  bandLow: 70 }
@@ -74,21 +75,33 @@ describe('scoreToGrade — NZ default thresholds', () => {
   describe('range extremes', () => {
     test('100 → A+', () => expect(SA.scoreToGrade(100)).toBe('A+'));
     test('105 (above 100, no cap) → A+', () => expect(SA.scoreToGrade(105)).toBe('A+'));
-    test('0 → D', () => expect(SA.scoreToGrade(0)).toBe('D'));
-    test('-5 (negative, below all floors) → D via fallback return', () => {
-      expect(SA.scoreToGrade(-5)).toBe('D');
+    test('0 → E', () => expect(SA.scoreToGrade(0)).toBe('E'));
+    test('-5 (negative, below all floors) → E via fallback return', () => {
+      expect(SA.scoreToGrade(-5)).toBe('E');
+    });
+  });
+
+  describe('E band (Waikato 0–39, effective 1 Jan 2016)', () => {
+    test('39 → E', () => expect(SA.scoreToGrade(39)).toBe('E'));
+    test('39.99 → E', () => expect(SA.scoreToGrade(39.99)).toBe('E'));
+    test('40 → D', () => expect(SA.scoreToGrade(40)).toBe('D'));
+    test('12 → E', () => expect(SA.scoreToGrade(12)).toBe('E'));
+    test('E carries the unsatisfactory tier and a midpoint of 20', () => {
+      expect(SA.GRADE_TIERS.E).toBe('unsatisfactory');
+      expect(SA.GRADE_MIDPOINTS.E).toBe(20);
+      expect(SA.GRADES[SA.GRADES.length - 1]).toBe('E');
     });
   });
 
   describe('malformed input (characterization — current behaviour)', () => {
-    test('NaN → D (every >= comparison is false, falls to fallback)', () => {
-      expect(SA.scoreToGrade(NaN)).toBe('D');
+    test('NaN → E (every >= comparison is false, falls to fallback)', () => {
+      expect(SA.scoreToGrade(NaN)).toBe('E');
     });
-    test('undefined → D (comparisons with undefined are false)', () => {
-      expect(SA.scoreToGrade(undefined)).toBe('D');
+    test('undefined → E (comparisons with undefined are false)', () => {
+      expect(SA.scoreToGrade(undefined)).toBe('E');
     });
-    test('null → D (null >= 0 coerces to true, matches the [0, D] band)', () => {
-      expect(SA.scoreToGrade(null)).toBe('D');
+    test('null → E (null >= 0 coerces to true, matches the [0, E] band)', () => {
+      expect(SA.scoreToGrade(null)).toBe('E');
     });
     test("numeric string '80' → A- (relational coercion to number)", () => {
       expect(SA.scoreToGrade('80')).toBe('A-');
@@ -96,11 +109,11 @@ describe('scoreToGrade — NZ default thresholds', () => {
     test("numeric string '89.99' → A", () => {
       expect(SA.scoreToGrade('89.99')).toBe('A');
     });
-    test("non-numeric string 'abc' → D (NaN comparisons all false)", () => {
-      expect(SA.scoreToGrade('abc')).toBe('D');
+    test("non-numeric string 'abc' → E (NaN comparisons all false)", () => {
+      expect(SA.scoreToGrade('abc')).toBe('E');
     });
-    test("empty string '' → D ('' coerces to 0, matches the [0, D] band)", () => {
-      expect(SA.scoreToGrade('')).toBe('D');
+    test("empty string '' → E ('' coerces to 0, matches the [0, E] band)", () => {
+      expect(SA.scoreToGrade('')).toBe('E');
     });
   });
 });
@@ -136,8 +149,8 @@ describe('scoreToGradeFromScale — custom gradeScale', () => {
     test('even far below (10) → Low — the floor grade is awarded regardless of distance', () => {
       expect(SA.scoreToGradeFromScale(10, FLOORED_SCALE)).toBe('Low');
     });
-    test('negative score → lowest band grade (NZ-mirror: -5 → D)', () => {
-      expect(SA.scoreToGradeFromScale(-5, NZ_MIRROR_SCALE_SHUFFLED)).toBe('D');
+    test('negative score → lowest band grade (NZ-mirror: -5 → E)', () => {
+      expect(SA.scoreToGradeFromScale(-5, NZ_MIRROR_SCALE_SHUFFLED)).toBe('E');
     });
   });
 
@@ -161,7 +174,7 @@ describe('scoreToGradeFromScale — custom gradeScale', () => {
 
   describe('malformed input (characterization — current behaviour)', () => {
     test('NaN score → lowest band grade (all comparisons false, falls to floor)', () => {
-      expect(SA.scoreToGradeFromScale(NaN, NZ_MIRROR_SCALE_SHUFFLED)).toBe('D');
+      expect(SA.scoreToGradeFromScale(NaN, NZ_MIRROR_SCALE_SHUFFLED)).toBe('E');
     });
     test('undefined score → lowest band grade', () => {
       expect(SA.scoreToGradeFromScale(undefined, SPARSE_SCALE)).toBe('Fail');
@@ -182,11 +195,11 @@ describe('scoreToGradeFromScale — custom gradeScale', () => {
     // the one deliberate tightening: Infinity banded as the TOP grade via
     // relational coercion, garbage now always lands at the bottom.
     test('Infinity → bottom grade (was A+ pre-FK-09)', () => {
-      expect(SA.scoreToGrade(Infinity)).toBe('D');
+      expect(SA.scoreToGrade(Infinity)).toBe('E');
       expect(SA.scoreToGradeFromScale(Infinity, SPARSE_SCALE)).toBe('Fail');
     });
     test('-Infinity → bottom grade', () => {
-      expect(SA.scoreToGrade(-Infinity)).toBe('D');
+      expect(SA.scoreToGrade(-Infinity)).toBe('E');
     });
     test('whitespace-padded numeric string " 80 " → A- (Number() semantics)', () => {
       expect(SA.scoreToGrade(' 80 ')).toBe('A-');

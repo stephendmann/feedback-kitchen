@@ -72,7 +72,8 @@ const DEFAULT_GRADE_SCALE = [
   { grade: 'C+', midpoint: 62, bandLow: 60, bandHigh: 64,  tier: 'developing' },
   { grade: 'C',  midpoint: 57, bandLow: 55, bandHigh: 59,  tier: 'developing' },
   { grade: 'C-', midpoint: 52, bandLow: 50, bandHigh: 54,  tier: 'developing' },
-  { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' }
+  { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' },
+  { grade: 'E',  midpoint: 20, bandLow: 0,  bandHigh: 39,  tier: 'unsatisfactory' }
 ];
 
 const DEFAULT_LATE_PENALTIES = [
@@ -133,6 +134,11 @@ const DEFAULT_GRADE_FEEDBACK = [
     grade: 'D',
     intro: "Thank you for submitting your work. The submission does not yet meet the expected standard for this assessment, and the criterion feedback below sets out the gaps clearly. This is an important moment to engage with that feedback closely rather than move on.",
     outro: "The most useful next steps are practical: re-read the assessment brief and rubric alongside this feedback, book a meeting at office hours to discuss the gaps, and engage the academic support team early."
+  },
+  {
+    grade: 'E',
+    intro: "Thank you for submitting your work. This result sits below the pass threshold for this assessment. That can reflect the work itself, a missing required section, or a late-submission penalty, so read the criterion feedback and the notes below to see which applies.",
+    outro: "The most useful next steps are practical: re-read the assessment brief and rubric alongside this feedback, check the submission requirements and deadline, and book a meeting at office hours to talk through what happened. Support is available, and the sooner you reach out the more options you have."
   }
 ];
 
@@ -400,7 +406,7 @@ module.exports = async function handler(req, res) {
     draft.id = uid();
     draft.created = new Date().toISOString();
     draft.version = '1.0';
-    draft.appVersion = '2.5.1';
+    draft.appVersion = '2.6.0';
 
     // Add missing criterion IDs
     if (Array.isArray(draft.criteria)) {
