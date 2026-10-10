@@ -45,3 +45,26 @@ describe('the marker\'s notes panel is named consistently', () => {
     expect(html).toMatch(/in Marker's notes or your draft/);
   });
 });
+
+describe('the name carries into the cohort workbook and insights', () => {
+  // The two production files outside scorer.html that still said "Marker's Notes"
+  // once the panel was renamed: a workbook column header and the cohort insight
+  // bullets. Named files only, not a sweep of js/: prose elsewhere uses the phrase
+  // as ordinary words. Case-sensitive on purpose, so excel.js's all-caps
+  // "MARKER'S NOTES" section heading is outside this check.
+  const read = (rel) => fs.readFileSync(path.join(__dirname, rel), 'utf8');
+  const excel = read('excel.js');
+  const insights = read('cohort-insights.js');
+
+  test('excel.js has no mixed-case "Marker\'s Notes"', () => {
+    expect(excel).not.toMatch(/Marker's\s+Notes/);
+  });
+
+  test('cohort-insights.js has no mixed-case "Marker\'s Notes"', () => {
+    expect(insights).not.toMatch(/Marker's\s+Notes/);
+  });
+
+  test('the Student Feedback column header uses the panel name', () => {
+    expect(excel).toMatch(/'Cooked Feedback', "Marker's notes"\]/);
+  });
+});
