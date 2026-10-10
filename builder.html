@@ -69,7 +69,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="/css/tailwind.out.css?v=2.5.1">
+  <link rel="stylesheet" href="/css/tailwind.out.css?v=2.6.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -114,8 +114,8 @@
         });
     }
   </script>
-  <link rel="stylesheet" href="/css/shared.css?v=2.5.1">
-  <link rel="stylesheet" href="/css/site-dark.css?v=2.5.1">
+  <link rel="stylesheet" href="/css/shared.css?v=2.6.0">
+  <link rel="stylesheet" href="/css/site-dark.css?v=2.6.0">
 </head>
 <body class="bg-slate-50 min-h-screen">
 
@@ -266,9 +266,9 @@
           <div class="grid sm:grid-cols-5 gap-3" id="preset-cards">
             <button onclick="B.loadPreset('nz')" id="preset-nz"
               class="preset-card text-left p-4 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all"
-              title="Standard NZ university scale (Waikato and most NZ institutions). A+ (90–100) down to D (40–49). 10 grade bands with +/− modifiers.">
+              title="Standard NZ university scale (Waikato and most NZ institutions). A+ (90–100) down to E (0–39). 11 grade bands with +/− modifiers.">
               <div class="font-bold text-slate-800 text-sm mb-1">🇳🇿 NZ University</div>
-              <div class="text-xs text-slate-500">A+→D  ·  10 grades  ·  Waikato / standard NZ</div>
+              <div class="text-xs text-slate-500">A+→E  ·  11 grades  ·  Waikato / standard NZ</div>
             </button>
             <button onclick="B.loadPreset('au')" id="preset-au"
               class="preset-card text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 transition-all"
@@ -513,8 +513,8 @@
   </main>
 
 
-  <script src="/js/shared.js?v=2.5.1"></script>
-  <script src="/js/save-file.js?v=2.5.1"></script>
+  <script src="/js/shared.js?v=2.6.0"></script>
+  <script src="/js/save-file.js?v=2.6.0"></script>
   <script>
   'use strict';
   /* ============================================================
@@ -714,7 +714,8 @@
         { grade: 'C+', midpoint: 62, bandLow: 60, bandHigh: 64,  tier: 'developing' },
         { grade: 'C',  midpoint: 57, bandLow: 55, bandHigh: 59,  tier: 'developing' },
         { grade: 'C-', midpoint: 52, bandLow: 50, bandHigh: 54,  tier: 'developing' },
-        { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' }
+        { grade: 'D',  midpoint: 44, bandLow: 40, bandHigh: 49,  tier: 'unsatisfactory' },
+        { grade: 'E',  midpoint: 20, bandLow: 0,  bandHigh: 39,  tier: 'unsatisfactory' }
       ],
       au: [
         { grade: 'HD', midpoint: 92, bandLow: 85, bandHigh: 100, tier: 'excellent' },
@@ -1443,6 +1444,6 @@
   </script>
 
   <div id="site-footer"></div>
-  <script src="/js/footer.js?v=2.5.1"></script>
+  <script src="/js/footer.js?v=2.6.0"></script>
 </body>
 </html>

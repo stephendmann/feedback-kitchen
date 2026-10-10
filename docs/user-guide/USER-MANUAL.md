@@ -71,13 +71,13 @@ Choose a preset or build your own.
 
 | Preset | Grades | Typical use |
 |---|---|---|
-| NZ University | A+, A, A−, B+, B, B−, C+, C, C−, D | University of Waikato and standard NZ |
+| NZ University | A+, A, A−, B+, B, B−, C+, C, C−, D, E | University of Waikato and standard NZ |
 | Australian Honours | HD, D, C, P, F | High Distinction scale |
 | UK Degree | 1st, 2:1, 2:2, 3rd, F | Degree classification |
 | US Simple | A, B, C, D, F | Standard A–F |
 | Custom | Yours | Your own labels, score bands, tiers, and midpoints |
 
-Each grade carries a **midpoint** (on the NZ scale, A+ is 95, A is 87, A− is 82, down to D at 44) and maps to one of four **rubric tiers**: Excellent, Proficient, Developing, Unsatisfactory. The midpoint is what gets entered automatically when you pick a grade while marking, and the tier decides which rubric descriptor appears.
+Each grade carries a **midpoint** (on the NZ scale, A+ is 95, A is 87, A− is 82, down to D at 44 and E at 20) and maps to one of four **rubric tiers**: Excellent, Proficient, Developing, Unsatisfactory. The midpoint is what gets entered automatically when you pick a grade while marking, and the tier decides which rubric descriptor appears.
 
 Changing the grade scale after you have written rubric descriptors will prompt you before it replaces anything, but it is much less painful to settle the scale now.
 

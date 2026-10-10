@@ -332,7 +332,7 @@
     /* ── Sheet 3: Student Feedback (one row per student) ─── */
     const FB = [];
     FB.push(['Student Name', 'Student ID', 'Marker', 'Date', 'Suggested Grade',
-             'Final Score /100', 'Criteria reviewed %', 'Cooked Feedback', "Marker's Notes"]);
+             'Final Score /100', 'Criteria reviewed %', 'Cooked Feedback', "Marker's notes"]);
     cohort.students.forEach(s => {
       const sr = s.scoreResult || {};
       const fbGrades = Array.isArray(s.grades) ? s.grades : [];
