@@ -75,6 +75,24 @@ const ABANDON_MARKERS = [
   'finish; i',
 ];
 
+/**
+ * True when the review skill's gate stopped on a draft PR.
+ *
+ * The skill opens with an eligibility gate that returns "PROCEED: NO" for a draft
+ * and writes something like "PR #181 is a draft ... draft PRs are not reviewed".
+ * That is a deliberate skip, but none of the SKIP_MARKERS phrases appear in it,
+ * so it failed as "nothing posted" (PR #181, two runs).
+ *
+ * The match is narrow on purpose. "draft" alone is everywhere in this app (the
+ * feedback draft, a drafted comment), so it needs either the gate's own verdict
+ * or a sentence that says a PR or pull request is a draft. Posted reviews are
+ * settled before this is consulted, and an abandoned run is not a draft skip.
+ */
+function isDraftSkip(text) {
+  return text.includes('proceed: no')
+      || /\b(?:pr|pull request)\b[^\n]{0,120}?\bis (?:currently )?a draft\b/.test(text);
+}
+
 /** True when the result reads as a run that ended waiting for a subagent. */
 function isAbandoned(text) {
   if (has(text, ABANDON_MARKERS)) return true;
@@ -125,10 +143,11 @@ function classify(result, opts) {
   }
 
   if (has(text, POSTED_MARKERS)) return { ok: true, reason: 'review posted' };
-  if (has(text, SKIP_MARKERS)) {
+  const draftSkip = isDraftSkip(text);
+  if (has(text, SKIP_MARKERS) || draftSkip) {
     return strict
       ? { ok: false, reason: 'skipped, but a chapter review must review every push' }
-      : { ok: true, reason: 'deliberate skip' };
+      : { ok: true, reason: draftSkip ? 'deliberate skip (draft PR)' : 'deliberate skip' };
   }
   if (isAbandoned(text)) {
     return { ok: false, reason: 'abandoned waiting on background agents (see #136)' };

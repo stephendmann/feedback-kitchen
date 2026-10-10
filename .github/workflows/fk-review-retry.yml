@@ -1,7 +1,7 @@
 name: FK Claude Review Retry
 
-# Encodes the two-run budget that has been applied by hand: when a review
-# abandons itself mid-flight, re-run it once.
+# Encodes the retry budget that has been applied by hand: when a review
+# abandons itself mid-flight, re-run it, up to three runs in all.
 #
 # This lives in its own workflow because a run cannot re-run itself. A retry job
 # inside the review workflow keeps that run in progress while it executes, and
@@ -21,12 +21,15 @@ on:
 jobs:
   retry:
     name: Retry an abandoned review
-    # run_attempt == 1 is what makes a loop impossible: a re-run increments it, so
-    # the retried attempt cannot trigger another retry whatever it does. Keep this
-    # condition if anything here is ever edited.
+    # The run_attempt cap is what makes a loop impossible: a re-run increments it,
+    # so once it reaches the cap nothing here fires again, whatever the review does.
+    # Every attempt below the cap that abandons gets one re-run, so a run that fails
+    # for another reason on attempt 1 and is then re-run by hand still gets retried
+    # if that attempt abandons (the PR #162 pattern in #163). Three attempts in all.
+    # Keep a numeric cap here if anything is ever edited.
     if: >-
       github.event.workflow_run.conclusion == 'failure'
-      && github.event.workflow_run.run_attempt == 1
+      && github.event.workflow_run.run_attempt < 3
     runs-on: ubuntu-latest
     permissions:
       actions: write        # rerunning a run needs it; nothing else here does
@@ -48,7 +51,11 @@ jobs:
             exit 0
           fi
 
-          if ! printf '%s' "$LOG" | grep -qE 'FAIL[^:]*: .*abandoned'; then
+          # Anchored to the start of a log line's text, after the timestamp. The log
+          # also echoes this job's own script, and the review workflow's comment
+          # there quotes "FAIL: ... abandoned", so an unanchored pattern matched
+          # every failure and retried reviews that had not abandoned (PR #181).
+          if ! printf '%s' "$LOG" | grep -qE '[0-9]Z FAIL[^:]*: .*abandoned'; then
             # An errored run or an empty review can be about the diff, so retrying
             # spends money to reach the same answer and loses the red check that is
             # the point. Only abandonment is transient.
