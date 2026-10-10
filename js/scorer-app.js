@@ -1716,8 +1716,8 @@
        export reads the saved cohort record, never the clipboard, and silently skips
        any record with no marking (buildExportWorksheet, js/moodle-worksheet.js), so
        a marker who grades a student and moves on without pressing "Copy to
-       clipboard" ships that student's row blank — invisible when it happens,
-       invisible at export, visible only in Moodle after upload, if ever.
+       clipboard" ships that student's row blank — unnoticed when it happens,
+       unnoticed at export, visible only in Moodle after upload, if ever.
 
        This names the persistence step and supplies the missing progression in one
        control. It adds no persistence, navigation or export logic: the save is the
