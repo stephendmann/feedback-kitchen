@@ -1,0 +1,73 @@
+name: Throwaway review env test
+
+# THROWAWAY. Lives only on claude/throwaway-foreground-agents-test and is never
+# merged. It exists to prove, before the real change, that
+# CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 makes the code-review skill's subagents
+# run in the foreground in this repository's actual setup (same pinned action,
+# same plugin, same prompt, same model). See #163.
+#
+# Why a separate file: claude-code-action refuses to run for a workflow file that
+# differs from the default branch ("Workflow validation failed"), and that check
+# lives in its OIDC token exchange. A PR that edits fk-claude-review.yml itself is
+# therefore skipped, so the edited production workflow cannot be tested on a PR.
+# Passing github_token below skips the exchange, and with it that check. Nothing
+# else differs from the production code-review step except the env var under test.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: fk-foreground-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude code review, foreground agents (throwaway)
+    # Drafts are skipped by the review skill's own gate, so do not spend a run on one.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Claude review (code, foreground agents)
+        uses: anthropics/claude-code-action@558b1d6cab4085c7753fe402c10bef0fbb92ac7a # v1 as of 2026-07-06
+        env:
+          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }} --comment"
+          claude_args: >-
+            --allowedTools "Bash,Write"
+            --append-system-prompt "Feedback Kitchen is an academic assessment / rubrics
+            web app. Treat student data as sensitive: never recommend logging or exposing
+            raw student identifiers. Weight findings toward grading/rubric correctness,
+            data privacy, and performance on large cohorts. The repo CLAUDE.md and
+            planning docs carry FK conventions — honour them."
+
+      - name: Upload Claude execution log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fg-test-execution-output-${{ github.event.pull_request.number }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Check the review actually reviewed
+        if: always()
+        run: node scripts/check-review-outcome.js "${{ runner.temp }}/claude-execution-output.json"
