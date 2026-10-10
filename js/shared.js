@@ -179,6 +179,23 @@
     return 'E';
   }
 
+  // Copy of a gradeScale sorted by bandLow descending (top grade first).
+  // The stored order is not trusted: hand-edited or imported scales can be unsorted.
+  function sortScaleDescending(gradeScale) {
+    return gradeScale.slice().sort((a, b) => b.bandLow - a.bandLow);
+  }
+
+  // Bottom (fail) grade of a gradeScale, by bandLow rather than stored order,
+  // so it agrees with scoreToGradeFromScale. An empty or non-array scale falls
+  // back to the NZ default fail grade, as scoreToGradeFromScale does.
+  function bottomGradeOfScale(gradeScale) {
+    if (!Array.isArray(gradeScale) || gradeScale.length === 0) {
+      return scoreToGrade(0);
+    }
+    const sorted = sortScaleDescending(gradeScale);
+    return sorted[sorted.length - 1].grade;
+  }
+
   // scoreToGrade using a custom gradeScale array
   // Sorts by bandLow descending so highest band matches first.
   // Boundary contract (FK-09 / INS-4 S-1): an empty, null, or non-array
@@ -197,7 +214,7 @@
     // (falls through every band to the lowest grade) instead of relying
     // on JS relational coercion. Same Infinity tightening as scoreToGrade.
     const n = Number(score);
-    const sorted = gradeScale.slice().sort((a, b) => b.bandLow - a.bandLow);
+    const sorted = sortScaleDescending(gradeScale);
     if (Number.isFinite(n)) {
       for (const entry of sorted) {
         if (n >= entry.bandLow) return entry.grade;
@@ -472,7 +489,7 @@
     const roundedPenalisedScore = parseFloat(formatScore(penalisedScore, rounding));
 
     // Use custom scale thresholds for grade suggestion if available
-    const suggestedGrade = isFail ? (useCustomScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'E')
+    const suggestedGrade = isFail ? (useCustomScale ? bottomGradeOfScale(config.gradeScale) : 'E')
       : useCustomScale
         ? scoreToGradeFromScale(roundedPenalisedScore, config.gradeScale)
         : scoreToGrade(roundedPenalisedScore);
@@ -541,7 +558,7 @@
       const item = config.assessmentTitle || 'submission';
       if (isFail) {
         const failGrade = config.gradeScale
-          ? config.gradeScale[config.gradeScale.length - 1].grade
+          ? bottomGradeOfScale(config.gradeScale)
           : 'E';
         parts.push(`LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.`);
         parts.push(`FINAL SCORE (after late penalty): 0 / 100`);
@@ -885,7 +902,7 @@
       const item = config.assessmentTitle || 'submission';
       if (isFail) {
         const failGrade = useCustomScale
-          ? config.gradeScale[config.gradeScale.length - 1].grade
+          ? bottomGradeOfScale(config.gradeScale)
           : 'E';
         parts.push('LATE SUBMISSION NOTICE: This ' + item + ' was submitted more than 3 days late and receives a grade of ' + failGrade + ' as per university policy.');
         parts.push('FINAL SCORE (after late penalty): 0 / 100');
@@ -1413,7 +1430,7 @@
     GRADES, GRADE_MIDPOINTS, GRADE_TIERS, TIER_LABELS, TIER_LABELS_SHORT, TIER_BADGE_COLOURS, TIER_ORDER,
     getTierLabel, migrateConfig,
     GRADE_THRESHOLDS, DEFAULT_LATE_PENALTIES, DEFAULT_GRADE_FEEDBACK,
-    uid, scoreToGrade, scoreToGradeFromScale, findGradeFeedback, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
+    uid, scoreToGrade, scoreToGradeFromScale, bottomGradeOfScale, findGradeFeedback, bandMinimumForGrade, applyGradeOverride, formatDate, newConfig, getFKVersion,
     isQuotaError, safeSetItem,
     loadAllConfigs, saveAllConfigs, saveConfig, deleteConfig, loadConfig,
     getActiveId, setActiveId, loadActiveConfig,

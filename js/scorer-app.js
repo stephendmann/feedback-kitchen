@@ -1155,7 +1155,7 @@
       if (lastScoreResult.latePenalty && (lastScoreResult.deduction > 0 || lastScoreResult.isFail)) {
           const item = lastConfig.assessmentTitle || 'submission';
           if (lastScoreResult.isFail) {
-            const failGrade = lastConfig.gradeScale ? lastConfig.gradeScale[lastConfig.gradeScale.length - 1].grade : 'E';
+            const failGrade = lastConfig.gradeScale ? SA.bottomGradeOfScale(lastConfig.gradeScale) : 'E';
             oldPenaltyStr = `LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.\nFINAL SCORE (after late penalty): 0 / 100`;
           } else {
             oldPenaltyStr = `LATE SUBMISSION NOTICE: As your ${item} was submitted ${lastScoreResult.latePenalty.label.toLowerCase()}, a further ${lastScoreResult.deduction}% (out of 100%) has been deducted from the total above.\nFINAL SCORE (after late penalty): ${SA.formatScore(lastScoreResult.penalisedScore, oldRounding)} / 100`;
@@ -1166,7 +1166,7 @@
       if (effectiveRes.latePenalty && (effectiveRes.deduction > 0 || effectiveRes.isFail)) {
           const item = config.assessmentTitle || 'submission';
           if (effectiveRes.isFail) {
-            const failGrade = config.gradeScale ? config.gradeScale[config.gradeScale.length - 1].grade : 'E';
+            const failGrade = config.gradeScale ? SA.bottomGradeOfScale(config.gradeScale) : 'E';
             newPenaltyStr = `LATE SUBMISSION NOTICE: This ${item} was submitted more than 3 days late and receives a grade of ${failGrade} as per university policy.\nFINAL SCORE (after late penalty): 0 / 100`;
           } else {
             newPenaltyStr = `LATE SUBMISSION NOTICE: As your ${item} was submitted ${effectiveRes.latePenalty.label.toLowerCase()}, a further ${effectiveRes.deduction}% (out of 100%) has been deducted from the total above.\nFINAL SCORE (after late penalty): ${SA.formatScore(effectiveRes.penalisedScore, rounding)} / 100`;

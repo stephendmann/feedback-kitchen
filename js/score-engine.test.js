@@ -96,6 +96,46 @@ describe('computeScores — late penalties', () => {
   });
 });
 
+describe('bottom grade of an unsorted custom scale (issue #182)', () => {
+  // Stored out of order on purpose: F, A, B, C. By bandLow the bottom grade is F.
+  const shuffled = () => [
+    { grade: 'F', bandLow: 0 },
+    { grade: 'A', bandLow: 80 },
+    { grade: 'B', bandLow: 65 },
+    { grade: 'C', bandLow: 50 }
+  ];
+  function failCfg() {
+    const c = cfg('none');
+    c.gradeScale = shuffled();
+    return c;
+  }
+
+  test('bottomGradeOfScale picks the lowest bandLow, not the last stored entry', () => {
+    expect(SA.bottomGradeOfScale(shuffled())).toBe('F');
+  });
+  test('bottomGradeOfScale does not reorder the stored scale', () => {
+    const scale = shuffled();
+    SA.bottomGradeOfScale(scale);
+    expect(scale.map(e => e.grade)).toEqual(['F', 'A', 'B', 'C']);
+  });
+  test('bottomGradeOfScale falls back to the NZ fail grade for an empty or missing scale', () => {
+    expect(SA.bottomGradeOfScale([])).toBe('E');
+    expect(SA.bottomGradeOfScale(null)).toBe('E');
+  });
+  test('computeScores reports the bottom grade for a fail penalty', () => {
+    const r = SA.computeScores(failCfg(), [G('A'), G('A')], 4);
+    expect(r.isFail).toBe(true);
+    expect(r.suggestedGrade).toBe('F');
+  });
+  test('late notice text names the bottom grade, not the last stored one', () => {
+    const c = failCfg();
+    const r = SA.computeScores(c, [G('A'), G('A')], 4);
+    const text = SA.generateFeedbackText(c, r, {});
+    expect(text).toContain('receives a grade of F as per university policy');
+    expect(text).not.toContain('receives a grade of C');
+  });
+});
+
 describe('computeScores — E band', () => {
   test('12% total → E, tier unsatisfactory', () => {
     const c = cfg('none');
