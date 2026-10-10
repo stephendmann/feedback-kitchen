@@ -9,7 +9,7 @@ name: FK Claude Review Retry
 # retry never happens. `workflow_run` fires after the run has finished, which is
 # the only point a re-run is accepted.
 #
-# See #136 for the failure being worked around. The cause is upstream: the review
+# See #163 for the failure being worked around. The cause is upstream: the review
 # reaches a wait-and-resume primitive in a one-shot runner that has no next turn,
 # so it suspends forever and the action still exits zero.
 
@@ -63,5 +63,5 @@ jobs:
             exit 0
           fi
 
-          echo "Run $RUN_ID abandoned itself waiting on background agents (#136). Retrying once."
+          echo "Run $RUN_ID abandoned itself waiting on background agents (#163). Retrying once."
           gh run rerun "$RUN_ID" --repo "$REPO" --failed

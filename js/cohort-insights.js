@@ -202,12 +202,42 @@
       }
     });
 
-    /* Fail rate (pre-penalty) — unsatisfactory tier */
-    var fail_count_pre_penalty = students.filter(function (s) {
-      var g = s.scoreResult && s.scoreResult.suggestedGrade;
-      return g && tierOf(g) === 'unsatisfactory';
-    }).length;
-    var fail_rate_pre_penalty = n ? fail_count_pre_penalty / n : 0;
+    /* Fail rate (pre-penalty) — unsatisfactory tier, judged on the work.
+
+       The stored suggestedGrade comes from the penalised score, so a B-quality
+       script that was late-failed has suggestedGrade 'E'. Reading it here counted
+       lateness as poor work (#185). The pre-penalty grade is taken from what the
+       record already stores, in this order:
+         1. override.newGrade, when the marker overrode the overall letter. That
+            letter is the marker's own judgement of the work, and it is already what
+            suggestedGrade holds for an overridden record, so overridden records
+            count exactly as they did before.
+         2. otherwise the grade of weightedTotal (the pre-penalty total, which a
+            snap-up override has already lifted) on the scorer's grade scale, the
+            same derivation generateFeedbackText uses for the intro and outro.
+       A record with neither (no scoreResult, no override letter, and a missing or
+       non-numeric weightedTotal) cannot be judged. It is left out of both the count
+       and the base, so the rate stays correct over the records that can be.
+       fail_n_pre_penalty is that base. */
+    var preGradeOf = function (s) {
+      var sr = s && s.scoreResult;
+      if (!sr) return null;
+      if (sr.override && sr.override.newGrade) return sr.override.newGrade;
+      if (typeof sr.weightedTotal !== 'number' || !isFinite(sr.weightedTotal)) return null;
+      if (typeof SA === 'undefined') return null;
+      return useCustomScale
+        ? SA.scoreToGradeFromScale(sr.weightedTotal, config.gradeScale)
+        : SA.scoreToGrade(sr.weightedTotal);
+    };
+    var fail_n_pre_penalty = 0;
+    var fail_count_pre_penalty = 0;
+    students.forEach(function (s) {
+      var g = preGradeOf(s);
+      if (!g) return;
+      fail_n_pre_penalty++;
+      if (tierOf(g) === 'unsatisfactory') fail_count_pre_penalty++;
+    });
+    var fail_rate_pre_penalty = fail_n_pre_penalty ? fail_count_pre_penalty / fail_n_pre_penalty : 0;
 
     /* Distribution shape */
     var skewVal = skewStat(totals);
@@ -242,6 +272,7 @@
       feedback_word_count_mean: feedback_word_count_mean,
       feedback_word_count_sd: feedback_word_count_sd,
       grade_bands: grade_bands,
+      fail_n_pre_penalty: fail_n_pre_penalty,
       fail_count_pre_penalty: fail_count_pre_penalty,
       fail_rate_pre_penalty: fail_rate_pre_penalty,
       skew: skewVal,

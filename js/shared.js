@@ -314,7 +314,7 @@
       universityName: '',
       assignmentInfo: '',
       version:        '1.0',
-      appVersion:     '2.6.0',   // Feedback Kitchen app version for export provenance
+      appVersion:     '2.6.1',   // Feedback Kitchen app version for export provenance
       gradeScale:     null,   // null = use NZ default; array = custom scale from builder Step 2
       tierLabels:     null,   // null = use defaults; object {excellent, proficient, developing, unsatisfactory} = custom labels
       criteria: [
@@ -335,7 +335,7 @@
   // Single source of truth for "which FK shipped this artefact".
   // Mirrors the appVersion baked into newConfig() above; used by the
   // moderation export opt-in record and the workbook 90_manifest sheet.
-  const FK_VERSION = '2.6.0';
+  const FK_VERSION = '2.6.1';
   function getFKVersion() { return FK_VERSION; }
 
   /* ── Storage write hardening (FK-24) ─────────────────────────

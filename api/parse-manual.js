@@ -406,7 +406,7 @@ module.exports = async function handler(req, res) {
     draft.id = uid();
     draft.created = new Date().toISOString();
     draft.version = '1.0';
-    draft.appVersion = '2.6.0';
+    draft.appVersion = '2.6.1';
 
     // Add missing criterion IDs
     if (Array.isArray(draft.criteria)) {

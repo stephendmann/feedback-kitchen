@@ -65,6 +65,11 @@ describe('which failures the watcher retries', () => {
   test('the echoed script comment alone never matches', () => {
     expect(matches(ECHOED_COMMENT)).toBe(false);
   });
+
+  test('the retry message points at #163, the open issue, not the closed #136', () => {
+    expect(WORKFLOW).toMatch(/echo "Run \$RUN_ID abandoned itself waiting on background agents \(#163\)\. Retrying once\."/);
+    expect(WORKFLOW).not.toMatch(/#136/);
+  });
 });
 
 describe('the retry cap', () => {

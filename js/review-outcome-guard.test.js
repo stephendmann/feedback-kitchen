@@ -66,6 +66,20 @@ describe('runs that should fail the job', () => {
     expect(normal.reason + posted.reason).not.toMatch(/#136/);
   });
 
+  test('talk of comments without a link to one is not a post', () => {
+    // The marker is the link, not the word "comment": a run that only discusses
+    // inline comments it has not posted must still fail as nothing posted.
+    const v = classify(result({ result: 'I reviewed the diff and would leave two inline comments, but have not left them yet.' }));
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/nothing posted/);
+  });
+
+  test('an abandoned run is still abandoned even if it mentions a discussion', () => {
+    const v = classify(result({ result: "Waiting on the two background agents; the discussion of findings will follow." }));
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/abandoned/);
+  });
+
   test('a plain mention of an agent is not an abandonment', () => {
     // The looser match must not swallow ordinary prose, or every review that
     // mentions its subagents gets retried.
@@ -137,6 +151,17 @@ describe('runs that should pass the job', () => {
     const v = classify(result({ result: 'Pull request #200 is currently a draft, so I am not reviewing it.' }));
     expect(v.ok).toBe(true);
     expect(v.reason).toMatch(/draft/);
+  });
+
+  test('review posted — PR #186 throwaway, findings posted as inline comments', () => {
+    // Real result text. It says "inline comments posted" (plural), which no phrase
+    // marker matches, but it links each comment, and the link is the evidence.
+    const v = classify(result({
+      num_turns: 22,
+      result: "Both inline comments posted on PR #186:\n\n1. [`js/throwaway-grade-histogram.js:32`](https://github.com/stephendmann/feedback-kitchen/pull/186#discussion_r4236441699) \u2014 boundary bug: strict `>` instead of `>=` miscategorizes scores on a band edge.\n2. [`.github/workflows/fk-review-foreground-test.yml:60`](https://github.com/stephendmann/feedback-kitchen/pull/186#discussion_r4236441930) \u2014 spaced em dash violating the CLAUDE.md \"never spaced\" rule.\n\nBoth were independently flagged by two reviewer passes and confirmed in a validation pass before posting.",
+    }));
+    expect(v.ok).toBe(true);
+    expect(v.reason).toMatch(/posted/);
   });
 
   test('review posted — PR #131, the first ever post', () => {
