@@ -41,6 +41,8 @@ npm run build && npm run guard:lazy-load && npm test
 
 Non-zero exit anywhere: FAIL. Capture roughly the last 40 lines of output for the issue.
 
+`npm run build` regenerates `css/tailwind.out.css`, and a diff in that file after a green build is not a failure. Tailwind scans the files listed under `content` in `tailwind.config.js` for anything that looks like a utility class, prose included, so a new comment or fixture containing a word such as "invisible" or "invert" emits `.invisible` or `.invert`. The scan is deterministic: dependency versions are fixed by the lockfile, and the caniuse-lite "outdated" warning does not change the output. Test files (`*.test.js`) are excluded from the scan. If the diff persists, find the matching word in the files the scan covers and reword it if it is prose, or commit the regenerated CSS if it is a live class. Check an existing draft PR for the same change before opening another.
+
 ## Step 3: live site
 
 Check three URLs with curl (status code plus body for the first):
