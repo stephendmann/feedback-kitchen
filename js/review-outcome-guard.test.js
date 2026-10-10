@@ -54,6 +54,18 @@ describe('runs that should fail the job', () => {
     expect(v.reason).toMatch(/abandoned/);
   });
 
+  test('the abandonment verdicts point at #163, the open issue, not the closed #136', () => {
+    // #136 is closed and describes a different defect (a failed review exiting
+    // green). Anyone following the pointer from a red check has to land on the
+    // issue that tracks the abandonment.
+    const normal = classify(result({ result: "Waiting on the two background agents to finish before continuing." }));
+    expect(normal.reason).toMatch(/\(see #163\)$/);
+    const posted = classify(result({ result: "I'll wait for the background agents to report back." }), { posted: true });
+    expect(posted.ok).toBe(false);
+    expect(posted.reason).toMatch(/\(see #163\)$/);
+    expect(normal.reason + posted.reason).not.toMatch(/#136/);
+  });
+
   test('a plain mention of an agent is not an abandonment', () => {
     // The looser match must not swallow ordinary prose, or every review that
     // mentions its subagents gets retried.
